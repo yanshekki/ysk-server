@@ -859,7 +859,12 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify({ action }),
     }),
-  publicFilesApply: (body: { serverName: string; quotaMb?: number; reload?: boolean }) =>
+  publicFilesApply: (body: {
+    serverName: string;
+    quotaMb?: number;
+    reload?: boolean;
+    autoindex?: boolean;
+  }) =>
     api.requestRaw('/api/v1/hosting/files/apply', {
       method: 'POST',
       body: JSON.stringify(body),

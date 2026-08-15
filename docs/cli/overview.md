@@ -11,11 +11,12 @@
 | Flag / env | Meaning |
 |------------|---------|
 | `--json` | Structured JSON on stdout (preferred for AI) |
-| `--data-dir PATH` | Control-plane data directory |
+| `--data-dir PATH` | Control-plane data directory (`--data-dir=PATH` and `YSK_DATA_DIR` also work). Root uses `/var/lib/ysk-server` when that store exists |
 | `--config PATH` | `config.json` from setup |
-| `--locale CODE` | `zh-HK` · `zh-CN` · `en` plus Tier-2 (`ja` `ko` `es` `fr` `pt` `id` `hi` `bn` `ar` `ur`; also `YSK_LOCALE` / `LANG`) |
+| `--locale CODE` | CLI messages only (default **en**, never `LANG`). Also `YSK_LOCALE`. Codes: `en` `zh-HK` `zh-CN` `ja` `ko` `hi` `es` `ar` `fr` `bn` `pt` `id` `ur`. Command names and flags stay English |
+| `--limit N` / `--offset N` | Slice large JSON lists (`software list`, `updates inventory`, `host metrics`, `rbac audit`) |
 | `--execute` / `--apply` | Attempt real host mutation |
-| `--help` / `--version` | Help / version |
+| `--help` / `--version` | Help / version (`--help` never runs the command) |
 
 Without `--execute`, host-mutating commands stay **dry-run** (plan only). Still need `YSK_EXECUTE=1` (and often root) for real apply.
 

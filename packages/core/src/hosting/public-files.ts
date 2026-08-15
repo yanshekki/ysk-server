@@ -16,7 +16,11 @@ import { join, dirname } from 'node:path';
 import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planPublicFileServer } from './extras.js';
-import { writeManagedNginxConf, syncNginxConfigs } from './nginx-sync.js';
+import {
+  writeManagedNginxConf,
+  syncNginxConfigs,
+  pruneStalePublicFilesNginxConfs,
+} from './nginx-sync.js';
 import { publicFilesRoot } from '../files/manager.js';
 
 export interface PublicFilesApplyResult {
@@ -95,16 +99,18 @@ function buildPublicFilesNginxConf(input: {
   publicRoot: string;
   sslCert?: string;
   sslKey?: string;
+  autoindex?: boolean;
 }): string {
   const { serverName, publicRoot, sslCert, sslKey } = input;
   const hasSsl = Boolean(sslCert && sslKey && existsSync(sslCert) && existsSync(sslKey));
+  const autoindex = input.autoindex !== false;
 
   const common = `
   root ${publicRoot};
   index index.html index.htm;
 
   charset utf-8;
-  autoindex on;
+  autoindex ${autoindex ? 'on' : 'off'};
   autoindex_exact_size off;
   autoindex_localtime on;
 
@@ -159,6 +165,7 @@ export async function applyPublicFileServer(input: {
   serverName: string;
   quotaMb?: number;
   reload?: boolean;
+  autoindex?: boolean;
 }): Promise<PublicFilesApplyResult> {
   const serverName = input.serverName.trim().toLowerCase();
   if (
@@ -212,6 +219,7 @@ export async function applyPublicFileServer(input: {
     publicRoot,
     sslCert: existsSync(leCert) ? leCert : undefined,
     sslKey: existsSync(leKey) ? leKey : undefined,
+    autoindex: input.autoindex !== false,
   });
   if (existsSync(leCert) && existsSync(leKey)) {
     notes.push(`TLS: using Let's Encrypt cert for ${serverName}`);
@@ -226,6 +234,7 @@ export async function applyPublicFileServer(input: {
 
   const confName = confFileName(serverName);
   const nginxPath = writeManagedNginxConf(input.dataDir, confName, conf);
+  pruneStalePublicFilesNginxConfs(join(input.dataDir, 'nginx', 'conf.d'), confName);
   notes.push(`Nginx conf (managed): ${nginxPath}`);
   const written = [publicRoot, index, readme, nginxPath];
   let nginxReloaded = false;
@@ -243,6 +252,7 @@ export async function applyPublicFileServer(input: {
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
       dryRun: false,
+      keepPublicFilesConf: confName,
     });
     written.push(...sync.copied);
     notes.push(...sync.notes);

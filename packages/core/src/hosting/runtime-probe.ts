@@ -752,6 +752,17 @@ export async function probeRuntimes(
     hostNode,
   );
 
+  if (hostNode) {
+    for (const n of node) {
+      if (n.available) continue;
+      if (!versionOutputMatchesPin(hostNode, n.version)) continue;
+      n.available = true;
+      n.versionOutput = hostNode;
+      n.notes = n.notes.filter((x) => !/not found|未|missing/i.test(x));
+      n.notes.push('host PATH Node matches this major (not /usr/local/ysk/node/N)');
+    }
+  }
+
   // Force-merge YSK disk discoveries — never leave "recorded only" as the only signal
   for (const y of yskNodes) {
     const hit = node.find((n) => n.version === y.major);

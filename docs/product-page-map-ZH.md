@@ -45,7 +45,7 @@
 | 執行環境 | `/runtimes/kotlin` | Kotlin | J |
 | 執行環境 | `/runtimes/bun` | Bun | J |
 | 安全 | `/protection` | 主機防護（UFW／fail2ban） | M |
-| 安全 | `/security` | 允許清單／審批 | R |
+| 安全 | `/security` | 帳號 2FA · API 金鑰 · SSH · 審批 · 工具權限 | R |
 | 安全 | `/vpn` | VPN | |
 | 安全 | `/vnc` | VNC | |
 | 系統 | `/users` | 用戶與套餐 | T |
@@ -265,9 +265,9 @@
 
 ### `/security`
 
-| 操作 |
-|---------|
-| List tools · run sys.info · approve/deny pending · (API keys P0) |
+| 分頁 | 操作 |
+|------|---------|
+| 我的安全 · API 金鑰 · SSH · 審批 · 工具權限 · 關於 | 啟用 TOTP · 變更密碼 · Passkey · 工作階段 · SSH 出站／登入公鑰／sshd · 批准待審 · 唯讀代理工具目錄（`?tab=allowlist` 仍開啟「工具權限」） |
 
 ---
 

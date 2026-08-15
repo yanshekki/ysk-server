@@ -255,6 +255,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const st = serviceLabel(svc, t);
   const installed = Boolean(svc?.serverInstalled);
   const running = svc?.active === 'active';
+  const hostDatabases = svc?.hostDatabases ?? [];
+  const panelDbNames = useMemo(
+    () => new Set(dbs.items.map((r) => String(r.name ?? ''))),
+    [dbs.items],
+  );
+  const hostOnlyDatabases = hostDatabases.filter((n) => n && !panelDbNames.has(n));
+  const firstDumpName = String(dbs.items[0]?.name ?? hostDatabases[0] ?? '');
 
   return (
     <FeaturePageLayout
@@ -307,9 +314,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || !dbs.items[0]}
+            disabled={busy || !firstDumpName}
             onClick={() => {
-              const name = String(dbs.items[0]?.name ?? '');
+              const name = firstDumpName;
               if (!name) return;
               setMsg(null);
               setError(null);
@@ -330,9 +337,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || !dbs.items[0]}
+            disabled={busy || !firstDumpName}
             onClick={() => {
-              const name = String(dbs.items[0]?.name ?? '');
+              const name = firstDumpName;
               if (!name) return;
               void systemApi
                 .dbDumps(engine === 'mariadb' ? 'mariadb' : 'mysql')
@@ -572,6 +579,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         {tab === 'databases' ? (
           <Card>
             <CardSection title={t('db.dbList')}>
+              {hostOnlyDatabases.length ? (
+                <Alert variant="info">
+                  {t('db.hostHasUntracked', { count: hostOnlyDatabases.length })}{' '}
+                  <span className="u-text-sm muted">
+                    {t('db.hostInventoryHint')} ({hostOnlyDatabases.join(', ')})
+                  </span>
+                </Alert>
+              ) : null}
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                 filters={
@@ -607,9 +622,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     description={
                       !installed
                         ? t('db.emptyDbInstallFirst', { engine: title })
-                        : !svc?.canProvision
-                          ? svc?.blockMessage ?? t('db.emptyDbCannotProvision')
-                          : t('db.emptyDbCreateHint')
+                        : hostDatabases.length
+                          ? t('db.emptyDbHostHasRows')
+                          : !svc?.canProvision
+                            ? svc?.blockMessage ?? t('db.emptyDbCannotProvision')
+                            : t('db.emptyDbCreateHint')
                     }
                   />
                 }

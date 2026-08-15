@@ -10,6 +10,7 @@ import {
   type EmailBundle,
   type EmailDomain,
 } from '../features/email';
+import { emailHealthUnprobed } from '../features/email/health-display';
 import {
   PageGuide,
   ActionBar,
@@ -586,8 +587,12 @@ export function EmailDomainPage() {
         items: [
           {
             label: t('email.statHealth'),
-            value: `${domain.health_score}/100`,
-            tone: healthScoreTone(domain.health_score) },
+            value: emailHealthUnprobed(domain)
+              ? t('email.healthUnchecked')
+              : `${domain.health_score}/100`,
+            tone: emailHealthUnprobed(domain)
+              ? 'neutral'
+              : healthScoreTone(domain.health_score) },
           {
             label: t('email.statApply'),
             value: applySt,
@@ -1134,20 +1139,26 @@ export function EmailDomainPage() {
                     },
                     {
                       label: t('email.healthScore'),
-                      value: live
-                        ? String(
-                            (live as { health?: { score?: number } }).health?.score ??
-                              domain.health_score,
-                          )
-                        : String(domain.health_score),
-                      tone: healthScoreTone(
-                        live
-                          ? Number(
-                              (live as { health?: { score?: number } }).health?.score ??
-                                domain.health_score,
+                      value:
+                        live || !emailHealthUnprobed(domain)
+                          ? String(
+                              live
+                                ? (live as { health?: { score?: number } }).health?.score ??
+                                  domain.health_score
+                                : domain.health_score,
                             )
-                          : domain.health_score,
-                      ),
+                          : t('email.healthUnchecked'),
+                      tone:
+                        live || !emailHealthUnprobed(domain)
+                          ? healthScoreTone(
+                              live
+                                ? Number(
+                                    (live as { health?: { score?: number } }).health?.score ??
+                                      domain.health_score,
+                                  )
+                                : domain.health_score,
+                            )
+                          : 'default',
                     },
                     {
                       label: t('email.liveCheck'),

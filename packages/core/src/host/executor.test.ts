@@ -122,9 +122,24 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['redis-cli', 'GET', 'k'])).toBe(false);
     expect(commandRequiresExecute(['redis-cli', 'KEYS', '*'])).toBe(false);
     expect(commandRequiresExecute(['redis-cli', 'SET', 'k', 'v'])).toBe(true);
+    expect(commandRequiresExecute(['mysql', '-N', '-e', 'SHOW DATABASES'])).toBe(false);
+    expect(commandRequiresExecute(['mariadb', '-N', '-e', 'SHOW DATABASES'])).toBe(false);
+    expect(
+      commandRequiresExecute(['bash', '-c', 'mariadb -N -e "SHOW DATABASES" 2>/dev/null || true']),
+    ).toBe(false);
+    expect(commandRequiresExecute(['mysql', '-e', 'DROP DATABASE app'])).toBe(true);
+    expect(commandRequiresExecute(['mariadb', '-e', 'CREATE DATABASE x'])).toBe(true);
     // readiness inventory probes
     expect(commandRequiresExecute(['php', '-v'])).toBe(false);
     expect(commandRequiresExecute(['node', '-v'])).toBe(false);
     expect(commandRequiresExecute(['php', '-r', 'evil()'])).toBe(true);
+    expect(commandRequiresExecute(['fail2ban-client', 'status'])).toBe(false);
+    expect(commandRequiresExecute(['fail2ban-client', 'status', 'sshd'])).toBe(false);
+    expect(commandRequiresExecute(['fail2ban-client', 'set', 'sshd', 'banip', '1.2.3.4'])).toBe(
+      true,
+    );
+    expect(commandRequiresExecute(['ufw', 'status'])).toBe(false);
+    expect(commandRequiresExecute(['ufw', 'status', 'numbered'])).toBe(false);
+    expect(commandRequiresExecute(['ufw', 'deny', 'from', '1.2.3.4'])).toBe(true);
   });
 });

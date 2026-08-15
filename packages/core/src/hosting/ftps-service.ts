@@ -92,8 +92,8 @@ export const DEFAULT_FTPS_SETTINGS: FtpsSettings = {
   listen: true,
   listenIpv6: false,
   listenPort: 21,
-  sslEnable: true,
-  forceSsl: true,
+  sslEnable: false,
+  forceSsl: false,
   sslDomain: '',
   pasvMin: 30000,
   pasvMax: 30100,
@@ -332,8 +332,10 @@ export function buildVsftpdConf(input: {
   settings: FtpsSettings;
 }): string {
   const paths = ftpsPaths(input.dataDir);
-  const { cert, key } = resolveCertPaths(input.dataDir, input.settings);
+  const resolved = resolveCertPaths(input.dataDir, input.settings);
+  const { cert, key } = resolved;
   const s = input.settings;
+  const sslOn = Boolean(s.sslEnable && resolved.ok && cert && key);
   // vsftpd: listen and listen_ipv6 are mutually exclusive on many builds.
   // dual: listen=NO + listen_ipv6=YES (IPv6 socket; v4-mapped if bindv6only=0)
   // ipv6-only: same as dual with listen flag false
@@ -371,19 +373,19 @@ export function buildVsftpdConf(input: {
     `pasv_max_port=${s.pasvMax}`,
     s.pasvAddress ? `pasv_address=${s.pasvAddress}` : '# pasv_address=',
     `ftpd_banner=${s.banner.replace(/[\r\n]/g, ' ')}`,
-    s.sslEnable ? 'ssl_enable=YES' : 'ssl_enable=NO',
-    s.forceSsl && s.sslEnable ? 'force_local_data_ssl=YES' : 'force_local_data_ssl=NO',
-    s.forceSsl && s.sslEnable ? 'force_local_logins_ssl=YES' : 'force_local_logins_ssl=NO',
+    sslOn ? 'ssl_enable=YES' : 'ssl_enable=NO',
+    s.forceSsl && sslOn ? 'force_local_data_ssl=YES' : 'force_local_data_ssl=NO',
+    s.forceSsl && sslOn ? 'force_local_logins_ssl=YES' : 'force_local_logins_ssl=NO',
     'ssl_tlsv1=YES',
     'ssl_sslv2=NO',
     'ssl_sslv3=NO',
     'require_ssl_reuse=NO',
     'ssl_ciphers=HIGH',
   ];
-  if (s.sslEnable && cert && key) {
+  if (sslOn && cert && key) {
     lines.push(`rsa_cert_file=${cert}`, `rsa_private_key_file=${key}`);
-  } else if (s.sslEnable) {
-    lines.push(tl('notes.auto.n0054'), '# rsa_private_key_file=');
+  } else if (s.sslEnable && !resolved.ok) {
+    lines.push('# ssl_enable skipped — no certificate for sslDomain');
   }
   return lines.join('\n') + '\n';
 }
@@ -622,6 +624,13 @@ export async function applyFtpsService(input: {
   const written: string[] = [];
   const notes: string[] = [];
   const commandResults: ApplyResult['commandResults'] = [];
+
+  const certs = resolveCertPaths(input.dataDir, settings);
+  if (settings.sslEnable && !certs.ok) {
+    notes.push(
+      'TLS is on but no certificate was found (set sslDomain to an issued cert, or leave TLS off). Writing ssl_enable=NO so vsftpd can start.',
+    );
+  }
 
   // 1. conf
   const conf = buildVsftpdConf({ dataDir: input.dataDir, settings });

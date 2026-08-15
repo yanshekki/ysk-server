@@ -487,5 +487,6 @@
   "queueDeferred": "遅延",
   "deleteQueueTitle": "このキューメールを削除しますか？",
   "deleteQueueDesc": "ローカル MTA キューから {{id}} を削除します。YSK_EXECUTE が必要です。",
-  "openQueuePage": "メールキューを開く"
+  "openQueuePage": "メールキューを開く",
+  "healthUnchecked": "Not checked yet"
 }

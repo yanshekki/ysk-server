@@ -396,7 +396,7 @@ export function FirewallPage() {
         variant="scroll"
       >
         {tab === 'services' ? (
-          <FirewallServicesPanel canEdit={canEdit} />
+          <FirewallServicesPanel canEdit={canEdit} ufwActive={Boolean(active)} />
         ) : null}
 
         {tab === 'rules' ? (

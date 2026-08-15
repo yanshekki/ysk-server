@@ -338,7 +338,11 @@ export async function switchSqlEngine(input: {
   notes.push(...inst.notes);
 
   // Debian FROZEN after MySQL↔MariaDB: clear freeze + init empty datadir before wait
-  const { recoverMysqlAfterEngineSwitch, frozenUnitFailureHint } = await import('./mysql-frozen.js');
+  const {
+    recoverMysqlAfterEngineSwitch,
+    frozenUnitFailureHint,
+    initializeMysqlDatadirIfEmpty,
+  } = await import('./mysql-frozen.js');
   const recover = await recoverMysqlAfterEngineSwitch(input.host, target);
   steps.push(
     ...recover.steps.map((s) => ({
@@ -348,12 +352,20 @@ export async function switchSqlEngine(input: {
     })),
   );
   notes.push(...recover.notes);
+  const initEmpty = await initializeMysqlDatadirIfEmpty(input.host, target);
+  notes.push(...initEmpty.notes);
+  steps.push({
+    name: tl('sqlEngineSwitch.step.wait', { unit: tUnit }) + ' init',
+    status: initEmpty.ok ? 'ok' : 'failed',
+    detail: initEmpty.notes.join('; '),
+  });
 
   let wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
-  if (!wait.ok && !recover.ok) {
-    // one more recover attempt if still frozen
+  if (!wait.ok) {
     const again = await recoverMysqlAfterEngineSwitch(input.host, target);
     notes.push(...again.notes);
+    const init2 = await initializeMysqlDatadirIfEmpty(input.host, target);
+    notes.push(...init2.notes);
     wait = await waitUnitActive(input.host, tUnit, { timeoutMs: 120_000 });
   }
   steps.push({
@@ -366,15 +378,24 @@ export async function switchSqlEngine(input: {
     notes.push(
       frozenHint || tl('sqlEngineSwitch.note.waitFailed', { dumpPath, datadir: datadirBackup }),
     );
+    const rb = await rollbackSqlEngineSwitch({
+      host: input.host,
+      dataDir: input.dataDir,
+      sourceFlavor,
+      target,
+      datadirBackup,
+    });
+    notes.push(...rb.notes);
+    steps.push(...rb.steps);
     return {
       ok: false,
       executed: true,
-      code: 'failed_need_manual',
+      code: rb.restored ? 'failed_safe' : 'failed_need_manual',
       notes,
       steps,
       dumpPath,
       oldDatadirBackup: datadirBackup,
-      currentFlavor: sourceFlavor,
+      currentFlavor: rb.restored ? sourceFlavor : sourceFlavor,
       target,
     };
   }
@@ -485,6 +506,58 @@ export async function switchSqlEngine(input: {
     currentFlavor: sourceFlavor,
     target,
   };
+}
+
+async function rollbackSqlEngineSwitch(input: {
+  host: HostExecutor;
+  dataDir: string;
+  sourceFlavor: 'mysql' | 'mariadb';
+  target: SqlSwitchTarget;
+  datadirBackup: string;
+}): Promise<{ restored: boolean; notes: string[]; steps: SqlSwitchStep[] }> {
+  const notes: string[] = ['Attempting rollback to the previous SQL engine…'];
+  const steps: SqlSwitchStep[] = [];
+  const tUnit = targetUnit(input.target);
+  await input.host.runCommand(['systemctl', 'stop', tUnit], { timeoutMs: 60_000 });
+  const restore = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      `if [ -d ${JSON.stringify(input.datadirBackup)} ]; then rm -rf /var/lib/mysql; mv ${JSON.stringify(input.datadirBackup)} /var/lib/mysql; chown -R mysql:mysql /var/lib/mysql 2>/dev/null || true; echo RESTORED; else echo NO_BACKUP; exit 1; fi`,
+    ],
+    { timeoutMs: 180_000 },
+  );
+  steps.push({
+    name: 'rollback-datadir',
+    status: restore.exitCode === 0 ? 'ok' : 'failed',
+    detail: (restore.stdout || restore.stderr).slice(0, 200),
+  });
+  if (restore.exitCode !== 0) {
+    notes.push('Rollback could not restore the previous datadir. Manual recovery required.');
+    return { restored: false, notes, steps };
+  }
+  const inst = await installSoftware({
+    host: input.host,
+    id: sourceServerId(input.sourceFlavor),
+    dataDir: input.dataDir,
+    enableUnits: true,
+    exclusiveSwitchAuth: EXCLUSIVE_SWITCH_AUTH,
+  });
+  notes.push(...inst.notes);
+  const sUnit = sourceUnit(input.sourceFlavor);
+  await input.host.runCommand(['systemctl', 'start', sUnit], { timeoutMs: 60_000 });
+  const wait = await waitUnitActive(input.host, sUnit, { timeoutMs: 90_000 });
+  steps.push({
+    name: 'rollback-start',
+    status: wait.ok ? 'ok' : 'failed',
+    detail: wait.active,
+  });
+  notes.push(
+    wait.ok
+      ? `Rolled back to ${input.sourceFlavor}; unit ${sUnit} is active.`
+      : `Datadir restored but ${sUnit} did not become active.`,
+  );
+  return { restored: wait.ok, notes, steps };
 }
 
 /** Files present under a dump dir (tests/helpers). */

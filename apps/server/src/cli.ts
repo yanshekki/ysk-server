@@ -11,6 +11,7 @@ import {
   runWithLocaleAsync,
   type StructuredResult,  tl} from 'ysk-server-shared';
 import {
+  applyLimit,
   cliLocale,
   cliPositionals,
   getOpt,
@@ -780,6 +781,43 @@ async function mainInner(
         return exitFromResult(result);
       }
 
+      if (sub === 'send' || sub === 'test-send') {
+        const from = getOpt(args, '--from');
+        const to = getOpt(args, '--to');
+        if (!from || !to) {
+          process.stderr.write(
+            'Usage: ysk-server email send --from you@domain --to dest@domain [--subject TEXT] [--execute]\n',
+          );
+          return 2;
+        }
+        const { planTestSend } = await import('ysk-server-core');
+        const plan = planTestSend({
+          from,
+          to,
+          subject: getOpt(args, '--subject') ?? undefined,
+        });
+        if (!wantsHostExecute(args) || !ctx.host.executeEnabled()) {
+          printJson({
+            ok: false,
+            blocked: true,
+            dryRun: true,
+            command: plan.command,
+            notes: [...plan.notes, 'Pass --execute with YSK_EXECUTE=1 to send.'],
+          });
+          return 3;
+        }
+        const r = await ctx.host.runCommand(['bash', '-c', plan.command], { timeoutMs: 30_000 });
+        printJson({
+          ok: r.exitCode === 0,
+          command: plan.command,
+          notes: [
+            ...plan.notes,
+            r.exitCode === 0 ? 'sendmail invoked' : (r.stderr || r.stdout || 'sendmail failed').slice(0, 240),
+          ],
+        });
+        return r.exitCode === 0 ? 0 : 1;
+      }
+
       if (sub === 'queue') {
         const act = cliPositionals(args).slice(2)[0] ?? 'list';
         const { listMailQueue, flushMailQueue } = await import('ysk-server-core');
@@ -1257,7 +1295,13 @@ async function mainInner(
             return 2;
           }
           try {
-            const modeRaw = getOpt(args, '--mode') ?? 'direct';
+            const modeRaw = (getOpt(args, '--mode') ?? 'direct').trim().toLowerCase();
+            if (modeRaw && !['direct', 'bt', 'both'].includes(modeRaw)) {
+              process.stderr.write(
+                'Usage: ysk-server files shares create --path REL [--mode direct|bt|both] [--password …] [--expires ISO] --root public|project:ID\n',
+              );
+              return 2;
+            }
             const {
               normalizeDownloadModes,
               prepareFileShareBt,
@@ -2686,6 +2730,28 @@ async function mainInner(
           printJson({ ok: true, ...result });
           return 0;
         }
+        if (sub === 'delete' || sub === 'rm' || sub === 'remove') {
+          const name =
+            getOpt(args, '--id') ?? getOpt(args, '--user') ?? getOpt(args, '--username');
+          if (!name?.trim()) {
+            process.stderr.write(
+              'Usage: ysk-server users delete --id ID|--user NAME\n',
+            );
+            return 2;
+          }
+          const all = ctx.usersAdmin.listUsers();
+          const target = all.find((u) => u.id === name || u.username === name);
+          if (!target) {
+            printJson({ ok: false, code: 'YSK_NOT_FOUND', message: 'user not found' });
+            return 4;
+          }
+          const actor =
+            ctx.db.snapshot.users.find((u) => u.roles.includes('admin')) ??
+            ctx.db.snapshot.users[0];
+          const ok = ctx.usersAdmin.deleteUser(target.id, actor?.username ?? 'cli');
+          printJson({ ok, id: target.id, username: target.username });
+          return ok ? 0 : 1;
+        }
         process.stderr.write(`${tl('cli.usage.users.list.--q.text.--role.544685')}\n`);
         return 2;
       }
@@ -2743,11 +2809,13 @@ async function mainInner(
             path,
             cap: matchMutatingRouteCap(method, path),
           }));
+          const limited = applyLimit(samples, args);
           printJson({
             ok: true,
             ruleCount: MUTATING_ROUTE_CAP_RULES.length,
             failClosedFallback: true,
-            samples,
+            samples: limited.items,
+            meta: limited.meta,
             note: 'Central enforceMutatingRouteCaps on all mutating /api/v1; public auth/agent prefixes skipped',
           });
           return 0;
@@ -3156,7 +3224,16 @@ async function mainInner(
           return 2;
         }
         const result = await ctx.projectOps.backup(id, 'cli');
-        printJson(result);
+        if (result.ok) {
+          ctx.settings.setJson('last_backup_run', {
+            at: new Date().toISOString(),
+            source: 'projects.backup',
+            projectId: id,
+            archivePath: result.archivePath,
+            includesDatabase: false,
+          });
+        }
+        printJson({ ...result, includesDatabase: false });
         return exitFromResult(result);
       }
       if (sub === 'template') {
@@ -3223,6 +3300,22 @@ async function mainInner(
         printJson(result);
         return exitFromResult(result);
       }
+      if (sub === 'delete' || sub === 'rm' || sub === 'remove') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            'Usage: ysk-server projects delete --id PROJECTID [--confirm-name NAME] [--keep-files]\n',
+          );
+          return 2;
+        }
+        const result = await ctx.projects.delete(id, 'cli', {
+          confirmName: getOpt(args, '--confirm-name') ?? undefined,
+          skipConfirm: !getOpt(args, '--confirm-name'),
+          removeFiles: !hasFlag(args, '--keep-files'),
+        });
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       process.stderr.write(`${tl('cli.usage.projects.list.get.create.deploy.253b48')}\n`);
       return 2;
     } finally {
@@ -3272,11 +3365,16 @@ async function mainInner(
       }
       if (sub === 'nginx-sync') {
         const execute = wantsHostExecute(args);
+        const keepLinuxUsers = (ctx.db.snapshot.projects ?? [])
+          .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+          .filter(Boolean);
         const result = await syncNginxConfigs({
           dataDir: ctx.dataDir,
-          systemConfDir: getOpt(args, '--system-dir'),
+          systemConfDir: getOpt(args, '--system-dir') ?? (execute ? '/etc/nginx/conf.d' : undefined),
           host: ctx.host,
-          dryRun: !execute || hasFlag(args, '--dry-run') });
+          dryRun: !execute || hasFlag(args, '--dry-run'),
+          keepLinuxUsers,
+        });
         printJson({
           ...result,
           ok: result.ok !== false,
@@ -3485,7 +3583,7 @@ async function mainInner(
           planOrInstallRuntime,
           defaultRuntimeVersion,
         } = await import('ysk-server-core');
-        const kindRaw = getOpt(args, '--kind') ?? 'node';
+        const kindRaw = getOpt(args, '--kind') ?? cliPositionals(args)[2];
         const allowed = [
           'node',
           'php',
@@ -3496,9 +3594,13 @@ async function mainInner(
           'kotlin',
           'bun',
         ] as const;
-        const kind = (
-          (allowed as readonly string[]).includes(kindRaw) ? kindRaw : 'node'
-        ) as (typeof allowed)[number];
+        if (!kindRaw || !(allowed as readonly string[]).includes(kindRaw)) {
+          process.stderr.write(
+            'Usage: ysk-server hosting runtime-install --kind node|php|python|go|rust|java|kotlin|bun [--version VER] --execute\n',
+          );
+          return 2;
+        }
+        const kind = kindRaw as (typeof allowed)[number];
         const pluginsCsv = getOpt(args, '--plugins');
         const plugins = pluginsCsv
           ? pluginsCsv.split(',').map((s) => s.trim()).filter(Boolean)
@@ -3722,6 +3824,8 @@ async function mainInner(
     const {
       writeManagedDnsZone,
       listManagedDnsZones,
+      deleteManagedDnsZone,
+      appendManagedDnsRecord,
       generateDnssecKeys,
       listDnssecMaterial,
       healPowerDnsListener,
@@ -3735,6 +3839,30 @@ async function mainInner(
       if (sub === 'zones' || sub === 'list') {
         printJson({ ok: true, items: listManagedDnsZones(ctx.dataDir) });
         return 0;
+      }
+      if (sub === 'delete' || (sub === 'zone' && hasFlag(args, '--delete'))) {
+        const zone = getOpt(args, '--zone') ?? cliPositionals(args).slice(2)[0];
+        if (!zone?.trim()) {
+          process.stderr.write('Usage: ysk-server dns zone --delete --zone example.com [--reload --execute]\n');
+          return 2;
+        }
+        const removed = deleteManagedDnsZone(ctx.dataDir, zone.trim());
+        if (hasFlag(args, '--reload') && wantsHostExecute(args) && removed.ok) {
+          const { tryReloadClassicNameserver } = await import('ysk-server-core');
+          const notes = [...removed.notes];
+          const cmdResults: Array<{ argv: string[]; exitCode: number; stderr: string }> = [];
+          const reloaded = await tryReloadClassicNameserver(ctx.host, notes, cmdResults, {
+            includePdns: true,
+          });
+          printJson({ ...removed, reloaded, notes, live: reloaded ? 'reloaded' : 'file-only' });
+          return removed.ok ? 0 : 4;
+        }
+        printJson({
+          ...removed,
+          live: 'file-only',
+          notes: [...removed.notes, 'live nameserver unchanged (no --reload / no unit)'],
+        });
+        return removed.ok ? 0 : 4;
       }
       if (sub === 'zone' || sub === 'write' || sub === 'apply') {
         const zone = getOpt(args, '--zone');
@@ -3836,6 +3964,30 @@ async function mainInner(
         return r.ok ? 0 : 1;
       }
       if (sub === 'records' || sub === 'validate') {
+        const recAct = cliPositionals(args).slice(2)[0];
+        if (sub === 'records' && (recAct === 'add' || recAct === 'create')) {
+          const zone = getOpt(args, '--zone');
+          const name = getOpt(args, '--name') ?? '@';
+          const type = getOpt(args, '--type');
+          const data = getOpt(args, '--data') ?? getOpt(args, '--value');
+          if (!zone || !type || !data) {
+            process.stderr.write(
+              'Usage: ysk-server dns records add --zone example.com --name @ --type TXT --data "v=spf1"\n',
+            );
+            return 2;
+          }
+          const ttlRaw = getOpt(args, '--ttl');
+          const r = appendManagedDnsRecord({
+            dataDir: ctx.dataDir,
+            zone,
+            name,
+            type,
+            data,
+            ttl: ttlRaw ? Number(ttlRaw) : undefined,
+          });
+          printJson(r);
+          return r.ok ? 0 : 1;
+        }
         // Validate record set from --json file or inline JSON
         const jsonPath = getOpt(args, '--file');
         const jsonInline = getOpt(args, '--json-records') ?? getOpt(args, '--records');
@@ -4683,11 +4835,16 @@ async function mainInner(
       }
       if (sub === 'sync') {
         const execute = wantsHostExecute(args);
+        const keepLinuxUsers = (ctx.db.snapshot.projects ?? [])
+          .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+          .filter(Boolean);
         const result = await syncNginxConfigs({
           dataDir: ctx.dataDir,
-          systemConfDir: getOpt(args, '--system-dir'),
+          systemConfDir: getOpt(args, '--system-dir') ?? (execute ? '/etc/nginx/conf.d' : undefined),
           host: ctx.host,
-          dryRun: !execute || hasFlag(args, '--dry-run') });
+          dryRun: !execute || hasFlag(args, '--dry-run'),
+          keepLinuxUsers,
+        });
         printJson({
           ...result,
           ok: result.ok !== false,
@@ -4699,6 +4856,48 @@ async function mainInner(
               : tl('notes.auto.n0047'),
           ] });
         return result.ok === false ? 3 : 0;
+      }
+      if (sub === 'delete' || sub === 'rm' || sub === 'site-delete') {
+        const id =
+          getOpt(args, '--id') ?? getOpt(args, '--name') ?? getOpt(args, '--file');
+        if (!id?.trim()) {
+          process.stderr.write(
+            'Usage: ysk-server nginx delete --id FILE.conf [--execute]\n',
+          );
+          return 2;
+        }
+        const { unlinkSync, existsSync } = await import('node:fs');
+        const { join } = await import('node:path');
+        const managedDir = join(ctx.dataDir, 'nginx', 'conf.d');
+        const base = id.trim().replace(/^ysk-/, '');
+        const candidates = [
+          join(managedDir, base),
+          join(managedDir, base.endsWith('.conf') ? base : `${base}.conf`),
+        ];
+        const hit = candidates.find((p) => existsSync(p));
+        if (!hit) {
+          printJson({ ok: false, code: 'YSK_NOT_FOUND', notes: ['managed nginx conf not found'] });
+          return 4;
+        }
+        unlinkSync(hit);
+        const execute = wantsHostExecute(args);
+        const keepLinuxUsers = (ctx.db.snapshot.projects ?? [])
+          .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+          .filter(Boolean);
+        const result = await syncNginxConfigs({
+          dataDir: ctx.dataDir,
+          systemConfDir: execute ? '/etc/nginx/conf.d' : undefined,
+          host: ctx.host,
+          dryRun: !execute,
+          keepLinuxUsers,
+        });
+        printJson({
+          ok: true,
+          removed: hit,
+          sync: result,
+          notes: execute ? result.notes : ['removed managed file; pass --execute to sync /etc/nginx'],
+        });
+        return 0;
       }
       if (sub === 'status' || sub === 'info' || sub === 'overview') {
         const matrix = await getServiceMatrix(ctx.host);
@@ -4812,6 +5011,42 @@ async function mainInner(
         });
         return r.ok ? 0 : 1;
       }
+      if (sub === 'issue') {
+        const domain = (getOpt(args, '--domain') ?? '').trim().toLowerCase();
+        const email = (getOpt(args, '--email') ?? '').trim();
+        if (!domain || !email) {
+          process.stderr.write(
+            'Usage: ysk-server ssl issue --domain example.com --email you@example.com [--execute]\n',
+          );
+          return 2;
+        }
+        const { planLetsEncrypt } = await import('ysk-server-core');
+        const plan = planLetsEncrypt({
+          domain,
+          email,
+          provider: 'letsencrypt',
+          challenge: domain.startsWith('*.') ? 'dns-01' : 'http-01',
+        });
+        if (!wantsHostExecute(args) || !ctx.host.executeEnabled()) {
+          printJson({
+            ok: false,
+            blocked: true,
+            dryRun: true,
+            commands: plan.commands,
+            notes: [...plan.notes, 'Pass --execute with YSK_EXECUTE=1 to run certbot for this site (not panel TLS).'],
+          });
+          return 3;
+        }
+        const notes = [...plan.notes];
+        let ok = true;
+        for (const cmd of plan.commands) {
+          const r = await ctx.host.runCommand(['bash', '-c', cmd], { timeoutMs: 180_000 });
+          notes.push(r.exitCode === 0 ? cmd : `${cmd} failed: ${(r.stderr || r.stdout).slice(0, 240)}`);
+          if (r.exitCode !== 0) ok = false;
+        }
+        printJson({ ok, domain, notes, commands: plan.commands });
+        return ok ? 0 : 1;
+      }
       if (sub === 'panel-tls' || sub === 'panel') {
         const helpers = {
           printJson,
@@ -4847,16 +5082,22 @@ async function mainInner(
         const path = getOpt(args, '--path') ?? '/';
         const metrics = collectMetrics(path);
         const overview = await collectHostOverview(ctx.host);
+        const disks = applyLimit(overview.disks ?? [], args);
+        const ifaces = applyLimit(overview.network?.interfaces ?? [], args);
         printJson({
           ok: true,
           ...metrics,
           host: {
             identity: overview.identity,
             runtime: overview.runtime,
-            disks: overview.disks,
-            network: overview.network,
+            disks: disks.items,
+            network: {
+              ...overview.network,
+              interfaces: ifaces.items,
+            },
             time: overview.time,
           },
+          meta: { disks: disks.meta, interfaces: ifaces.meta },
           caps: {
             executeEnabled: ctx.host.executeEnabled(),
             isRoot: ctx.host.isRoot(),
@@ -5905,10 +6146,8 @@ async function mainInner(
           'bun',
         ] as const;
         type Kind = (typeof kinds)[number];
-        const parseKind = (raw: string | undefined): Kind =>
-          raw && (kinds as readonly string[]).includes(raw)
-            ? (raw as Kind)
-            : 'node';
+        const parseKind = (raw: string | undefined): Kind | null =>
+          raw && (kinds as readonly string[]).includes(raw) ? (raw as Kind) : null;
 
         if (act === 'list' || act === 'status' || act === 'probe') {
           try {
@@ -5931,6 +6170,12 @@ async function mainInner(
         }
         if (act === 'install') {
           const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
+          if (!kind) {
+            process.stderr.write(
+              'Usage: ysk-server runtimes install --kind node|php|python|go|rust|java|kotlin|bun [--version VER] --execute\n',
+            );
+            return 2;
+          }
           const result = await planOrInstallRuntime({
             dataDir: ctx.dataDir,
             host: ctx.host,
@@ -5960,6 +6205,12 @@ async function mainInner(
             return 3;
           }
           const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
+          if (!kind) {
+            process.stderr.write(
+              'Usage: ysk-server runtimes switch --kind KIND --version VER --execute\n',
+            );
+            return 2;
+          }
           const result = await switchRuntimeDefault({
             host: ctx.host,
             kind,
@@ -5980,7 +6231,7 @@ async function mainInner(
           }
           const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
           const version = getOpt(args, '--version') ?? tokens[3];
-          if (!version?.trim()) {
+          if (!kind || !version?.trim()) {
             process.stderr.write(
               'Usage: ysk-server runtimes uninstall --kind KIND --version VER --execute\n',
             );

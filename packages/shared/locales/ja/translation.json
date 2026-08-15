@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}}修理完了",
     "startAfterUnfreeze": "サービスの開始 (障害時の修復計画の自動実行)",
     "serviceDownTitle": "データベース サービスがダウンしています",
-    "serviceDownBody": "サービスが不健全である"
+    "serviceDownBody": "サービスが不健全である",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "ソフトウェア",
     "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "メール",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "遅延",
     "deleteQueueTitle": "このキューメールを削除しますか？",
     "deleteQueueDesc": "ローカル MTA キューから {{id}} を削除します。YSK_EXECUTE が必要です。",
-    "openQueuePage": "メールキューを開く"
+    "openQueuePage": "メールキューを開く",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未認証",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "UFW を無効にしますか？",
     "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
     "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "FTPSアカウント",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "適用後のバージョンファイルに {{v0}} が含まれていません",
       "selfDownloadFail": "公式パッケージ {{v0}} をダウンロードまたは展開できません：{{v1}}",
       "selfOverlayFail": "公式パッケージを実行中のディレクトリに適用できませんでした：{{v0}}",
-      "selfUpgradeHint": "パネル適用に失敗しました。root で実行：curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "パネル適用に失敗しました。root で実行：curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "削除されました {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "クライアントプロファイルが削除されました",
       "sessionStartCwd": "VNC の起動に失敗しました: セッション ユーザーは作業ディレクトリにアクセスできません (表示:{{display}})。 HOMEから起動すると直りました。",
       "desktopRestarted": "デスクトップ プロファイルが適用され、セッションが再起動されました ({{desktop}})。 VNC/noVNC を再接続します。",
-      "desktopNeedsStart": "デスクトップ プロファイル {{desktop}} が xstartup に書き込まれます。セッションを開始して適用します。"
+      "desktopNeedsStart": "デスクトップ プロファイル {{desktop}} が xstartup に書き込まれます。セッションを開始して適用します。",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "サーバー名は必須です",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "権限",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "API キー",
     "tabSsh": "SSH",
     "tabApprovals": "承認",
-    "tabAllowlist": "許可リスト",
+    "tabAllowlist": "エージェントツール",
     "apiTokenOnce": "API トークン (1 回のみ表示):",
     "copiedToken": "トークンをコピーしました",
     "totpTitle": "2 要素 (TOTP)",
@@ -10127,8 +10138,9 @@
     "apiKeysEmpty": "API キーはまだありません",
     "apiKeysEmptyHint": "ツールバーから作成します。次に、Bearer トークンを使用して API を呼び出します",
     "approve": "承認",
-    "allowlistTitle": "許可リスト ({{count}})",
-    "allowlistEmpty": "ホワイトリストツールがない",
+    "allowlistTitle": "エージェントツール ({{count}})",
+    "allowlistEmpty": "カタログにツールがありません",
+    "totpStatusLoadFailed": "2要素の状態を読み込めませんでした",
     "createApiKeyTitle": "APIキーの作成",
     "createApiKeyDesc": "完全なトークンは作成後に 1 回だけ表示されます",
     "createKeyBtn": "キーの作成",
@@ -10371,9 +10383,11 @@
       "sharePanelDesc": "リスクが高い。 「SHARED」と入力して確認します。",
       "confirmString": "確認文字列",
       "enableShare": "共有を有効にする",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "OpenSSH 公開鍵を 1 行で貼り付けてください（ssh-ed25519 / ssh-rsa / ecdsa…）。",
+      "dryRunOk": "プレビューが完了しました。下の内容を確認してください。",
+      "strictDryRun": "厳格モードのプレビュー",
+      "errorNoDetail": "テスト失敗（詳細なし）",
+      "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。"
     },
     "sessionsActive": "アクティブなセッション",
     "sessionsOther": "その他のデバイス",
@@ -10398,35 +10412,35 @@
     "mySecurityHint": "",
     "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。",
     "requireUser2fa": "すべてのパネルユーザーに 2FA を要求",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "fail2ban スニペットを生成",
+    "changePasswordTitle": "サインインパスワードを変更",
+    "currentPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "confirmNewPassword": "新しいパスワード（確認）",
+    "passwordMismatch": "新しいパスワードが一致しません。",
+    "changePassword": "パスワードを変更",
+    "passwordChanged": "パスワードを更新しました。",
+    "strictNeedsEnrolled": "Strict をオンにする前に、管理者の 2要素が必要です。",
+    "policyTotpNeedSelf": "先にこのアカウントで 2要素を有効にしてください。確認コードを入力できません。",
+    "fail2banSnippetTitle": "fail2ban スニペット",
+    "fail2banSnippetEmpty": "スニペットは書き込まれませんでした。",
+    "trustedDevicesTitle": "信頼済みデバイス",
+    "noTrustedDevices": "信頼済みデバイスはありません。",
+    "strictConfirmTitle": "Strict 2要素をオンにしますか?",
+    "strictConfirmDesc": "2要素未設定のユーザーはサインインできません。利用可能な TOTP または Passkey があることを確認してください。",
+    "revokeDevicesTitle": "信頼済みデバイスを取り消しますか?",
+    "revokeDevicesDesc": "記憶したブラウザーで再び 2要素が必要になります。",
+    "approvalsHint": "高リスクツールに第二オペレーターの承認が必要なときに表示されます。権限は「ユーザー → 権限」で設定します。",
+    "allowlistReadonly": "エージェントツールのカタログ（読み取り専用）。能力の付与は「ユーザー → 権限」で設定します。",
+    "colTool": "ツール",
+    "colAllowed": "許可",
+    "colRisk": "リスク",
+    "colApproval": "承認",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "critical": "重大"
     }
   },
   "serviceExposure": {
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "起動時",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "まだ調査されていません",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "ソフトウェア",

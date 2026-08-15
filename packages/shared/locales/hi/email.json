@@ -487,5 +487,6 @@
   "queueDeferred": "विलंबित",
   "deleteQueueTitle": "यह कतार संदेश हटाएँ?",
   "deleteQueueDesc": "स्थानीय MTA कतार से {{id}} हटाएँ। YSK_EXECUTE चाहिए।",
-  "openQueuePage": "मेल कतार खोलें"
+  "openQueuePage": "मेल कतार खोलें",
+  "healthUnchecked": "Not checked yet"
 }

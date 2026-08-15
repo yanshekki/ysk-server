@@ -4,7 +4,6 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   Badge,
@@ -17,20 +16,27 @@ import { LoginKeysPanel } from './LoginKeysPanel';
 import { SshdPanel } from './SshdPanel';
 import { Ssh2faPanel } from './Ssh2faPanel';
 import { sshApi } from './api';
-import type { SshSubTab } from './types';
+import { usePageTab } from '../../../shared/hooks/usePageTab';
+import { toast } from '../../../shared/stores/toast-store';
 import { bindSet } from '../../../pages/bind-handlers';
+
+const SSH_SUBS = ['outbound', 'login', '2fa', 'sshd'] as const;
+const SSH_ALIASES: Record<string, string> = {
+  system: 'sshd',
+  ssh: 'sshd',
+  'sshd-config': 'sshd',
+  config: 'sshd',
+};
 
 export function SshWorkspace(props: {
   /** Called so parent FeaturePageLayout status can show counts */
   onCounts?: (c: { identities: number; loginKeys: number }) => void;
 }) {
   const { t } = useTranslation();
-  const [params, setParams] = useSearchParams();
-  const raw = params.get('ssh');
-  const sub: SshSubTab =
-    raw === 'login' || raw === 'sshd' || raw === 'outbound' || raw === '2fa'
-      ? raw
-      : 'outbound';
+  const [sub, setSub] = usePageTab(SSH_SUBS, 'outbound', {
+    param: 'ssh',
+    aliases: SSH_ALIASES,
+  });
 
   const [identitiesN, setIdentitiesN] = useState(0);
   const [loginN, setLoginN] = useState(0);
@@ -38,15 +44,11 @@ export function SshWorkspace(props: {
     null,
   );
 
-  const setSub = useCallback(
-    (id: string) => {
-      const next = new URLSearchParams(params);
-      next.set('tab', 'ssh');
-      next.set('ssh', id);
-      setParams(next, { replace: true });
-    },
-    [params, setParams],
-  );
+  const onFlash = useCallback((tone: 'ok' | 'error', text: string) => {
+    setFlash({ tone, text });
+    if (tone === 'ok') toast.ok(text);
+    else toast.error(text);
+  }, []);
 
   const refreshCounts = useCallback(async () => {
     try {
@@ -191,21 +193,21 @@ export function SshWorkspace(props: {
       >
         {sub === 'outbound' ? (
           <OutboundIdentities
-            onFlash={(tone, text) => setFlash({ tone, text })}
+            onFlash={onFlash}
             onChanged={() => void refreshCounts()}
           />
         ) : null}
         {sub === 'login' ? (
           <LoginKeysPanel
-            onFlash={(tone, text) => setFlash({ tone, text })}
+            onFlash={onFlash}
             onChanged={() => void refreshCounts()}
           />
         ) : null}
         {sub === '2fa' ? (
-          <Ssh2faPanel onFlash={(tone, text) => setFlash({ tone, text })} />
+          <Ssh2faPanel onFlash={onFlash} />
         ) : null}
         {sub === 'sshd' ? (
-          <SshdPanel onFlash={(tone, text) => setFlash({ tone, text })} />
+          <SshdPanel onFlash={onFlash} />
         ) : null}
       </PageTabs>
     </div>

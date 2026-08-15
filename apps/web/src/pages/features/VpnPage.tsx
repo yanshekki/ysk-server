@@ -26,7 +26,7 @@ import {
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
-import { notifyOk, notifyWarn } from '../../shared/lib/notify';
+import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
 import {
   vpnApi,
   type VpnClientProfile,
@@ -317,7 +317,9 @@ export function VpnPage() {
       await load();
       return r;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+      const msg = e instanceof Error ? e.message : t('common.loadFailed');
+      setError(msg);
+      notifyError(msg);
       return null;
     } finally {
       setBusy(false);
@@ -412,6 +414,16 @@ export function VpnPage() {
     <div className="stack vpn-tab-section">
       {engine === 'outline' ? (
         <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
+      ) : null}
+      {status && !engSt?.installed ? (
+        <Alert variant="warn">{t('vpn.engineNotInstalled', { defaultValue: 'This VPN engine is not installed on the host.' })}</Alert>
+      ) : status && !engSt?.serverActive ? (
+        <Alert variant="warn">
+          {t('vpn.serverNotListening', {
+            defaultValue: 'Server unit is not active. UDP/TCP {{port}} may be closed.',
+            port: listenPort,
+          })}
+        </Alert>
       ) : null}
 
       <section className="stack vpn-server-settings" aria-label={t('vpn.serverSettings')}>

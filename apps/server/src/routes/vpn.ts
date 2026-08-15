@@ -182,7 +182,11 @@ export async function handleVpnRoutes(
       return true;
     }
 
-    if (method === 'POST' && url.pathname === '/api/v1/vpn/server/clients') {
+    if (
+      method === 'POST' &&
+      (url.pathname === '/api/v1/vpn/server/clients' ||
+        url.pathname === '/api/v1/vpn/wireguard/peers')
+    ) {
       const raw = await readBody(req);
       const data = JSON.parse(raw || '{}') as { name?: string; engine?: string };
       if (!data.name?.trim()) {

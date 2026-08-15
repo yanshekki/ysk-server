@@ -97,15 +97,22 @@ export async function collectFromDataTransfer(
 /** Flat file list (no directory tree metadata). */
 export function collectFromFileList(list: FileList | File[]): CollectedUpload[] {
   return Array.from(list).map((file) => {
-    // webkitRelativePath when using input[webkitdirectory]
-    const rel =
-      (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
-      file.name;
-    const parts = rel.replace(/\\/g, '/').split('/').filter(Boolean);
-    const folderLabel = parts.length > 1 ? parts[0]! : '';
+    const webkit = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+    // Folder-picker / directory drop keeps the relative tree.
+    if (webkit && webkit.includes('/')) {
+      const parts = webkit.replace(/\\/g, '/').split('/').filter(Boolean);
+      return {
+        relativePath: parts.join('/'),
+        folderLabel: parts[0] ?? '',
+        kind: 'file' as const,
+        file,
+      };
+    }
+    // Single file: a slash in the file name must not become a directory.
+    const leaf = file.name.replace(/\\/g, '/').split('/').filter(Boolean).pop() || 'file';
     return {
-      relativePath: parts.join('/'),
-      folderLabel,
+      relativePath: leaf,
+      folderLabel: '',
       kind: 'file' as const,
       file,
     };

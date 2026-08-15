@@ -56,6 +56,7 @@ function formatPorts(ports: Array<{ port: string; proto?: string }> | undefined)
 
 export function FirewallServicesPanel(props: {
   canEdit: boolean;
+  ufwActive?: boolean;
   onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -63,6 +64,7 @@ export function FirewallServicesPanel(props: {
   const focusService = searchParams.get('service')?.trim() || '';
 
   const [items, setItems] = useState<ExposureItem[]>([]);
+  const [installedMap, setInstalledMap] = useState<Record<string, boolean>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [q, setQ] = useState(focusService);
   const [busy, setBusy] = useState(false);
@@ -83,7 +85,10 @@ export function FirewallServicesPanel(props: {
   const refresh = useCallback(async () => {
     setLoadError(null);
     try {
-      const r = await systemApi.serviceExposureList();
+      const [r, matrix] = await Promise.all([
+        systemApi.serviceExposureList(),
+        systemApi.servicesMatrix().catch(() => ({ items: [] as Array<{ id: string; installed?: boolean }> })),
+      ]);
       const list = (r.items ?? []) as ExposureItem[];
       setItems(
         list.map((it) => ({
@@ -91,6 +96,11 @@ export function FirewallServicesPanel(props: {
           serviceId: String(it.serviceId || it.desired?.serviceId || ''),
         })),
       );
+      const map: Record<string, boolean> = {};
+      for (const row of matrix.items ?? []) {
+        if (row.id) map[row.id] = Boolean(row.installed);
+      }
+      setInstalledMap(map);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -189,6 +199,9 @@ export function FirewallServicesPanel(props: {
           <h3 className="def-section-head__title">{t('firewall.servicesTitle')}</h3>
           <span className="muted u-text-sm">{t('firewall.servicesHint')}</span>
         </div>
+        {props.ufwActive === false ? (
+          <Alert variant="warn">{t('firewall.servicesUfwOff')}</Alert>
+        ) : null}
         {loadError ? <Alert variant="error">{loadError}</Alert> : null}
         <DataTable
           filters={
@@ -208,13 +221,26 @@ export function FirewallServicesPanel(props: {
               key: 'service',
               header: t('firewall.colService'),
               nowrap: true,
-              render: (r) => <code className="inline">{r.serviceId}</code>,
+              render: (r) => (
+                <span>
+                  <code className="inline">{r.serviceId}</code>
+                  {installedMap[r.serviceId] === false ? (
+                    <>
+                      {' '}
+                      <Badge tone="danger">{t('common.notInstalled')}</Badge>
+                    </>
+                  ) : null}
+                </span>
+              ),
             },
             {
               key: 'mode',
               header: t('firewall.colMode'),
               nowrap: true,
               render: (r) => {
+                if (installedMap[r.serviceId] === false) {
+                  return <Badge tone="neutral">{t('common.notInstalled')}</Badge>;
+                }
                 const m = r.desired?.mode ?? r.defaultMode ?? 'private';
                 const label =
                   m === 'private'

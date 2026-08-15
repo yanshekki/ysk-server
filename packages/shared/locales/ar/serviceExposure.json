@@ -33,5 +33,6 @@
   "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
   "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
   "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox"
+  "roleImap": "IMAP / POP3 mailbox",
+  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
 }

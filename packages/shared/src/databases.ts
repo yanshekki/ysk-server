@@ -57,6 +57,8 @@ export interface DbEngineStatusDto {
   datadirEmpty?: boolean;
   /** Generic health findings (sqlEngineHealth.finding.*) for mass-market repair UI */
   healthFindings?: Array<{ id: string; severity: string; messageKey: string }>;
+  /** Live `SHOW DATABASES` names (system schemas omitted). Empty if unprobed. */
+  hostDatabases?: string[];
 }
 
 export type DbEngineStatus = DbEngineStatusDto;

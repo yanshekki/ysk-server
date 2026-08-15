@@ -2635,7 +2635,9 @@
     "selfVerifyFail": "Le fichier de version ne contient pas {{v0}} après application",
     "selfDownloadFail": "Impossible de télécharger ou extraire le paquet officiel {{v0}} : {{v1}}",
     "selfOverlayFail": "Impossible d'appliquer le paquet officiel au répertoire en cours : {{v0}}",
-    "selfUpgradeHint": "Échec de l'application du panneau. En root : curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfUpgradeHint": "Échec de l'application du panneau. En root : curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+    "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+    "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
   },
   "tpl": {
     "deleted": "Supprimé {{name}}",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "Profil client supprimé",
     "sessionStartCwd": "Échec du démarrage de VNC : répertoire de travail non accessible à l'utilisateur de la session (affichage :{{display}}). Corrigé en démarrant depuis HOME.",
     "desktopRestarted": "Profil de bureau appliqué et session redémarrée ({{desktop}}). Reconnectez VNC/noVNC.",
-    "desktopNeedsStart": "Profil de bureau {{desktop}} écrit sur xstartup. Démarrez la session pour postuler."
+    "desktopNeedsStart": "Profil de bureau {{desktop}} écrit sur xstartup. Démarrez la session pour postuler.",
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
   },
   "apache": {
     "needServerName": "Nom du serveur requis",

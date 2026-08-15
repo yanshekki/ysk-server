@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyLimit,
   cliLocale,
   cliPositionals,
   getOpt,
@@ -86,6 +87,18 @@ describe('resolveCliDataDir', () => {
   });
 });
 
+describe('files shares create', () => {
+  it(
+    'without --path exits 2 and does not list',
+    async () => {
+      const { main } = await import('./cli.js');
+      const code = await main(['node', 'cli', 'files', 'shares', 'create']);
+      expect(code).toBe(2);
+    },
+    20_000,
+  );
+});
+
 describe('main --help is a no-op', () => {
   it(
     'projects and store export --help exit 0 without a store',
@@ -96,6 +109,26 @@ describe('main --help is a no-op', () => {
     },
     20_000,
   );
+});
+
+describe('applyLimit', () => {
+  it('returns the full list when --limit is omitted', () => {
+    const r = applyLimit([1, 2, 3, 4], []);
+    expect(r.items).toEqual([1, 2, 3, 4]);
+    expect(r.meta.limit).toBeNull();
+  });
+
+  it('slices with --limit and --offset', () => {
+    const r = applyLimit(['a', 'b', 'c', 'd'], ['--limit', '2', '--offset', '1']);
+    expect(r.items).toEqual(['b', 'c']);
+    expect(r.meta).toEqual({ total: 4, shown: 2, offset: 1, limit: 2 });
+  });
+
+  it('accepts --limit=N', () => {
+    const r = applyLimit(['a', 'b', 'c'], ['--limit=1']);
+    expect(r.items).toEqual(['a']);
+    expect(r.meta).toEqual({ total: 3, shown: 1, offset: 0, limit: 1 });
+  });
 });
 
 describe('hasFlag', () => {

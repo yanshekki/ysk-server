@@ -105,6 +105,7 @@
   "copyAllRecords": "复制全部纪录",
   "openDnsPage": "开启 DNS 页",
   "healthScore": "健康分",
+  "healthUnchecked": "尚未檢查",
   "suggestedRecords": "建议纪录数",
   "externalTodosCount": "外部待办",
   "colType": "类型",

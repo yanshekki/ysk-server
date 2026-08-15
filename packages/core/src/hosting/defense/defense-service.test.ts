@@ -162,9 +162,8 @@ describe('defense-service honesty', () => {
     });
     expect(blocked.ok).toBe(false);
     expect(blocked.blocked).toBe(true);
-    // panel ban intent still recorded
     const bans = await listDefenseBans({ host, db });
-    expect(bans.items.some((b) => b.ip === '203.0.113.51' && b.source === 'panel')).toBe(true);
+    expect(bans.items.some((b) => b.ip === '203.0.113.51')).toBe(false);
   });
 
   it('defenseUnbanIp dry-run and blocked without execute', async () => {

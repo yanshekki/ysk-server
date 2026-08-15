@@ -2635,7 +2635,9 @@
     "selfVerifyFail": "적용 후 버전 파일에 {{v0}}이(가) 없습니다",
     "selfDownloadFail": "공식 패키지 {{v0}}을(를) 다운로드하거나 압축을 풀 수 없습니다: {{v1}}",
     "selfOverlayFail": "공식 패키지를 실행 중인 디렉터리에 적용하지 못했습니다: {{v0}}",
-    "selfUpgradeHint": "패널 적용에 실패했습니다. root로 실행: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfUpgradeHint": "패널 적용에 실패했습니다. root로 실행: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+    "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+    "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
   },
   "tpl": {
     "deleted": "삭제됨 {{name}}",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "고객 프로필이 삭제되었습니다.",
     "sessionStartCwd": "VNC 시작 실패: 세션 사용자가 작업 디렉터리에 액세스할 수 없습니다(표시 :{{display}}). HOME에서 시작하여 수정되었습니다.",
     "desktopRestarted": "데스크톱 프로필이 적용되고 세션이 다시 시작되었습니다({{desktop}}). VNC/noVNC를 다시 연결합니다.",
-    "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요."
+    "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요.",
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
   },
   "apache": {
     "needServerName": "서버 이름이 필요합니다",

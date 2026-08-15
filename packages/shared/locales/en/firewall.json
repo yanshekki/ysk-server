@@ -90,6 +90,7 @@
   "deleteRuleDesc": "Removes that UFW rule number (needs system-change permission).",
   "servicesTitle": "Managed services",
   "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
   "servicesEmpty": "No service exposure data yet",
   "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
   "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",

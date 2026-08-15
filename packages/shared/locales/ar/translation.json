@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}} تم الانتهاء من الإصلاح",
     "startAfterUnfreeze": "بدء الخدمة (تشغيل خطة الإصلاح تلقائيًا عند الفشل)",
     "serviceDownTitle": "خدمة قاعدة البيانات معطلة",
-    "serviceDownBody": "الخدمة غير صحية"
+    "serviceDownBody": "الخدمة غير صحية",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "يتأكد",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "برمجة",
     "aboutStackBody": "قم بفحص/تحديث حزمة PowerDNS ضمن البرنامج.",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "بريد إلكتروني",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "مؤجل",
     "deleteQueueTitle": "حذف هذه الرسالة من الطابور؟",
     "deleteQueueDesc": "إزالة {{id}} من طابور MTA المحلي. يحتاج YSK_EXECUTE.",
-    "openQueuePage": "فتح طابور البريد"
+    "openQueuePage": "فتح طابور البريد",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غير مصرح به",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "تعطيل UFW؟",
     "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
     "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW.",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "حسابات اف تي بي اس",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "ملف الإصدار لا يحتوي على {{v0}} بعد التطبيق",
       "selfDownloadFail": "تعذر تنزيل أو فك الحزمة الرسمية {{v0}}: {{v1}}",
       "selfOverlayFail": "تعذر تطبيق الحزمة الرسمية على المجلد قيد التشغيل: {{v0}}",
-      "selfUpgradeHint": "فشل تطبيق اللوحة. نفّذ كـ root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "فشل تطبيق اللوحة. نفّذ كـ root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "محذوفة {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "تم حذف ملف تعريف العميل",
       "sessionStartCwd": "فشل بدء VNC: لا يمكن لمستخدم الجلسة الوصول إلى دليل العمل (العرض: {{display}}). تم إصلاحه عن طريق البدء من المنزل.",
       "desktopRestarted": "تم تطبيق ملف تعريف سطح المكتب وإعادة تشغيل الجلسة ({{desktop}}). أعد توصيل VNC/noVNC.",
-      "desktopNeedsStart": "ملف تعريف سطح المكتب {{desktop}} مكتوب على xstartup. ابدأ الجلسة للتقديم."
+      "desktopNeedsStart": "ملف تعريف سطح المكتب {{desktop}} مكتوب على xstartup. ابدأ الجلسة للتقديم.",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "اسم الخادم مطلوب",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "الأذونات",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "مفاتيح واجهة برمجة التطبيقات",
     "tabSsh": "SSH",
     "tabApprovals": "الموافقات",
-    "tabAllowlist": "القائمة المسموح بها",
+    "tabAllowlist": "أدوات الوكيل",
     "apiTokenOnce": "رمز واجهة برمجة التطبيقات (يظهر مرة واحدة):",
     "copiedToken": "تم نسخ الرمز المميز",
     "totpTitle": "عامل ثنائي (TOTP)",
@@ -10127,8 +10138,8 @@
     "apiKeysEmpty": "لا توجد مفاتيح API حتى الآن",
     "apiKeysEmptyHint": "إنشاء من شريط الأدوات. ثم اتصل بواجهة برمجة التطبيقات باستخدام الرمز المميز لحاملها",
     "approve": "يعتمد",
-    "allowlistTitle": "القائمة المسموح بها ({{count}})",
-    "allowlistEmpty": "لا توجد أدوات القائمة المسموح بها",
+    "allowlistTitle": "أدوات الوكيل ({{count}})",
+    "allowlistEmpty": "لا توجد أدوات في الكتالوج",
     "createApiKeyTitle": "إنشاء مفتاح API",
     "createApiKeyDesc": "يتم عرض الرمز المميز الكامل مرة واحدة فقط بعد الإنشاء",
     "createKeyBtn": "إنشاء مفتاح",
@@ -10371,9 +10382,11 @@
       "sharePanelDesc": "مخاطر عالية. اكتب مشترك للتأكيد.",
       "confirmString": "سلسلة التأكيد",
       "enableShare": "تمكين المشاركة",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "الصق سطر مفتاح OpenSSH العام كاملًا (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "انتهت المعاينة. راجع المحتوى أدناه.",
+      "strictBlocked": "الحزمة أو PAM غير جاهزة؛ لا يمكن تطبيق Strict.",
+      "strictDryRun": "معاينة الوضع الصارم",
+      "errorNoDetail": "فشل الاختبار (بدون تفاصيل)"
     },
     "sessionsActive": "جلسات نشطة",
     "sessionsOther": "أجهزة أخرى",
@@ -10398,36 +10411,37 @@
     "mySecurityHint": "",
     "policyTotpHint": "سياسة الموقع: يجب على كل مسؤول تمكين المصادقة الثنائية الخاصة به (QR الفردي)",
     "requireUser2fa": "إلزام كل مستخدمي اللوحة بـ 2FA",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "إنشاء مقاطع fail2ban",
+    "changePasswordTitle": "تغيير كلمة مرور تسجيل الدخول",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "passwordMismatch": "كلمتا المرور الجديدتان غير متطابقتين.",
+    "changePassword": "تغيير كلمة المرور",
+    "passwordChanged": "تم تحديث كلمة المرور.",
+    "strictNeedsEnrolled": "يجب أن يملك أحد المسؤولين تحققًا بخطوتين قبل تشغيل Strict.",
+    "policyTotpNeedSelf": "فعّل التحقق بخطوتين لهذا الحساب أولًا؛ وإلا لا يمكن إدخال رمز التأكيد.",
+    "fail2banSnippetTitle": "مقطع fail2ban",
+    "fail2banSnippetEmpty": "لم يُكتب أي مقطع.",
+    "trustedDevicesTitle": "الأجهزة الموثوقة",
+    "noTrustedDevices": "لا توجد أجهزة موثوقة.",
+    "strictConfirmTitle": "تشغيل التحقق الصارم؟",
+    "strictConfirmDesc": "سيُرفض دخول المستخدمين بلا تحقق بخطوتين. تأكد أن لديك TOTP أو Passkey يعمل.",
+    "revokeDevicesTitle": "إلغاء الأجهزة الموثوقة؟",
+    "revokeDevicesDesc": "ستحتاج المتصفحات المحفوظة إلى تحقق بخطوتين مجددًا.",
+    "approvalsHint": "تظهر الموافقات عندما تحتاج أداة عالية المخاطر إلى مشغّل ثانٍ. اضبط الصلاحيات من المستخدمون → الصلاحيات.",
+    "allowlistReadonly": "كتالوج أدوات الوكيل (للقراءة فقط). تُضبط القدرات من المستخدمون → الصلاحيات.",
+    "colTool": "الأداة",
+    "colAllowed": "مسموح",
+    "colRisk": "المخاطر",
+    "colApproval": "الموافقة",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    }
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "مرتفع",
+      "critical": "حرج"
+    },
+    "totpStatusLoadFailed": "تعذّر تحميل حالة التحقق بخطوتين"
   },
   "serviceExposure": {
     "title": "الوصول إلى الشبكة",
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "على التمهيد",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "لم يتم التحقيق فيها بعد",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "برمجة",

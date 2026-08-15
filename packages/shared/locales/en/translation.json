@@ -714,7 +714,7 @@
     },
     "help": {
       "blurb": "Control plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-      "main": "{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+      "main": "{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --limit N --offset N  Slice large JSON lists (software / updates / host metrics / rbac)\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -2337,6 +2337,9 @@
     "emptyDbInstallFirst": "Install {{engine}} via the banner, then Create database",
     "emptyDbCannotProvision": "Cannot create databases on the server right now",
     "emptyDbCreateHint": "Use Create database, then Apply",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
     "userList": "Users",
     "userListDesc": "Grant users access to databases",
     "createUserBtn": "+ Create user",
@@ -2612,6 +2615,8 @@
     "zonesTitle": "Zones ({{count}})",
     "zonesDesc": "After create, write/apply the zone",
     "createZone": "+ Create zone",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone",
     "colZoneName": "Zone name",
     "colServerIp": "Server IP",
     "colTemplate": "Template",
@@ -2903,6 +2908,7 @@
     "copyAllRecords": "Copy all records",
     "openDnsPage": "Open DNS page",
     "healthScore": "Health score",
+    "healthUnchecked": "Not checked yet",
     "suggestedRecords": "Suggested records",
     "externalTodosCount": "External todos",
     "colType": "Type",
@@ -3891,6 +3897,7 @@
     "deleteRuleDesc": "Removes that UFW rule number (needs system-change permission).",
     "servicesTitle": "Managed services",
     "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
     "servicesEmpty": "No service exposure data yet",
     "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
     "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
@@ -6405,7 +6412,7 @@
       "n1120": "domain — map for (systemapplywill postmap )",
       "n1121": "IP",
       "n1122": "Available auto-ban enrich",
-      "n1123": "cannot ban to system: YSK_EXECUTE; to panel ban",
+      "n1123": "Cannot ban on the host: YSK_EXECUTE is off. The panel list was not changed.",
       "n1124": "cannot dump Redis: redis-cli",
       "n1125": "cannot dump: serverHost execute is not enabled",
       "n1126": "cannot fan-out: Host execute is not enabled",
@@ -6893,6 +6900,8 @@
       "n1608": "verifyinvalid",
       "n1609": "passed",
       "n1610": "Package index not refreshed (YSK_EXECUTE off) — showing apt list only; enable execute to run apt-get update",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically.",
       "t0001": "listenPort invalid: {{v0}}",
       "t0002": "restoreversion {{v0}}",
       "t0003": "file (>{{v0}} bytes)",
@@ -7974,6 +7983,7 @@
       "passwordTooShort": "VNC password must be at least 6 characters",
       "passwordWrittenOnly": "Password marked in control plane only (need root + YSK_EXECUTE for vncpasswd)",
       "passwordFailed": "Failed to write VNC password: {{detail}}",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
       "passwordSet": "VNC password set for {{user}}",
       "passwordUpdated": "Password updated for {{name}}",
       "passwordMetaOnly": "Password stored as meta only until system apply",
@@ -9157,7 +9167,8 @@
     "diskRoot": "Disk root",
     "filesInRoot": "Entries",
     "managedConf": "Managed conf",
-    "systemConf": "System conf.d"
+    "systemConf": "System conf.d",
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "Permissions",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "API keys",
     "tabSsh": "SSH",
     "tabApprovals": "Approvals",
-    "tabAllowlist": "Allowlist",
+    "tabAllowlist": "Agent tools",
     "apiTokenOnce": "API token (shown once):",
     "copiedToken": "Token copied",
     "totpTitle": "Two-factor (TOTP)",
@@ -10128,8 +10139,9 @@
     "apiKeysEmpty": "No API keys yet",
     "apiKeysEmptyHint": "Create from the toolbar; then call API with Bearer token",
     "approve": "Approve",
-    "allowlistTitle": "Allowlist ({{count}})",
-    "allowlistEmpty": "No allowlist tools",
+    "allowlistTitle": "Agent tools ({{count}})",
+    "allowlistEmpty": "No agent tools in the catalog",
+    "totpStatusLoadFailed": "Could not load 2FA status",
     "createApiKeyTitle": "Create API key",
     "createApiKeyDesc": "Full token is shown only once after create",
     "createKeyBtn": "Create key",
@@ -10374,6 +10386,8 @@
       "enableShare": "Enable sharing",
       "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
       "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictDryRun": "Strict preview (dry-run)",
+      "errorNoDetail": "Test failed (no details)",
       "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "Active sessions",
@@ -10464,7 +10478,8 @@
     "restrictedNeedSource": "Add at least one IP/CIDR or country code for restricted mode.",
     "privateStartTitle": "Expose {{service}} on the network?",
     "confirmAndStart": "Confirm and start",
-    "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed."
+    "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed.",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "On boot",
@@ -10519,6 +10534,7 @@
     "bootPrefix": "Boot {{state}}",
     "controlPage": "Control page",
     "manageRuntime": "Install / update",
+    "installOrOpen": "Install / open",
     "protectionTitle": "Protection probe",
     "protectionSub": "Read-only; does not change firewall / fail2ban",
     "protectionDoneNote": "Protection probe finished",

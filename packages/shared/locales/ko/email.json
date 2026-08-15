@@ -487,5 +487,6 @@
   "queueDeferred": "지연",
   "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
   "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
-  "openQueuePage": "메일 큐 열기"
+  "openQueuePage": "메일 큐 열기",
+  "healthUnchecked": "Not checked yet"
 }

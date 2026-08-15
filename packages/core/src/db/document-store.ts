@@ -101,8 +101,8 @@ export class ShellSqliteJsonStore extends JsonStore {
     this._sqlitePath = sqlitePath;
   }
 
-  override persist(): void {
-    super.persist();
+  override persist(opts?: { replace?: boolean }): void {
+    super.persist(opts);
     const sqlitePath = this._sqlitePath;
     // super() may invoke persist before _sqlitePath is assigned
     if (!sqlitePath) return;
@@ -183,8 +183,8 @@ export class PostgresJsonStore extends JsonStore {
     this._connectionUrl = url;
   }
 
-  override persist(): void {
-    super.persist();
+  override persist(opts?: { replace?: boolean }): void {
+    super.persist(opts);
     if (!this._connectionUrl) return;
     const body = JSON.stringify(this.snapshot, null, 2);
     const at = new Date().toISOString();
@@ -375,7 +375,7 @@ export function importStoreDocument(
     delete snap[k];
   }
   Object.assign(snap, raw);
-  db.persist();
+  db.persist({ replace: true });
   return {
     ok: true,
     users: Array.isArray(db.snapshot.users) ? db.snapshot.users.length : 0,

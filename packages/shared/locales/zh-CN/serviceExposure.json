@@ -28,6 +28,7 @@
   "privateStartTitle": "要对外开放 {{service}} 吗？",
   "confirmAndStart": "确认并启动",
   "cloudSgNote": "仅主机防火墙 — 不会改云安全组（AWS／GCP／Azure）。",
+  "serviceNotInstalled": "此服務尚未安裝，防火牆規則不會生效。",
   "modeUndecided": "尚未設定",
   "modeLoading": "載入中",
   "summaryUndecided": "尚未確認存取模式（目錄建議：{{suggested}}）。",

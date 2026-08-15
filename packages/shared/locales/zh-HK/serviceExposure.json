@@ -33,5 +33,6 @@
   "restrictedNeedSource": "受限模式請至少加入 IP／網段或國家代碼。",
   "privateStartTitle": "要對外開放 {{service}} 嗎？",
   "confirmAndStart": "確認並啟動",
-  "cloudSgNote": "僅主機防火牆 — 不會改雲安全組（AWS／GCP／Azure）。"
+  "cloudSgNote": "僅主機防火牆 — 不會改雲安全組（AWS／GCP／Azure）。",
+  "serviceNotInstalled": "此服務尚未安裝，防火牆規則不會生效。"
 }

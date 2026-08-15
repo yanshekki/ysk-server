@@ -8,6 +8,10 @@ export interface EmailDomainDto {
   domain: string;
   health_score: number;
   server_ip: string;
+  /** Cached live probe — false/null means not checked (score 10/100 is then a stub). */
+  dns_applied?: boolean;
+  ptr_ok?: boolean;
+  port25_open?: boolean | null;
   apply_status?: string;
   last_apply?: Record<string, unknown>;
   /** Control-plane suspend flag — not live MTA reject unless system-applied */

@@ -45,7 +45,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Runtimes | `/runtimes/kotlin` | Kotlin | J |
 | Runtimes | `/runtimes/bun` | Bun | J |
 | Security | `/protection` | Host defense (UFW / fail2ban) | M |
-| Security | `/security` | Allowlist / approvals | R |
+| Security | `/security` | Account 2FA · API keys · SSH · approvals · agent tools | R |
 | Security | `/vpn` | VPN | |
 | Security | `/vnc` | VNC | |
 | System | `/users` | Users & packages | T |
@@ -265,9 +265,9 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 ### `/security`
 
-| Actions |
-|---------|
-| List tools · run sys.info · approve/deny pending · (API keys P0) |
+| Tabs | Actions |
+|------|---------|
+| My security · API keys · SSH · Approvals · Agent tools · About | Enable TOTP · change password · passkeys · sessions · SSH identities / login keys / sshd · approve pending · read-only agent-tool catalog (`?tab=allowlist` still opens Agent tools) |
 
 ---
 

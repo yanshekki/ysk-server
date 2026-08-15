@@ -93,6 +93,9 @@ export async function installSshIdentity(input: {
   const requiresExecute = true;
   if (!input.executeEnabled) {
     notes.push(tl('notes.auto.n0003'));
+    const identity = updateSshIdentityRecord(input.dataDir, row.id, {
+      lastVerifyNote: notes[notes.length - 1],
+    });
     return {
       ok: false,
       dryRun: false,
@@ -102,6 +105,7 @@ export async function installSshIdentity(input: {
       requiresExecute,
       plannedPath: paths.privatePath,
       plannedPublicPath: paths.publicPath,
+      identity: identity ?? undefined,
       notes };
   }
 
@@ -111,6 +115,9 @@ export async function installSshIdentity(input: {
     privateKey = decryptPrivateKey(master.key, row.id, row.privateKeyEnc);
   } catch (e) {
     notes.push(e instanceof Error ? e.message : 'decrypt failed');
+    const identity = updateSshIdentityRecord(input.dataDir, row.id, {
+      lastVerifyNote: notes[notes.length - 1],
+    });
     return {
       ok: false,
       dryRun: false,
@@ -118,6 +125,7 @@ export async function installSshIdentity(input: {
       blocked: false,
       requiresRoot,
       requiresExecute,
+      identity: identity ?? undefined,
       notes };
   }
 
@@ -141,6 +149,9 @@ export async function installSshIdentity(input: {
     }
   } catch (e) {
     notes.push(`write failed: ${e instanceof Error ? e.message : String(e)}`);
+    const identity = updateSshIdentityRecord(input.dataDir, row.id, {
+      lastVerifyNote: notes[notes.length - 1],
+    });
     return {
       ok: false,
       dryRun: false,
@@ -150,6 +161,7 @@ export async function installSshIdentity(input: {
       requiresExecute,
       plannedPath: paths.privatePath,
       plannedPublicPath: paths.publicPath,
+      identity: identity ?? undefined,
       notes };
   }
 

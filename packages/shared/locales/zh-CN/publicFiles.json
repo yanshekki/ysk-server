@@ -32,5 +32,6 @@
   "notes": {
     "noManagedConf": "No managed Nginx conf yet — click Apply",
     "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-  }
+  },
+  "autoindex": "目录列表（autoindex）"
 }

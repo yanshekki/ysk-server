@@ -21,6 +21,10 @@ import {
 import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
+import {
+  normalizeFtpPasswordFields,
+  redactResourceSecrets,
+} from '../routes/resources-shared.js';
 
 function needExecute(
   h: CliHelpers,
@@ -194,13 +198,20 @@ export async function runFtpCommand(
           return 2;
         }
       }
-      const row = createResource(ctx.db, 'ftp_accounts', {
-        username: username.trim(),
-        password_plain: password,
-        homePath: homePath ?? undefined,
-        domain: h.getOpt(args, '--domain') ?? undefined,
+      const row = createResource(
+        ctx.db,
+        'ftp_accounts',
+        normalizeFtpPasswordFields({
+          username: username.trim(),
+          password_plain: password,
+          homePath: homePath ?? undefined,
+          domain: h.getOpt(args, '--domain') ?? undefined,
+        }),
+      );
+      h.printJson({
+        ok: true,
+        item: redactResourceSecrets('ftp_accounts', row as Record<string, unknown>),
       });
-      h.printJson({ ok: true, item: row });
       return 0;
     }
 
@@ -225,12 +236,20 @@ export async function runFtpCommand(
       }
       if (h.getOpt(args, '--domain') != null) patch.domain = h.getOpt(args, '--domain');
       if (h.getOpt(args, '--username') != null) patch.username = h.getOpt(args, '--username');
-      const item = updateResource(ctx.db, 'ftp_accounts', id.trim(), patch);
+      const item = updateResource(
+        ctx.db,
+        'ftp_accounts',
+        id.trim(),
+        normalizeFtpPasswordFields(patch),
+      );
       if (!item) {
         h.printJson({ ok: false, notes: ['account not found'] });
         return 4;
       }
-      h.printJson({ ok: true, item });
+      h.printJson({
+        ok: true,
+        item: redactResourceSecrets('ftp_accounts', item as Record<string, unknown>),
+      });
       return 0;
     }
 

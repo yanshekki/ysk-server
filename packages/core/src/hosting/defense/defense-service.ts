@@ -149,6 +149,21 @@ export async function getDefenseStatus(input: {
     /* ignore */
   }
 
+  const liveBans: BanEntry[] = sig.bans.map((b) => ({ ...b, enforced: true }));
+  try {
+    const { probeFirewallDeep } = await import('../firewall-ops.js');
+    const fw = await probeFirewallDeep(input.host);
+    if (fw.active === 'active') {
+      for (const ip of fw.denyFromIps) {
+        if (!liveBans.some((b) => b.ip === ip)) {
+          liveBans.push({ ip, source: 'ufw', enforced: true });
+        }
+      }
+    }
+  } catch {
+    /* optional */
+  }
+
   const exec = input.host.executeEnabled();
   const root = input.host.isRoot();
   const fwLabel = humanizeFirewall(sig.firewall.active, sig.firewall.installed, root);
@@ -179,7 +194,10 @@ export async function getDefenseStatus(input: {
       short: p.short,
       bullets: p.bullets,
       danger: p.danger })),
-    bans: { count: sig.bans.length, items: sig.bans.slice(0, 50) },
+    bans: {
+      count: new Set(liveBans.map((b) => b.ip)).size,
+      items: liveBans.slice(0, 50),
+    },
     nginxLimits: {
       ...preset.nginx,
       confPath: ngx.confPath,
@@ -413,8 +431,6 @@ export async function defenseBanIp(input: {
   }
   const notes: string[] = [];
   if (!input.host.executeEnabled()) {
-    // still record panel ban intent
-    recordPanelBan(input.db, ip, input.reason);
     return {
       ok: false,
       blocked: true,
@@ -422,6 +438,7 @@ export async function defenseBanIp(input: {
       notes: [tl('notes.auto.n1123')] };
   }
   let ok = true;
+  let hostApplied = false;
   if (method === 'fail2ban' || method === 'both') {
     const r = await input.host.runCommand(
       ['fail2ban-client', 'set', jail, 'banip', ip],
@@ -429,23 +446,33 @@ export async function defenseBanIp(input: {
     );
     const banOk = r.exitCode === 0;
     ok = ok && banOk;
+    hostApplied = hostApplied || banOk;
     notes.push(banOk ? `fail2ban ban ${ip} @ ${jail}` : tl('notes.auto.t0553', { v0: (r.stderr || r.stdout) }));
   }
   if (method === 'ufw' || method === 'both') {
-    const r = await input.host.runCommand(
-      ['ufw', 'deny', 'from', ip],
-      { timeoutMs: 10_000 },
-    );
-    const uOk = r.exitCode === 0;
-    ok = ok && uOk;
-    notes.push(uOk ? `ufw deny from ${ip}` : tl('notes.auto.t0554', { v0: (r.stderr || r.stdout) }));
+    const { probeFirewallDeep } = await import('../firewall-ops.js');
+    const fw = await probeFirewallDeep(input.host);
+    if (fw.active !== 'active') {
+      ok = false;
+      notes.push(tl('notes.auto.n1612'));
+    } else {
+      const r = await input.host.runCommand(
+        ['ufw', 'deny', 'from', ip],
+        { timeoutMs: 10_000 },
+      );
+      const uOk = r.exitCode === 0;
+      ok = ok && uOk;
+      hostApplied = hostApplied || uOk;
+      notes.push(uOk ? `ufw deny from ${ip}` : tl('notes.auto.t0554', { v0: (r.stderr || r.stdout) }));
+    }
   }
-  recordPanelBan(input.db, ip, input.reason);
-  pushTimeline(input.db, {
-    at: new Date().toISOString(),
-    kind: 'ban',
-    title: tl('notes.auto.t0555', { v0: (ip) }),
-    detail: input.reason });
+  if (hostApplied) {
+    pushTimeline(input.db, {
+      at: new Date().toISOString(),
+      kind: 'ban',
+      title: tl('notes.auto.t0555', { v0: (ip) }),
+      detail: input.reason });
+  }
   return { ok, notes, plan };
 }
 
@@ -522,25 +549,6 @@ export async function defenseUnbanIp(input: {
   return { ok, notes };
 }
 
-function recordPanelBan(db: JsonStore, ip: string, reason?: string): void {
-  const key = 'defense_panel_bans';
-  let list: BanEntry[] = [];
-  try {
-    const raw = db.snapshot.settings?.[key];
-    if (raw) list = JSON.parse(raw) as BanEntry[];
-  } catch {
-    list = [];
-  }
-  list = list.filter((b) => b.ip !== ip);
-  list.unshift({
-    ip,
-    source: 'panel',
-    reason,
-    at: new Date().toISOString() });
-  db.snapshot.settings[key] = JSON.stringify(list.slice(0, 500));
-  db.persist();
-}
-
 export async function listDefenseBans(input: {
   host: HostExecutor;
   db: JsonStore;
@@ -553,17 +561,33 @@ export async function listDefenseBans(input: {
       ...(f.items ?? []).map((b) => ({
         ip: b.ip,
         source: 'fail2ban' as const,
-        jail: b.jail })),
+        jail: b.jail,
+        enforced: true,
+      })),
     );
   } catch {
     notes.push(tl('notes.auto.n1439'));
+  }
+  try {
+    const { probeFirewallDeep } = await import('../firewall-ops.js');
+    const fw = await probeFirewallDeep(input.host);
+    if (fw.active === 'active') {
+      for (const ip of fw.denyFromIps) {
+        if (!items.some((x) => x.ip === ip)) {
+          items.push({ ip, source: 'ufw', enforced: true });
+        }
+      }
+    }
+  } catch {
+    /* optional */
   }
   try {
     const raw = input.db.snapshot.settings?.defense_panel_bans;
     if (raw) {
       const panel = JSON.parse(raw) as BanEntry[];
       for (const b of panel) {
-        if (!items.some((x) => x.ip === b.ip && x.source === 'panel')) items.push(b);
+        if (items.some((x) => x.ip === b.ip)) continue;
+        items.push({ ...b, source: 'panel', enforced: false });
       }
     }
   } catch {

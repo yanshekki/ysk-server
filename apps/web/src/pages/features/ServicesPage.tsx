@@ -361,7 +361,18 @@ export function ServicesPage() {
                           </div>
                         </div>
                         <div className="ops-svc__actions">
-                          {row.active === 'tool' || row.unit === '—' || !row.unit ? (
+                          {!row.installed ? (
+                            row.href ? (
+                              <Link
+                                to={row.href}
+                                className={buttonClassName({ variant: 'primary', size: 'sm' })}
+                              >
+                                {t('services.installOrOpen')}
+                              </Link>
+                            ) : (
+                              <Badge tone="danger">{t('common.notInstalled')}</Badge>
+                            )
+                          ) : row.active === 'tool' || row.unit === '—' || !row.unit ? (
                             row.href ? (
                               <Link
                                 to={row.href}

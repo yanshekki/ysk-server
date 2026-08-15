@@ -487,5 +487,6 @@
   "queueDeferred": "Diferido",
   "deleteQueueTitle": "¿Eliminar este mensaje de la cola?",
   "deleteQueueDesc": "Quitar {{id}} de la cola MTA local. Requiere YSK_EXECUTE.",
-  "openQueuePage": "Abrir cola de correo"
+  "openQueuePage": "Abrir cola de correo",
+  "healthUnchecked": "Not checked yet"
 }

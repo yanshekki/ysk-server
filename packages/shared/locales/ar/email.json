@@ -487,5 +487,6 @@
   "queueDeferred": "مؤجل",
   "deleteQueueTitle": "حذف هذه الرسالة من الطابور؟",
   "deleteQueueDesc": "إزالة {{id}} من طابور MTA المحلي. يحتاج YSK_EXECUTE.",
-  "openQueuePage": "فتح طابور البريد"
+  "openQueuePage": "فتح طابور البريد",
+  "healthUnchecked": "Not checked yet"
 }

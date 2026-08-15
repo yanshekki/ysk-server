@@ -11,11 +11,12 @@
 | 旗標／環境變數 | 含義 |
 |----------------|------|
 | `--json` | 標準輸出結構化 JSON（AI 優先） |
-| `--data-dir PATH` | 控制平面資料目錄 |
+| `--data-dir PATH` | 控制平面資料目錄（亦支援 `--data-dir=PATH`、`YSK_DATA_DIR`）。root 且該目錄有 `ysk.json` 時預設 `/var/lib/ysk-server` |
 | `--config PATH` | setup 產生的 `config.json` |
-| `--locale CODE` | `zh-HK` · `zh-CN` · `en` 以及第二層（`ja` `ko` `es` `fr` `pt` `id` `hi` `bn` `ar` `ur`；亦可用 `YSK_LOCALE`／`LANG`） |
+| `--locale CODE` | 只翻譯說明文字（預設 **en**，不跟隨 `LANG`）。亦可用 `YSK_LOCALE`。代碼：`en` `zh-HK` `zh-CN` `ja` `ko` `hi` `es` `ar` `fr` `bn` `pt` `id` `ur`。指令與旗標一律英文 |
+| `--limit N`／`--offset N` | 截取大型 JSON 列表（`software list`、`updates inventory`、`host metrics`、`rbac audit`） |
 | `--execute`／`--apply` | 嘗試真實主機變更 |
-| `--help`／`--version` | 說明／版本 |
+| `--help`／`--version` | 說明／版本（`--help` 不會執行該命令） |
 
 未加 `--execute` 時，主機變更類命令維持 **dry-run**。真實套用仍需 `YSK_EXECUTE=1`（常需 root）。
 

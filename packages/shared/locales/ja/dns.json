@@ -214,5 +214,7 @@
   "aboutStackTitle": "ソフトウェア",
   "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。",
   "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+  "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+  "createMailZone": "Create mail zone"
 }

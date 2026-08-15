@@ -487,5 +487,6 @@
   "queueDeferred": "Tertunda",
   "deleteQueueTitle": "Hapus pesan antrean ini?",
   "deleteQueueDesc": "Hapus {{id}} dari antrean MTA lokal. Perlu YSK_EXECUTE.",
-  "openQueuePage": "Buka antrean surat"
+  "openQueuePage": "Buka antrean surat",
+  "healthUnchecked": "Not checked yet"
 }

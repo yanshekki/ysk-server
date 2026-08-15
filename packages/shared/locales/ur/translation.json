@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}} مرمت مکمل",
     "startAfterUnfreeze": "سروس شروع کریں (ناکامی پر مرمت کا منصوبہ خود کار طریقے سے چلتا ہے)",
     "serviceDownTitle": "ڈیٹا بیس سروس بند ہے۔",
-    "serviceDownBody": "سروس غیر صحت بخش ہے۔"
+    "serviceDownBody": "سروس غیر صحت بخش ہے۔",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "تصدیق کریں۔",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "سافٹ ویئر",
     "aboutStackBody": "سافٹ ویئر کے تحت PowerDNS پیکیج کو چیک/اپ ڈیٹ کریں۔",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "ای میل",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "ملتوی",
     "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
     "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
-    "openQueuePage": "میل قطار کھولیں"
+    "openQueuePage": "میل قطار کھولیں",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "UFW غیر فعال کریں؟",
     "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
     "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "FTPS اکاؤنٹس",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "لاگو کرنے کے بعد ورژن فائل میں {{v0}} نہیں ہے",
       "selfDownloadFail": "سرکاری پیکج {{v0}} ڈاؤن لوڈ یا کھول نہیں سکے: {{v1}}",
       "selfOverlayFail": "سرکاری پیکج چلتی ہوئی ڈائریکٹری پر لاگو نہیں ہو سکا: {{v0}}",
-      "selfUpgradeHint": "پینل لاگو کرنا ناکام۔ root سے چلائیں: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "پینل لاگو کرنا ناکام۔ root سے چلائیں: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "حذف شدہ {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "کلائنٹ کا پروفائل حذف کر دیا گیا۔",
       "sessionStartCwd": "VNC شروع ناکام: ورکنگ ڈائرکٹری سیشن صارف کے لیے قابل رسائی نہیں ہے (ڈسپلے :{{display}})۔ گھر سے شروع کرکے طے کیا گیا۔",
       "desktopRestarted": "ڈیسک ٹاپ پروفائل لاگو ہوا اور سیشن دوبارہ شروع ہوا ({{desktop}})۔ VNC/noVNC کو دوبارہ جوڑیں۔",
-      "desktopNeedsStart": "ڈیسک ٹاپ پروفائل {{desktop}} xstartup پر لکھا گیا۔ درخواست دینے کے لیے سیشن شروع کریں۔"
+      "desktopNeedsStart": "ڈیسک ٹاپ پروفائل {{desktop}} xstartup پر لکھا گیا۔ درخواست دینے کے لیے سیشن شروع کریں۔",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "سرور کا نام درکار ہے۔",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "اجازتیں",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "API کیز",
     "tabSsh": "SSH",
     "tabApprovals": "منظوری",
-    "tabAllowlist": "اجازت کی فہرست",
+    "tabAllowlist": "ایجنٹ ٹولز",
     "apiTokenOnce": "API ٹوکن (ایک بار دکھایا گیا):",
     "copiedToken": "ٹوکن کاپی ہو گیا۔",
     "totpTitle": "دو عنصر (TOTP)",
@@ -10127,8 +10138,8 @@
     "apiKeysEmpty": "ابھی تک کوئی API کیز نہیں ہیں۔",
     "apiKeysEmptyHint": "ٹول بار سے تخلیق کریں؛ پھر بیئرر ٹوکن کے ساتھ API کو کال کریں۔",
     "approve": "منظور کرو",
-    "allowlistTitle": "اجازت کی فہرست ({{count}})",
-    "allowlistEmpty": "اجازت دینے والے ٹولز نہیں ہیں۔",
+    "allowlistTitle": "ایجنٹ ٹولز ({{count}})",
+    "allowlistEmpty": "کیٹلاگ میں کوئی ٹول نہیں",
     "createApiKeyTitle": "API کلید بنائیں",
     "createApiKeyDesc": "مکمل ٹوکن بنانے کے بعد صرف ایک بار دکھایا جاتا ہے۔",
     "createKeyBtn": "کلید بنائیں",
@@ -10371,9 +10382,11 @@
       "sharePanelDesc": "زیادہ خطرہ۔ تصدیق کے لیے SHARED ٹائپ کریں۔",
       "confirmString": "تصدیقی تار",
       "enableShare": "اشتراک کو فعال کریں۔",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "مکمل OpenSSH پبلک کلید کی سطر چسپاں کریں (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "پیش نظارہ مکمل۔ نیچے مواد دیکھیں۔",
+      "strictBlocked": "پیکج یا PAM تیار نہیں؛ Strict لاگو نہیں ہو سکتا۔",
+      "strictDryRun": "سخت موڈ پیش نظارہ",
+      "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)"
     },
     "sessionsActive": "فعال سیشنز",
     "sessionsOther": "دیگر آلات",
@@ -10398,36 +10411,37 @@
     "mySecurityHint": "",
     "policyTotpHint": "سائٹ کی پالیسی: ہر منتظم کو اپنے 2FA (انفرادی QR) کو فعال کرنا ہوگا۔",
     "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "fail2ban قطعات بنائیں",
+    "changePasswordTitle": "سائن ان پاس ورڈ تبدیل کریں",
+    "currentPassword": "موجودہ پاس ورڈ",
+    "newPassword": "نیا پاس ورڈ",
+    "confirmNewPassword": "نیا پاس ورڈ تصدیق کریں",
+    "passwordMismatch": "نئے پاس ورڈ مماثل نہیں۔",
+    "changePassword": "پاس ورڈ تبدیل کریں",
+    "passwordChanged": "پاس ورڈ اپ ڈیٹ ہو گیا۔",
+    "strictNeedsEnrolled": "Strict آن کرنے سے پہلے کم از کم ایک منتظم کے پاس 2FA ہونا چاہیے۔",
+    "policyTotpNeedSelf": "پہلے اس اکاؤنٹ پر 2FA فعال کریں؛ ورنہ تصدیقی کوڈ نہیں بھرا جا سکتا۔",
+    "fail2banSnippetTitle": "fail2ban قطعہ",
+    "fail2banSnippetEmpty": "کوئی قطعہ نہیں لکھا گیا۔",
+    "trustedDevicesTitle": "قابل اعتماد آلات",
+    "noTrustedDevices": "کوئی قابل اعتماد آلہ نہیں۔",
+    "strictConfirmTitle": "سخت 2FA آن کریں؟",
+    "strictConfirmDesc": "بغیر 2FA والے صارفین سائن ان نہیں کر سکیں گے۔ تصدیق کریں کہ آپ کے پاس کام کرتا TOTP یا Passkey ہے۔",
+    "revokeDevicesTitle": "قابل اعتماد آلات منسوخ کریں؟",
+    "revokeDevicesDesc": "یاد رکھے گئے براؤزر کو دوبارہ 2FA درکار ہوگا۔",
+    "approvalsHint": "جب زیادہ خطرے والے ٹول کو دوسرے آپریٹر کی منظوری چاہیے تو منظوری یہاں دکھتی ہے۔ اجازتیں صارفین → اجازتوں میں سیٹ کریں۔",
+    "allowlistReadonly": "ایجنٹ ٹول کیٹلاگ (صرف پڑھنے کے لیے)۔ صلاحیتیں صارفین → اجازتوں میں سیٹ ہوتی ہیں۔",
+    "colTool": "ٹول",
+    "colAllowed": "مجاز",
+    "colRisk": "خطرہ",
+    "colApproval": "منظوری",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    }
+      "low": "کم",
+      "medium": "درمیانہ",
+      "high": "زیادہ",
+      "critical": "شدید"
+    },
+    "totpStatusLoadFailed": "2FA کی کیفیت لوڈ نہیں ہو سکی"
   },
   "serviceExposure": {
     "title": "نیٹ ورک تک رسائی",
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "بوٹ پر",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "ابھی تک تفتیش نہیں ہوئی۔",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "سافٹ ویئر",

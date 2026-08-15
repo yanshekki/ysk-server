@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}} মেরামত সম্পূর্ণ",
     "startAfterUnfreeze": "পরিষেবা শুরু করুন (ব্যর্থতার উপর মেরামত পরিকল্পনা স্বয়ংক্রিয়ভাবে চলে)",
     "serviceDownTitle": "ডাটাবেস পরিষেবা বন্ধ আছে",
-    "serviceDownBody": "সেবা অস্বাস্থ্যকর"
+    "serviceDownBody": "সেবা অস্বাস্থ্যকর",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "নিশ্চিত করুন",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "সফটওয়্যার",
     "aboutStackBody": "সফটওয়্যারের অধীনে পাওয়ারডিএনএস প্যাকেজ চেক/আপডেট করুন।",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "ইমেইল",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "বিলম্বিত",
     "deleteQueueTitle": "এই সারির মেইল মুছবেন?",
     "deleteQueueDesc": "স্থানীয় MTA সারি থেকে {{id}} সরান। YSK_EXECUTE লাগে।",
-    "openQueuePage": "মেইল সারি খুলুন"
+    "openQueuePage": "মেইল সারি খুলুন",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "অননুমোদিত",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "UFW নিষ্ক্রিয় করবেন?",
     "disableConfirmDesc": "হোস্ট ফায়ারওয়াল ট্র্যাফিক ফিল্টার করা বন্ধ করবে। পাবলিক নেটওয়ার্কে SSH ও প্যানেল উন্মুক্ত হতে পারে।",
     "disableConfirmConsequence": "বিদ্যমান অনুমতি/প্রত্যাখ্যান নিয়ম থাকবে, কিন্তু UFW আবার চালু না হওয়া পর্যন্ত কার্যকর হবে না।",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "FTPS অ্যাকাউন্ট",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "প্রয়োগের পর সংস্করণ ফাইলে {{v0}} নেই",
       "selfDownloadFail": "অফিসিয়াল প্যাকেজ {{v0}} ডাউনলোড বা আনপ্যাক করা যায়নি: {{v1}}",
       "selfOverlayFail": "অফিসিয়াল প্যাকেজ চলমান ডিরেক্টরিতে প্রয়োগ করা যায়নি: {{v0}}",
-      "selfUpgradeHint": "প্যানেল প্রয়োগ ব্যর্থ। root হিসেবে চালান: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "প্যানেল প্রয়োগ ব্যর্থ। root হিসেবে চালান: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "মুছে ফেলা হয়েছে {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "ক্লায়েন্ট প্রোফাইল মুছে ফেলা হয়েছে",
       "sessionStartCwd": "VNC স্টার্ট ব্যর্থ হয়েছে: ওয়ার্কিং ডিরেক্টরি সেশন ব্যবহারকারীর কাছে অ্যাক্সেসযোগ্য নয় (প্রদর্শন :{{display}})। হোম থেকে শুরু করে ঠিক করা হয়েছে।",
       "desktopRestarted": "ডেস্কটপ প্রোফাইল প্রয়োগ করা হয়েছে এবং সেশন পুনরায় চালু হয়েছে ({{desktop}})। VNC/noVNC পুনরায় সংযোগ করুন।",
-      "desktopNeedsStart": "ডেস্কটপ প্রোফাইল {{desktop}} xstartup-এ লেখা। আবেদন করার জন্য সেশন শুরু করুন।"
+      "desktopNeedsStart": "ডেস্কটপ প্রোফাইল {{desktop}} xstartup-এ লেখা। আবেদন করার জন্য সেশন শুরু করুন।",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "সার্ভার নাম প্রয়োজন",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "অনুমতি",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "API কী",
     "tabSsh": "SSH",
     "tabApprovals": "অনুমোদন",
-    "tabAllowlist": "অনুমতি তালিকা",
+    "tabAllowlist": "এজেন্ট টুল",
     "apiTokenOnce": "API টোকেন (একবার দেখানো হয়েছে):",
     "copiedToken": "টোকেন কপি করা হয়েছে",
     "totpTitle": "দ্বি-ফ্যাক্টর (TOTP)",
@@ -10127,8 +10138,8 @@
     "apiKeysEmpty": "এখনও কোন API কী",
     "apiKeysEmptyHint": "টুলবার থেকে তৈরি করুন; তারপর Bearer টোকেন সহ API কল করুন",
     "approve": "অনুমোদন করুন",
-    "allowlistTitle": "অনুমোদিত তালিকা ({{count}})",
-    "allowlistEmpty": "অনুমতি তালিকার কোনো টুল নেই",
+    "allowlistTitle": "এজেন্ট টুল ({{count}})",
+    "allowlistEmpty": "ক্যাটালগে কোনো টুল নেই",
     "createApiKeyTitle": "API কী তৈরি করুন",
     "createApiKeyDesc": "সম্পূর্ণ টোকেন তৈরি করার পরে শুধুমাত্র একবার দেখানো হয়",
     "createKeyBtn": "কী তৈরি করুন",
@@ -10371,9 +10382,11 @@
       "sharePanelDesc": "উচ্চ ঝুঁকি. নিশ্চিত করতে SHARED টাইপ করুন।",
       "confirmString": "নিশ্চিতকরণ স্ট্রিং",
       "enableShare": "শেয়ারিং সক্ষম করুন",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "সম্পূর্ণ OpenSSH পাবলিক কী লাইন পেস্ট করুন (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "প্রিভিউ শেষ। নিচের বিষয়বস্তু দেখুন।",
+      "strictBlocked": "প্যাকেজ বা PAM প্রস্তুত নয়; Strict প্রয়োগ বন্ধ।",
+      "strictDryRun": "কঠোর মোড প্রিভিউ",
+      "errorNoDetail": "পরীক্ষা ব্যর্থ (বিস্তারিত নেই)"
     },
     "sessionsActive": "সক্রিয় সেশন",
     "sessionsOther": "অন্যান্য ডিভাইস",
@@ -10398,36 +10411,37 @@
     "mySecurityHint": "",
     "policyTotpHint": "সাইটের নীতি: প্রতিটি প্রশাসককে অবশ্যই তাদের নিজস্ব 2FA (স্বতন্ত্র QR) সক্ষম করতে হবে",
     "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "fail2ban স্নিপেট তৈরি করুন",
+    "changePasswordTitle": "সাইন-ইন পাসওয়ার্ড পরিবর্তন",
+    "currentPassword": "বর্তমান পাসওয়ার্ড",
+    "newPassword": "নতুন পাসওয়ার্ড",
+    "confirmNewPassword": "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    "passwordMismatch": "নতুন পাসওয়ার্ড মিলছে না।",
+    "changePassword": "পাসওয়ার্ড পরিবর্তন",
+    "passwordChanged": "পাসওয়ার্ড আপডেট হয়েছে।",
+    "strictNeedsEnrolled": "Strict চালু করার আগে অন্তত একজন অ্যাডমিনের 2FA থাকতে হবে।",
+    "policyTotpNeedSelf": "আগে এই অ্যাকাউন্টে 2FA চালু করুন; নইলে নিশ্চিতকরণ কোড ভরা যাবে না।",
+    "fail2banSnippetTitle": "fail2ban স্নিপেট",
+    "fail2banSnippetEmpty": "কোনো স্নিপেট লেখা হয়নি।",
+    "trustedDevicesTitle": "বিশ্বস্ত ডিভাইস",
+    "noTrustedDevices": "কোনো বিশ্বস্ত ডিভাইস নেই।",
+    "strictConfirmTitle": "Strict 2FA চালু করবেন?",
+    "strictConfirmDesc": "2FA ছাড়া ব্যবহারকারী সাইন-ইন করতে পারবেন না। কাজ করা TOTP বা Passkey আছে কিনা নিশ্চিত করুন।",
+    "revokeDevicesTitle": "বিশ্বস্ত ডিভাইস বাতিল করবেন?",
+    "revokeDevicesDesc": "মনে রাখা ব্রাউজারে আবার 2FA লাগবে।",
+    "approvalsHint": "উচ্চ ঝুঁকির টুলে দ্বিতীয় অপারেটরের অনুমোদন লাগলে এখানে দেখায়। অনুমতি ব্যবহারকারী → অনুমতি-তে সেট করুন।",
+    "allowlistReadonly": "এজেন্ট টুল ক্যাটালগ (শুধু পঠনযোগ্য)। সক্ষমতা ব্যবহারকারী → অনুমতি-তে সেট হয়।",
+    "colTool": "টুল",
+    "colAllowed": "অনুমোদিত",
+    "colRisk": "ঝুঁকি",
+    "colApproval": "অনুমোদন",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    }
+      "low": "কম",
+      "medium": "মাঝারি",
+      "high": "উচ্চ",
+      "critical": "গুরুতর"
+    },
+    "totpStatusLoadFailed": "2FA অবস্থা লোড করা যায়নি"
   },
   "serviceExposure": {
     "title": "নেটওয়ার্ক অ্যাক্সেস",
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "বুট উপর",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "এখনো তদন্ত করা হয়নি",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "সফটওয়্যার",

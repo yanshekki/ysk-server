@@ -32,6 +32,8 @@
   "zonesTitle": "区域 ({{count}})",
   "zonesDesc": "创建区域后可写入／套用 zone",
   "createZone": "+ 创建区域",
+  "mailZonesMissing": "電郵網域尚未建立 DNS 區域：{{domains}}。",
+  "createMailZone": "建立郵件區域",
   "colZoneName": "区域名称",
   "colServerIp": "服务器 IP",
   "colTemplate": "模板",

@@ -89,9 +89,20 @@ export async function getBtTrackerStatus(input: {
   if (detached && !inProcess) {
     notes.push(tl('notes.btTracker.runningDetached', { pid: String(detachedPid || '') }));
   }
-  const announceUrls = buildAnnounceList(settings, {
-    publicHost: input.publicHostHint || settings.publicAnnounceHost || undefined,
-  });
+  let publicHost = input.publicHostHint || settings.publicAnnounceHost || undefined;
+  if (!publicHost) {
+    try {
+      const info = await input.host.sysInfo();
+      const hn = String((info as { hostname?: string }).hostname ?? '').trim();
+      if (hn && hn !== 'localhost' && hn !== '127.0.0.1') publicHost = hn;
+    } catch {
+      /* optional */
+    }
+  }
+  const announceUrls = buildAnnounceList(settings, { publicHost });
+  if (running && notes.some((n) => /start/i.test(n))) {
+    /* keep */
+  }
   let stats: BtTrackerStatus['stats'];
   if (runtime) {
     const fromServer = readServerTorrents(runtime.server);

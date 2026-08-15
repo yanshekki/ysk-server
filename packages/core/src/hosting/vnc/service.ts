@@ -460,7 +460,7 @@ export class VncService {
         rec.hasPassword = true;
         notes.push(tl('notes.vnc.passwordMetaOnly'));
       } else if (!pw.ok) {
-        // keep account but report
+        return { ok: false, notes };
       }
     }
 

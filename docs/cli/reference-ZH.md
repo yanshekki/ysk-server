@@ -7,7 +7,7 @@
 
 全域旗標與結束碼見 [overview-ZH.md](./overview-ZH.md)。
 
-除另有說明外，可按需加上 `--json`、`--data-dir PATH`。
+除另有說明外，可按需加上 `--json`、`--data-dir PATH`。大型 JSON 列表可用 `--limit N --offset N`。命令列說明預設英文（`--locale`／`YSK_LOCALE`）。
 
 ---
 

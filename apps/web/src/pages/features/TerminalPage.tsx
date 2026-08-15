@@ -46,6 +46,7 @@ export function TerminalPage() {
   const [totpOpen, setTotpOpen] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [totpBusy, setTotpBusy] = useState(false);
+  const [rootConfirmOpen, setRootConfirmOpen] = useState(false);
 
   const hostRef = useRef<HTMLDivElement | null>(null);
   const termRef = useRef<Terminal | null>(null);
@@ -219,7 +220,7 @@ export function TerminalPage() {
   }, []);
 
   const connect = useCallback(
-    async (opts?: { totp?: string }) => {
+    async (opts?: { totp?: string; rootAck?: boolean }) => {
       if (!targets?.canOpen) {
         setStatusLine(t('terminal.needRootExecute'));
         setConn('error');
@@ -250,6 +251,12 @@ export function TerminalPage() {
         targetId === 'root'
           ? 'root'
           : { projectId: targetId.replace(/^project:/, '') };
+
+      if (target === 'root' && !opts?.totp?.trim() && !opts?.rootAck) {
+        setRootConfirmOpen(true);
+        setConn('idle');
+        return;
+      }
 
       // Root + enrolled TOTP: ask for code before ticket (unless already provided)
       if (
@@ -512,6 +519,21 @@ export function TerminalPage() {
                   {t('terminal.connect')}
                 </Button>
               )}
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => {
+                  const term = termRef.current;
+                  if (!term) return;
+                  const buf = [];
+                  for (let i = 0; i < term.buffer.active.length; i += 1) {
+                    buf.push(term.buffer.active.getLine(i)?.translateToString(true) ?? '');
+                  }
+                  void navigator.clipboard?.writeText(buf.join('\n').trimEnd());
+                }}
+              >
+                {t('terminal.copyAll', { defaultValue: 'Copy all' })}
+              </Button>
               {statusLine ? (
                 <span className="term-meta">
                   <Badge tone={statusTone}>{statusLine}</Badge>
@@ -523,6 +545,40 @@ export function TerminalPage() {
           {targetId === 'root' && targets?.rootNeedsStepUp ? (
             <Alert variant="info">{t('terminal.stepUpHint')}</Alert>
           ) : null}
+
+          <Modal
+            open={rootConfirmOpen}
+            onClose={() => setRootConfirmOpen(false)}
+            title={t('terminal.rootConfirmTitle', { defaultValue: 'Open a root shell?' })}
+            description={t('terminal.rootConfirmDesc', {
+              defaultValue:
+                'This session is an unrestricted root PTY on the host. Commands are audited.',
+            })}
+            size="sm"
+            footer={
+              <>
+                <Button variant="secondary" size="md" onClick={() => setRootConfirmOpen(false)}>
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="md"
+                  onClick={() => {
+                    setRootConfirmOpen(false);
+                    void connect({ rootAck: true });
+                  }}
+                >
+                  {t('terminal.connect')}
+                </Button>
+              </>
+            }
+          >
+            <p className="muted u-text-sm">
+              {t('terminal.rootConfirmBody', {
+                defaultValue: 'Only continue if you intend to run privileged host commands.',
+              })}
+            </p>
+          </Modal>
 
           <Modal
             open={totpOpen}

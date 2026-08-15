@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}} 수리 완료",
     "startAfterUnfreeze": "서비스 시작(실패 시 복구 계획 자동 실행)",
     "serviceDownTitle": "데이터베이스 서비스가 다운되었습니다",
-    "serviceDownBody": "서비스 상태가 좋지 않음"
+    "serviceDownBody": "서비스 상태가 좋지 않음",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "확인하다",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "소프트웨어",
     "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요.",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "이메일",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "지연",
     "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
     "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
-    "openQueuePage": "메일 큐 열기"
+    "openQueuePage": "메일 큐 열기",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "UFW를 사용 중지할까요?",
     "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
     "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다.",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "FTPS 계정",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "적용 후 버전 파일에 {{v0}}이(가) 없습니다",
       "selfDownloadFail": "공식 패키지 {{v0}}을(를) 다운로드하거나 압축을 풀 수 없습니다: {{v1}}",
       "selfOverlayFail": "공식 패키지를 실행 중인 디렉터리에 적용하지 못했습니다: {{v0}}",
-      "selfUpgradeHint": "패널 적용에 실패했습니다. root로 실행: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "패널 적용에 실패했습니다. root로 실행: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "삭제됨 {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "고객 프로필이 삭제되었습니다.",
       "sessionStartCwd": "VNC 시작 실패: 세션 사용자가 작업 디렉터리에 액세스할 수 없습니다(표시 :{{display}}). HOME에서 시작하여 수정되었습니다.",
       "desktopRestarted": "데스크톱 프로필이 적용되고 세션이 다시 시작되었습니다({{desktop}}). VNC/noVNC를 다시 연결합니다.",
-      "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요."
+      "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요.",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "서버 이름이 필요합니다",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "권한",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "API 키",
     "tabSsh": "SSH",
     "tabApprovals": "승인",
-    "tabAllowlist": "허용 목록",
+    "tabAllowlist": "에이전트 도구",
     "apiTokenOnce": "API 토큰(한 번 표시됨):",
     "copiedToken": "토큰이 복사되었습니다.",
     "totpTitle": "2단계(TOTP)",
@@ -10127,8 +10138,8 @@
     "apiKeysEmpty": "아직 API 키가 없습니다.",
     "apiKeysEmptyHint": "도구 모음에서 생성하세요. 그런 다음 Bearer 토큰으로 API를 호출합니다.",
     "approve": "승인하다",
-    "allowlistTitle": "허용 목록({{count}})",
-    "allowlistEmpty": "허용 목록 도구 없음",
+    "allowlistTitle": "에이전트 도구({{count}})",
+    "allowlistEmpty": "카탈로그에 도구가 없습니다",
     "createApiKeyTitle": "API 키 생성",
     "createApiKeyDesc": "전체 토큰은 생성 후 한 번만 표시됩니다.",
     "createKeyBtn": "키 생성",
@@ -10371,9 +10382,11 @@
       "sharePanelDesc": "위험. 확인하려면 SHARED를 입력하세요.",
       "confirmString": "확인 문자열",
       "enableShare": "공유 활성화",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "OpenSSH 공개 키를 한 줄로 붙여 넣으세요(ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "미리보기가 끝났습니다. 아래 내용을 확인하세요.",
+      "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
+      "strictDryRun": "엄격 모드 미리보기",
+      "errorNoDetail": "테스트 실패(상세 없음)"
     },
     "sessionsActive": "활성 세션",
     "sessionsOther": "기타 장치",
@@ -10398,36 +10411,37 @@
     "mySecurityHint": "",
     "policyTotpHint": "사이트 정책: 각 관리자는 자신의 2FA(개별 QR)를 활성화해야 합니다.",
     "requireUser2fa": "모든 패널 사용자에게 2FA 요구",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "fail2ban 스니펫 생성",
+    "changePasswordTitle": "로그인 비밀번호 변경",
+    "currentPassword": "현재 비밀번호",
+    "newPassword": "새 비밀번호",
+    "confirmNewPassword": "새 비밀번호 확인",
+    "passwordMismatch": "새 비밀번호가 일치하지 않습니다.",
+    "changePassword": "비밀번호 변경",
+    "passwordChanged": "비밀번호가 업데이트되었습니다.",
+    "strictNeedsEnrolled": "Strict를 켜려면 관리자 2단계가 필요합니다.",
+    "policyTotpNeedSelf": "먼저 이 계정에서 2단계를 사용하세요. 확인 코드를 입력할 수 없습니다.",
+    "fail2banSnippetTitle": "fail2ban 스니펫",
+    "fail2banSnippetEmpty": "스니펫이 기록되지 않았습니다.",
+    "trustedDevicesTitle": "신뢰하는 기기",
+    "noTrustedDevices": "신뢰하는 기기가 없습니다.",
+    "strictConfirmTitle": "Strict 2단계를 켤까요?",
+    "strictConfirmDesc": "2단계가 없는 사용자는 로그인할 수 없습니다. 사용 가능한 TOTP 또는 Passkey가 있는지 확인하세요.",
+    "revokeDevicesTitle": "신뢰하는 기기를 취소할까요?",
+    "revokeDevicesDesc": "기억된 브라우저는 다시 2단계가 필요합니다.",
+    "approvalsHint": "고위험 도구에 두 번째 운영자 승인이 필요할 때 표시됩니다. 권한은 「사용자 → 권한」에서 설정합니다.",
+    "allowlistReadonly": "에이전트 도구 카탈로그(읽기 전용). 능력 부여는 「사용자 → 권한」에서 설정합니다.",
+    "colTool": "도구",
+    "colAllowed": "허용",
+    "colRisk": "위험",
+    "colApproval": "승인",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    }
+      "low": "낮음",
+      "medium": "보통",
+      "high": "높음",
+      "critical": "심각"
+    },
+    "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다"
   },
   "serviceExposure": {
     "title": "네트워크 접속",
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "부팅 시",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "아직 조사되지 않음",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "소프트웨어",

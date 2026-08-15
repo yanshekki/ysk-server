@@ -227,7 +227,11 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
             ) : null}
           </div>
           <div className="u-mt-3">
-            <ServiceAccessStrip serviceId="vsftpd" ports={ftpsBindings} />
+            <ServiceAccessStrip
+              serviceId="vsftpd"
+              ports={ftpsBindings}
+              serviceInstalled={status?.installed !== false}
+            />
           </div>
         </CardSection>
       </Card>

@@ -547,7 +547,7 @@ fn main() {
     notes,
   );
   notes.push('Rust Hello World demo (src/main.rs, std only)');
-  return { ok: true, templateId: meta.id, written, notes, entry: './app' };
+  return { ok: true, templateId: meta.id, written, notes, entry: `./target/release/${crate}` };
 }
 
 function scaffoldJavaHello(

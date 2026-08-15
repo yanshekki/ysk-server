@@ -283,5 +283,8 @@
   "unfreezeOk": "{{engine}} reparo concluído",
   "startAfterUnfreeze": "Iniciar serviço (executa automaticamente o plano de reparo em caso de falha)",
   "serviceDownTitle": "O serviço de banco de dados está inativo",
-  "serviceDownBody": "O serviço não é saudável"
+  "serviceDownBody": "O serviço não é saudável",
+  "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+  "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+  "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
 }

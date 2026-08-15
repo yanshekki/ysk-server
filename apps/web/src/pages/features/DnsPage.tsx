@@ -32,6 +32,7 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
+import { emailApi } from '../../features/email/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
@@ -183,6 +184,27 @@ export function DnsPage() {
     latencyMs?: number;
   } | null>(null);
   const [validateMsg, setValidateMsg] = useState<string | null>(null);
+  const [mailDomains, setMailDomains] = useState<Array<{ domain: string; server_ip?: string }>>(
+    [],
+  );
+
+  useEffect(() => {
+    void emailApi
+      .list()
+      .then((r) =>
+        setMailDomains(
+          (r.items ?? []).map((d) => ({ domain: d.domain, server_ip: d.server_ip })),
+        ),
+      )
+      .catch(() => setMailDomains([]));
+  }, []);
+
+  const missingMailZones = useMemo(() => {
+    const have = new Set(
+      zones.items.map((z) => String(z.zone ?? '').trim().toLowerCase()).filter(Boolean),
+    );
+    return mailDomains.filter((d) => d.domain && !have.has(d.domain.trim().toLowerCase()));
+  }, [mailDomains, zones.items]);
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
@@ -571,6 +593,29 @@ export function DnsPage() {
       >
         {tab === 'zones' ? (
           <div className="tab-panel">
+            {missingMailZones.length ? (
+              <Alert variant="warn">
+                {t('dns.mailZonesMissing', {
+                  domains: missingMailZones.map((d) => d.domain).join(', '),
+                })}
+                {missingMailZones.slice(0, 3).map((d) => (
+                  <Button
+                    key={d.domain}
+                    variant="secondary"
+                    size="sm"
+                    className="u-ml-2"
+                    onClick={() => {
+                      setZone(d.domain);
+                      if (d.server_ip) setServerIp(d.server_ip);
+                      setTemplate('mail');
+                      setZoneOpen(true);
+                    }}
+                  >
+                    {t('dns.createMailZone')} · {d.domain}
+                  </Button>
+                ))}
+              </Alert>
+            ) : null}
             <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                   title={t('dns.zonesTitle', { count: zones.total })}

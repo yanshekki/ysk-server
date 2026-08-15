@@ -63,23 +63,29 @@ async function portOpen(
   host: HostExecutor,
   proto: 'udp' | 'tcp',
   port: number,
-): Promise<boolean> {
-  // ss preferred; fall back to /proc
+): Promise<{ any: boolean; public: boolean; loopbackOnly: boolean; sample: string }> {
   const cmd =
     proto === 'udp'
-      ? `ss -uln 2>/dev/null | grep -E ':${port}\\s' || cat /proc/net/udp /proc/net/udp6 2>/dev/null | head -1`
-      : `ss -tln 2>/dev/null | grep -E ':${port}\\s' || cat /proc/net/tcp /proc/net/tcp6 2>/dev/null | head -1`;
+      ? `ss -ulnH 2>/dev/null | grep -E ':${port}\\s' || true`
+      : `ss -tlnH 2>/dev/null | grep -E ':${port}\\s' || true`;
   try {
     const r = await host.runCommand(['bash', '-c', cmd], { timeoutMs: 6_000 });
     const out = (r.stdout || '').trim();
-    if (!out) return false;
-    // ss line with :53
-    if (out.includes(`:${port}`)) return true;
-    // /proc hex port 0035 = 53
-    if (out.includes('0035')) return true;
-    return false;
+    if (!out || !out.includes(`:${port}`)) {
+      return { any: false, public: false, loopbackOnly: false, sample: '' };
+    }
+    const lines = out.split('\n').filter((l) => l.includes(`:${port}`));
+    const loopback = lines.every((l) =>
+      /127\.0\.0\.|::1|\[::1\]/.test(l),
+    );
+    return {
+      any: true,
+      public: !loopback,
+      loopbackOnly: loopback,
+      sample: lines[0]?.slice(0, 120) ?? '',
+    };
   } catch {
-    return false;
+    return { any: false, public: false, loopbackOnly: false, sample: '' };
   }
 }
 
@@ -281,11 +287,18 @@ export async function probeDnsServiceHealth(input: {
     }
   }
 
-  const listenUdp53 = await portOpen(input.host, 'udp', 53);
-  const listenTcp53 = await portOpen(input.host, 'tcp', 53);
-  if (!listenUdp53 && !listenTcp53) notes.push('Port 53 not listening (UDP/TCP)');
-  else if (!listenUdp53) notes.push('UDP/53 not listening');
-  else if (!listenTcp53) notes.push('TCP/53 not listening');
+  const udp53 = await portOpen(input.host, 'udp', 53);
+  const tcp53 = await portOpen(input.host, 'tcp', 53);
+  const listenUdp53 = udp53.public;
+  const listenTcp53 = tcp53.public;
+  if (udp53.loopbackOnly || tcp53.loopbackOnly) {
+    notes.push(
+      'Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver',
+    );
+  }
+  if (!udp53.any && !tcp53.any) notes.push('Port 53 not listening (UDP/TCP)');
+  else if (!listenUdp53 && !udp53.loopbackOnly) notes.push('UDP/53 not listening on a public address');
+  else if (!listenTcp53 && !tcp53.loopbackOnly) notes.push('TCP/53 not listening on a public address');
 
   const zones = listManagedDnsZones(input.dataDir);
   const zoneFiles = zones.length;

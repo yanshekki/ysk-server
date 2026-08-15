@@ -45,6 +45,62 @@ export function sourceServerId(flavor: 'mysql' | 'mariadb'): string {
   return flavor === 'mysql' ? 'mysql-server' : 'mariadb-server';
 }
 
+/** Non-system names from `SHOW DATABASES` (unix_socket / default client). */
+export function parseShowDatabasesOutput(stdout: string): string[] {
+  return stdout
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((n) => n && !SYSTEM_DBS.has(n));
+}
+
+/** Read-only name list — no table counts (panel inventory). */
+export async function listUserDatabaseNames(
+  host: HostExecutor,
+  flavor: 'mysql' | 'mariadb',
+): Promise<string[]> {
+  const clients = flavor === 'mariadb' ? ['mariadb', 'mysql'] : ['mysql', 'mariadb'];
+  for (const client of clients) {
+    try {
+      const r = await host.runCommand([client, '-N', '-e', 'SHOW DATABASES'], {
+        timeoutMs: 15_000,
+      });
+      if (r.stdout.trim()) return parseShowDatabasesOutput(r.stdout);
+    } catch {
+      /* next client / blocked */
+    }
+  }
+  return [];
+}
+
+/** Host SQL accounts (User@Host). Never includes password hashes. */
+export async function listSqlUserAccounts(
+  host: HostExecutor,
+  flavor: 'mysql' | 'mariadb',
+): Promise<Array<{ user: string; host: string }>> {
+  const clients = flavor === 'mariadb' ? ['mariadb', 'mysql'] : ['mysql', 'mariadb'];
+  for (const client of clients) {
+    try {
+      const r = await host.runCommand(
+        [client, '-N', '-e', 'SELECT User, Host FROM mysql.user'],
+        { timeoutMs: 15_000 },
+      );
+      if (!r.stdout.trim()) continue;
+      return r.stdout
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .map((l) => {
+          const [user, hst] = l.split(/\s+/);
+          return { user: user ?? '', host: hst ?? '%' };
+        })
+        .filter((u) => u.user);
+    } catch {
+      /* next */
+    }
+  }
+  return [];
+}
+
 /** List non-system databases via mysql/mariadb client (source still running). */
 export async function listUserDatabases(
   host: HostExecutor,

@@ -17,7 +17,7 @@ import {
   collectUpdateHub,
   summarizeHub,
 } from 'ysk-server-core';
-import { cliPositionals } from '../cli-argv.js';
+import { applyLimit, cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 import { VERSION } from '../version.js';
@@ -131,11 +131,12 @@ export async function runUpdatesCommand(
       collectedAt: new Date().toISOString(),
       collectMeta: inv.meta,
     });
+    const limited = applyLimit(filtered, args);
     h.printJson({
       ok: true,
-      inventory: filtered,
+      inventory: limited.items,
       advice,
-      meta: { total: filtered.length, raw: items.length, collect: inv.meta },
+      meta: { ...limited.meta, raw: items.length, collect: inv.meta },
       collectedAt: new Date().toISOString(),
     });
     return 0;

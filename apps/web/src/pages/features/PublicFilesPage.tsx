@@ -28,13 +28,21 @@ import { Link } from 'react-router-dom';
 
 type FilesStatus = Awaited<ReturnType<typeof systemApi.publicFilesStatus>>;
 
+function suggestedFilesHost(): string {
+  const ctx = getServerContext();
+  if (ctx.domain?.trim()) return `files.${ctx.domain.trim()}`;
+  if (typeof window === 'undefined') return '';
+  const host = window.location.hostname;
+  if (!host || host === 'localhost' || /^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return '';
+  return host.startsWith('files.') ? host : `files.${host}`;
+}
+
 export function PublicFilesPage() {
   const { t } = useTranslation();
-  const ctx = getServerContext();
-  const [serverName, setServerName] = useState(
-    ctx.domain ? `files.${ctx.domain}` : '',
-  );
+  const suggested = suggestedFilesHost();
+  const [serverName, setServerName] = useState(suggested);
   const [quotaMb, setQuotaMb] = useState('1024');
+  const [autoindex, setAutoindex] = useState(true);
   const { busy, error, result, msg, run, setMsg } = useFeatureAction();
   const [status, setStatus] = useState<FilesStatus | null>(null);
   const [statusErr, setStatusErr] = useState<string | null>(null);
@@ -99,24 +107,16 @@ export function PublicFilesPage() {
           <Link to="/nginx" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             Nginx
           </Link>
-          {serverName && status?.likelyLive ? (
+          {serverName ? (
             <a
-              href={`https://${serverName}/`}
+              href={`http://${serverName}/`}
               target="_blank"
               rel="noreferrer"
               className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+              title={status?.likelyLive ? undefined : t('publicFiles.notLiveHint')}
             >
               {t('publicFiles.openSite')}
             </a>
-          ) : serverName ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled
-              title={t('publicFiles.notLiveHint')}
-            >
-              {t('publicFiles.openSite')}
-            </Button>
           ) : null}
         </>
       }
@@ -215,7 +215,7 @@ export function PublicFilesPage() {
                     setServerName(e.target.value);
                     setServerContext({ domain: e.target.value.replace(/^files\./, '') });
                   }}
-                  placeholder="files.example.com"
+                  placeholder={suggested || 'files.example.com'}
                   spellCheck={false}
                 />
               </Field>
@@ -241,6 +241,14 @@ export function PublicFilesPage() {
                 />
               </Field>
             </FormLayout>
+            <label className="ssh-check u-mt-3">
+              <input
+                type="checkbox"
+                checked={autoindex}
+                onChange={(e) => setAutoindex(e.target.checked)}
+              />
+              <span>{t('publicFiles.autoindex', { defaultValue: 'Directory listing (autoindex)' })}</span>
+            </label>
             <FormHint>{t('publicFiles.applyHint')}</FormHint>
             <FormActions>
               <Button
@@ -254,6 +262,7 @@ export function PublicFilesPage() {
                         serverName,
                         quotaMb: Number(quotaMb) || undefined,
                         reload: true,
+                        autoindex,
                       })) as OpsResultLike & {
                         publicRoot?: string;
                         nginxReloaded?: boolean;

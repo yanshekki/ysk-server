@@ -18,8 +18,11 @@ import {
   syncServiceExposure,
   engineToServiceId,
   dbPortBindings,
+  listUserDatabaseNames,
+  listSqlUserAccounts,
+  listResources,
 } from 'ysk-server-core';
-import { cliPositionals } from '../cli-argv.js';
+import { applyLimit, cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -344,8 +347,51 @@ export async function runDbCommand(
     return 2;
   }
 
+  if (sub === 'databases' || sub === 'list' || sub === 'dbs') {
+    const engine = engineFromArgs(h, args, tokens, 2) ?? 'mariadb';
+    if (engine !== 'mysql' && engine !== 'mariadb') {
+      process.stderr.write('Usage: ysk-server db databases --engine mysql|mariadb [--limit N]\n');
+      return 2;
+    }
+    const hostNames = await listUserDatabaseNames(ctx.host, engine);
+    const managed = listResources(ctx.db, 'mysql_databases').filter((r) => {
+      const e = String((r as { engine?: string }).engine ?? '');
+      return !e || e === engine || e === 'mysql' || e === 'mariadb';
+    });
+    const limited = applyLimit(hostNames, args);
+    h.printJson({
+      ok: true,
+      engine,
+      host: limited.items,
+      managed: managed.map((r) => ({
+        id: r.id,
+        name: r.name,
+        engine: (r as { engine?: string }).engine,
+      })),
+      meta: limited.meta,
+    });
+    return 0;
+  }
+
+  if (sub === 'users' || sub === 'accounts') {
+    const engine = engineFromArgs(h, args, tokens, 2) ?? 'mariadb';
+    if (engine !== 'mysql' && engine !== 'mariadb') {
+      process.stderr.write('Usage: ysk-server db users --engine mysql|mariadb [--limit N]\n');
+      return 2;
+    }
+    const hostUsers = await listSqlUserAccounts(ctx.host, engine);
+    const limited = applyLimit(hostUsers, args);
+    h.printJson({
+      ok: true,
+      engine,
+      host: limited.items,
+      meta: limited.meta,
+    });
+    return 0;
+  }
+
   process.stderr.write(
-    'Usage: ysk-server db status|console|apply|lifecycle|install|sql-engine [--engine …] [--execute]\n' +
+    'Usage: ysk-server db status|console|apply|lifecycle|install|sql-engine|databases|users [--engine …] [--execute]\n' +
       'Also: db-cluster …  hosting mysql-provision|postgres-provision|redis-provision\n',
   );
   return 2;

@@ -32,5 +32,6 @@
   "diskRoot": "Disk root",
   "filesInRoot": "Entries",
   "managedConf": "Managed conf",
-  "systemConf": "System conf.d"
+  "systemConf": "System conf.d",
+  "autoindex": "Directory listing (autoindex)"
 }

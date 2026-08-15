@@ -67,12 +67,25 @@ export function usePageTab(
   useEffect(() => {
     if (!syncUrl || !rawParam) return;
     const mapped = aliasMap[rawParam];
-    if (!mapped || !allowed.has(mapped) || rawParam === mapped) return;
+    if (mapped && allowed.has(mapped) && rawParam !== mapped) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (mapped === fallback) next.delete(param);
+          else next.set(param, mapped);
+          return next;
+        },
+        { replace: true },
+      );
+      return;
+    }
+    if (allowed.has(rawParam)) return;
+    if (mapped && allowed.has(mapped)) return;
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (mapped === fallback) next.delete(param);
-        else next.set(param, mapped);
+        if (!fallback || fallback === rawParam) return prev;
+        next.delete(param);
         return next;
       },
       { replace: true },

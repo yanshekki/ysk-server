@@ -209,8 +209,20 @@ describe('defense-service depth', () => {
     const host = mockHost({
       executeEnabled: true,
       isRoot: true,
+      pathExists: () => true,
       run: (argv) => {
-        if (argv[0] === 'ufw') return { exitCode: 1, stderr: 'ufw no' };
+        if (argv[0] === 'fail2ban-client' && argv[1] === 'status') {
+          if (argv[2]) {
+            return {
+              stdout: 'Currently banned: 1\nBanned IP list: 198.51.100.40\n',
+            };
+          }
+          return { stdout: 'Jail list: sshd\n' };
+        }
+        if (argv[0] === 'ufw') {
+          if (argv[1] === 'status') return { stdout: 'Status: active\n' };
+          return { exitCode: 1, stderr: 'ufw no' };
+        }
         return { exitCode: 0, stdout: 'ok' };
       },
     });
@@ -224,7 +236,10 @@ describe('defense-service depth', () => {
     expect(r.ok).toBe(false); // ufw fail → ok false
     expect(r.notes.length).toBeGreaterThan(0);
     const bans = await listDefenseBans({ host, db });
-    expect(bans.items.some((b) => b.ip === '198.51.100.40')).toBe(true);
+    expect(bans.items.some((b) => b.ip === '198.51.100.40' && b.source === 'fail2ban')).toBe(
+      true,
+    );
+    expect(bans.items.filter((b) => b.ip === '198.51.100.40')).toHaveLength(1);
   });
 
   it('defenseUnbanIp execute path clears panel ban', async () => {

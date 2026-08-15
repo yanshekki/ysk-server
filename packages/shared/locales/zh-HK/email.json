@@ -105,6 +105,7 @@
   "copyAllRecords": "複製全部記錄",
   "openDnsPage": "開啟 DNS 頁",
   "healthScore": "健康分",
+  "healthUnchecked": "尚未檢查",
   "suggestedRecords": "建議記錄数",
   "externalTodosCount": "外部待辦",
   "colType": "類型",

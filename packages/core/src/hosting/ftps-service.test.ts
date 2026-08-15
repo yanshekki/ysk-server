@@ -110,7 +110,7 @@ describe('ftps-service pure helpers', () => {
     });
     expect(v6).toContain('listen=NO');
     expect(v6).toContain('listen_ipv6=YES');
-    expect(v6).toContain('ssl_enable=YES');
+    expect(v6).toContain('ssl_enable=NO');
 
     const pam = buildPamSnippet(dir);
     const base = pamUserDbBasePath(ftpsPaths(dir).userDb);

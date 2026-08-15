@@ -487,5 +487,6 @@
   "queueDeferred": "বিলম্বিত",
   "deleteQueueTitle": "এই সারির মেইল মুছবেন?",
   "deleteQueueDesc": "স্থানীয় MTA সারি থেকে {{id}} সরান। YSK_EXECUTE লাগে।",
-  "openQueuePage": "মেইল সারি খুলুন"
+  "openQueuePage": "মেইল সারি খুলুন",
+  "healthUnchecked": "Not checked yet"
 }

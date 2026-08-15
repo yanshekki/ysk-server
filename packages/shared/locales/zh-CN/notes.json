@@ -1341,7 +1341,7 @@
     "n1120": "無暫停域名 — map 為空（系統应用後會 postmap 空檔）",
     "n1121": "無有效 IP",
     "n1122": "無模組時政策仍可用於嫌疑人 auto-ban enrich",
-    "n1123": "无法 ban 到系統：需 YSK_EXECUTE；已記到面板 ban 清單",
+    "n1123": "無法封鎖到主機：未開啟系統變更權限。面板清單沒有新增。",
     "n1124": "无法 dump Redis：缺 redis-cli",
     "n1125": "无法 dump：服务器未开启系統变更权限",
     "n1126": "无法 fan-out：未开启系統变更权限",
@@ -1829,6 +1829,8 @@
     "n1608": "验证碼无效",
     "n1609": "验证通过",
     "n1610": "未刷新套件索引（未开 YSK_EXECUTE）— 仅显示 apt list；开启 EXECUTE 才运行 apt-get update",
+    "n1611": "UFW 已關閉：user.rules 有 {{n}} 條永久拒規則，但核心未強制執行。",
+    "n1612": "UFW 已關閉。拒絕規則只會寫入 user.rules，核心不會丟棄封包。請先啟用 UFW。不會自動開啟。",
     "t0001": "listenPort 无效：{{v0}}",
     "t0002": "已還原版本 {{v0}}",
     "t0003": "文件過大（>{{v0}} bytes）",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "已删除客户端配置",
     "sessionStartCwd": "VNC 启动失败：工作目录会话用户无权访问（display :{{display}}）。已改为从 HOME 启动。",
     "desktopRestarted": "应用桌面配置文件并重新启动会话 ({{desktop}})。重新连接 VNC/noVNC。",
-    "desktopNeedsStart": "桌面配置文件 {{desktop}} 写入 xstartup。启动会话以进行申请。"
+    "desktopNeedsStart": "桌面配置文件 {{desktop}} 写入 xstartup。启动会话以进行申请。",
+    "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。"
   },
   "apache": {
     "needServerName": "需要域名",

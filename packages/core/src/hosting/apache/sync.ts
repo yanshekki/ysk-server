@@ -64,6 +64,8 @@ export async function syncApacheConfigs(opts: {
   }
 
   // Detect Debian apache2 vs RHEL httpd
+  await hardenApacheBackend(opts.host, notes);
+
   const isDebian = await binOk(opts.host, 'apache2ctl');
   const targetSites = isDebian
     ? '/etc/apache2/sites-available'
@@ -186,6 +188,35 @@ async function binOk(host: HostExecutor, bin: string): Promise<boolean> {
 
 function shell(s: string): string {
   return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+/** Apache is the PHP backend on 127.0.0.1:8080 — not a public :80 default site. */
+export async function hardenApacheBackend(
+  host: HostExecutor,
+  notes: string[],
+): Promise<void> {
+  if (!host.pathExists('/etc/apache2')) return;
+  const bind = process.env.YSK_APACHE_BACKEND_BIND || '127.0.0.1';
+  const port = process.env.YSK_APACHE_BACKEND_PORT || '8080';
+  const script = `
+set -e
+if [ -x /usr/sbin/a2dissite ]; then
+  a2dissite 000-default 2>/dev/null || true
+  a2dissite default-ssl 2>/dev/null || true
+fi
+if [ -d /etc/apache2 ]; then
+  cat > /etc/apache2/ports.conf <<EOF
+# Managed by YSK — Apache PHP backend; Nginx owns public :80/:443
+Listen ${bind}:${port}
+EOF
+fi
+`.trim();
+  const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 20_000 });
+  notes.push(
+    r.exitCode === 0
+      ? `Apache backend ${bind}:${port}; stock 000-default disabled`
+      : `Apache backend harden failed: ${(r.stderr || r.stdout).slice(0, 160)}`,
+  );
 }
 
 // silence unused

@@ -468,7 +468,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                   .finally(() => setBusy(false));
               }}
             >
-              Strict dry-run
+              {t('security.ssh.strictDryRun')}
             </Button>
             <Button
               variant="primary"

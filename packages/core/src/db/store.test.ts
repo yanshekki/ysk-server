@@ -123,4 +123,157 @@ describe('JsonStore', () => {
     s.close();
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('does not drop another process project when persisting settings', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-race-'));
+    const path = join(dir, 'ysk.json');
+    const serve = new JsonStore(path);
+    serve.snapshot.settings.theme = 'dark';
+    serve.persist();
+
+    const cli = new JsonStore(path);
+    cli.snapshot.projects.push({
+      id: 'p-cli',
+      name: 'qa35-php',
+      runtime: 'php',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as (typeof cli.snapshot.projects)[number]);
+    cli.persist();
+    cli.close();
+
+    serve.snapshot.settings.log_hint = '1';
+    serve.persist();
+    expect(serve.snapshot.projects.map((p) => p.id)).toContain('p-cli');
+    expect(serve.snapshot.settings.theme).toBe('dark');
+    expect(serve.snapshot.settings.log_hint).toBe('1');
+
+    const again = new JsonStore(path);
+    expect(again.snapshot.projects.map((p) => p.id)).toContain('p-cli');
+    again.close();
+    serve.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('does not clobber totp when a stale process persists settings', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-totp-'));
+    const path = join(dir, 'ysk.json');
+    const serve = new JsonStore(path);
+    const created = '2026-01-01T00:00:00.000Z';
+    serve.snapshot.users.push({
+      id: 'u-admin',
+      username: 'admin',
+      password_hash: 'h0',
+      password_salt: 's0',
+      roles: ['admin'],
+      locale: 'en',
+      created_at: created,
+      updated_at: created,
+    });
+    serve.persist();
+
+    const enroll = new JsonStore(path);
+    const u = enroll.snapshot.users.find((x) => x.id === 'u-admin');
+    expect(u).toBeDefined();
+    u!.totp_secret = 'yskenc:v1:secret';
+    u!.totp_enabled = true;
+    u!.totp_recovery_hashes = ['hash-a', 'hash-b'];
+    u!.updated_at = '2026-01-02T00:00:00.000Z';
+    enroll.persist();
+    enroll.close();
+
+    serve.snapshot.settings.log_hint = '1';
+    serve.persist();
+    const kept = serve.snapshot.users.find((x) => x.id === 'u-admin');
+    expect(kept?.totp_enabled).toBe(true);
+    expect(kept?.totp_secret).toBe('yskenc:v1:secret');
+    expect(kept?.totp_recovery_hashes).toEqual(['hash-a', 'hash-b']);
+
+    const again = new JsonStore(path);
+    const row = again.snapshot.users.find((x) => x.id === 'u-admin');
+    expect(row?.totp_enabled).toBe(true);
+    expect(row?.totp_secret).toBe('yskenc:v1:secret');
+    again.close();
+    serve.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('keeps totp from disk when this process only changes the password', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-totp-pw-'));
+    const path = join(dir, 'ysk.json');
+    const serve = new JsonStore(path);
+    const created = '2026-01-01T00:00:00.000Z';
+    serve.snapshot.users.push({
+      id: 'u-admin',
+      username: 'admin',
+      password_hash: 'h0',
+      password_salt: 's0',
+      roles: ['admin'],
+      locale: 'en',
+      created_at: created,
+      updated_at: created,
+    });
+    serve.persist();
+
+    const enroll = new JsonStore(path);
+    const eu = enroll.snapshot.users.find((x) => x.id === 'u-admin')!;
+    eu.totp_secret = 'yskenc:v1:secret';
+    eu.totp_enabled = true;
+    eu.updated_at = '2026-01-02T00:00:00.000Z';
+    enroll.persist();
+    enroll.close();
+
+    const su = serve.snapshot.users.find((x) => x.id === 'u-admin')!;
+    su.password_hash = 'h1';
+    su.password_salt = 's1';
+    su.updated_at = '2026-01-03T00:00:00.000Z';
+    serve.persist();
+    const merged = serve.snapshot.users.find((x) => x.id === 'u-admin')!;
+    expect(merged.totp_enabled).toBe(true);
+    expect(merged.totp_secret).toBe('yskenc:v1:secret');
+    expect(merged.password_hash).toBe('h1');
+
+    const again = new JsonStore(path);
+    const row = again.snapshot.users.find((x) => x.id === 'u-admin')!;
+    expect(row.totp_enabled).toBe(true);
+    expect(row.totp_secret).toBe('yskenc:v1:secret');
+    expect(row.password_hash).toBe('h1');
+    again.close();
+    serve.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('does not re-enable WebDAV when a stale process persists theme', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-webdav-'));
+    const path = join(dir, 'ysk.json');
+    const serve = new JsonStore(path);
+    serve.snapshot.settings.webdav_settings = JSON.stringify({
+      enabled: true,
+      mountPath: '/webdav',
+      tokenHash: 'abc',
+      tokenId: 'tok1',
+    });
+    serve.persist();
+
+    const other = new JsonStore(path);
+    other.snapshot.settings.webdav_settings = JSON.stringify({
+      enabled: false,
+      mountPath: '/webdav',
+    });
+    other.persist();
+    other.close();
+
+    serve.snapshot.settings.theme = 'dark';
+    serve.persist();
+    const parsed = JSON.parse(serve.snapshot.settings.webdav_settings ?? '{}') as {
+      enabled?: boolean;
+    };
+    expect(parsed.enabled).toBe(false);
+
+    const again = new JsonStore(path);
+    expect(JSON.parse(again.snapshot.settings.webdav_settings ?? '{}').enabled).toBe(false);
+    again.close();
+    serve.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
 });

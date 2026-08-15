@@ -102,5 +102,6 @@
   "disableConfirmTitle": "Désactiver UFW ?",
   "disableConfirmDesc": "Le pare-feu de l’hôte cessera de filtrer le trafic. Sur un réseau public, SSH et le panneau peuvent être exposés.",
   "disableConfirmConsequence": "Les règles d’autorisation/refus restent enregistrées mais ne s’appliquent plus tant que UFW n’est pas réactivé.",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans"
+  "toolHintFail2ban": "fail2ban = temporary log-based bans",
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
 }

@@ -433,7 +433,9 @@ export function VncPage() {
                   render: (a) => (
                     <span>
                       :{a.display}{' '}
-                      <span className="muted">({a.rfbPort})</span>
+                      <span className="muted">
+                        RFB {a.rfbPort} · noVNC {6080 + Number(a.display)}
+                      </span>
                     </span>
                   ),
                 },

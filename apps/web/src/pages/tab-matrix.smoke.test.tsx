@@ -808,7 +808,7 @@ const matrix: Array<{
   {
     name: 'Security',
     base: '/security',
-    tabs: ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'],
+    tabs: ['account', 'keys', 'ssh', 'approvals', 'tools', 'about'],
     el: <SecurityPage /> },
   {
     name: 'Users',

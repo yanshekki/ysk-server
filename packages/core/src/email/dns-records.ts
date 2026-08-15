@@ -257,6 +257,8 @@ export function planEmailStackInstall(domain: string): {
       `postconf -e "myhostname = mail.${domain}"`,
       `postconf -e "myorigin = ${domain}"`,
       'postconf -e "smtpd_tls_security_level = may"',
+      `postconf -e "virtual_mailbox_domains = ${domain}"`,
+      'postconf -e "mydestination = localhost, localhost.localdomain"',
     ],
     ports: [25, 465, 587, 993, 995],
     notes: [tl('email.stack.tlsNote'), tl('email.stack.externalNote')] };

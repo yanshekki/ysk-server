@@ -10,6 +10,42 @@
 - `dig` / Redis GET·KEYS are read-only (no EXECUTE)
 - Create-project modal is opaque; CDN tab is not `站點 {{n}}`; fail2ban stop copy is honest
 - Readiness export toast uses a real string; file names cannot contain `/`
+- `defense ban --execute` without `YSK_EXECUTE` does not write a fake panel ban; `fail2ban-client status` / `ufw status` are read-only
+- UFW deny while inactive is not `ok` (rules would not hit the kernel); probe lists `user.rules` as configured, not live
+- Protection 「活躍封禁」and the 封禁 tab count are enforced bans only (no suspect-count badge; no fail2ban+panel double row)
+- CLI and panel no longer clobber each other’s `ysk.json` (lock + merge) — CLI-created projects stay listed
+- Deploy prunes orphan `ysks_*` nginx vhosts so a vanished project cannot shadow a live `server_name`
+- `hosting postgres-provision` uses `postgres` peer auth (unix socket), not `psql -h 127.0.0.1` as root
+- Rust scaffold / deploy defaults to `./target/release/<crate>` — missing `./app` does not write a 203/EXEC unit
+- vsftpd apply does not enable TLS without a certificate; FTP CLI create no longer prints `password_plain`
+- MariaDB→MySQL switch initializes an empty datadir and rolls back when the target unit will not start
+- `ysk-server db databases|users` lists live `SHOW DATABASES` / `mysql.user` (no passwords)
+- CLI `--limit` / `--offset` slices large JSON (`software list`, `updates inventory`, `host metrics`, `rbac audit`)
+- Email health 10/100 without a probe is labelled **not checked**; project 更多 tab no longer greys the header as busy
+- Public files suggests `files.<host>`; uninstalled `/services` rows have one install CTA
+- Firewall services tab warns when UFW is off; uninstalled vsftpd/MySQL rows are marked 未安裝
+- MariaDB / MySQL pages show live `SHOW DATABASES` names so a running engine is not “0 databases”
+- DNS zone list offers a create-zone action for email domains that have no zone
+- `runtimes install` / `hosting runtime-install` need `--kind`; software uninstall-preview needs a target
+- Same-id store merge no longer clobbers another process’s TOTP or password; /security does not treat a failed TOTP load as 「未設定」
+- Passkey register is disabled when the page is not a usable WebAuthn context; step-up is disabled until a passkey exists
+- `/security` leftover English (change-password / fail2ban) is translated in all 13 locales
+- SSH test-connection keeps the result in the dialog and a top-right toast; Strict preview is no longer hardcoded English
+- `?tab=ssh&ssh=system` opens 系統 sshd (URL rewritten); unknown SSH slugs no longer silently stay as outbound
+- SSH 「異常」 badges show `lastVerifyNote`
+- Store settings merge no longer re-enables WebDAV or drops `last_backup_run` when another process persist()s
+- WebDAV PUT is an empty 201; `/webdav/../` is 400; `/share/<token>` serves the file (not the SPA)
+- `users delete` / `projects delete` / `nginx delete` / `ssl issue --domain` / `email send` / `dns zone --delete` / `dns records add` are real CLI
+- Unknown Host/SNI hits a catch-all `default_server` (`ssl_reject_handshake`) instead of another site
+- VNC password fails closed without `vncpasswd` (TigerVNC hint); VPN failures toast
+- Cron `%` error explains crontab newlines; merge comments do not pile up; `cron status`.lastInstall follows last install
+- `dns health` does not treat systemd-resolved `127.0.0.53` as a product nameserver
+- `projects backup` updates `backup status`.lastRun; tarball excludes `.env` / `.db.env` and notes no SQL dump
+- Postfix apply sets `virtual_mailbox_domains` and keeps the apex out of `mydestination`; Dovecot is not pointed at missing LE files
+- Public files can turn autoindex off; hostname is a link; root terminal asks before opening a PTY
+- Nginx catch-all owns `:80`/`:443 default_server` (unknown SNI is not hello); other `default_server` flags and leftover `ysk-*` / old `public-files-*` vhosts are removed
+- Apache PHP backend stays on `127.0.0.1:8080`; stock `000-default` is disabled so `php.*` is not “It works”
+- Security 「允許清單」 tab is labelled 工具權限 / Agent tools (`?tab=allowlist` still works)
 
 ## 1.0.35 — 2026-08-15
 

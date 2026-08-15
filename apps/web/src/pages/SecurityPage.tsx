@@ -1,5 +1,5 @@
 /**
- * Security — 2FA · API Keys · SSH 工作台 · 審批 · Allowlist
+ * Security — 2FA · API Keys · SSH 工作台 · 審批 · Agent tools
  * SSH UX lives in features/security/ssh (job-to-be-done workspace).
  */
 import { useCallback, useEffect, useState } from 'react';
@@ -33,7 +33,8 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindCheck, bindVoid } from './bind-handlers';
 
-const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'] as const;
+const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'tools', 'about'] as const;
+const TAB_ALIASES: Record<string, string> = { allowlist: 'tools', perms: 'tools' };
 
 type SessionRow = {
   id: string;
@@ -232,7 +233,7 @@ export function mapWebAuthnError(
   return t('security.webauthnFailed');
 }
 
-/** Pre-flight before calling @simplewebauthn/browser — still allows click; returns error text. */
+/** Pre-flight before calling @simplewebauthn/browser. Callers should also disable when blocked. */
 export function preflightWebAuthn(
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string | null {
@@ -243,13 +244,16 @@ export function SecurityPage() {
   const { t } = useTranslation();
   const { tools, approvals, error, result, busy, approve } = useSecurity();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = usePageTab(TAB_IDS, 'account');
+  const [tab, setTab] = usePageTab(TAB_IDS, 'account', { aliases: TAB_ALIASES });
   const [createKeyOpen, setCreateKeyOpen] = useState(false);
   const [totpStatus, setTotpStatus] = useState<{
     enabled: boolean;
     enrolled: boolean;
     recoveryRemaining?: number;
-  } | null>(null);  const [passkeyErr, setPasskeyErrRaw] = useState<string | null>(null);
+  } | null>(null);
+  const [totpLoad, setTotpLoad] = useState<'loading' | 'ok' | 'error'>('loading');
+  const [passkeyCount, setPasskeyCount] = useState<number | null>(null);
+  const [passkeyErr, setPasskeyErrRaw] = useState<string | null>(null);
   const setPasskeyErr = useCallback((text: string | null) => {
     if (text) toast.error(text);
     setPasskeyErrRaw(null);
@@ -311,7 +315,19 @@ export function SecurityPage() {
   }, [tab, searchParams, setSearchParams]);
 
   const refreshTotp = useCallback(async () => {
-    setTotpStatus(await api.totpStatus());
+    try {
+      setTotpStatus(await api.totpStatus());
+      setTotpLoad('ok');
+    } catch (e) {
+      setTotpLoad((prev) => (prev === 'ok' ? 'ok' : 'error'));
+      toast.error(e instanceof Error ? e.message : t('security.totpStatusLoadFailed'));
+      throw e;
+    }
+  }, [t]);
+
+  const refreshPasskeys = useCallback(async () => {
+    const r = await api.requestRaw<{ items?: unknown[] }>('/api/v1/auth/webauthn/credentials');
+    setPasskeyCount((r.items ?? []).length);
   }, []);
 
   const refreshKeys = useCallback(async () => {
@@ -356,7 +372,18 @@ export function SecurityPage() {
     void refreshKeys().catch(() => undefined);
     void refreshSessions().catch(() => undefined);
     void refreshPolicy().catch(() => undefined);
-  }, [refreshTotp, refreshKeys, refreshSessions, refreshPolicy]);
+    void refreshPasskeys().catch(() => undefined);
+  }, [refreshTotp, refreshKeys, refreshSessions, refreshPolicy, refreshPasskeys]);
+
+  const totpKnown = totpLoad === 'ok' && totpStatus != null;
+  const totpOn = Boolean(totpKnown && totpStatus.enabled);
+  const totpPending = Boolean(totpKnown && totpStatus.enrolled && !totpStatus.enabled);
+  const passkeyEnv = getWebAuthnEnv();
+  const passkeyBlocked = !passkeyEnv.likelyOk;
+  const passkeyBlockReason = passkeyBlocked
+    ? diagnoseWebAuthnBlocker(t, passkeyEnv) ?? t('security.webauthnUnavailableHint')
+    : null;
+  const noPasskeyRegistered = passkeyCount === 0;
 
   const allowed = tools.filter((tool) => tool.allowed).length;
   const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
@@ -383,15 +410,25 @@ export function SecurityPage() {
           label:
             approvals.length > 0
               ? t('security.pillPending', { count: approvals.length })
-              : totpStatus?.enabled
-                ? t('security.pillReady')
-                : t('security.pill2faOff'),
-          tone: approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn' },
+              : !totpKnown
+                ? '—'
+                : totpOn
+                  ? t('security.pillReady')
+                  : totpPending
+                    ? t('security.totpEnrolledUnconfirmed')
+                    : t('security.pill2faOff'),
+          tone: approvals.length > 0 ? 'warn' : !totpKnown ? 'neutral' : totpOn ? 'ok' : 'warn' },
         items: [
           {
             label: t('security.stat2fa'),
-            value: totpStatus?.enabled ? t('common.on') : t('common.off'),
-            tone: totpStatus?.enabled ? 'ok' : 'warn' },
+            value: !totpKnown
+              ? '—'
+              : totpOn
+                ? t('common.on')
+                : totpPending
+                  ? t('security.totpEnrolledUnconfirmed')
+                  : t('common.off'),
+            tone: !totpKnown ? 'neutral' : totpOn ? 'ok' : 'warn' },
           { label: t('security.statApi'), value: apiKeys.length },
           {
             label: t('security.statSsh'),
@@ -411,7 +448,7 @@ export function SecurityPage() {
             label: t('security.tabSsh'),
             badge: sshCounts.identities + sshCounts.loginKeys || undefined },
           { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
-          { id: 'allowlist', label: t('security.tabAllowlist'), badge: tools.length || undefined },
+          { id: 'tools', label: t('security.tabAllowlist'), badge: tools.length || undefined },
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -627,20 +664,22 @@ export function SecurityPage() {
 
             <Card>
               <CardSection title={t('security.passkeyTitle')}>
-                {(() => {
-                  const env = getWebAuthnEnv();
-                  if (env.likelyOk) return null;
-                  return (
-                    <Alert variant="warn" className="u-mb-3">
-                      {diagnoseWebAuthnBlocker(t, env) ?? t('security.webauthnUnavailableHint')}
-                    </Alert>
-                  );
-                })()}
+                {passkeyBlockReason ? (
+                  <Alert variant="warn" className="u-mb-3">
+                    {passkeyBlockReason}
+                  </Alert>
+                ) : noPasskeyRegistered ? (
+                  <Alert variant="info" className="u-mb-3">
+                    {t('security.noPasskey')}
+                  </Alert>
+                ) : null}
                 <ActionBar className="u-mb-3">
                   <Button
                     variant="primary"
                     size="sm"
                     loading={totpBusy}
+                    disabled={passkeyBlocked}
+                    title={passkeyBlockReason ?? undefined}
                     onClick={() => {
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
@@ -682,6 +721,7 @@ export function SecurityPage() {
                               ? t('security.passkeyRegistered')
                               : (fin.notes ?? []).join(' · ') || t('common.failed'),
                           );
+                          if (fin.ok) await refreshPasskeys();
                         } catch (e) {
                           setPasskeyErr(mapWebAuthnError(e, t));
                         } finally {
@@ -696,6 +736,11 @@ export function SecurityPage() {
                     variant="secondary"
                     size="sm"
                     loading={totpBusy}
+                    disabled={passkeyBlocked || noPasskeyRegistered}
+                    title={
+                      passkeyBlockReason ??
+                      (noPasskeyRegistered ? t('security.noPasskey') : undefined)
+                    }
                     onClick={() => {
                       setPasskeyErr(null);
                       setPasskeyMsg(null);
@@ -805,7 +850,9 @@ export function SecurityPage() {
                         .catch((e: Error) => toast.error(e.message));
                     }}
                   >
-                    {t('security.generateFail2ban')}
+                    {t('security.generateFail2ban', {
+                      defaultValue: 'Generate fail2ban snippets',
+                    })}
                   </Button>
                 </FormActions>
               </CardSection>
@@ -833,9 +880,9 @@ export function SecurityPage() {
                   <input
                     type="checkbox"
                     checked={requireStrict}
-                    disabled={!totpStatus?.enrolled && !totpStatus?.enabled}
+                    disabled={totpKnown && !totpStatus.enrolled && !totpStatus.enabled}
                     title={
-                      !totpStatus?.enrolled && !totpStatus?.enabled
+                      totpKnown && !totpStatus.enrolled && !totpStatus.enabled
                         ? t('security.strictNeedsEnrolled')
                         : undefined
                     }
@@ -843,7 +890,7 @@ export function SecurityPage() {
                   />
                   <span>{t('security.strictAdmin2fa')}</span>
                 </label>
-                {!totpStatus?.enrolled && !totpStatus?.enabled ? (
+                {totpKnown && !totpStatus.enrolled && !totpStatus.enabled ? (
                   <p className="muted u-text-sm u-mt-1">{t('security.strictNeedsEnrolled')}</p>
                 ) : null}
                 <Field
@@ -851,9 +898,7 @@ export function SecurityPage() {
                   htmlFor="pol-totp"
                   className="u-mt-4"
                   hint={
-                    !totpStatus?.enabled
-                      ? t('security.policyTotpNeedSelf')
-                      : undefined
+                    totpKnown && !totpOn ? t('security.policyTotpNeedSelf') : undefined
                   }
                 >
                   <input
@@ -1043,7 +1088,7 @@ export function SecurityPage() {
           </div>
         ) : null}
 
-        {tab === 'allowlist' ? (
+        {tab === 'tools' ? (
           <div className="tab-panel">
             {error ? (
               <Alert variant="error" className="u-mb-3">

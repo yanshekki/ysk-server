@@ -467,3 +467,77 @@ export function listManagedDnsZones(dataDir: string): Array<{
     };
   });
 }
+
+export function deleteManagedDnsZone(
+  dataDir: string,
+  zoneRaw: string,
+): { ok: boolean; zone: string; notes: string[]; removed: string[] } {
+  const zone = assertZoneName(zoneRaw);
+  const dir = join(dataDir, 'dns', 'zones');
+  const zonePath = join(dir, `${zone}.zone`);
+  const metaPath = join(dir, `${zone}.json`);
+  const notes: string[] = [];
+  const removed: string[] = [];
+  if (!existsSync(zonePath) && !existsSync(metaPath)) {
+    return { ok: false, zone, notes: [tl('notes.auto.n0483')], removed };
+  }
+  for (const p of [zonePath, metaPath]) {
+    if (!existsSync(p)) continue;
+    try {
+      unlinkSync(p);
+      removed.push(p);
+    } catch (e) {
+      notes.push(e instanceof Error ? e.message : String(e));
+    }
+  }
+  notes.push(
+    removed.length
+      ? `removed managed zone files for ${zone} (live nameserver unchanged until reload)`
+      : `no files removed for ${zone}`,
+  );
+  return { ok: removed.length > 0, zone, notes, removed };
+}
+
+const DNS_RECORD_TYPES = new Set(['A', 'AAAA', 'TXT', 'CNAME', 'MX', 'NS', 'SRV', 'CAA']);
+
+export function appendManagedDnsRecord(input: {
+  dataDir: string;
+  zone: string;
+  name: string;
+  type: string;
+  data: string;
+  ttl?: number;
+}): { ok: boolean; notes: string[]; zonePath?: string } {
+  const zone = assertZoneName(input.zone);
+  const type = String(input.type ?? '').trim().toUpperCase();
+  const data = String(input.data ?? '').trim();
+  const nameRaw = String(input.name ?? '').trim() || '@';
+  if (!DNS_RECORD_TYPES.has(type) || !data) {
+    return { ok: false, notes: ['need --type A|AAAA|TXT|CNAME|MX|NS and --data'] };
+  }
+  const dir = join(input.dataDir, 'dns', 'zones');
+  const zonePath = join(dir, `${zone}.zone`);
+  if (!existsSync(zonePath)) {
+    return { ok: false, notes: [`zone file missing: ${zonePath}`] };
+  }
+  const owner =
+    nameRaw === '@' || nameRaw === zone || nameRaw === `${zone}.`
+      ? '@'
+      : nameRaw.endsWith(`.${zone}`)
+        ? nameRaw.slice(0, -(zone.length + 1))
+        : nameRaw.replace(/\.$/, '');
+  const ttl = Number.isFinite(input.ttl) && (input.ttl ?? 0) > 0 ? String(input.ttl) : '';
+  const value =
+    type === 'TXT' && !data.startsWith('"') ? `"${data.replace(/"/g, '\\"')}"` : data;
+  const line = ttl
+    ? `${owner}\t${ttl}\tIN\t${type}\t${value}`
+    : `${owner}\tIN\t${type}\t${value}`;
+  const prev = readFileSync(zonePath, 'utf8');
+  const next = prev.endsWith('\n') ? `${prev}${line}\n` : `${prev}\n${line}\n`;
+  writeFileSync(zonePath, next, 'utf8');
+  return {
+    ok: true,
+    zonePath,
+    notes: [`appended ${type} ${owner} (zone file only; pass dns zone --reload to load)`],
+  };
+}

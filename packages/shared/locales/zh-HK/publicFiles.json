@@ -32,5 +32,6 @@
   "diskRoot": "磁碟根目錄",
   "filesInRoot": "項目數",
   "managedConf": "管理 conf",
-  "systemConf": "系統 conf.d"
+  "systemConf": "系統 conf.d",
+  "autoindex": "目錄列表（autoindex）"
 }

@@ -214,5 +214,7 @@
   "aboutStackTitle": "소프트웨어",
   "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요.",
   "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+  "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+  "createMailZone": "Create mail zone"
 }

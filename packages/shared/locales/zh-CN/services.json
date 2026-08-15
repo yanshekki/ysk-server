@@ -51,6 +51,7 @@
   "bootPrefix": "开机 {{state}}",
   "controlPage": "控制页",
   "manageRuntime": "安装／更新",
+  "installOrOpen": "安裝／開啟",
   "protectionTitle": "保护探测",
   "protectionSub": "只读；不改防火墙／fail2ban",
   "protectionDoneNote": "保护探测完成",

@@ -23,6 +23,15 @@ export async function writeVncPassword(input: {
     notes.push(tl('notes.vnc.passwordTooShort'));
     return { ok: false, notes };
   }
+  const passwdBin =
+    host.pathExists('/usr/bin/vncpasswd') ||
+    host.pathExists('/bin/vncpasswd') ||
+    host.pathExists('/usr/local/bin/vncpasswd');
+  if (!passwdBin) {
+    notes.push(tl('notes.vnc.passwordNeedTiger'));
+    return { ok: false, notes };
+  }
+
   if (!host.executeEnabled() || !host.isRoot()) {
     notes.push(tl('notes.vnc.passwordWrittenOnly'));
     return {
@@ -45,10 +54,12 @@ export async function writeVncPassword(input: {
 
   const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 15_000 });
   if (r.exitCode !== 0) {
+    const raw = (r.stderr || r.stdout || '').slice(0, 200);
+    const missing = /command not found|not found/i.test(raw);
     notes.push(
-      tl('notes.vnc.passwordFailed', {
-        detail: (r.stderr || r.stdout || '').slice(0, 200),
-      }),
+      missing
+        ? tl('notes.vnc.passwordNeedTiger')
+        : tl('notes.vnc.passwordFailed', { detail: raw }),
     );
     return { ok: false, notes };
   }

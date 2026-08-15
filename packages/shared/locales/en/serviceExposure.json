@@ -33,5 +33,6 @@
   "restrictedNeedSource": "Add at least one IP/CIDR or country code for restricted mode.",
   "privateStartTitle": "Expose {{service}} on the network?",
   "confirmAndStart": "Confirm and start",
-  "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed."
+  "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed.",
+  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
 }

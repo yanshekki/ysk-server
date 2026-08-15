@@ -106,7 +106,31 @@ export const CLI_VALUE_FLAGS = new Set([
   '--risk',
   '--local',
   '--job',
+  '--limit',
+  '--offset',
 ]);
+
+/** Slice a list when `--limit` / `--offset` are present. Omitted limit = full list. */
+export function applyLimit<T>(
+  items: T[],
+  args: string[],
+): {
+  items: T[];
+  meta: { total: number; shown: number; offset: number; limit: number | null };
+} {
+  const total = items.length;
+  const limitRaw = getOpt(args, '--limit');
+  const offset = Math.max(0, Number(getOpt(args, '--offset') ?? 0) || 0);
+  if (limitRaw == null || limitRaw === '') {
+    return { items, meta: { total, shown: total, offset: 0, limit: null } };
+  }
+  const limit = Math.max(0, Number(limitRaw) || 0);
+  const sliced = items.slice(offset, offset + limit);
+  return {
+    items: sliced,
+    meta: { total, shown: sliced.length, offset, limit },
+  };
+}
 
 const BOOL_GLOBALS = new Set([
   '--json',

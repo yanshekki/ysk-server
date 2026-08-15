@@ -2568,7 +2568,10 @@
     "unfreezeOk": "{{engine}} reparo concluído",
     "startAfterUnfreeze": "Iniciar serviço (executa automaticamente o plano de reparo em caso de falha)",
     "serviceDownTitle": "O serviço de banco de dados está inativo",
-    "serviceDownBody": "O serviço não é saudável"
+    "serviceDownBody": "O serviço não é saudável",
+    "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
+    "hostHasUntracked": "{{count}} host databases are not registered in the panel",
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
   },
   "dialogs": {
     "confirmDefault": "Confirmar",
@@ -2794,7 +2797,9 @@
     "aboutStackTitle": "Programas",
     "aboutStackBody": "Verifique/atualize o pacote PowerDNS em Software.",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+    "createMailZone": "Create mail zone"
   },
   "email": {
     "title": "E-mail",
@@ -3285,7 +3290,8 @@
     "queueDeferred": "Adiado",
     "deleteQueueTitle": "Eliminar esta mensagem da fila?",
     "deleteQueueDesc": "Remover {{id}} da fila MTA local. Precisa de YSK_EXECUTE.",
-    "openQueuePage": "Abrir fila de correio"
+    "openQueuePage": "Abrir fila de correio",
+    "healthUnchecked": "Not checked yet"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Não autorizado",
@@ -3903,7 +3909,8 @@
     "disableConfirmTitle": "Desativar o UFW?",
     "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
     "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado.",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
   },
   "ftp": {
     "title": "Contas FTPS",
@@ -7699,7 +7706,9 @@
       "selfVerifyFail": "O ficheiro de versão não contém {{v0}} após aplicar",
       "selfDownloadFail": "Não foi possível descarregar ou extrair o pacote oficial {{v0}}: {{v1}}",
       "selfOverlayFail": "Não foi possível aplicar o pacote oficial ao diretório em execução: {{v0}}",
-      "selfUpgradeHint": "Falha ao aplicar o painel. Como root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+      "selfUpgradeHint": "Falha ao aplicar o painel. Como root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+      "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+      "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
     },
     "tpl": {
       "deleted": "Excluído {{name}}",
@@ -8025,7 +8034,8 @@
       "clientDeleted": "Perfil do cliente excluído",
       "sessionStartCwd": "Falha na inicialização do VNC: diretório de trabalho não acessível ao usuário da sessão (exibição: {{display}}). Corrigido começando em HOME.",
       "desktopRestarted": "Perfil de desktop aplicado e sessão reiniciada ({{desktop}}). Reconecte o VNC/noVNC.",
-      "desktopNeedsStart": "Perfil da área de trabalho {{desktop}} gravado em xstartup. Inicie a sessão para se inscrever."
+      "desktopNeedsStart": "Perfil da área de trabalho {{desktop}} gravado em xstartup. Inicie a sessão para se inscrever.",
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
     },
     "apache": {
       "needServerName": "Nome do servidor obrigatório",
@@ -9157,7 +9167,8 @@
     "notes": {
       "noManagedConf": "No managed Nginx conf yet — click Apply",
       "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
-    }
+    },
+    "autoindex": "Directory listing (autoindex)"
   },
   "rbac": {
     "permissions": "Permissões",
@@ -10022,7 +10033,7 @@
     "tabApiKeys": "Chaves de API",
     "tabSsh": "SSH",
     "tabApprovals": "Aprovações",
-    "tabAllowlist": "Lista de permissões",
+    "tabAllowlist": "Ferramentas do agente",
     "apiTokenOnce": "Token de API (mostrado uma vez):",
     "copiedToken": "Token copiado",
     "totpTitle": "Dois fatores (TOTP)",
@@ -10127,8 +10138,8 @@
     "apiKeysEmpty": "Ainda não há chaves de API",
     "apiKeysEmptyHint": "Crie na barra de ferramentas; em seguida, chame a API com o token do portador",
     "approve": "Aprovar",
-    "allowlistTitle": "Lista de permissões ({{count}})",
-    "allowlistEmpty": "Nenhuma ferramenta de lista de permissões",
+    "allowlistTitle": "Ferramentas do agente ({{count}})",
+    "allowlistEmpty": "Não há ferramentas no catálogo",
     "createApiKeyTitle": "Criar chave de API",
     "createApiKeyDesc": "O token completo é mostrado apenas uma vez após a criação",
     "createKeyBtn": "Criar chave",
@@ -10371,9 +10382,11 @@
       "sharePanelDesc": "Alto risco. Digite COMPARTILHADO para confirmar.",
       "confirmString": "Sequência de confirmação",
       "enableShare": "Ativar compartilhamento",
-      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
-      "dryRunOk": "Dry-run finished. Review the preview below.",
-      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+      "invalidPub": "Cole uma linha completa de chave pública OpenSSH (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Pré-visualização concluída. Reveja o conteúdo abaixo.",
+      "strictBlocked": "O pacote ou o PAM não está pronto; a aplicação Strict está desativada.",
+      "strictDryRun": "Pré-visualização do modo estrito",
+      "errorNoDetail": "Teste falhou (sem detalhes)"
     },
     "sessionsActive": "Sessões ativas",
     "sessionsOther": "Outros dispositivos",
@@ -10398,36 +10411,37 @@
     "mySecurityHint": "",
     "policyTotpHint": "Política do site: cada administrador deve habilitar seu próprio 2FA (QR individual)",
     "requireUser2fa": "Exigir 2FA para todos os utilizadores do painel",
-    "generateFail2ban": "Generate fail2ban snippets",
-    "changePasswordTitle": "Change sign-in password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "passwordMismatch": "New passwords do not match.",
-    "changePassword": "Change password",
-    "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
-    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
-    "fail2banSnippetTitle": "fail2ban snippet",
-    "fail2banSnippetEmpty": "No snippet was written.",
-    "trustedDevicesTitle": "Trusted devices",
-    "noTrustedDevices": "No trusted devices.",
-    "strictConfirmTitle": "Turn on Strict 2FA?",
-    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
-    "revokeDevicesTitle": "Revoke trusted devices?",
-    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
-    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
-    "colTool": "Tool",
-    "colAllowed": "Allowed",
-    "colRisk": "Risk",
-    "colApproval": "Approval",
+    "generateFail2ban": "Gerar fragmentos fail2ban",
+    "changePasswordTitle": "Alterar a palavra-passe de início de sessão",
+    "currentPassword": "Palavra-passe atual",
+    "newPassword": "Nova palavra-passe",
+    "confirmNewPassword": "Confirmar nova palavra-passe",
+    "passwordMismatch": "As novas palavras-passe não coincidem.",
+    "changePassword": "Alterar palavra-passe",
+    "passwordChanged": "Palavra-passe atualizada.",
+    "strictNeedsEnrolled": "Pelo menos um administrador deve ter 2FA antes de ativar o Strict.",
+    "policyTotpNeedSelf": "Ative primeiro o 2FA nesta conta; caso contrário o código de confirmação não pode ser preenchido.",
+    "fail2banSnippetTitle": "Fragmento fail2ban",
+    "fail2banSnippetEmpty": "Nenhum fragmento foi escrito.",
+    "trustedDevicesTitle": "Dispositivos de confiança",
+    "noTrustedDevices": "Não há dispositivos de confiança.",
+    "strictConfirmTitle": "Ativar 2FA Strict?",
+    "strictConfirmDesc": "Utilizadores sem 2FA serão recusados. Confirme que já tem TOTP ou Passkey a funcionar.",
+    "revokeDevicesTitle": "Revogar dispositivos de confiança?",
+    "revokeDevicesDesc": "Os browsers memorizados voltarão a pedir 2FA.",
+    "approvalsHint": "As aprovações aparecem quando uma ferramenta de alto risco precisa de um segundo operador. Configure permissões em Utilizadores → Permissões.",
+    "allowlistReadonly": "Catálogo de ferramentas do agente (só leitura). As capacidades configuram-se em Utilizadores → Permissões.",
+    "colTool": "Ferramenta",
+    "colAllowed": "Permitido",
+    "colRisk": "Risco",
+    "colApproval": "Aprovação",
     "risk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    }
+      "low": "Baixo",
+      "medium": "Médio",
+      "high": "Alto",
+      "critical": "Crítico"
+    },
+    "totpStatusLoadFailed": "Não foi possível carregar o estado 2FA"
   },
   "serviceExposure": {
     "title": "Acesso à rede",
@@ -10464,7 +10478,8 @@
     "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
     "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
     "roleSmtp": "SMTP submission",
-    "roleImap": "IMAP / POP3 mailbox"
+    "roleImap": "IMAP / POP3 mailbox",
+    "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
   },
   "services": {
     "enabledBoot": "Na inicialização",
@@ -10524,7 +10539,8 @@
     "notProbedYet": "Ainda não foi investigado",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
+    "installOrOpen": "Install / open"
   },
   "software": {
     "title": "Programas",

@@ -29,6 +29,8 @@ export type FirewallDeepStatus = {
   denyFromIps: string[];
   allowCount: number;
   denyCount: number;
+  configuredDenyFromIps?: string[];
+  configuredDenyCount?: number;
   defaultIncoming?: string;
   defaultOutgoing?: string;
   executeEnabled: boolean;
@@ -88,6 +90,21 @@ export function parseUfwNumbered(lines: string[]): UfwRule[] {
   return out;
 }
 
+/** Parse `/etc/ufw/user.rules` DROP/REJECT source IPs (inactive UFW still stores these). */
+export function parseUfwUserRulesDenyIps(body: string): string[] {
+  const ips: string[] = [];
+  for (const line of String(body ?? '').split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    if (!/-j\s+(DROP|REJECT)\b/i.test(t)) continue;
+    const m = t.match(/-s\s+(\S+)/);
+    if (!m) continue;
+    const n = normalizeIp(m[1]!.replace(/\/32$/, ''));
+    if (n && isValidIp(n)) ips.push(n);
+  }
+  return [...new Set(ips)];
+}
+
 export function extractDenyFromIps(rules: UfwRule[]): string[] {
   const ips: string[] = [];
   for (const r of rules) {
@@ -144,9 +161,27 @@ export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDee
   }
 
   const rules = parseUfwNumbered(numberedRules);
-  const denyFromIps = extractDenyFromIps(rules);
+  const liveDenyFromIps = extractDenyFromIps(rules);
   const allowCount = rules.filter((r) => /ALLOW/i.test(r.action)).length;
-  const denyCount = rules.filter((r) => /DENY|REJECT/i.test(r.action)).length;
+  const liveDenyCount = rules.filter((r) => /DENY|REJECT/i.test(r.action)).length;
+
+  let configuredDenyFromIps: string[] = [];
+  if (installed) {
+    try {
+      if (host.pathExists('/etc/ufw/user.rules')) {
+        const body = await host.readFile('/etc/ufw/user.rules');
+        configuredDenyFromIps = parseUfwUserRulesDenyIps(body);
+      }
+    } catch {
+      /* optional */
+    }
+  }
+  if (active !== 'active' && configuredDenyFromIps.length) {
+    notes.push(tl('notes.auto.n1611', { n: configuredDenyFromIps.length }));
+  }
+
+  const denyFromIps = active === 'active' ? liveDenyFromIps : [];
+  const denyCount = active === 'active' ? liveDenyCount : 0;
 
   return {
     installed,
@@ -158,6 +193,8 @@ export async function probeFirewallDeep(host: HostExecutor): Promise<FirewallDee
     denyFromIps,
     allowCount,
     denyCount,
+    configuredDenyFromIps,
+    configuredDenyCount: configuredDenyFromIps.length,
     defaultIncoming,
     defaultOutgoing,
     executeEnabled: host.executeEnabled(),
@@ -210,6 +247,10 @@ export async function firewallDenyIp(
   const safe = normalizeIp(ip.trim()) ?? '';
   if (!safe || !isValidIp(safe)) {
     return { ok: false, notes: [tl('notes.invalidIp46')] };
+  }
+  const fw = await probeFirewallDeep(host);
+  if (fw.active !== 'active') {
+    return { ok: false, notes: [tl('notes.auto.n1612')] };
   }
   const r = await host.runCommand(['ufw', 'deny', 'from', safe], { timeoutMs: 12_000 });
   return {

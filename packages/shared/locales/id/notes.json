@@ -2635,7 +2635,9 @@
     "selfVerifyFail": "Berkas versi tidak berisi {{v0}} setelah diterapkan",
     "selfDownloadFail": "Tidak dapat mengunduh atau mengekstrak paket resmi {{v0}}: {{v1}}",
     "selfOverlayFail": "Tidak dapat menerapkan paket resmi ke direktori yang berjalan: {{v0}}",
-    "selfUpgradeHint": "Penerapan panel gagal. Sebagai root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfUpgradeHint": "Penerapan panel gagal. Sebagai root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+    "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+    "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
   },
   "tpl": {
     "deleted": "Dihapus {{name}}",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "Profil klien dihapus",
     "sessionStartCwd": "Permulaan VNC gagal: direktori kerja tidak dapat diakses oleh pengguna sesi (tampilan :{{display}}). Diperbaiki dengan memulai dari RUMAH.",
     "desktopRestarted": "Profil desktop diterapkan dan sesi dimulai ulang ({{desktop}}). Hubungkan kembali VNC/noVNC.",
-    "desktopNeedsStart": "Profil desktop {{desktop}} ditulis ke xstartup. Mulai sesi untuk melamar."
+    "desktopNeedsStart": "Profil desktop {{desktop}} ditulis ke xstartup. Mulai sesi untuk melamar.",
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
   },
   "apache": {
     "needServerName": "Nama server diperlukan",

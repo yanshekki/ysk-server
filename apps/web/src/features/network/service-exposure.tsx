@@ -115,6 +115,8 @@ export type ServiceAccessStripProps = {
   compact?: boolean;
   className?: string;
   onUpdated?: () => void;
+  /** When false, do not claim public exposure — the daemon is not installed. */
+  serviceInstalled?: boolean;
 };
 
 export function ServiceAccessStrip({
@@ -124,6 +126,7 @@ export function ServiceAccessStrip({
   compact,
   className,
   onUpdated,
+  serviceInstalled,
 }: ServiceAccessStripProps) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<ExposureStatus | null>(null);
@@ -155,20 +158,24 @@ export function ServiceAccessStrip({
     (status?.firewallActive != null &&
       status.firewallActive !== 'active' &&
       !/active/i.test(status.firewallActive));
+  const missingService = serviceInstalled === false;
   const displayModeLabel = !loaded
     ? t('serviceExposure.modeLoading')
-    : fwOff
-      ? t('serviceExposure.firewallOff')
-      : !decided
-        ? t('serviceExposure.modeUndecided')
-        : modeLabel(mode, t);
+    : missingService
+      ? t('common.notInstalled')
+      : fwOff
+        ? t('serviceExposure.firewallOff')
+        : !decided
+          ? t('serviceExposure.modeUndecided')
+          : modeLabel(mode, t);
   const displayTone: BadgeTone = !loaded
     ? 'neutral'
-    : fwOff || !decided
+    : missingService || fwOff || !decided
       ? 'warn'
       : modeTone(mode, inSync);
   const summary = useMemo(() => {
     if (!loaded) return t('common.loading');
+    if (missingService) return t('serviceExposure.serviceNotInstalled');
     if (fwOff) {
       return `${t('serviceExposure.summaryNotEnforced')} ${t('serviceExposure.summaryFirewallOff', {
         detail:
@@ -187,7 +194,7 @@ export function ServiceAccessStrip({
       return t('serviceExposure.summaryRestricted', { count: n });
     }
     return t('serviceExposure.summaryPublic', { ports: formatPorts(ports) });
-  }, [loaded, mode, ports, status, fwOff, decided, t]);
+  }, [loaded, mode, ports, status, fwOff, decided, missingService, t]);
 
   return (
     <>

@@ -32,6 +32,8 @@
   "zonesTitle": "Zones ({{count}})",
   "zonesDesc": "After create, write/apply the zone",
   "createZone": "+ Create zone",
+  "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
+  "createMailZone": "Create mail zone",
   "colZoneName": "Zone name",
   "colServerIp": "Server IP",
   "colTemplate": "Template",

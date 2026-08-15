@@ -279,11 +279,21 @@ export function assertSafeCronSchedule(schedule: string): string {
 /** Reject crontab line injection in command body. */
 export function assertSafeCronCommand(command: string): string {
   const c = command.trim();
-  if (!c || /[\r\n%]/.test(c)) {
+  if (!c || /[\r\n]/.test(c)) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
       httpStatus: 400,
       details: { reason: 'cron_command_injection' },
     });
+  }
+  if (/(?<!\\)%/.test(c)) {
+    throw new YskError(
+      ErrorCodes.VALIDATION,
+      'crontab treats unescaped % as a newline. Write date formats as \\%Y (or avoid %).',
+      {
+        httpStatus: 400,
+        details: { reason: 'cron_percent_newline' },
+      },
+    );
   }
   if (c.length > 4000) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {

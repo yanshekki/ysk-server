@@ -7,7 +7,7 @@
 
 Global flags and exit codes: [overview.md](./overview.md).
 
-Unless noted, add `--json` and `--data-dir PATH` as needed.
+Unless noted, add `--json` and `--data-dir PATH` as needed. Large JSON lists accept `--limit N --offset N`. CLI messages default to English (`--locale` / `YSK_LOCALE`).
 
 ---
 

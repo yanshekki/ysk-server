@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import { previewSqlEngineSwitch } from './preview.js';
+import { previewSqlEngineSwitch, parseShowDatabasesOutput, listUserDatabaseNames } from './preview.js';
 import { switchSqlEngine, EXCLUSIVE_SWITCH_AUTH, listDumpSqlFiles } from './migrate.js';
 import { installSoftware } from '../software-install.js';
 import { getSoftware } from '../software-catalog.js';
@@ -91,6 +91,22 @@ function mockHost(opts: {
     },
   };
 }
+
+describe('listUserDatabaseNames', () => {
+  it('drops system schemas from SHOW DATABASES', () => {
+    expect(
+      parseShowDatabasesOutput('information_schema\nmysql\nsys\nperformance_schema\napp\n'),
+    ).toEqual(['app']);
+  });
+
+  it('reads names via the mysql/mariadb client argv', async () => {
+    const names = await listUserDatabaseNames(
+      mockHost({ flavor: 'mariadb', dbs: ['hello', 'mail'] }),
+      'mariadb',
+    );
+    expect(names).toEqual(['hello', 'mail']);
+  });
+});
 
 describe('sql-engine-switch', () => {
   it('preview: MariaDB host targeting mysql needs switch + lists dbs', async () => {

@@ -105,6 +105,7 @@
   "copyAllRecords": "Copy all records",
   "openDnsPage": "Open DNS page",
   "healthScore": "Health score",
+  "healthUnchecked": "Not checked yet",
   "suggestedRecords": "Suggested records",
   "externalTodosCount": "External todos",
   "colType": "Type",

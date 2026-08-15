@@ -870,7 +870,7 @@ export function ProtectionPage() {
           {
             id: 'bans',
             label: t('protection.tabs.bans'),
-            badge: actionableSuspects.length || status?.bans.count || undefined },
+            badge: status?.bans.count || undefined },
           {
             id: 'geo',
             label: t('protection.tabs.geo'),

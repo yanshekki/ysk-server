@@ -47,6 +47,34 @@ describe('usePageTab', () => {
     expect(disk.result.current[0]).toBe('storage');
   });
 
+  it('rewrites unknown query tabs to the default', async () => {
+    const { result } = renderHook(
+      () => usePageTab(['account', 'tools'] as const, 'account'),
+      { wrapper: wrapRouter('/?tab=nope') },
+    );
+    expect(result.current[0]).toBe('account');
+  });
+
+  it('maps allowlist / ssh=system aliases', async () => {
+    const tools = renderHook(
+      () =>
+        usePageTab(['account', 'tools'] as const, 'account', {
+          aliases: { allowlist: 'tools' },
+        }),
+      { wrapper: wrapRouter('/?tab=allowlist') },
+    );
+    expect(tools.result.current[0]).toBe('tools');
+    const sshd = renderHook(
+      () =>
+        usePageTab(['outbound', 'sshd'] as const, 'outbound', {
+          param: 'ssh',
+          aliases: { system: 'sshd' },
+        }),
+      { wrapper: wrapRouter('/?tab=ssh&ssh=system') },
+    );
+    expect(sshd.result.current[0]).toBe('sshd');
+  });
+
   it('local mode without URL sync', () => {
     const { result } = renderHook(
       () => usePageTab(['x', 'y'] as const, 'x', { syncUrl: false }),

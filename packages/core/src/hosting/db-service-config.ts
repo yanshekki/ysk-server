@@ -470,11 +470,23 @@ export async function getSqlServiceView(input: {
   host: HostExecutor;
   engine: 'mysql' | 'mariadb';
 }): Promise<
-  Awaited<ReturnType<typeof probeDbEngine>> & { settings: SqlServiceSettings }
+  Awaited<ReturnType<typeof probeDbEngine>> & {
+    settings: SqlServiceSettings;
+    hostDatabases: string[];
+  }
 > {
   const settings = loadSqlSettings(input.db, input.engine);
   const status = await probeDbEngine(input.host, input.engine as DbEngineKind);
-  return { ...status, settings };
+  let hostDatabases: string[] = [];
+  if (status.serverInstalled && status.clientInstalled && status.active === 'active') {
+    try {
+      const { listUserDatabaseNames } = await import('./sql-engine-switch/preview.js');
+      hostDatabases = await listUserDatabaseNames(input.host, input.engine);
+    } catch {
+      hostDatabases = [];
+    }
+  }
+  return { ...status, settings, hostDatabases };
 }
 
 export async function getPostgresServiceView(input: {

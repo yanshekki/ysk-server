@@ -118,6 +118,9 @@ export interface FirewallStatusDto {
   denyFromIps: string[];
   allowCount: number;
   denyCount: number;
+  /** From /etc/ufw/user.rules when UFW is inactive (not kernel-enforced). */
+  configuredDenyFromIps?: string[];
+  configuredDenyCount?: number;
   defaultIncoming?: string;
   defaultOutgoing?: string;
   executeEnabled: boolean;

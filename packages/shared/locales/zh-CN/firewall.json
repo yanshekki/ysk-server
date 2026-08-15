@@ -89,6 +89,7 @@
   "deleteRuleDesc": "将从 UFW 移除该规则编号（需系统变更权限）。",
   "servicesTitle": "托管服务端口",
   "servicesHint": "YSK 托管服务的期望网络暴露。启动服务时会自动同步这些规则。",
+  "servicesUfwOff": "UFW 已關閉。此列表只是預期暴露，並非主機上已強制執行的規則。",
   "servicesEmpty": "尚无服务暴露数据",
   "servicesEmptyDesc": "启动托管服务（Web、FTPS、VPN、数据库…）后会出现在此列表。",
   "servicesManualHint": "手动开端口 chips 在「端口」分页 — 建议在此管理，规则会带 ysk-svc 标记。",

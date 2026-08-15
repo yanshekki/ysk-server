@@ -230,13 +230,15 @@ export function ProjectDetailPage() {
     };
   }, [refreshProject, t]);
 
+  const [logsBusy, setLogsBusy] = useState(false);
+
   async function loadLogs(opts?: {
     fileName?: string;
     name?: string;
     grep?: string;
   }) {
     if (!project) return;
-    setBusy(true);
+    setLogsBusy(true);
     setError(null);
     try {
       const name = opts?.name;
@@ -281,7 +283,7 @@ export function ProjectDetailPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : t('projects.logsLoadFailed'));
     } finally {
-      setBusy(false);
+      setLogsBusy(false);
     }
   }
 
@@ -510,7 +512,7 @@ export function ProjectDetailPage() {
         {activeTab === 'more' ? (
           <div className="tab-panel stack">
             <ProjectLogsTab
-              busy={busy}
+              busy={logsBusy}
               logTail={logTail}
               files={logFiles}
               selectedFile={logFile}

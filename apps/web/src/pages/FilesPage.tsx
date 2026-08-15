@@ -673,6 +673,7 @@ export function FilesPage() {
       setWebdavTokenId(r.tokenId ? String(r.tokenId) : null);
       setWebdavUpdatedAt(new Date().toISOString());
       setMsg(r.notes?.join(' · ') ?? t('files.tokenIssued'));
+      await refreshWebdavStatus();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
@@ -690,6 +691,7 @@ export function FilesPage() {
       setWebdavTokenId(null);
       setWebdavUpdatedAt(new Date().toISOString());
       setMsg(t('files.webdavDisabled'));
+      await refreshWebdavStatus();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {

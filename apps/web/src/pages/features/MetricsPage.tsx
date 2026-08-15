@@ -1495,6 +1495,15 @@ export function MetricsPage() {
                       {alerts.length}
                     </Badge>
                   </header>
+                  <p className="muted u-text-sm">
+                    {t('metrics.alertsBuiltinOnly', {
+                      defaultValue:
+                        'Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.',
+                    })}
+                    {metrics && 'at' in metrics && (metrics as { at?: string }).at
+                      ? ` · ${t('metrics.lastEvaluated', { defaultValue: 'Last checked' })} ${new Date(String((metrics as { at?: string }).at)).toLocaleString()}`
+                      : ''}
+                  </p>
                   {alerts.length === 0 ? (
                     <div className="met-empty met-empty--ok">
                       <strong>{t('metrics.alertsOkTitle')}</strong>

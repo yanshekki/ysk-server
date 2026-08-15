@@ -189,7 +189,9 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
       <div className="totp-setup__head">
         <div className="totp-setup__title-row">
           <h3 className="totp-setup__title">{t('security.totpTitle')}</h3>
-          {enabled ? (
+          {status == null ? (
+            <Badge tone="neutral">—</Badge>
+          ) : enabled ? (
             <Badge tone="ok">{t('security.totpEnabled')}</Badge>
           ) : enrolledPending || phase === 'enroll' ? (
             <Badge tone="warn">{t('security.totpEnrolledUnconfirmed')}</Badge>
@@ -197,7 +199,7 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
             <Badge tone="neutral">{t('security.totpNotSet')}</Badge>
           )}
         </div>
-        {!enabled && phase === 'idle' ? (
+        {status == null && phase === 'idle' ? null : !enabled && phase === 'idle' ? (
           <p className="totp-setup__lead muted u-text-sm">{t('security.totpLead')}</p>
         ) : enabled && phase === 'idle' && typeof status?.recoveryRemaining === 'number' ? (
           <p className="totp-setup__lead muted u-text-sm">
@@ -315,7 +317,7 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
       ) : null}
 
       {/* —— Idle not enabled: start —— */}
-      {!enabled && phase === 'idle' ? (
+      {!enabled && phase === 'idle' && status != null ? (
         <div className="totp-setup__start">
           <Field
             label={t('security.reauthPassword')}

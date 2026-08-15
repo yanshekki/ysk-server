@@ -487,5 +487,6 @@
   "queueDeferred": "ملتوی",
   "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
   "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
-  "openQueuePage": "میل قطار کھولیں"
+  "openQueuePage": "میل قطار کھولیں",
+  "healthUnchecked": "Not checked yet"
 }

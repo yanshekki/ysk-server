@@ -61,6 +61,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
   // test modal
   const [testId, setTestId] = useState<string | null>(null);
   const [testTarget, setTestTarget] = useState('root@');
+  const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   // confirm
   const [confirm, setConfirm] = useState<
@@ -182,15 +183,21 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
     setBusy(true);
     try {
       const r = await sshApi.test(testId, testTarget.trim(), true);
-      onFlash(
-        r.ok ? 'ok' : 'error',
-        (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.testPassed') : t('security.ssh.testFailed')),
-      );
-      setTestId(null);
+      const text =
+        (r.notes ?? []).join(' · ') ||
+        (r.ok ? t('security.ssh.testPassed') : t('security.ssh.testFailed'));
+      onFlash(r.ok ? 'ok' : 'error', text);
+      setTestResult({ ok: Boolean(r.ok), text });
+      if (r.ok) {
+        setTestId(null);
+        setTestResult(null);
+      }
       await refresh();
       onChanged();
     } catch (e) {
-      onFlash('error', e instanceof Error ? e.message : t('security.ssh.testError'));
+      const text = e instanceof Error ? e.message : t('security.ssh.testError');
+      setTestResult({ ok: false, text });
+      onFlash('error', text);
     } finally {
       setBusy(false);
     }
@@ -201,6 +208,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
     if (act.id === 'install') return runInstall(row.id);
     if (act.id === 'test') {
       setTestTarget(row.binding?.linuxUser ? `${row.binding.linuxUser}@` : 'root@');
+      setTestResult(null);
       setTestId(row.id);
       return;
     }
@@ -326,7 +334,15 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                       <div className="list-row__main">
                         <div className="list-row__title">
                           <span>{row.name}</span>
-                          <Badge tone={statusTone(row.status)}>{statusLabel(row.status, t)}</Badge>
+                          <Badge
+                            tone={statusTone(row.status)}
+                            title={
+                              row.lastVerifyNote ||
+                              (row.status === 'error' ? t('security.ssh.errorNoDetail') : undefined)
+                            }
+                          >
+                            {statusLabel(row.status, t)}
+                          </Badge>
                           <Badge tone="neutral">{purposeLabel(row.purpose, t)}</Badge>
                         </div>
                         <div className="list-row__meta">
@@ -337,6 +353,11 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                             <span>{t('security.ssh.userPrefix', { user: row.binding.linuxUser })}</span>
                           ) : null}
                           <span className="muted">{row.algorithm}</span>
+                          {row.lastVerifyNote ? (
+                            <span className="muted u-text-sm">{row.lastVerifyNote}</span>
+                          ) : row.status === 'error' ? (
+                            <span className="muted u-text-sm">{t('security.ssh.errorNoDetail')}</span>
+                          ) : null}
                         </div>
                       </div>
                       <div className="list-row__side" onClick={(e) => e.stopPropagation()}>
@@ -373,7 +394,13 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
                 <div>
                   <dt>{t('security.ssh.detailStatus')}</dt>
                   <dd>
-                    <Badge tone={statusTone(selected.status)}>
+                    <Badge
+                      tone={statusTone(selected.status)}
+                      title={
+                        selected.lastVerifyNote ||
+                        (selected.status === 'error' ? t('security.ssh.errorNoDetail') : undefined)
+                      }
+                    >
                       {statusLabel(selected.status, t)}
                     </Badge>
                   </dd>
@@ -747,7 +774,14 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         description={t('security.ssh.testConnDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={bindSet(setTestId, null)}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => {
+                setTestId(null);
+                setTestResult(null);
+              }}
+            >
               {t('common.cancel')}
             </Button>
             <Button
@@ -762,6 +796,11 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
           </>
         }
       >
+        {testResult ? (
+          <Alert variant={testResult.ok ? 'ok' : 'error'} className="u-mb-3">
+            {testResult.text}
+          </Alert>
+        ) : null}
         <Field
           label={t('security.ssh.testTarget')}
           htmlFor="test-target"

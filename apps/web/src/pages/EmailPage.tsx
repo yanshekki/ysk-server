@@ -7,6 +7,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, type EmailDomain } from '../features/email';
+import { emailHealthUnprobed } from '../features/email/health-display';
 import {
   PageGuide,
   ActionBar,
@@ -557,8 +558,18 @@ export function EmailPage() {
                         >
                           {pinned ? '★' : '☆'}
                         </Button>
-                        <Badge tone={d.health_score >= 80 ? 'ok' : 'warn'}>
-                          {d.health_score}/100
+                        <Badge
+                          tone={
+                            emailHealthUnprobed(d)
+                              ? 'neutral'
+                              : d.health_score >= 80
+                                ? 'ok'
+                                : 'warn'
+                          }
+                        >
+                          {emailHealthUnprobed(d)
+                            ? t('email.healthUnchecked')
+                            : `${d.health_score}/100`}
                         </Badge>
                         <Link
                           to={`/email/domains/${d.id}`}

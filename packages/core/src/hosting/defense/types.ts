@@ -56,6 +56,8 @@ export interface BanEntry {
   jail?: string;
   reason?: string;
   at?: string;
+  /** false = listed in the panel only; kernel / fail2ban is not applying it */
+  enforced?: boolean;
 }
 
 export type AutoBanMode = 'off' | 'soft' | 'normal' | 'aggressive';

@@ -28,6 +28,57 @@ export async function handleFilesPublicRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+  const rawPath = decodeURIComponent((req.url ?? '').split('?')[0] ?? '');
+  if (/\/webdav\/(?:.*\/)?\.\.(?:\/|$)/i.test(rawPath) || rawPath.includes('/webdav/../')) {
+    sendJson(res, 400, {
+      ok: false,
+      message: tl('notes.files.pathOutsideSandbox', { target: rawPath }),
+    });
+    return true;
+  }
+
+  if (method === 'GET' && /^\/share\/[^/]+\/?$/.test(url.pathname)) {
+    const token = url.pathname.replace(/^\/share\//, '').replace(/\/$/, '');
+    const share = getShareByToken(ctx.db, token);
+    if (!share) {
+      sendJson(res, 404, { ok: false, message: tl('notes.auto.n0595') });
+      return true;
+    }
+    const password =
+      (typeof req.headers['x-share-password'] === 'string'
+        ? req.headers['x-share-password']
+        : undefined) ??
+      url.searchParams.get('password') ??
+      undefined;
+    if (share.passwordHash && !verifySharePassword(share, password)) {
+      sendJson(res, 401, {
+        ok: false,
+        needPassword: true,
+        message: tl('notes.auto.n1577'),
+        api: `/api/v1/public/files/${token}`,
+      });
+      return true;
+    }
+    try {
+      const { root } = resolveRoot(ctx, share.root, { skipCap: true });
+      const fm = new FileManager(root);
+      const file = fm.readBinary(share.path);
+      bumpShareDownload(ctx.db, token);
+      res.writeHead(200, {
+        'Content-Type': file.mime,
+        'Content-Length': file.buffer.length,
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
+      });
+      res.end(file.buffer);
+    } catch (e) {
+      sendJson(res, 404, {
+        ok: false,
+        message: e instanceof Error ? e.message : tl('notes.notFound'),
+      });
+    }
+    return true;
+  }
+
   // Minimal WebDAV on /webdav/* (Basic ysk:token only)
   if (url.pathname === '/webdav' || url.pathname.startsWith('/webdav/')) {
     const {
@@ -135,8 +186,11 @@ export async function handleFilesPublicRoutes(
       }
       const buf = Buffer.concat(chunks);
       fm.writeBase64(rel, buf.toString('base64'));
-      res.writeHead(201, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, path: rel, bytes: buf.length }));
+      res.writeHead(201, {
+        'Content-Length': 0,
+        Location: url.pathname,
+      });
+      res.end();
       return true;
     }
     sendJson(res, 405, { ok: false, message: tl('notes.auto.n0497') });

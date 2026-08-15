@@ -380,12 +380,38 @@ function isReadOnlyArgv(argv: string[]): boolean {
       sub === '--help'
     );
   }
+  if (bin === 'fail2ban-client' || bin === 'fail2ban') {
+    const sub = argv[1] ?? '';
+    return (
+      sub === '' ||
+      sub === 'status' ||
+      sub === 'ping' ||
+      sub === '--version' ||
+      sub === '-V' ||
+      sub === 'help' ||
+      sub === '--help'
+    );
+  }
+  if (bin === 'ufw') {
+    const rest = argv.slice(1).join(' ');
+    if (/\b(enable|disable|allow|deny|reject|delete|reset|reload|insert|limit)\b/i.test(rest)) {
+      return false;
+    }
+    return (
+      argv[1] === 'status' ||
+      argv[1] === 'version' ||
+      argv[1] === '--version' ||
+      argv[1] === '--help' ||
+      argv[1] === 'help' ||
+      argv[1] == null
+    );
+  }
   if (bin === 'nginx') return argv[1] === '-t';
   if (bin === 'pm2') {
     const sub = argv[1] ?? '';
     return sub === 'jlist' || sub === 'list' || sub === 'status';
   }
-  if (bin === 'mysql' || bin === 'psql') {
+  if (bin === 'mysql' || bin === 'mariadb' || bin === 'psql') {
     const joined = argv.join(' ').toLowerCase();
     if (argv.includes('--version') || argv.includes('-V')) return true;
     if (
@@ -718,6 +744,15 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\bservice\s+\S+\s+status\b/.test(s)) return true;
   // Network DNS inventory (resolvectl status | head …)
   if (/\bresolvectl\s+(status|query|dns|domain)\b/.test(s) && !/\b(flush-caches|revert|--set)\b/.test(s)) {
+    return true;
+  }
+
+  // SQL inventory (SHOW DATABASES / SELECT …) — never DDL/DML
+  if (
+    /\b(mysql|mariadb|psql)\b/.test(s) &&
+    /\b(show|select|status)\b/i.test(s) &&
+    !/\b(insert|update|delete|drop|create|alter|grant|truncate|replace|set\s+global)\b/i.test(s)
+  ) {
     return true;
   }
 

@@ -193,6 +193,13 @@ export class ProjectOpsService {
     private readonly audit?: AuditRepository,
   ) {}
 
+  private liveLinuxUsers(): string[] {
+    return this.projects
+      .list()
+      .map((p) => String(p.linux_user ?? '').trim())
+      .filter(Boolean);
+  }
+
   /**
    * Full Node deploy path:
    * 1) write app artifacts (.env, entry stub, unit)
@@ -759,7 +766,8 @@ export class ProjectOpsService {
         dataDir: this.dataDir,
         systemConfDir: '/etc/nginx/conf.d',
         host: this.host,
-        dryRun: false });
+        dryRun: false,
+        keepLinuxUsers: this.liveLinuxUsers() });
       written.push(...sync.copied);
       notes.push(...sync.notes);
       if (sync.tested) {
@@ -1137,6 +1145,7 @@ export class ProjectOpsService {
       dataDir: this.dataDir,
       systemConfDir: systemDir,
       host: this.host,
+      keepLinuxUsers: this.liveLinuxUsers(),
     });
     notes.push(...sync.notes);
     written.push(...sync.copied);
@@ -1348,7 +1357,8 @@ export class ProjectOpsService {
     const sync = await syncNginxConfigs({
       dataDir: this.dataDir,
       systemConfDir: systemDir,
-      host: this.host });
+      host: this.host,
+      keepLinuxUsers: this.liveLinuxUsers() });
     const notes = [tl('notes.auto.t0191', { v0: (nginxPath) }), ...sync.notes];
     let nginxReloaded = false;
     let nginxStatus = 'managed_only';
@@ -2263,6 +2273,24 @@ export class ProjectOpsService {
     mkdirSync(appDir, { recursive: true });
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
 
+    if (row.runtime === 'python' && this.host.executeEnabled() && this.host.isRoot()) {
+      const ver = String(row.runtime_version ?? '').replace(/^python/, '');
+      const pkg = /^\d+\.\d+$/.test(ver) ? `python${ver}-venv` : 'python3-venv';
+      const venv = await this.host.runCommand(
+        [
+          'bash',
+          '-c',
+          `dpkg -s ${JSON.stringify(pkg)} >/dev/null 2>&1 || apt-get install -y -o APT::Get::AllowUnauthenticated=false ${JSON.stringify(pkg)} python3-venv`,
+        ],
+        { timeoutMs: 180_000 },
+      );
+      notes.push(
+        venv.exitCode === 0
+          ? `python venv package ready (${pkg})`
+          : `python venv package missing (${pkg}): ${(venv.stderr || venv.stdout).slice(0, 200)}`,
+      );
+    }
+
     const port = await resolveProcessPort({
       requested: opts.port,
       preferred: row.preferred_port,
@@ -2276,8 +2304,13 @@ export class ProjectOpsService {
     if (!entry && row.runtime === 'python') {
       entry = detectPythonEntry(appDir) ?? undefined;
     }
-    if (!entry && row.runtime === 'rust' && cargoName) {
-      entry = `./target/release/${cargoName}`;
+    if (row.runtime === 'rust') {
+      const looksLikeGoApp = !entry || entry === './app' || entry === 'app';
+      if (looksLikeGoApp && cargoName) {
+        entry = `./target/release/${cargoName}`;
+      } else if (!entry && cargoName) {
+        entry = `./target/release/${cargoName}`;
+      }
     }
     if (!entry && (row.runtime === 'java' || row.runtime === 'kotlin')) {
       entry = detectJavaEntry(appDir) ?? undefined;
@@ -2325,6 +2358,33 @@ export class ProjectOpsService {
       }
       notes.push(tl('notes.auto.n0821'));
       await chownProjectHome(this.host, row, notes);
+    }
+
+    if (row.runtime === 'rust') {
+      const rustBin = join(appDir, String(cmds.entry ?? '').replace(/^\.\//, ''));
+      if (!existsSync(rustBin)) {
+        notes.push(
+          `Rust binary not found at ${cmds.entry}. Build output is usually ./target/release/${cargoName ?? '<crate>'}. Refusing to write ExecStart.`,
+        );
+        this.projects.updateRuntimeState(projectId, {
+          process_status: 'failed',
+          status: 'failed',
+          port,
+          last_deploy_notes: clipDeployNotes(notes),
+        });
+        return {
+          ok: false,
+          projectId,
+          port,
+          processStatus: 'failed',
+          listening: false,
+          notes,
+          written,
+          degraded: true,
+          requiresRoot: !this.host.isRoot(),
+          requiresExecute: !this.host.executeEnabled(),
+        };
+      }
     }
 
     const rtKind = row.runtime as TuningKind;

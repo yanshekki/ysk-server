@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   parseUfwNumbered,
+  parseUfwUserRulesDenyIps,
   extractDenyFromIps,
   probeFirewallDeep,
   firewallSetEnabled,
@@ -16,13 +17,14 @@ function host(opts: {
   execute?: boolean;
   root?: boolean;
   paths?: string[];
+  readFile?: (p: string) => string;
   run?: (argv: string[]) => RunResult;
 }): HostExecutor {
   return {
     executeEnabled: () => opts.execute !== false,
     isRoot: () => opts.root !== false,
     pathExists: (p) => (opts.paths ?? []).some((x) => p.includes(x) || p.endsWith(x)),
-    readFile: async () => '',
+    readFile: async (p) => opts.readFile?.(p) ?? '',
     listDir: async () => [],
     writeFile: async () => undefined,
     deletePath: async () => undefined,
@@ -49,6 +51,11 @@ describe('firewall-ops', () => {
     ]);
     expect(rules.some((r) => r.action === 'ALLOW' && r.num === 1)).toBe(true);
     expect(extractDenyFromIps(rules)).toContain('203.0.113.10');
+    expect(
+      parseUfwUserRulesDenyIps(
+        '-A ufw-user-input -s 203.0.113.51 -j DROP\n# comment\n-A ufw-user-input -s 10.0.0.1/32 -j REJECT\n',
+      ),
+    ).toEqual(['203.0.113.51', '10.0.0.1']);
     expect(FIREWALL_PROFILES.web.extraTcpPorts).toEqual([]);
     expect(FIREWALL_PROFILES.ftps.extraPortSpecs).toContain('30000:30100');
     expect(FIREWALL_PROFILES.ftps.extraPortSpecs).toContain('21');
@@ -96,6 +103,37 @@ describe('firewall-ops', () => {
     expect((await firewallDeleteRuleNumber(h, 2)).ok).toBe(true);
     expect((await firewallAllowPort(h, 8080)).ok).toBe(true);
     expect((await firewallAllowPort(h, 99999)).ok).toBe(false);
+  });
+
+  it('does not treat inactive UFW deny as enforced', async () => {
+    const h = host({
+      execute: true,
+      root: true,
+      paths: ['/usr/sbin/ufw', '/etc/ufw/user.rules'],
+      readFile: (p) =>
+        p.includes('user.rules')
+          ? '-A ufw-user-input -s 203.0.113.51 -j DROP\n'
+          : '',
+      run: (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('status')) {
+          return {
+            stdout: 'Status: inactive\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return { stdout: 'ok', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
+    const st = await probeFirewallDeep(h);
+    expect(st.active).toBe('inactive');
+    expect(st.denyCount).toBe(0);
+    expect(st.denyFromIps).toEqual([]);
+    expect(st.configuredDenyFromIps).toContain('203.0.113.51');
+    expect((await firewallDenyIp(h, '203.0.113.99')).ok).toBe(false);
   });
 
   it('parses fallback lines and extracts deny v6 labels', () => {

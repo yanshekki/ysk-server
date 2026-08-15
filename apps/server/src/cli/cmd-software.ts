@@ -17,7 +17,7 @@ import {
   previewSoftwareUninstall,
   uninstallSoftware,
 } from 'ysk-server-core';
-import { cliPositionals } from '../cli-argv.js';
+import { applyLimit, cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -46,12 +46,13 @@ export async function runSoftwareCommand(
     try {
       const items = await probeAllSoftware(ctx.host, feature ?? undefined);
       const missing = items.filter((i) => !i.installed);
+      const limited = applyLimit(items, args);
       h.printJson({
         ok: true,
-        items,
+        items: limited.items,
         missing,
         ready: missing.length === 0,
-        meta: { total: items.length, missing: missing.length },
+        meta: { ...limited.meta, missing: missing.length },
       });
       return 0;
     } catch (e) {
@@ -129,7 +130,17 @@ export async function runSoftwareCommand(
   if (sub === 'uninstall-preview' || sub === 'preview-uninstall') {
     const feature = h.getOpt(args, '--feature');
     const idsCsv = h.getOpt(args, '--ids');
-    const ids = idsCsv?.split(',').map((s) => s.trim()).filter(Boolean);
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    const ids = [
+      ...(idsCsv?.split(',').map((s) => s.trim()).filter(Boolean) ?? []),
+      ...(id?.trim() ? [id.trim()] : []),
+    ];
+    if (!feature?.trim() && ids.length === 0) {
+      process.stderr.write(
+        'Usage: ysk-server software uninstall-preview --id ID | --ids a,b | --feature F\n',
+      );
+      return 2;
+    }
     const dataPolicy =
       h.getOpt(args, '--data-policy') === 'purge' ? 'purge' : 'keep';
     const preview = await previewSoftwareUninstall({

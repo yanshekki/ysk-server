@@ -51,6 +51,7 @@
   "bootPrefix": "Boot {{state}}",
   "controlPage": "Control page",
   "manageRuntime": "Install / update",
+  "installOrOpen": "Install / open",
   "protectionTitle": "Protection probe",
   "protectionSub": "Read-only; does not change firewall / fail2ban",
   "protectionDoneNote": "Protection probe finished",

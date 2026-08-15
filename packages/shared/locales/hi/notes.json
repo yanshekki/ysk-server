@@ -2635,7 +2635,9 @@
     "selfVerifyFail": "लागू करने के बाद संस्करण फ़ाइल में {{v0}} नहीं है",
     "selfDownloadFail": "आधिकारिक पैकेज {{v0}} डाउनलोड या खोल नहीं सके: {{v1}}",
     "selfOverlayFail": "आधिकारिक पैकेज चल रहे डायरेक्टरी पर लागू नहीं हो सका: {{v0}}",
-    "selfUpgradeHint": "पैनल लागू करना विफल। root से चलाएँ: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfUpgradeHint": "पैनल लागू करना विफल। root से चलाएँ: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+    "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+    "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
   },
   "tpl": {
     "deleted": "हटा दिया गया {{name}}",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "क्लाइंट प्रोफ़ाइल हटा दी गई",
     "sessionStartCwd": "वीएनसी प्रारंभ विफल: कार्यशील निर्देशिका सत्र उपयोगकर्ता के लिए पहुंच योग्य नहीं है (प्रदर्शन :{{display}})। घर से प्रारंभ करके ठीक किया गया.",
     "desktopRestarted": "डेस्कटॉप प्रोफ़ाइल लागू की गई और सत्र पुनः आरंभ हुआ ({{desktop}})। VNC/noVNC को पुनः कनेक्ट करें।",
-    "desktopNeedsStart": "डेस्कटॉप प्रोफ़ाइल {{desktop}} xstartup को लिखी गई। आवेदन करने के लिए सत्र प्रारंभ करें."
+    "desktopNeedsStart": "डेस्कटॉप प्रोफ़ाइल {{desktop}} xstartup को लिखी गई। आवेदन करने के लिए सत्र प्रारंभ करें.",
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
   },
   "apache": {
     "needServerName": "सर्वर नाम आवश्यक है",

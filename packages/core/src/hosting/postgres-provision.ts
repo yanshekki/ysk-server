@@ -81,6 +81,11 @@ export async function provisionPostgresDatabase(input: {
 
   const host = input.host ?? '127.0.0.1';
   const port = input.port ?? 5432;
+  const localPeer =
+    !input.host ||
+    input.host === '127.0.0.1' ||
+    input.host === 'localhost' ||
+    input.host === '::1';
   const sql = renderPostgresProvisionSql({
     dbName: input.dbName,
     username: input.username,
@@ -88,17 +93,21 @@ export async function provisionPostgresDatabase(input: {
   const connectionHint = {
     database: input.dbName,
     user: input.username,
-    host,
+    host: localPeer ? 'unix' : host,
     port };
   const notes: string[] = [];
   const commandResults: PostgresProvisionResult['commandResults'] = [];
 
-  const reach = await probeEndpoint(host, port, 2000);
+  const reach = localPeer
+    ? { ok: true, latencyMs: 0, detail: 'peer' }
+    : await probeEndpoint(host, port, 2000);
   const reachable = reach.ok;
   notes.push(
-    reachable
-      ? `TCP ${host}:${port} ok (${reach.latencyMs}ms)`
-      : `TCP ${host}:${port} fail: ${reach.detail}`,
+    localPeer
+      ? 'Local provision uses peer auth as postgres (unix socket), not TCP as root'
+      : reachable
+        ? `TCP ${host}:${port} ok (${reach.latencyMs}ms)`
+        : `TCP ${host}:${port} fail: ${reach.detail}`,
   );
 
   const psqlClient = await binPresent(input.hostExec, 'psql');
@@ -152,22 +161,34 @@ export async function provisionPostgresDatabase(input: {
     `CREATE DATABASE ${input.dbName} OWNER ${input.username};`,
   ];
   for (const stmt of statements) {
-    const r = await input.hostExec.runCommand(
-      [
-        'psql',
-        '-h',
-        host,
-        '-p',
-        String(port),
-        '-d',
-        adminDb,
-        '-v',
-        'ON_ERROR_STOP=0',
-        '-c',
-        stmt,
-      ],
-      { timeoutMs: 30_000 },
-    );
+    const argv = localPeer
+      ? [
+          'sudo',
+          '-n',
+          '-u',
+          'postgres',
+          'psql',
+          '-d',
+          adminDb,
+          '-v',
+          'ON_ERROR_STOP=0',
+          '-c',
+          stmt,
+        ]
+      : [
+          'psql',
+          '-h',
+          host,
+          '-p',
+          String(port),
+          '-d',
+          adminDb,
+          '-v',
+          'ON_ERROR_STOP=0',
+          '-c',
+          stmt,
+        ];
+    const r = await input.hostExec.runCommand(argv, { timeoutMs: 30_000 });
     commandResults.push({
       argv: ['psql', '-c', '(redacted)'],
       exitCode: r.exitCode,

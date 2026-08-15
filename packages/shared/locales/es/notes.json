@@ -2635,7 +2635,9 @@
     "selfVerifyFail": "El archivo de versión no contiene {{v0}} tras aplicar",
     "selfDownloadFail": "No se puede descargar o descomprimir el paquete oficial {{v0}}: {{v1}}",
     "selfOverlayFail": "No se pudo aplicar el paquete oficial al directorio en ejecución: {{v0}}",
-    "selfUpgradeHint": "Falló la aplicación del panel. Como root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfUpgradeHint": "Falló la aplicación del panel. Como root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade",
+    "n1611": "UFW is inactive: {{n}} permanent deny rule(s) are stored in user.rules but the kernel is not enforcing them.",
+    "n1612": "UFW is inactive. A deny rule would be written to user.rules only — the kernel would not drop packets. Enable UFW first. Not enabling automatically."
   },
   "tpl": {
     "deleted": "Eliminado {{name}}",
@@ -2961,7 +2963,8 @@
     "clientDeleted": "Perfil de cliente eliminado",
     "sessionStartCwd": "Error al iniciar VNC: el directorio de trabajo no es accesible para el usuario de la sesión (pantalla: {{display}}). Se solucionó comenzando desde CASA.",
     "desktopRestarted": "Se aplicó el perfil de escritorio y se reinició la sesión ({{desktop}}). Vuelva a conectar VNC/noVNC.",
-    "desktopNeedsStart": "Perfil de escritorio {{desktop}} escrito en xstartup. Inicie la sesión para postularse."
+    "desktopNeedsStart": "Perfil de escritorio {{desktop}} escrito en xstartup. Inicie la sesión para postularse.",
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
   },
   "apache": {
     "needServerName": "Nombre del servidor requerido",

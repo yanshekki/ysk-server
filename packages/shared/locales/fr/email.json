@@ -487,5 +487,6 @@
   "queueDeferred": "Différé",
   "deleteQueueTitle": "Supprimer ce message en file ?",
   "deleteQueueDesc": "Retirer {{id}} de la file MTA locale. YSK_EXECUTE requis.",
-  "openQueuePage": "Ouvrir la file mail"
+  "openQueuePage": "Ouvrir la file mail",
+  "healthUnchecked": "Not checked yet"
 }

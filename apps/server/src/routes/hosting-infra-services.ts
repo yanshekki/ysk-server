@@ -282,11 +282,15 @@ export async function handleHostingInfraServicesRoutes(
           systemConfDir?: string;
           dryRun?: boolean;
         };
+        const keepLinuxUsers = (ctx.db.snapshot.projects ?? [])
+          .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+          .filter(Boolean);
         const result = await syncNginxConfigs({
           dataDir: ctx.dataDir,
-          systemConfDir: data.systemConfDir,
+          systemConfDir: data.systemConfDir ?? '/etc/nginx/conf.d',
           host: ctx.host,
           dryRun: data.dryRun,
+          keepLinuxUsers,
         });
         ctx.audit.append({
           actor: user.username,
@@ -349,6 +353,7 @@ export async function handleHostingInfraServicesRoutes(
           serverName?: string;
           quotaMb?: number;
           reload?: boolean;
+          autoindex?: boolean;
         };
         const result = await applyPublicFileServer({
           dataDir: ctx.dataDir,
@@ -356,6 +361,7 @@ export async function handleHostingInfraServicesRoutes(
           serverName: data.serverName ?? 'files.local',
           quotaMb: data.quotaMb,
           reload: data.reload,
+          autoindex: data.autoindex,
         });
         ctx.audit.append({
           actor: user.username,

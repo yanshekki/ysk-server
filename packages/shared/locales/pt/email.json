@@ -487,5 +487,6 @@
   "queueDeferred": "Adiado",
   "deleteQueueTitle": "Eliminar esta mensagem da fila?",
   "deleteQueueDesc": "Remover {{id}} da fila MTA local. Precisa de YSK_EXECUTE.",
-  "openQueuePage": "Abrir fila de correio"
+  "openQueuePage": "Abrir fila de correio",
+  "healthUnchecked": "Not checked yet"
 }

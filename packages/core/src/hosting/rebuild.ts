@@ -187,11 +187,15 @@ export async function rebuildManagedConfigs(input: {
 
   if (input.dryRun) {
     mode = 'dry_run';
+    const keepLinuxUsers = (input.db.snapshot.projects ?? [])
+      .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+      .filter(Boolean);
     const sync = await syncNginxConfigs({
       dataDir: input.dataDir,
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
-      dryRun: true });
+      dryRun: true,
+      keepLinuxUsers });
     notes.push(...sync.notes);
     notes.push(
       executeEnabled && isRoot
@@ -227,11 +231,15 @@ export async function rebuildManagedConfigs(input: {
         executeEnabled,
         isRoot };
     }
+    const keepLinuxUsers = (input.db.snapshot.projects ?? [])
+      .map((p) => String((p as { linux_user?: string }).linux_user ?? '').trim())
+      .filter(Boolean);
     const sync = await syncNginxConfigs({
       dataDir: input.dataDir,
       systemConfDir: '/etc/nginx/conf.d',
       host: input.host,
-      dryRun: false });
+      dryRun: false,
+      keepLinuxUsers });
     written.push(...sync.copied);
     notes.push(...sync.notes);
     if (sync.tested) {
