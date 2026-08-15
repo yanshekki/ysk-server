@@ -23,15 +23,8 @@ export async function writeVncPassword(input: {
     notes.push(tl('notes.vnc.passwordTooShort'));
     return { ok: false, notes };
   }
-  const passwdBin =
-    host.pathExists('/usr/bin/vncpasswd') ||
-    host.pathExists('/bin/vncpasswd') ||
-    host.pathExists('/usr/local/bin/vncpasswd');
-  if (!passwdBin) {
-    notes.push(tl('notes.vnc.passwordNeedTiger'));
-    return { ok: false, notes };
-  }
-
+  // Preview / no-EXECUTE: record intent only. Do not fail-closed on missing
+  // vncpasswd here — the bin is only required when we can actually write.
   if (!host.executeEnabled() || !host.isRoot()) {
     notes.push(tl('notes.vnc.passwordWrittenOnly'));
     return {
@@ -40,6 +33,15 @@ export async function writeVncPassword(input: {
       blocked: true,
       requiresExecute: !host.executeEnabled(),
     };
+  }
+
+  const passwdBin =
+    host.pathExists('/usr/bin/vncpasswd') ||
+    host.pathExists('/bin/vncpasswd') ||
+    host.pathExists('/usr/local/bin/vncpasswd');
+  if (!passwdBin) {
+    notes.push(tl('notes.vnc.passwordNeedTiger'));
+    return { ok: false, notes };
   }
 
   const vncDir = `${home.replace(/\/$/, '')}/.vnc`;

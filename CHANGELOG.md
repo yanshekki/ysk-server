@@ -37,7 +37,7 @@
 - WebDAV PUT is an empty 201; `/webdav/../` is 400; `/share/<token>` serves the file (not the SPA)
 - `users delete` / `projects delete` / `nginx delete` / `ssl issue --domain` / `email send` / `dns zone --delete` / `dns records add` are real CLI
 - Unknown Host/SNI hits a catch-all `default_server` (`ssl_reject_handshake`) instead of another site
-- VNC password fails closed without `vncpasswd` (TigerVNC hint); VPN failures toast
+- VNC password fails closed without `vncpasswd` on the EXECUTE path (TigerVNC hint); no-EXECUTE still writes account meta; VPN failures toast
 - Cron `%` error explains crontab newlines; merge comments do not pile up; `cron status`.lastInstall follows last install
 - `dns health` does not treat systemd-resolved `127.0.0.53` as a product nameserver
 - `projects backup` updates `backup status`.lastRun; tarball excludes `.env` / `.db.env` and notes no SQL dump

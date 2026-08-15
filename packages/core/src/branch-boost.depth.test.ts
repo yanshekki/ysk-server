@@ -694,7 +694,8 @@ describe('ftps-service branch boost', () => {
         allowWriteableChroot: false,
       },
     });
-    expect(confNoCert).toContain('ssl_enable=YES');
+    expect(confNoCert).toContain('ssl_enable=NO');
+    expect(confNoCert).toContain('# ssl_enable skipped — no certificate for sslDomain');
     const confNoSsl = buildVsftpdConf({
       dataDir: dir,
       settings: { ...DEFAULT_FTPS_SETTINGS, sslEnable: false, forceSsl: true },
