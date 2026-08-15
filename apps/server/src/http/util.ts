@@ -71,7 +71,7 @@ export function securityHeaders(): Record<string, string> {
   if (cors && cors !== '*') {
     headers['Access-Control-Allow-Origin'] = cors;
     headers['Access-Control-Allow-Headers'] =
-      'Content-Type, Authorization, Accept-Language, X-Share-Password, X-Ysk-Agent-Token';
+      'Content-Type, Authorization, Accept-Language, X-Share-Password, X-Ysk-Agent-Token, X-YSK-Git-Hook';
     headers['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE,OPTIONS';
     headers.Vary = 'Origin';
   }

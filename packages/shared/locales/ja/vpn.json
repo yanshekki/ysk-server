@@ -127,5 +127,7 @@
     "lanCidrs": "LAN ネットワーク",
     "customCidr": "CIDR",
     "addCidr": "追加"
-  }
+  },
+  "engineNotInstalled": "この VPN エンジンはホストにインストールされていません。",
+  "serverNotListening": "サーバーユニットが稼働していません。UDP/TCP {{port}} は閉じている可能性があります。"
 }

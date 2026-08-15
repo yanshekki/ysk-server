@@ -468,8 +468,15 @@ export async function applyPm2Stop(input: {
     return { ok: true, notes, requiresExecute: false };
   }
   const r = await input.host.runCommand(['pm2', 'delete', appName], { timeoutMs: 30_000 });
-  notes.push(`pm2 delete ${appName} exit=${r.exitCode}`);
-  // exit 1 when 找不到 is fine
+  const err = `${r.stderr || ''} ${r.stdout || ''}`;
+  const missing =
+    r.exitCode !== 0 &&
+    /not found|doesn't exist|does not exist|找不到|不存在|No such/i.test(err);
+  if (r.exitCode === 0) {
+    notes.push(`pm2 delete ${appName} ok`);
+  } else if (!missing) {
+    notes.push(`pm2 delete ${appName} exit=${r.exitCode}`);
+  }
   return { ok: true, notes, requiresExecute: false };
 }
 

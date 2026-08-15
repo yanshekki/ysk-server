@@ -9,6 +9,9 @@ import {
   OPERATION_LEVELS,
   computeEffectiveCapabilities,
   factoryRolePolicy,
+  LOCALES,
+  LOCALE_LABELS,
+  normalizeLocale,
   type CapabilityId,
   type OperationLevel,
   type SystemRole } from 'ysk-server-shared';
@@ -52,6 +55,7 @@ type UserRow = {
   id: string;
   username: string;
   roles: string[];
+  locale?: string;
   packageId?: string;
   packageName?: string;
   suspended?: boolean;
@@ -175,7 +179,10 @@ export function UsersPage() {
   const [pkgOptions, setPkgOptions] = useState<Pkg[]>([]);
   const [hostUsage, setHostUsage] = useState<HostUsage | null>(null);
   const [policies, setPolicies] = useState<RolePolicyView[]>([]);
-  const [createLocale, setCreateLocale] = useState('zh-HK');
+  const [createLocale, setCreateLocale] = useState(() =>
+    normalizeLocale(typeof localStorage !== 'undefined' ? localStorage.getItem('ysk.locale') : 'zh-HK'),
+  );
+  const [detailLocale, setDetailLocale] = useState('zh-HK');
   const [error, setErrorRaw] = useState<string | null>(null);
   const setError = useCallback((text: string | null) => {
     if (text) toast.error(text);
@@ -343,6 +350,11 @@ export function UsersPage() {
     setPassword('');
     setRole('operator');
     setUserPkgId('');
+    setCreateLocale(
+      normalizeLocale(
+        typeof localStorage !== 'undefined' ? localStorage.getItem('ysk.locale') : 'zh-HK',
+      ),
+    );
     setError(null);
     setTab('users');
     setCreateUserOpen(true);
@@ -384,6 +396,7 @@ export function UsersPage() {
     setDetailPkg(u.packageId ?? '');
     setDetailSuspended(Boolean(u.suspended));
     setDetailPassword('');
+    setDetailLocale(normalizeLocale(u.locale));
     setDetailGrants([...(u.capabilityGrants ?? [])]);
     setDetailRevokes([...(u.capabilityRevokes ?? [])]);
   }
@@ -505,6 +518,7 @@ export function UsersPage() {
           roles: [detailRole],
           packageId: detailPkg || null,
           suspended: detailSuspended,
+          locale: detailLocale,
           capabilityGrants: detailGrants,
           capabilityRevokes: detailRevokes };
         if (detailPassword.length >= 8) patch.password = detailPassword;
@@ -1047,9 +1061,11 @@ export function UsersPage() {
               value={createLocale}
               onChange={bindInput(setCreateLocale)}
             >
-              <option value="zh-HK">zh-HK</option>
-              <option value="zh-CN">zh-CN</option>
-              <option value="en">en</option>
+              {LOCALES.map((code) => (
+                <option key={code} value={code}>
+                  {LOCALE_LABELS[code]} ({code})
+                </option>
+              ))}
             </select>
           </Field>
           <div className="u-mt-2">
@@ -1207,6 +1223,7 @@ export function UsersPage() {
         packageId={detailPkg}
         suspended={detailSuspended}
         password={detailPassword}
+        locale={detailLocale}
         grants={detailGrants}
         revokes={detailRevokes}
         effective={effectivePreview}
@@ -1218,6 +1235,7 @@ export function UsersPage() {
         onPackageChange={setDetailPkg}
         onSuspendedChange={setDetailSuspended}
         onPasswordChange={setDetailPassword}
+        onLocaleChange={setDetailLocale}
         onGrantsChange={setDetailGrants}
         onRevokesChange={setDetailRevokes}
         onSave={() => void saveDetailUser()}

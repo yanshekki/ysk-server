@@ -6,6 +6,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CAPABILITY_CATALOG,
+  LOCALES,
+  LOCALE_LABELS,
   OPERATION_LEVELS,
   type CapabilityId,
   type OperationLevel,
@@ -50,6 +52,7 @@ export type UserDetailModalProps = {
   packageId: string;
   suspended: boolean;
   password: string;
+  locale: string;
   grants: CapabilityId[];
   revokes: CapabilityId[];
   effective: CapabilityId[];
@@ -61,6 +64,7 @@ export type UserDetailModalProps = {
   onPackageChange: (id: string) => void;
   onSuspendedChange: (v: boolean) => void;
   onPasswordChange: (v: string) => void;
+  onLocaleChange: (v: string) => void;
   onGrantsChange: (v: CapabilityId[]) => void;
   onRevokesChange: (v: CapabilityId[]) => void;
   onSave: () => void;
@@ -81,6 +85,7 @@ export function UserDetailModal({
   packageId,
   suspended,
   password,
+  locale,
   grants,
   revokes,
   effective,
@@ -92,6 +97,7 @@ export function UserDetailModal({
   onPackageChange,
   onSuspendedChange,
   onPasswordChange,
+  onLocaleChange,
   onGrantsChange,
   onRevokesChange,
   onSave,
@@ -287,6 +293,23 @@ export function UserDetailModal({
                         {packages.map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field
+                      label={t('common.language', { defaultValue: 'Locale' })}
+                      htmlFor="ud-locale"
+                      flush
+                    >
+                      <select
+                        id="ud-locale"
+                        value={locale}
+                        onChange={bindInputCall(onLocaleChange)}
+                      >
+                        {LOCALES.map((code) => (
+                          <option key={code} value={code}>
+                            {LOCALE_LABELS[code]} ({code})
                           </option>
                         ))}
                       </select>

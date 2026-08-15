@@ -71,6 +71,68 @@ describe('projects routes (HTTP)', () => {
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
 
+  it('git inbound hook is secret-gated and session-free', async () => {
+    ts = await startTestServer();
+    const created = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'hook-proj',
+      runtime: 'static',
+    });
+    const id = (created.body as { project?: { id?: string } }).project?.id;
+    expect(id).toBeTruthy();
+    const denied = await apiJson(ts, 'POST', `/api/v1/hooks/git/${id}`, {}, { auth: false });
+    expect(denied.status).toBe(401);
+    const en = await apiJson(ts, 'POST', `/api/v1/projects/${id}/git/hook`, { action: 'enable' });
+    expect(en.status).toBe(200);
+    const secret = (en.body as { hookSecret?: string }).hookSecret;
+    expect(secret && secret.length).toBeGreaterThan(16);
+    const ping = await fetch(`${ts.baseUrl}/api/v1/hooks/git/${id}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-ysk-git-hook': secret!,
+        'x-github-event': 'ping',
+      },
+      body: '{"zen":"ok"}',
+    });
+    expect(ping.status).toBe(200);
+    const pingBody = (await ping.json()) as { skipped?: string };
+    expect(pingBody.skipped).toBe('ping');
+    await apiJson(ts, 'POST', `/api/v1/projects/${id}/git/hook`, { action: 'disable' });
+    const off = await fetch(`${ts.baseUrl}/api/v1/hooks/git/${id}`, {
+      method: 'POST',
+      headers: { 'x-ysk-git-hook': secret! },
+      body: '{}',
+    });
+    expect(off.status).toBe(403);
+  });
+
+  it('git inbound hook skips a push for another branch', async () => {
+    ts = await startTestServer();
+    const created = await apiJson(ts, 'POST', '/api/v1/projects', {
+      name: 'hook-ref',
+      runtime: 'static',
+      gitUrl: 'https://example.com/demo.git',
+      gitBranch: 'main',
+    });
+    const id = (created.body as { project?: { id?: string } }).project?.id;
+    expect(id).toBeTruthy();
+    const en = await apiJson(ts, 'POST', `/api/v1/projects/${id}/git/hook`, { action: 'enable' });
+    const secret = (en.body as { hookSecret?: string }).hookSecret;
+    expect(secret).toBeTruthy();
+    const other = await fetch(`${ts.baseUrl}/api/v1/hooks/git/${id}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-ysk-git-hook': secret!,
+        'x-github-event': 'push',
+      },
+      body: '{"ref":"refs/heads/dev"}',
+    });
+    expect(other.status).toBe(200);
+    const otherBody = (await other.json()) as { skipped?: string };
+    expect(otherBody.skipped).toBe('ref');
+  });
+
   it('provision-all without EXECUTE is honest (not fake success)', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'POST', '/api/v1/projects/isolation/provision-all', {});

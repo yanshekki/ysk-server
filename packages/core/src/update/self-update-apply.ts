@@ -685,6 +685,22 @@ export async function runSelfUpdate(input: {
         }
       }
       if (!restarted) notes.push(tl('notes.auto.n1219'));
+      try {
+        const { collectStaleCliNotes, probeHostLeftovers } = await import(
+          '../hosting/leftover-probe.js'
+        );
+        notes.push(...collectStaleCliNotes({ host: input.host, currentVersion: latest }));
+        const leftovers = await probeHostLeftovers({
+          host: input.host,
+          currentVersion: latest,
+        });
+        if (!leftovers.ok) {
+          notes.push(tl('notes.leftover.overlayDoesNotHeal'));
+          notes.push(...leftovers.notes.slice(0, 6));
+        }
+      } catch {
+        /* leftover scan is best-effort */
+      }
     }
 
     if (

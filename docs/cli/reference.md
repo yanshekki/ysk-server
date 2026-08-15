@@ -66,12 +66,17 @@ ysk-server help [--locale zh-HK|zh-CN|en]
 ```bash
 ysk-server projects list
 ysk-server projects get --id UUID
-ysk-server projects create --name NAME --domain D [--runtime node|php|static|…] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]
+ysk-server projects create --name NAME --domain D [--runtime node|php|static|…] [--git-url URL] [--branch B] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]
 ysk-server projects deploy --id UUID [--entry FILE] [--port N] [--fpm] [--execute]
 ysk-server projects stop --id UUID [--execute]
 ysk-server projects health --id UUID
 ysk-server projects backup --id UUID
-ysk-server projects git-deploy --id UUID [--ref BRANCH] [--execute]
+ysk-server projects git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--depth N] [--execute]
+ysk-server projects git status|log|fetch|checkout|reset|auth|deploy --id UUID [--ref R] [--unshallow] [--yes]
+ysk-server projects git auth --id UUID --token T | --deploy-key | --pin-host | --clear-token | --clear-key | --clear-host
+ysk-server projects git hook --id UUID --enable|--rotate|--disable
+# After --enable/--rotate, paste hook.path + hookSecret into GitHub/Gitea/GitLab yourself.
+# Inbound: POST /api/v1/hooks/git/:id  (no session; HMAC or X-YSK-Git-Hook)
 ysk-server projects isolation list|provision|provision-all|backfill-owners …
 ysk-server projects template …
 ysk-server projects ftp --id UUID --password P [--user NAME] [--home app|root]
@@ -92,6 +97,7 @@ ysk-server templates list|apply …
 Low-level hosting helpers (default dry-run):
 
 ```bash
+ysk-server hosting leftovers
 ysk-server hosting nginx|nginx-sync [--execute]
 ysk-server hosting mysql-provision|postgres-provision|redis-provision [--execute]
 ysk-server hosting dns-zone --zone X --ip A.B.C.D …
@@ -227,7 +233,7 @@ PTR / Port 25 remain external. See [../features/email.md](../features/email.md).
 
 ```bash
 ysk-server users list [--q TEXT] [--role operator] [--totp 0|1]
-ysk-server users create --username U --password P [--role operator]
+ysk-server users create --username U --password P [--role operator] [--locale zh-HK]
 ysk-server users totp --user NAME
 ysk-server users totp-clear --user NAME --confirm-username NAME
 ysk-server packages list

@@ -115,6 +115,11 @@ export class ProjectRepository {
         | 'git_url'
         | 'git_branch'
         | 'git_commit'
+        | 'git_shallow'
+        | 'git_last_error'
+        | 'git_auth_kind'
+        | 'git_identity_id'
+        | 'git_hook_enabled'
         | 'env_vars'
         | 'last_backup_path'
         | 'last_backup_at'
@@ -126,6 +131,7 @@ export class ProjectRepository {
         | 'shell'
         | 'account_locked'
         | 'deploy_entry'
+        | 'runtime_bin'
         | 'last_deploy_notes'
       >
     >,
@@ -143,6 +149,11 @@ export class ProjectRepository {
     if (patch.git_url !== undefined) p.git_url = patch.git_url;
     if (patch.git_branch !== undefined) p.git_branch = patch.git_branch;
     if (patch.git_commit !== undefined) p.git_commit = patch.git_commit;
+    if (patch.git_shallow !== undefined) p.git_shallow = patch.git_shallow;
+    if ('git_last_error' in patch) p.git_last_error = patch.git_last_error;
+    if (patch.git_auth_kind !== undefined) p.git_auth_kind = patch.git_auth_kind;
+    if ('git_identity_id' in patch) p.git_identity_id = patch.git_identity_id;
+    if (patch.git_hook_enabled !== undefined) p.git_hook_enabled = patch.git_hook_enabled;
     if (patch.env_vars !== undefined) p.env_vars = patch.env_vars;
     if (patch.last_backup_path !== undefined) p.last_backup_path = patch.last_backup_path;
     if (patch.last_backup_at !== undefined) p.last_backup_at = patch.last_backup_at;
@@ -154,6 +165,7 @@ export class ProjectRepository {
     if (patch.shell !== undefined) p.shell = patch.shell;
     if (patch.account_locked !== undefined) p.account_locked = patch.account_locked;
     if ('deploy_entry' in patch) p.deploy_entry = patch.deploy_entry;
+    if (patch.runtime_bin !== undefined) p.runtime_bin = patch.runtime_bin;
     if (patch.last_deploy_notes !== undefined) p.last_deploy_notes = patch.last_deploy_notes;
     p.updated_at = new Date().toISOString();
     this.db.persist();

@@ -78,6 +78,8 @@ export interface ProjectCreateModalProps {
     runtime: ProjectRuntime;
     runtimeVersion?: string;
     templateId?: string;
+    gitUrl?: string;
+    gitBranch?: string;
     goLive?: boolean;
     preferredPort?: number;
     createDnsZone?: boolean;
@@ -103,6 +105,8 @@ export function ProjectCreateModal({
     defaultRuntimeInstallVersion('node'),
   );
   const [templateId, setTemplateId] = useState(() => helloTemplateId('node'));
+  const [gitUrl, setGitUrl] = useState('');
+  const [gitBranch, setGitBranch] = useState('');
   const [goLive, setGoLive] = useState(true);
   const [preferredPort, setPreferredPort] = useState('');
   const [createDns, setCreateDns] = useState(false);
@@ -111,7 +115,9 @@ export function ProjectCreateModal({
   const [serverIpv6, setServerIpv6] = useState('');
   const [templates, setTemplates] = useState<AppTemplateItem[]>(HELLO_TEMPLATES);
 
-  const [versionChoices, setVersionChoices] = useState<string[]>([]);
+  const [versionChoices, setVersionChoices] = useState<string[]>(() =>
+    runtimeVersionChoices('node'),
+  );
   const [versionsLoading, setVersionsLoading] = useState(false);
   const versionReq = useRef(0);
 
@@ -138,15 +144,16 @@ export function ProjectCreateModal({
       .catch(() => setTemplates(HELLO_TEMPLATES));
   }, [open]);
 
-  // Prefer discovery API for version chips
+  // Seed offline fallback immediately; discovery replaces when it returns.
   useEffect(() => {
     if (!open) return;
     const seq = ++versionReq.current;
+    const fallback = runtimeVersionChoices(runtime);
+    if (fallback.length) setVersionChoices(fallback);
     setVersionsLoading(true);
-    setVersionChoices([]);
     void fetchRuntimeVersionChoices(runtime).then((r) => {
       if (seq !== versionReq.current) return;
-      const choices = r.choices.length ? r.choices : runtimeVersionChoices(runtime);
+      const choices = r.choices.length ? r.choices : fallback;
       setVersionChoices(choices);
       setRuntimeVersion((prev) =>
         choices.includes(prev) ? prev : r.latest || choices[0] || prev,
@@ -165,6 +172,8 @@ export function ProjectCreateModal({
       setVersionChoices([]);
       setVersionsLoading(false);
       setTemplateId(helloTemplateId('node'));
+      setGitUrl('');
+      setGitBranch('');
       setGoLive(true);
       setPreferredPort('');
       setCreateDns(false);
@@ -193,16 +202,13 @@ export function ProjectCreateModal({
 
   function applyRuntime(next: ProjectRuntime) {
     setRuntime(next);
-    setVersionChoices([]);
-    setVersionsLoading(true);
-    const seq = ++versionReq.current;
-    void fetchRuntimeVersionChoices(next).then((r) => {
-      if (seq !== versionReq.current) return;
-      const choices = r.choices.length ? r.choices : runtimeVersionChoices(next);
-      setVersionChoices(choices);
-      setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(next));
-      setVersionsLoading(false);
-    });
+    const fallback = runtimeVersionChoices(next);
+    if (fallback.length) setVersionChoices(fallback);
+    setRuntimeVersion(defaultRuntimeInstallVersion(next) || fallback[0] || '');
+    if (gitUrl.trim()) {
+      setTemplateId('');
+      return;
+    }
     // Always offer / preselect Hello World for the chosen runtime (incl. PHP)
     const match =
       templates.find((x) => x.runtime === next) ||
@@ -218,6 +224,7 @@ export function ProjectCreateModal({
       .map((s) => s.trim())
       .filter(Boolean);
     const portNum = preferredPort.trim() ? Number(preferredPort.trim()) : undefined;
+    const fromGit = Boolean(gitUrl.trim());
     await onSubmit({
       name,
       domain: domain || undefined,
@@ -227,9 +234,11 @@ export function ProjectCreateModal({
         runtime !== 'static' && runtimeVersion
           ? runtimeVersion
           : undefined,
-      templateId: templateId || undefined,
-      // Template defaults to goLive; without template honour checkbox
-      goLive: templateId ? goLive !== false : goLive,
+      templateId: fromGit ? undefined : templateId || undefined,
+      gitUrl: fromGit ? gitUrl.trim() : undefined,
+      gitBranch: fromGit ? gitBranch.trim() || undefined : undefined,
+      // Git create stores the remote only — clone + deploy from the App tab
+      goLive: fromGit ? false : templateId ? goLive !== false : goLive,
       preferredPort:
         portNum != null && Number.isFinite(portNum) && portNum > 0 && portNum < 65536
           ? Math.floor(portNum)
@@ -253,14 +262,15 @@ export function ProjectCreateModal({
     return fb ? [fb] : [];
   }, [templates, runtime]);
 
-  // Keep templateId in sync when runtime/templates change
+  // Keep templateId in sync when runtime/templates change ('' = none is valid)
   useEffect(() => {
     if (!open) return;
+    if (templateId === '') return;
     const stillValid = filteredTemplates.some((t) => t.id === templateId);
     if (!stillValid) {
-      setTemplateId(filteredTemplates[0]?.id ?? helloTemplateId(runtime));
+      setTemplateId(gitUrl.trim() ? '' : filteredTemplates[0]?.id ?? helloTemplateId(runtime));
     }
-  }, [open, runtime, filteredTemplates, templateId]);
+  }, [open, runtime, filteredTemplates, templateId, gitUrl]);
 
   const selectedTpl =
     filteredTemplates.find((x) => x.id === templateId) ||
@@ -439,15 +449,53 @@ export function ProjectCreateModal({
                 runtime: formatRuntimeName(runtime, t) })}
             </FormHint>
           ) : null}
+          <Field
+            label={t('projects.gitUrl')}
+            htmlFor="pgit"
+            hint={t('projects.createGitHint')}
+            flush
+          >
+            <input
+              id="pgit"
+              value={gitUrl}
+              onChange={(e) => {
+                const v = e.target.value;
+                setGitUrl(v);
+                if (v.trim()) {
+                  setTemplateId('');
+                  setGoLive(false);
+                } else if (templateId === '') {
+                  setTemplateId(helloTemplateId(runtime));
+                  setGoLive(true);
+                }
+              }}
+              placeholder="https://github.com/org/repo.git"
+            />
+          </Field>
+          {gitUrl.trim() ? (
+            <Field
+              label={t('projects.gitBranch')}
+              htmlFor="pbranch"
+              hint={t('projects.gitBranchHint')}
+              flush
+            >
+              <input
+                id="pbranch"
+                value={gitBranch}
+                onChange={bindInput(setGitBranch)}
+                placeholder="main"
+              />
+            </Field>
+          ) : null}
         </FormLayout>
 
         <FormLayout>
           <CheckboxField
             id="pc-golive"
             label={t('projects.createGoLive', { })}
-            checked={goLive}
+            checked={gitUrl.trim() ? false : goLive}
             onChange={setGoLive}
-            disabled={busy}
+            disabled={busy || Boolean(gitUrl.trim())}
           />
           {runtime !== 'static' && runtime !== 'php' ? (
             <Field

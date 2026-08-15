@@ -67,6 +67,17 @@ export function initialSelectedJails(s: {
   return s.catalog?.slice(0, 4).map((c) => c.id) ?? [...FALLBACK_JAILS];
 }
 
+/** Header chip from machine state — never the server-localized `activeLabel`. */
+export function fail2banStatusChipLabel(
+  status: { installed?: boolean; active?: string } | null,
+  t: (key: string) => string,
+): string {
+  if (!status) return '—';
+  if (status.installed === false) return t('fail2ban.notInstalled');
+  if (status.active === 'active') return t('common.running');
+  return t('common.stopped');
+}
+
 /** Filter banned rows by free-text query (ip or jail). */
 export function filterBannedRows<T extends { ip: string; jail: string }>(
   rows: T[],
@@ -207,7 +218,7 @@ export function Fail2banPage() {
       backLabel={t('fail2ban.backToProtection')}
       status={{
         pill: {
-          label: status?.activeLabel ?? '—',
+          label: fail2banStatusChipLabel(status, t),
           tone: running ? 'ok' : status?.installed ? 'warn' : 'danger' },
         items: [
           {

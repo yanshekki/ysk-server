@@ -118,6 +118,17 @@ export function firewallActiveTone(
   return 'danger';
 }
 
+/** Header chip from machine state — never the server-localized `activeLabel`. */
+export function firewallStatusChipLabel(
+  status: { installed?: boolean; active?: string } | null,
+  t: (key: string) => string,
+): string {
+  if (!status) return '—';
+  if (status.installed === false) return t('firewall.notInstalled');
+  if (status.active === 'active') return t('firewall.ufwEnabled');
+  return t('firewall.ufwDisabled');
+}
+
 /**
  * Normalize port input for allow-port.
  * Accepts `80`, `80/tcp`, `30000:30100`, `30000:30100/tcp`.
@@ -209,7 +220,7 @@ export function mapFirewallRules(
 }
 
 export function FirewallPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { can } = useCapabilities();
   const canEdit = can('firewall.edit');
   const canFlush = can('firewall.flush');
@@ -268,7 +279,7 @@ export function FirewallPage() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [t, debouncedRuleQ]);
+  }, [t, debouncedRuleQ, i18n.language]);
 
   useEffect(() => {
     void refresh();
@@ -298,7 +309,7 @@ export function FirewallPage() {
       backLabel={t('firewall.backToProtection')}
       status={{
         pill: {
-          label: status?.activeLabel ?? '—',
+          label: firewallStatusChipLabel(status, t),
           tone: firewallActiveTone(active, status?.installed) },
         items: [
           {

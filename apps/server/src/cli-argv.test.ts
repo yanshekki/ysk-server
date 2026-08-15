@@ -109,6 +109,62 @@ describe('main --help is a no-op', () => {
     },
     20_000,
   );
+
+  it(
+    'update --help does not run a version check',
+    async () => {
+      const { main } = await import('./cli.js');
+      const err: string[] = [];
+      const out: string[] = [];
+      const se = process.stderr.write.bind(process.stderr);
+      const so = process.stdout.write.bind(process.stdout);
+      process.stderr.write = ((c: string) => {
+        err.push(String(c));
+        return true;
+      }) as typeof process.stderr.write;
+      process.stdout.write = ((c: string) => {
+        out.push(String(c));
+        return true;
+      }) as typeof process.stdout.write;
+      try {
+        expect(await main(['node', 'cli', 'update', '--help'])).toBe(0);
+      } finally {
+        process.stderr.write = se;
+        process.stdout.write = so;
+      }
+      const blob = `${err.join('')}${out.join('')}`;
+      expect(blob).toMatch(/Usage: ysk-server update/);
+      expect(blob).not.toMatch(/up to date/i);
+    },
+    20_000,
+  );
+
+  it(
+    'leaf --help prints leaf flags',
+    async () => {
+      const { main } = await import('./cli.js');
+      const err: string[] = [];
+      const se = process.stderr.write.bind(process.stderr);
+      process.stderr.write = ((c: string) => {
+        err.push(String(c));
+        return true;
+      }) as typeof process.stderr.write;
+      try {
+        expect(await main(['node', 'cli', 'backup', 'restore', '--help'])).toBe(0);
+        expect(await main(['node', 'cli', 'email', 'send', '--help'])).toBe(0);
+        expect(await main(['node', 'cli', 'ssl', 'issue', '--help'])).toBe(0);
+        expect(await main(['node', 'cli', 'users', 'delete', '--help'])).toBe(0);
+      } finally {
+        process.stderr.write = se;
+      }
+      const blob = err.join('');
+      expect(blob).toMatch(/--target/);
+      expect(blob).toMatch(/email send --from/);
+      expect(blob).toMatch(/ssl issue --domain/);
+      expect(blob).toMatch(/users delete/);
+    },
+    20_000,
+  );
 });
 
 describe('applyLimit', () => {

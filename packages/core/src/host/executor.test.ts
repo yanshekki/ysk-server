@@ -141,5 +141,14 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['ufw', 'status'])).toBe(false);
     expect(commandRequiresExecute(['ufw', 'status', 'numbered'])).toBe(false);
     expect(commandRequiresExecute(['ufw', 'deny', 'from', '1.2.3.4'])).toBe(true);
+    expect(commandRequiresExecute(['git', '-C', '/app', 'status', '--porcelain'])).toBe(false);
+    expect(commandRequiresExecute(['git', '-C', '/app', 'log', '-n10'])).toBe(false);
+    expect(commandRequiresExecute(['git', '-C', '/app', 'remote', 'get-url', 'origin'])).toBe(
+      false,
+    );
+    expect(commandRequiresExecute(['git', '-C', '/app', 'fetch', 'origin'])).toBe(true);
+    expect(commandRequiresExecute(['git', 'clone', 'https://x', '/app'])).toBe(true);
+    expect(commandRequiresExecute(['git', '-C', '/app', 'reset', '--hard'])).toBe(true);
+    expect(commandRequiresExecute(['ssh-keyscan', '-T', '5', 'github.com'])).toBe(false);
   });
 });

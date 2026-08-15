@@ -255,6 +255,17 @@ export function pathCrumbs(path: string): string[] {
   return path.split('/').filter(Boolean);
 }
 
+/** Safe Files `?path=` value — no `..`, no leading slash. */
+export function sanitizeFilesQueryPath(raw: string | null | undefined): string {
+  const s = String(raw || '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .trim();
+  if (!s || s === '.') return '.';
+  const parts = s.split('/').filter((p) => p && p !== '.' && p !== '..');
+  return parts.length ? parts.join('/') : '.';
+}
+
 export function previewKind(
   mime?: string | null,
   name?: string | null,
@@ -472,7 +483,7 @@ export function FilesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const rootFromQuery = searchParams.get('root') || 'public';
   const [root, setRoot] = useState(rootFromQuery);
-  const [path, setPath] = useState('.');
+  const [path, setPath] = useState(() => sanitizeFilesQueryPath(searchParams.get('path')));
   const [items, setItems] = useState<FileEntry[]>([]);
   const [usage, setUsage] = useState<{ bytes: number; fileCount: number; dirCount: number } | null>(
     null,
@@ -808,26 +819,41 @@ export function FilesPage() {
     else if (tab === 'trash' && side !== 'trash') setSide('trash');
   }, [tab, side]);
 
-  // Honor ?root=public|project:<id> once on mount
+  // Honor ?root= / ?path= on mount and when a deep link updates the query
   useEffect(() => {
     const q = searchParams.get('root');
-    if (q) {
-      setRoot(q);
-      setPath('.');
-      const tabQ = searchParams.get('tab');
-      if (tabQ !== 'shares' && tabQ !== 'trash') {
-        setSide('all');
-      }
+    const p = sanitizeFilesQueryPath(searchParams.get('path'));
+    setRoot(q || 'public');
+    setPath(p);
+    const tabQ = searchParams.get('tab');
+    if (tabQ === 'shares' || tabQ === 'trash') {
+      setSide(tabQ);
+    } else if (q) {
+      setSide('all');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
+
+  function writeFilesParams(nextRoot: string, nextPath: string) {
+    const p = new URLSearchParams();
+    if (nextRoot && nextRoot !== 'public') p.set('root', nextRoot);
+    if (nextPath && nextPath !== '.') p.set('path', nextPath);
+    const tabQ = searchParams.get('tab');
+    if (tabQ === 'shares' || tabQ === 'trash') p.set('tab', tabQ);
+    setSearchParams(p, { replace: true });
+  }
 
   function changeRoot(next: string) {
     setRoot(next);
     setPath('.');
     setSide('all');
     setSelected(new Set());
-    setSearchParams(next === 'public' ? {} : { root: next }, { replace: true });
+    writeFilesParams(next, '.');
+  }
+
+  function goPath(next: string) {
+    const clean = sanitizeFilesQueryPath(next);
+    setPath(clean);
+    writeFilesParams(root, clean);
   }
 
   const crumbs = useMemo(() => pathCrumbs(path), [path]);
@@ -1171,7 +1197,7 @@ export function FilesPage() {
 
   async function openEntry(e: FileEntry) {
     if (e.type === 'dir') {
-      setPath(e.path);
+      goPath(e.path);
       setSide('all');
       return;
     }
@@ -1555,13 +1581,13 @@ export function FilesPage() {
 
               {/* Breadcrumb */}
               <nav className="fm-breadcrumb action-bar" aria-label={t('files.pathAria')}>
-                <Button variant="ghost" size="sm" onClick={bindSet(setPath, '.')}>
+                <Button variant="ghost" size="sm" onClick={() => goPath('.')}>
                   {root === 'public' ? t('files.rootPublic') : t('files.rootProject')}
                 </Button>
                 {crumbs.map((c, i) => {
                   const p = crumbs.slice(0, i + 1).join('/');
                   return (
-                    <Button key={p} variant="ghost" size="sm" onClick={bindSet(setPath, p)}>
+                    <Button key={p} variant="ghost" size="sm" onClick={() => goPath(p)}>
                       / {c}
                     </Button>
                   );
@@ -1656,7 +1682,7 @@ export function FilesPage() {
                     rows={items}
                     rowKey={(e) => e.path}
                     onRowActivate={(e) => {
-                      if (e.type === 'dir') setPath(e.path);
+                      if (e.type === 'dir') goPath(e.path);
                     }}
                     rowActions={(e) => (
                       <ActionBar align="end">

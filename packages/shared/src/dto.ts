@@ -161,6 +161,9 @@ export interface ProjectDto {
   gitUrl?: string;
   gitBranch?: string;
   gitCommit?: string;
+  gitShallow?: boolean;
+  gitLastError?: { code: string; message: string; at: string };
+  gitAuthKind?: 'none' | 'ssh' | 'https-token';
   envVars?: Record<string, string>;
   lastBackupPath?: string;
   lastBackupAt?: string;
@@ -180,6 +183,8 @@ export interface ProjectDto {
   deployEntry?: string;
   /** Recent deploy notes for UI summary */
   lastDeployNotes?: string[];
+  /** Last resolved runtime binary (may be a fallback, not the planned version path) */
+  runtimeBin?: string;
   /**
    * Extra log directories relative to homeDir (besides logs/ and log/).
    * e.g. storage/logs, var/log

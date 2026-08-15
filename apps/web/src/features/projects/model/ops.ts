@@ -108,6 +108,20 @@ export function formatRuntimeLabel(
   return `${name} ${version}`;
 }
 
+/** True when stored binary is not the planned `/usr/local/ysk/<runtime>/<ver>/` path. */
+export function isRuntimeBinFallback(
+  runtime?: string,
+  version?: string | null,
+  bin?: string | null,
+): boolean {
+  const path = String(bin ?? '').trim();
+  if (!path) return false;
+  const rt = String(runtime ?? '').trim().toLowerCase();
+  const major = String(version ?? '').trim().split('.')[0];
+  if (!rt || rt === 'static' || !major) return false;
+  return !path.includes(`/ysk/${rt}/${major}/`);
+}
+
 function formatRuntimeNameForLabel(runtime?: string, t?: TFunction): string {
   if (t) {
     if (runtime === 'php') return t('projects.runtimeName.php');

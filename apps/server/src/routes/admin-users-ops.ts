@@ -52,6 +52,7 @@ export async function handleAdminUsersOpsRoutes(
           'packageId' in data ? (data.packageId as string | null | undefined) : undefined,
         suspended: optionalBoolean(data, 'suspended'),
         password: optionalString(data, 'password'),
+        locale: optionalString(data, 'locale'),
       },
       user.username,
     );

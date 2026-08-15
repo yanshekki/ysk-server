@@ -4,7 +4,7 @@
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { SystemRole, UserDto } from 'ysk-server-shared';
-import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import { ErrorCodes, YskError, normalizeLocale, tl} from 'ysk-server-shared';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';
@@ -63,7 +63,7 @@ export class UsersAdminService {
       password_hash: hashPassword(input.password, salt),
       password_salt: salt,
       roles,
-      locale: input.locale ?? 'zh-HK',
+      locale: normalizeLocale(input.locale),
       package_id: input.packageId,
       suspended: false,
       created_at: now,
@@ -90,6 +90,7 @@ export class UsersAdminService {
       packageId?: string | null;
       suspended?: boolean;
       password?: string;
+      locale?: string;
     },
     actor: string,
   ): UserDto {
@@ -121,6 +122,7 @@ export class UsersAdminService {
     if (patch.packageId === null) upd.package_id = undefined;
     else if (patch.packageId !== undefined) upd.package_id = patch.packageId;
     if (patch.suspended !== undefined) upd.suspended = patch.suspended;
+    if (patch.locale !== undefined) upd.locale = normalizeLocale(patch.locale);
     if (patch.password) {
       if (patch.password.length < 8) {
         throw new YskError(ErrorCodes.VALIDATION, tl('notes.passwordMin8'), { httpStatus: 400 });

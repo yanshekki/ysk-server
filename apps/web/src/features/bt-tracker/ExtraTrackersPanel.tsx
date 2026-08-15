@@ -3,7 +3,7 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Badge, Button } from '../../shared/components/ui';
+import { Badge, Button, EmptyState, Field, FormHint } from '../../shared/components/ui';
 import type { BtExtraTracker, BtTrackerSettings } from './api';
 import { btTrackerApi } from './api';
 
@@ -27,6 +27,7 @@ export function ExtraTrackersPanel(props: {
   const [url, setUrl] = useState('');
   const [fieldErr, setFieldErr] = useState<string | null>(null);
   const extra = props.settings?.extraTrackers ?? [];
+  const enabledCount = extra.filter((x) => x.enabled).length;
 
   function validate(raw: string): boolean {
     const s = raw.trim();
@@ -36,93 +37,114 @@ export function ExtraTrackersPanel(props: {
 
   return (
     <div className="tab-panel bt-extras">
-      <Alert variant="info">{t('btTracker.extraTrackersDesc')}</Alert>
-      <form
-        className="bt-extras__add"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!validate(url)) {
-            setFieldErr(t('btTracker.extraTrackerBad'));
-            return;
-          }
-          const key = url.trim().toLowerCase();
-          if (extra.some((x) => x.url.toLowerCase() === key)) {
-            setFieldErr(t('btTracker.extraTrackerDup'));
-            return;
-          }
-          if (extra.length >= 32) {
-            setFieldErr(t('btTracker.extraTrackerLimit'));
-            return;
-          }
-          setFieldErr(null);
-          void props.onSave([...extra, { url: url.trim(), enabled: true }]).then(() => setUrl(''));
-        }}
-      >
-        <input
-          className="input"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder={t('btTracker.extraTrackerUrl')}
-          aria-label={t('btTracker.extraTrackerUrl')}
-        />
-        <Button type="submit" variant="primary" size="sm" disabled={props.busy}>
-          {t('btTracker.extraTrackerAdd')}
-        </Button>
-      </form>
-      {fieldErr ? <p className="bt-add__err">{fieldErr}</p> : null}
+      <section className="bt-card">
+        <header className="bt-card__head">
+          <h3 className="bt-card__title">{t('btTracker.extraTrackersTitle')}</h3>
+          <FormHint>{t('btTracker.extraTrackersDesc')}</FormHint>
+        </header>
 
-      {extra.length === 0 ? (
-        <div className="bt-empty bt-empty--compact">
-          <p className="bt-empty__title">{t('btTracker.extraTrackersEmpty')}</p>
-        </div>
-      ) : (
-        <ul className="bt-extras__list">
-          {extra.map((row) => (
-            <li key={row.url} className="bt-extras__row">
-              <Badge tone="neutral">{protoOf(row.url)}</Badge>
-              <code className="bt-extras__url">{row.url}</code>
-              <label className="bt-toggle bt-toggle--compact">
-                <input
-                  type="checkbox"
-                  checked={row.enabled}
-                  disabled={props.busy}
-                  onChange={(e) => {
-                    void props.onSave(
-                      extra.map((x) =>
-                        x.url === row.url ? { ...x, enabled: e.target.checked } : x,
-                      ),
-                    );
-                  }}
-                />
-                <span className="bt-toggle__lab">{t('btTracker.extraEnabled')}</span>
-              </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={props.busy}
-                onClick={() => void props.onSave(extra.filter((x) => x.url !== row.url))}
-              >
-                {t('common.delete', { defaultValue: 'Delete' })}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="bt-extras__apply">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          disabled={props.busy || extra.filter((x) => x.enabled).length === 0}
-          onClick={() => {
-            void btTrackerApi.applyTrackers().then(() => props.onApplied());
+        <form
+          className="bt-extras__add"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!validate(url)) {
+              setFieldErr(t('btTracker.extraTrackerBad'));
+              return;
+            }
+            const key = url.trim().toLowerCase();
+            if (extra.some((x) => x.url.toLowerCase() === key)) {
+              setFieldErr(t('btTracker.extraTrackerDup'));
+              return;
+            }
+            if (extra.length >= 32) {
+              setFieldErr(t('btTracker.extraTrackerLimit'));
+              return;
+            }
+            setFieldErr(null);
+            void props.onSave([...extra, { url: url.trim(), enabled: true }]).then(() => setUrl(''));
           }}
         >
-          {t('btTracker.extraTrackerApply')}
-        </Button>
-      </div>
+          <Field
+            label={t('btTracker.extraTrackerUrl')}
+            htmlFor="bt-extra-url"
+            error={fieldErr ?? undefined}
+            flush
+            fullWidth
+          >
+            <div className="bt-extras__composer">
+              <input
+                id="bt-extra-url"
+                className="input"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder={t('btTracker.extraTrackerUrl')}
+                aria-label={t('btTracker.extraTrackerUrl')}
+              />
+              <Button type="submit" variant="primary" size="sm" disabled={props.busy}>
+                {t('btTracker.extraTrackerAdd')}
+              </Button>
+            </div>
+          </Field>
+        </form>
+
+        {extra.length === 0 ? (
+          <EmptyState
+            title={t('btTracker.extraTrackersEmptyTitle')}
+            description={t('btTracker.extraTrackersEmpty')}
+          />
+        ) : (
+          <ul className="bt-extras__list">
+            {extra.map((row) => (
+              <li key={row.url} className="bt-extras__row">
+                <Badge tone="neutral">{protoOf(row.url)}</Badge>
+                <code className="bt-extras__url">{row.url}</code>
+                <label className="bt-toggle bt-toggle--compact">
+                  <input
+                    type="checkbox"
+                    checked={row.enabled}
+                    disabled={props.busy}
+                    onChange={(e) => {
+                      void props.onSave(
+                        extra.map((x) =>
+                          x.url === row.url ? { ...x, enabled: e.target.checked } : x,
+                        ),
+                      );
+                    }}
+                  />
+                  <span className="bt-toggle__lab">{t('btTracker.extraEnabled')}</span>
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={props.busy}
+                  onClick={() => void props.onSave(extra.filter((x) => x.url !== row.url))}
+                >
+                  {t('common.delete')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <footer className="bt-extras__foot">
+          <span className="muted u-text-sm">
+            {t('btTracker.extraEnabledCount', { count: enabledCount })}
+            {enabledCount === 0 ? ` · ${t('btTracker.extraApplyHint')}` : ''}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={props.busy || enabledCount === 0}
+            onClick={() => {
+              void btTrackerApi.applyTrackers().then(() => props.onApplied());
+            }}
+          >
+            {t('btTracker.extraTrackerApply')}
+          </Button>
+        </footer>
+      </section>
     </div>
   );
 }

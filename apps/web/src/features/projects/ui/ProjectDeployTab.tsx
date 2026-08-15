@@ -15,10 +15,13 @@ import {
   Field,
   FormActions,
   FormLayout,
+  ConfirmDialog,
   PresetChips,
-  SegRadio } from '../../../shared/components/ui';
+  SegRadio,
+  Alert } from '../../../shared/components/ui';
 import { useOpsStreamOptional } from '../../../shared/ops-stream/OpsStreamContext';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
+import { isRuntimeBinFallback } from '../model/ops';
 import {
   defaultRuntimeInstallVersion,
   fetchRuntimeVersionChoices,
@@ -30,6 +33,7 @@ import {
   saveDeployPrefs,
   type ProcessManager } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
+import { projectGitHookAbsoluteUrl } from '../model/git-hook-url';
 import { systemApi } from '../../system/api';
 import { pm2Api } from '../../pm2/api';
 import { bindInput, bindVoid, bindValueSet, bindAllOrValue } from '../../../pages/bind-handlers';
@@ -52,7 +56,8 @@ export interface ProjectDeployTabProps {
     skipBuild?: boolean;
     enableSystemd?: boolean;
   }) => void | Promise<unknown>;
-  onGitDeploy: (opts?: { entry?: string; skipBuild?: boolean }) => void;
+  onGitDeploy: (opts?: { entry?: string; skipBuild?: boolean; branch?: string }) => void;
+  onGitChanged?: () => void;
   onSaveEnv: () => void;
   onPhpVersionChange?: (v: string) => void;
   /** After process runtime version PATCH */
@@ -117,6 +122,7 @@ export function ProjectDeployTab({
   setEnvText,
   onDeploy,
   onGitDeploy,
+  onGitChanged,
   onSaveEnv,
   onPhpVersionChange,
   onRuntimeVersionSaved,
@@ -156,6 +162,16 @@ export function ProjectDeployTab({
   );
   const [skipBuild, setSkipBuild] = useState(Boolean(prefs.skipBuild));
   /** Node/Bun: systemd (default) vs PM2 — professional process manager choice */
+  const [gitBranch, setGitBranch] = useState(project.gitBranch ?? '');
+  const [gitConfirmOpen, setGitConfirmOpen] = useState(false);
+  const [gitResetOpen, setGitResetOpen] = useState(false);
+  const [gitToken, setGitToken] = useState('');
+  const [gitHookSecret, setGitHookSecret] = useState<string | null>(null);
+  const [gitBusy, setGitBusy] = useState(false);
+  const [gitSt, setGitSt] = useState<Awaited<ReturnType<typeof projectsApi.gitStatus>> | null>(
+    null,
+  );
+  const [gitLog, setGitLog] = useState<Array<{ hash: string; subject: string; at?: string }>>([]);
   const [processManager, setProcessManager] = useState<ProcessManager>(() =>
     normalizeProcessManager(prefs.processManager),
   );
@@ -243,11 +259,43 @@ export function ProjectDeployTab({
   }, [project.id, project.deployEntry]);
 
   useEffect(() => {
+    setGitBranch(project.gitBranch ?? '');
     setPhpVer(project.runtimeVersion ?? '8.2');
     setRtVer(
       project.runtimeVersion || defaultRuntimeInstallVersion(project.runtime) || '',
     );
-  }, [project.id, project.runtimeVersion, project.runtime]);
+  }, [project.id, project.runtimeVersion, project.runtime, project.gitBranch]);
+
+  const reloadGit = useCallback(async () => {
+    try {
+      const [st, log] = await Promise.all([
+        projectsApi.gitStatus(project.id),
+        projectsApi.gitLog(project.id, 10).catch(() => ({ ok: false, items: [] as Array<{ hash: string; subject: string; at?: string }> })),
+      ]);
+      setGitSt(st);
+      setGitLog((log.items ?? []).filter((c) => c?.hash));
+    } catch {
+      setGitSt(null);
+    }
+  }, [project.id]);
+
+  useEffect(() => {
+    void reloadGit();
+  }, [reloadGit, project.gitCommit]);
+
+  async function runGitOp(fn: () => Promise<{ ok: boolean; notes?: string[] }>) {
+    setGitBusy(true);
+    try {
+      const r = await fn();
+      onOpsMessage?.(r.notes?.filter(Boolean).join('；') || (r.ok ? t('common.savedOk') : t('common.opFailed')));
+      await reloadGit();
+      onGitChanged?.();
+    } catch (e) {
+      onOpsMessage?.(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setGitBusy(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -499,6 +547,24 @@ export function ProjectDeployTab({
                   />
                 </Field>
               )}
+              {project.runtimeBin ? (
+                isRuntimeBinFallback(
+                  project.runtime,
+                  project.runtimeVersion,
+                  project.runtimeBin,
+                ) ? (
+                  <Alert variant="warn">
+                    {t('projects.runtimeFallback', {
+                      path: project.runtimeBin,
+                      version: project.runtimeVersion || '',
+                    })}
+                  </Alert>
+                ) : (
+                  <p className="muted u-text-sm u-mb-0">
+                    {t('projects.runtimeActual', { path: project.runtimeBin })}
+                  </p>
+                )
+              ) : null}
               {processRuntime ? (
                 <Field
                   label={t('projects.deployEntry')}
@@ -845,6 +911,49 @@ export function ProjectDeployTab({
       {ui.showGit ? (
         <Card>
           <CardSection title={t('projects.sectionGit')}>
+            <div className="badge-row u-mb-2">
+              {gitSt && !gitSt.gitInstalled ? (
+                <Badge tone="danger">{t('projects.gitMissing')}</Badge>
+              ) : null}
+              {gitSt && gitSt.gitInstalled && !gitSt.isRepo ? (
+                <Badge tone="warn">{t('projects.gitNotCloned')}</Badge>
+              ) : null}
+              {gitSt?.isRepo && gitSt.dirty ? (
+                <Badge tone="warn">{t('projects.gitDirty')}</Badge>
+              ) : null}
+              {gitSt?.isRepo && !gitSt.dirty ? (
+                <Badge tone="ok">{t('projects.gitClean')}</Badge>
+              ) : null}
+              {gitSt && gitSt.behind > 0 ? (
+                <Badge tone="info">{t('projects.gitBehind', { count: gitSt.behind })}</Badge>
+              ) : null}
+              {gitSt && gitSt.ahead > 0 ? (
+                <Badge tone="info">{t('projects.gitAhead', { count: gitSt.ahead })}</Badge>
+              ) : null}
+              {gitSt?.detached ? <Badge tone="info">{t('projects.gitDetached')}</Badge> : null}
+              {gitSt?.shallow ? <Badge tone="neutral">{t('projects.gitShallow')}</Badge> : null}
+              {gitSt?.auth?.hasToken ? (
+                <Badge tone="ok">{t('projects.gitTokenSet')}</Badge>
+              ) : null}
+              {gitSt?.auth?.kind === 'ssh' && gitSt.auth.publicKey ? (
+                <Badge tone="ok">{t('projects.gitDeployKeyOn')}</Badge>
+              ) : null}
+              {gitSt?.auth?.scheme === 'ssh' && gitSt.auth.host && !gitSt.auth.hostPinned ? (
+                <Badge tone="warn">{t('projects.gitHostUnpinned')}</Badge>
+              ) : null}
+            </div>
+            {gitSt?.dirty ? (
+              <Alert variant="warn">
+                <strong>{t('projects.gitDirtyTitle')}</strong>
+                <p className="u-mb-0">{t('projects.gitDirtyBody', { count: gitSt.dirtyFiles.length })}</p>
+                {gitSt.dirtyFiles.length ? (
+                  <p className="muted u-text-sm u-mb-0">{gitSt.dirtyFiles.join(', ')}</p>
+                ) : null}
+              </Alert>
+            ) : null}
+            {gitSt?.lastError ? (
+              <Alert variant="error">{gitSt.lastError.message}</Alert>
+            ) : null}
             <FormLayout>
               <Field
                 label={t('projects.gitUrl')}
@@ -859,20 +968,425 @@ export function ProjectDeployTab({
                   placeholder="https://github.com/org/repo.git"
                 />
               </Field>
+              <Field
+                label={t('projects.gitBranch')}
+                htmlFor="gitbranch"
+                hint={t('projects.gitBranchHint')}
+                flush
+              >
+                <input
+                  id="gitbranch"
+                  value={gitBranch}
+                  onChange={bindInput(setGitBranch)}
+                  placeholder="main"
+                  list="git-heads"
+                />
+                {gitSt?.heads?.length ? (
+                  <datalist id="git-heads">
+                    {gitSt.heads.map((h) => (
+                      <option key={h} value={h} />
+                    ))}
+                  </datalist>
+                ) : null}
+              </Field>
+              {gitSt?.auth?.scheme === 'https' ||
+              (!gitSt?.auth && /^https?:\/\//i.test(gitUrl)) ? (
+                <Field
+                  label={t('projects.gitToken')}
+                  htmlFor="gittoken"
+                  hint={t('projects.gitTokenHint')}
+                  flush
+                >
+                  <input
+                    id="gittoken"
+                    type="password"
+                    value={gitToken}
+                    onChange={bindInput(setGitToken)}
+                    autoComplete="new-password"
+                    placeholder={
+                      gitSt?.auth?.hasToken ? '••••••••' : t('projects.gitTokenPlaceholder')
+                    }
+                  />
+                </Field>
+              ) : null}
             </FormLayout>
+            {gitSt?.auth?.scheme === 'ssh' && gitSt.auth.host && !gitSt.auth.hostPinned ? (
+              <Alert variant="warn">
+                {t('projects.gitPinHostBody', { host: gitSt.auth.host })}
+                {gitSt.auth.hostKeys?.length ? (
+                  <p className="muted u-text-sm u-mb-0">
+                    {gitSt.auth.hostKeys.map((k) => k.fingerprint).join(' · ')}
+                  </p>
+                ) : null}
+              </Alert>
+            ) : null}
+            {gitSt?.auth?.publicKey ? (
+              <Field
+                label={t('projects.gitDeployKey')}
+                htmlFor="gitpubkey"
+                hint={t('projects.gitDeployKeyHint')}
+                flush
+              >
+                <textarea
+                  id="gitpubkey"
+                  readOnly
+                  rows={3}
+                  value={gitSt.auth.publicKey}
+                  className="u-text-sm"
+                />
+              </Field>
+            ) : null}
+            <FormActions>
+              {gitSt?.auth?.scheme === 'https' || /^https?:\/\//i.test(gitUrl) ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={gitBusy}
+                    disabled={gitToken.trim().length < 8}
+                    onClick={() => {
+                      const tok = gitToken.trim();
+                      setGitToken('');
+                      void runGitOp(() =>
+                        projectsApi.gitAuth(project.id, {
+                          action: 'set-token',
+                          token: tok,
+                          gitUrl: gitUrl.trim() || undefined,
+                        }),
+                      );
+                    }}
+                  >
+                    {t('projects.gitSaveToken')}
+                  </Button>
+                  {gitSt?.auth?.hasToken ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      loading={gitBusy}
+                      onClick={() =>
+                        void runGitOp(() =>
+                          projectsApi.gitAuth(project.id, {
+                            action: 'clear-token',
+                            gitUrl: gitUrl.trim() || undefined,
+                          }),
+                        )
+                      }
+                    >
+                      {t('projects.gitClearToken')}
+                    </Button>
+                  ) : null}
+                </>
+              ) : null}
+              {gitSt?.auth?.scheme === 'ssh' || gitUrl.trim().startsWith('git@') || gitUrl.startsWith('ssh://') ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={gitBusy}
+                    onClick={() =>
+                      void runGitOp(() =>
+                        projectsApi.gitAuth(project.id, {
+                          action: 'make-deploy-key',
+                          gitUrl: gitUrl.trim() || undefined,
+                        }),
+                      )
+                    }
+                  >
+                    {t('projects.gitMakeKey')}
+                  </Button>
+                  {gitSt?.auth?.publicKey ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          void navigator.clipboard?.writeText(gitSt.auth?.publicKey ?? '');
+                          onOpsMessage?.(t('projects.gitKeyCopied'));
+                        }}
+                      >
+                        {t('projects.gitCopyPub')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={gitBusy}
+                        onClick={() =>
+                          void runGitOp(() =>
+                            projectsApi.gitAuth(project.id, {
+                              action: 'clear-deploy-key',
+                              gitUrl: gitUrl.trim() || undefined,
+                            }),
+                          )
+                        }
+                      >
+                        {t('projects.gitClearKey')}
+                      </Button>
+                    </>
+                  ) : null}
+                  {gitSt?.auth?.host && !gitSt.auth.hostPinned ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={gitBusy}
+                      onClick={() =>
+                        void runGitOp(() =>
+                          projectsApi.gitAuth(project.id, {
+                            action: 'pin-host',
+                            gitUrl: gitUrl.trim() || undefined,
+                          }),
+                        )
+                      }
+                    >
+                      {t('projects.gitPinHost')}
+                    </Button>
+                  ) : null}
+                </>
+              ) : null}
+            </FormActions>
+            {project.gitCommit || project.gitBranch || gitSt?.commitSubject ? (
+              <p className="muted u-text-sm u-mb-0">
+                {t('projects.gitLastRef', {
+                  branch: gitSt?.branch || project.gitBranch || '—',
+                  commit: (gitSt?.commit || project.gitCommit || '').slice(0, 12) || '—',
+                })}
+                {gitSt?.commitSubject ? ` · ${gitSt.commitSubject}` : ''}
+              </p>
+            ) : null}
             <FormActions>
               <Button
                 variant="primary"
                 size="md"
-                loading={busy}
+                loading={busy || gitBusy}
+                disabled={!gitUrl.trim() || gitSt?.dirty}
                 onClick={() => {
                   persist();
-                  onGitDeploy(deployOpts());
+                  const firstClone = !project.gitCommit && !gitSt?.isRepo;
+                  const urlChanged =
+                    Boolean(gitSt?.isRepo) &&
+                    Boolean(project.gitUrl) &&
+                    gitUrl.trim() !== '' &&
+                    project.gitUrl !== gitUrl.trim();
+                  if (firstClone || urlChanged) {
+                    setGitConfirmOpen(true);
+                    return;
+                  }
+                  onGitDeploy({ ...deployOpts(), branch: gitBranch.trim() || undefined });
                 }}
               >
-                {t('projects.gitDeploy')}
+                {t('projects.gitSync')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                loading={gitBusy}
+                disabled={!gitSt?.isRepo}
+                onClick={() => void runGitOp(() => projectsApi.gitFetch(project.id))}
+              >
+                {t('projects.gitFetch')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                loading={gitBusy}
+                disabled={!gitSt?.isRepo || !gitBranch.trim() || gitSt?.dirty}
+                onClick={() =>
+                  void runGitOp(() =>
+                    projectsApi.gitCheckout(project.id, { ref: gitBranch.trim() }),
+                  )
+                }
+              >
+                {t('projects.gitCheckout')}
+              </Button>
+              <Button
+                variant="danger"
+                size="md"
+                loading={gitBusy}
+                disabled={!gitSt?.isRepo}
+                onClick={() => setGitResetOpen(true)}
+              >
+                {t('projects.gitReset')}
+              </Button>
+              {gitSt?.shallow ? (
+                <Button
+                  variant="ghost"
+                  size="md"
+                  loading={gitBusy}
+                  onClick={() =>
+                    void runGitOp(() => projectsApi.gitFetch(project.id, { unshallow: true }))
+                  }
+                >
+                  {t('projects.gitDeepen')}
+                </Button>
+              ) : null}
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => {
+                  window.location.href = `/files?root=project:${project.id}&path=app`;
+                }}
+              >
+                {t('projects.gitOpenFiles')}
               </Button>
             </FormActions>
+            <div className="u-mt-3">
+              <p className="muted u-text-sm u-mb-1">{t('projects.gitHookTitle')}</p>
+              <p className="muted u-text-sm">{t('projects.gitHookHint')}</p>
+              <p className="u-text-sm u-mb-1">
+                <code className="inline">
+                  {projectGitHookAbsoluteUrl(
+                    gitSt?.hook?.path || `/api/v1/hooks/git/${project.id}`,
+                  )}
+                </code>
+              </p>
+              {gitSt?.hook?.enabled ? (
+                <Badge tone="ok">{t('projects.gitHookOn')}</Badge>
+              ) : (
+                <Badge tone="neutral">{t('projects.gitHookOff')}</Badge>
+              )}
+              {gitHookSecret ? (
+                <Alert variant="warn">
+                  {t('projects.gitHookSecretOnce')}{' '}
+                  <code className="inline u-text-sm">{gitHookSecret}</code>
+                </Alert>
+              ) : null}
+              <p className="muted u-text-sm">{t('projects.gitHookSetup')}</p>
+              <p className="muted u-text-sm">{t('projects.gitHookGithub')}</p>
+              <p className="muted u-text-sm">{t('projects.gitHookGitea')}</p>
+              <p className="muted u-text-sm">{t('projects.gitHookGitlab')}</p>
+              <p className="muted u-text-sm">{t('projects.gitHookSkipOther')}</p>
+              <Alert variant="info">{t('projects.gitHookHonesty')}</Alert>
+              <FormActions>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const url = projectGitHookAbsoluteUrl(
+                      gitSt?.hook?.path || `/api/v1/hooks/git/${project.id}`,
+                    );
+                    void navigator.clipboard?.writeText(url);
+                    onOpsMessage?.(t('projects.gitHookCopied'));
+                  }}
+                >
+                  {t('projects.gitHookCopyUrl')}
+                </Button>
+                {gitHookSecret ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(gitHookSecret);
+                      onOpsMessage?.(t('projects.gitHookCopied'));
+                    }}
+                  >
+                    {t('projects.gitHookCopySecret')}
+                  </Button>
+                ) : null}
+                {!gitSt?.hook?.enabled ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={gitBusy}
+                    onClick={() =>
+                      void runGitOp(async () => {
+                        const r = await projectsApi.gitHook(project.id, { action: 'enable' });
+                        if (r.hookSecret) setGitHookSecret(r.hookSecret);
+                        return r;
+                      })
+                    }
+                  >
+                    {t('projects.gitHookEnable')}
+                  </Button>
+                ) : null}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={gitBusy}
+                  disabled={!gitSt?.hook?.hasSecret}
+                  onClick={() =>
+                    void runGitOp(async () => {
+                      const r = await projectsApi.gitHook(project.id, { action: 'rotate' });
+                      if (r.hookSecret) setGitHookSecret(r.hookSecret);
+                      return r;
+                    })
+                  }
+                >
+                  {t('projects.gitHookRotate')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={gitBusy}
+                  disabled={!gitSt?.hook?.enabled}
+                  onClick={() =>
+                    void runGitOp(async () => {
+                      setGitHookSecret(null);
+                      return projectsApi.gitHook(project.id, { action: 'disable' });
+                    })
+                  }
+                >
+                  {t('projects.gitHookDisable')}
+                </Button>
+              </FormActions>
+            </div>
+            {gitLog.length ? (
+              <div className="u-mt-3">
+                <p className="muted u-text-sm u-mb-1">{t('projects.gitLogTitle')}</p>
+                <ul className="list-plain">
+                  {gitLog.map((c) => (
+                    <li key={c.hash}>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        disabled={gitBusy || gitSt?.dirty}
+                        onClick={() => {
+                          setGitBranch(c.hash);
+                          void runGitOp(() =>
+                            projectsApi.gitCheckout(project.id, { ref: c.hash }),
+                          );
+                        }}
+                      >
+                        <code className="inline u-text-sm">{(c.hash ?? '').slice(0, 8)}</code>
+                      </button>
+                      <span className="u-text-sm"> {c.subject}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            <ConfirmDialog
+              open={gitConfirmOpen}
+              onClose={() => setGitConfirmOpen(false)}
+              title={t('projects.gitConfirmTitle')}
+              description={
+                project.gitCommit &&
+                project.gitUrl &&
+                gitUrl.trim() &&
+                project.gitUrl !== gitUrl.trim()
+                  ? t('projects.gitConfirmRemoteBody')
+                  : t('projects.gitConfirmBody')
+              }
+              confirmLabel={t('projects.gitDeploy')}
+              onConfirm={() => {
+                setGitConfirmOpen(false);
+                onGitDeploy({ ...deployOpts(), branch: gitBranch.trim() || undefined });
+              }}
+            />
+            <ConfirmDialog
+              open={gitResetOpen}
+              onClose={() => setGitResetOpen(false)}
+              title={t('projects.gitResetConfirmTitle')}
+              description={t('projects.gitResetConfirmBody')}
+              confirmLabel={t('projects.gitReset')}
+              danger
+              onConfirm={() => {
+                setGitResetOpen(false);
+                void runGitOp(() =>
+                  projectsApi.gitReset(project.id, {
+                    ref: gitBranch.trim() || undefined,
+                  }),
+                );
+              }}
+            />
           </CardSection>
         </Card>
       ) : null}

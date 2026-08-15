@@ -16,6 +16,7 @@ import {
   SummaryStrip } from '../../../shared/components/ui';
 import { HealthSummary } from './HealthSummary';
 import { projectNeedsLiveRetry } from '../model/status';
+import { isRuntimeBinFallback } from '../model/ops';
 import { projectsApi } from '../api';
 
 function PathValue({ value, copyLabel }: { value: string; copyLabel: string }) {
@@ -192,6 +193,25 @@ export function ProjectOverviewTab({
                     {project.runtime !== 'static' && project.runtimeVersion
                       ? ` ${project.runtimeVersion}`
                       : ''}
+                    {project.runtimeBin ? (
+                      <span className="muted u-text-sm">
+                        {' '}
+                        ·{' '}
+                        {t(
+                          isRuntimeBinFallback(
+                            project.runtime,
+                            project.runtimeVersion,
+                            project.runtimeBin,
+                          )
+                            ? 'projects.runtimeFallback'
+                            : 'projects.runtimeActual',
+                          {
+                            path: project.runtimeBin,
+                            version: project.runtimeVersion || '',
+                          },
+                        )}
+                      </span>
+                    ) : null}
                   </>
                 ) },
               {

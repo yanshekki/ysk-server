@@ -203,7 +203,11 @@ export function ProjectsPage() {
               setHintRuntime(null);
               setHintVersion(null);
               await list.refresh();
-              navigate(`/projects/${r.project.id}`);
+              navigate(
+                input.gitUrl
+                  ? `/projects/${r.project.id}?tab=app`
+                  : `/projects/${r.project.id}`,
+              );
             } catch (e) {
               list.setError(e instanceof Error ? e.message : t('common.createFailed'));
             } finally {

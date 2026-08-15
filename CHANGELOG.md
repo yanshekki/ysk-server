@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.38 — 2026-08-15
+
+### Fix
+- `update --help` / `update help` print usage and do not run a version check
+- `backup status` lastRun no longer treats every English note as a skip (`n1252` was empty, so `startsWith('')` matched all notes)
+- `cmd leaf --help` prints that leaf’s usage (`email send`, `ssl issue`, `users delete`, `backup restore --target`)
+- Self-update notes warn about a leftover `~/.npm-global` CLI (does not delete it)
+- Read-only leftover probe (`ysk-server hosting leftovers` + readiness): Apache default site, missing nginx catch-all, failed vsftpd, Dovecot TLS to a missing cert. Overlay still does not rewrite those host files
+- Firewall / fail2ban header chips use panel i18n (`active` / `installed`), not a server `activeLabel` that stays in the last request language
+- Panel `Accept-Language` keeps ja/ko/fr/… (no longer forced to zh-HK)
+- VPN “engine not installed” / “server not listening” alerts are translated (13 locales)
+- Service exposure no longer treats UFW `inactive` as active (`/active/i` matched the substring); VPN cards pass whether the engine is installed
+- BT Tracker “Torrent N” counts the library/share list; leftover tracker announces are a warning, not a fake row
+- Global search does not flash “no results” before the query finishes
+- Create-project version chips show the offline fallback immediately, then swap in discovery results
+- BT Tracker add-torrent modal, extra-tracker tab, and library list restyled: no native file-picker chrome, sectioned add flow, tracker card with empty state
+- BT library can seed files that already exist (no dead-end 「已有同名項目」); empty dest shows 下載中 not 檢查中; Start stays disabled until the dest conflict is resolved
+- Project Git: optional repo URL + branch on create (no clone / no empty goLive), panel branch or tag field, confirm before first clone or remote change, Files `?path=` follows the query, quieter `pm2 delete` when no app, header warns when Node fell back to `/usr/bin/node`
+- Page tabs no longer show a leftover vertical scrollbar (horizontal overflow uses the arrow buttons)
+- Create / edit user language lists all 13 panel locales (not only zh-HK)
+- Project Git control: live status (dirty / behind / shallow / detached), classified errors, pull blocked on Files edits, `.env` restored after sync, fetch / checkout / reset, commit log; CLI `projects git status|log|fetch|checkout|reset`
+- Project Git auth: encrypted HTTPS token, per-project SSH deploy key, pinned `known_hosts` (no silent `StrictHostKeyChecking=no`); token never stored in the remote URL
+- Project Git inbound hook: `POST /api/v1/hooks/git/:id` with HMAC or `X-YSK-Git-Hook`; enable/rotate/disable from the App tab; full URL + copy; other-branch pushes skipped; operator pastes the URL into GitHub/Gitea/GitLab (not Slack)
+
 ## 1.0.37 — 2026-08-15
 
 ### Feature

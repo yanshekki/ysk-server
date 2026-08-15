@@ -398,6 +398,29 @@ export async function assessProductionReadiness(input: {
     /* probe optional */
   }
 
+  try {
+    const { probeHostLeftovers } = await import('./leftover-probe.js');
+    const leftovers = await probeHostLeftovers({
+      host,
+      currentVersion: input.version,
+    });
+    push({
+      id: 'host-leftovers',
+      category: 'hosting',
+      title: tl('notes.leftover.readinessTitle'),
+      level: leftovers.ok ? 'ready' : 'degraded',
+      detail: leftovers.ok
+        ? tl('notes.leftover.readinessClean')
+        : leftovers.notes.slice(0, 4).join(' · '),
+      spec: '§4.1',
+      fixHint: leftovers.ok ? undefined : tl('notes.leftover.overlayDoesNotHeal'),
+      fixHref: leftovers.ok ? undefined : '/nginx',
+      severity: leftovers.ok ? 'optional' : 'recommended',
+    });
+  } catch {
+    /* leftover scan optional */
+  }
+
   const runtimes = await probeRuntimes(host);
   const nodeReady = runtimes.node.filter((n) => n.available).map((n) => n.version);
   const phpReady = runtimes.php.filter((p) => p.available).map((p) => p.version);

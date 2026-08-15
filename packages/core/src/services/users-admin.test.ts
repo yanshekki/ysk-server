@@ -133,6 +133,16 @@ describe('UsersAdminService', () => {
       expect(u.roles).toContain('operator');
       expect(u.locale).toBe('en');
 
+      const ja = svc.createUser({
+        username: 'ja1',
+        password: 'password1',
+        actor: 'admin',
+        locale: 'ja-JP',
+      });
+      expect(ja.locale).toBe('ja');
+      const patched = svc.updateUser(ja.id, { locale: 'ar' }, 'admin');
+      expect(patched.locale).toBe('ar');
+
       // duplicate username
       expect(() =>
         svc.createUser({ username: 'opx', password: 'password1', actor: 'admin' }),

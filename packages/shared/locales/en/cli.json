@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]\n"
+              "66e857": "Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--git-url URL] [--branch B] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]\n"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "Usage: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "Usage: ysk-server projects git-deploy --id ID [--git-url URL] [--branch|--ref main] [--no-redeploy] [--depth 1] [--entry f]\n"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
+              "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|git|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--no-redeploy]\n  git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID [--ref R] [--unshallow] [--yes]\n  git auth --id UUID --token T|--deploy-key|--pin-host\n  git hook --id UUID --enable|--rotate|--disable\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "Usage: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "Usage: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id] [--locale zh-HK]\n"
             }
           }
         }

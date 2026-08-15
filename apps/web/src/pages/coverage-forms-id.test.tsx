@@ -132,6 +132,11 @@ describe('id-targeted forms', () => {
     if (createUser) await user.click(createUser);
     await fillId('u-name', 'alice', user);
     await fillId('u-pass', 'Password1!', user);
+    const locSel = document.getElementById('u-locale') as HTMLSelectElement | null;
+    expect(locSel?.options.length).toBe(13);
+    expect([...locSel?.options ?? []].map((o) => o.value)).toEqual(
+      expect.arrayContaining(['zh-HK', 'zh-CN', 'en', 'ja', 'ko', 'ar', 'ur']),
+    );
     const pkg = document.getElementById('u-pkg') as HTMLSelectElement | null;
     if (pkg) await user.selectOptions(pkg, 'pkg1');
     const submitUser = screen.queryAllByRole('button', { name: /^create user$/i })[0];

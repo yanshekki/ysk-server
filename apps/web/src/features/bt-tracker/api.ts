@@ -7,6 +7,8 @@ import type {
   BtTrackerTorrentRow,
   BtShareStats,
   BtLibraryInspect,
+  BtLibraryDestProbe,
+  BtLibraryDestMode,
   BtLibraryItem,
   BtExtraTracker,
 } from 'ysk-server-shared';
@@ -18,6 +20,8 @@ export type {
   BtTrackerTorrentRow,
   BtShareStats,
   BtLibraryInspect,
+  BtLibraryDestProbe,
+  BtLibraryDestMode,
   BtLibraryItem,
   BtExtraTracker,
 };
@@ -28,6 +32,7 @@ export type BtLibraryLive = BtLibraryItem & {
   uploadSpeed?: number;
   peers?: number;
   downloaded?: number;
+  hint?: string;
 };
 
 export type BtTrackerStatusDto = BtTrackerStatus & { ok?: boolean };
@@ -119,11 +124,24 @@ export const btTrackerApi = {
       { method: 'POST', body: JSON.stringify(body) },
     ),
 
+  probeDest: (body: {
+    saveRoot: string;
+    parentRel: string;
+    name: string;
+    files: Array<{ path: string; length: number }>;
+  }) =>
+    api.requestRaw<BtLibraryDestProbe & { ok: boolean }>(
+      '/api/v1/system/bt-tracker/library/probe',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
   addLibrary: (body: {
     torrentBase64?: string;
     magnet?: string;
     saveRoot: string;
     saveRelPath: string;
+    parentRel?: string;
+    mode?: BtLibraryDestMode;
   }) =>
     api.requestRaw<{ ok: boolean; item?: BtLibraryItem; notes?: string[] }>(
       '/api/v1/system/bt-tracker/library',

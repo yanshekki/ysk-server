@@ -105,6 +105,18 @@ function modeLabel(
   return t('serviceExposure.modePublic');
 }
 
+/**
+ * UFW is enforcing only when the machine status is exactly "active".
+ * `/active/i` must not be used: it matches "inactive".
+ */
+export function isFirewallEnforcing(
+  active: string | undefined | null,
+  installed?: boolean,
+): boolean {
+  if (installed === false) return false;
+  return String(active ?? '').trim().toLowerCase() === 'active';
+}
+
 export type ServiceAccessStripProps = {
   serviceId: string;
   /** Override the card title (e.g. SMTP vs IMAP) */
@@ -155,9 +167,7 @@ export function ServiceAccessStrip({
   const inSync = status?.inSync ?? true;
   const fwOff =
     status?.firewallInstalled === false ||
-    (status?.firewallActive != null &&
-      status.firewallActive !== 'active' &&
-      !/active/i.test(status.firewallActive));
+    !isFirewallEnforcing(status?.firewallActive, status?.firewallInstalled);
   const missingService = serviceInstalled === false;
   const displayModeLabel = !loaded
     ? t('serviceExposure.modeLoading')

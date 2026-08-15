@@ -196,9 +196,10 @@ export async function runBtTrackerCommand(
     const magnet = h.getOpt(args, '--magnet');
     const root = h.getOpt(args, '--root') || 'public';
     const dest = h.getOpt(args, '--path');
+    const seedExisting = h.hasFlag(args, '--seed-existing');
     if ((!file && !magnet) || !dest) {
       process.stderr.write(
-        'Usage: ysk-server bt-tracker add --file FILE.torrent|--magnet URI --root public --path downloads/name\n',
+        'Usage: ysk-server bt-tracker add --file FILE.torrent|--magnet URI --root public --path downloads/name [--seed-existing]\n',
       );
       return 2;
     }
@@ -217,6 +218,8 @@ export async function runBtTrackerCommand(
       magnet,
       saveRoot: root,
       saveRelPath: dest,
+      parentRel: dest.includes('/') ? dest.split('/').slice(0, -1).join('/') : '',
+      mode: seedExisting ? 'seed-existing' : 'download',
       start: false,
     });
     h.printJson(r);
@@ -327,7 +330,7 @@ export async function runBtTrackerCommand(
   process.stderr.write(
     'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs|inspect|add|library|pause|resume|remove|trackers [--execute] [--json]\n' +
       '  settings set: --http-port --udp-port --listen-host --public-host --ws|--no-ws --autostart|--no-autostart\n' +
-      '  add: --file FILE.torrent|--magnet URI --root public --path downloads/name\n' +
+      '  add: --file FILE.torrent|--magnet URI --root public --path downloads/name [--seed-existing]\n' +
       '  trackers add|remove|enable|disable --url URL\n' +
       '  start/stop sync UFW ysk-svc:bt-tracker ports; public host empty ⇒ no magnet trackers\n',
   );

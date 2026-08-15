@@ -127,5 +127,7 @@
     "lanCidrs": "區域網段",
     "customCidr": "CIDR",
     "addCidr": "加入"
-  }
+  },
+  "engineNotInstalled": "此主機尚未安裝此 VPN 引擎。",
+  "serverNotListening": "伺服器單元未在運行。UDP/TCP {{port}} 可能未監聽。"
 }

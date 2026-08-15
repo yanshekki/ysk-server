@@ -14,6 +14,15 @@ import { assertGitUrl, gitSync, isYskScaffoldAppDir } from './git-deploy.js';
 import { scaffoldAppTemplate } from './app-templates.js';
 import { YskError } from 'ysk-server-shared';
 
+describe('isYskScaffoldAppDir', () => {
+  it('does not treat a lone YSK comment as a wipeable scaffold', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-git-noscaf-'));
+    writeFileSync(join(dir, 'notes.md'), '# YSK internal notes\nkeep me\n', 'utf8');
+    expect(isYskScaffoldAppDir(dir, ['notes.md'])).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
+
 describe('assertGitUrl', () => {
   it('accepts https, git@, file://, and absolute local paths', () => {
     expect(() => assertGitUrl('https://github.com/org/repo.git')).not.toThrow();
@@ -131,6 +140,26 @@ describe('gitSync real local repos', () => {
     expect(pulled.ok).toBe(true);
     expect(pulled.action).toBe('pull');
     expect(readFileSync(join(target, 'hello.txt'), 'utf8')).toBe('v2\n');
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('set-url origin when the stored remote changes', async () => {
+    const { root, bare, work, host } = await makeBareRepo();
+    const target = join(root, 'app');
+    const first = await gitSync({ host, gitUrl: bare, targetDir: target, branch: 'main' });
+    expect(first.ok).toBe(true);
+    const bare2 = join(root, 'remote2.git');
+    const clonedBare = await host.runCommand(['git', 'clone', '--bare', work, bare2], {
+      timeoutMs: 30_000,
+    });
+    expect(clonedBare.exitCode).toBe(0);
+    const pulled = await gitSync({ host, gitUrl: bare2, targetDir: target, branch: 'main' });
+    expect(pulled.ok).toBe(true);
+    expect(pulled.notes.join(' ')).toMatch(/set-url/i);
+    const remote = await host.runCommand(['git', '-C', target, 'remote', 'get-url', 'origin'], {
+      timeoutMs: 10_000,
+    });
+    expect(remote.stdout.trim()).toBe(bare2);
     rmSync(root, { recursive: true, force: true });
   });
 

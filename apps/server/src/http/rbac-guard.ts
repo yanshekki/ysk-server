@@ -62,6 +62,7 @@ const PUBLIC_MUTATING_PREFIXES = [
   '/api/v1/auth/devices',
   '/api/v1/auth/webauthn',
   '/api/v1/auth/api-keys', // handler still checks; self-service keys
+  '/api/v1/hooks/git', // inbound Git push — secret checked in handler
   // Fleet/agent register is NOT public — requires panel auth or enroll token in handler
 ];
 

@@ -112,6 +112,10 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
 
         // Modular controllers first (WebDAV needs OPTIONS/PROPFIND — Wave E1 public first)
         if (await handleFilesPublicRoutes(ctx, req, res, url, method)) return;
+        {
+          const { handleGitHookRoutes } = await import('./routes/git-hook.js');
+          if (await handleGitHookRoutes(ctx, req, res, url, method)) return;
+        }
         if (await handleFilesRoutes(ctx, req, res, url, method)) return;
         {
           const { handleBtTrackerRoutes } = await import('./routes/bt-tracker.js');

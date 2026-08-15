@@ -3,7 +3,7 @@
  */
 
 import type { AuthLoginResponse, HealthResponse, OpsApplyResultDto, ProjectDto } from 'ysk-server-shared';
-import i18n from '../lib/i18n';
+import i18n, { normalizeLocale } from '../lib/i18n';
 import { authStore } from '../stores/auth-store';
 
 const base = '';
@@ -39,19 +39,18 @@ export class ApiError extends Error {
   }
 }
 
+/** Map UI / stored locale to a supported Accept-Language tag (ja stays ja). */
+export function localeHeaderFrom(raw: string | null | undefined): string {
+  return normalizeLocale(raw);
+}
+
 function localeHeader(): string {
   try {
-    // Always send a supported tag so API runWithLocale matches UI language packs.
     const raw =
       i18n.language ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('ysk.locale') : null) ||
       'zh-HK';
-    // Normalize en-US → en, zh-TW → zh-HK, etc.
-    const lower = String(raw).toLowerCase();
-    if (lower === 'en' || lower.startsWith('en-')) return 'en';
-    if (lower.includes('cn') || lower.includes('hans')) return 'zh-CN';
-    if (lower.startsWith('zh')) return 'zh-HK';
-    return 'zh-HK';
+    return localeHeaderFrom(raw);
   } catch {
     return 'zh-HK';
   }
@@ -427,6 +426,8 @@ export const api = {
     runtime?: string;
     runtimeVersion?: string;
     templateId?: string;
+    gitUrl?: string;
+    gitBranch?: string;
     goLive?: boolean;
     preferredPort?: number;
     createDnsZone?: boolean;
@@ -586,6 +587,114 @@ export const api = {
     return request(`/api/v1/projects/${id}/git-deploy`, {
       method: 'POST',
       body: JSON.stringify(body ?? {}),
+    });
+  },
+  gitStatus(id: string): Promise<{
+    ok: boolean;
+    gitInstalled: boolean;
+    isRepo: boolean;
+    remoteUrl?: string;
+    branch?: string;
+    detached: boolean;
+    commit?: string;
+    commitSubject?: string;
+    dirty: boolean;
+    dirtyFiles: string[];
+    ahead: number;
+    behind: number;
+    shallow: boolean;
+    heads: string[];
+    lastError?: { code: string; message: string };
+    notes: string[];
+    auth?: {
+      kind: 'none' | 'ssh' | 'https-token';
+      scheme: 'https' | 'ssh' | 'file' | 'other';
+      host?: string;
+      hasToken: boolean;
+      publicKey?: string;
+      fingerprint?: string;
+      hostPinned: boolean;
+      hostKeys?: Array<{ type: string; fingerprint: string }>;
+    };
+    hook?: { enabled: boolean; hasSecret: boolean; path: string };
+  }> {
+    return request(`/api/v1/projects/${id}/git`);
+  },
+  gitLog(id: string, limit?: number): Promise<{
+    ok: boolean;
+    items: Array<{ hash: string; subject: string; at?: string }>;
+    notes: string[];
+  }> {
+    const q = limit ? `?limit=${limit}` : '';
+    return request(`/api/v1/projects/${id}/git/log${q}`);
+  },
+  gitFetch(id: string, body?: { unshallow?: boolean }): Promise<{ ok: boolean; notes: string[]; code?: string }> {
+    return request(`/api/v1/projects/${id}/git/fetch`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
+  gitCheckout(
+    id: string,
+    body: { ref: string },
+  ): Promise<{ ok: boolean; notes: string[]; code?: string; commit?: string; branch?: string }> {
+    return request(`/api/v1/projects/${id}/git/checkout`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+  gitReset(
+    id: string,
+    body?: { ref?: string; confirm?: boolean },
+  ): Promise<{ ok: boolean; notes: string[]; code?: string }> {
+    return request(`/api/v1/projects/${id}/git/reset`, {
+      method: 'POST',
+      body: JSON.stringify({ confirm: true, ...body }),
+    });
+  },
+  gitAuth(
+    id: string,
+    body: {
+      action:
+        | 'set-token'
+        | 'clear-token'
+        | 'make-deploy-key'
+        | 'clear-deploy-key'
+        | 'pin-host'
+        | 'clear-host';
+      token?: string;
+      gitUrl?: string;
+    },
+  ): Promise<{
+    ok: boolean;
+    notes: string[];
+    auth?: {
+      kind: string;
+      scheme: string;
+      host?: string;
+      hasToken: boolean;
+      publicKey?: string;
+      fingerprint?: string;
+      hostPinned: boolean;
+    };
+  }> {
+    return request(`/api/v1/projects/${id}/git/auth`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+  gitHook(
+    id: string,
+    body: { action: 'enable' | 'rotate' | 'disable' },
+  ): Promise<{
+    ok: boolean;
+    notes: string[];
+    hook?: { enabled: boolean; hasSecret: boolean; path: string };
+    hookSecret?: string;
+  }> {
+    return request(`/api/v1/projects/${id}/git/hook`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   },
   setProjectEnv(id: string, env: Record<string, string>): Promise<OpsApplyResultDto> {

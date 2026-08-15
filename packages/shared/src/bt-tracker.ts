@@ -107,6 +107,18 @@ export type BtLibraryInspect = {
   magnetUri?: string;
 };
 
+export type BtLibraryDestMode = 'download' | 'seed-existing';
+
+export type BtLibraryDestProbe = {
+  destRel: string;
+  seedRel: string | null;
+  destKind: 'missing' | 'dir' | 'file-conflict';
+  matchCount: number;
+  totalFiles: number;
+  canSeedExisting: boolean;
+  conflictName?: string;
+};
+
 export type BtTrackerTorrentRow = {
   infoHash: string;
   name?: string;

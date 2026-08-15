@@ -41,6 +41,31 @@ import { bindInput } from '../bind-handlers';
 /** jobs merged into torrents tab (background create-torrent under swarm list) */
 const TABS = ['overview', 'torrents', 'tracker', 'settings', 'about'] as const;
 
+/** Library + share rows the Torrent tab shows vs leftover tracker announces. */
+export function btVisibleAndLeftover(opts: {
+  library: Array<{ infoHash?: string }>;
+  swarm: Array<{ infoHash?: string; kind?: string }>;
+  trackerTorrents?: number;
+}): { visible: number; leftover: number } {
+  const libHashes = new Set(
+    opts.library.map((i) => String(i.infoHash || '').toLowerCase()).filter(Boolean),
+  );
+  const extraVisible = opts.swarm.filter((s) => {
+    const h = String(s.infoHash || '').toLowerCase();
+    if (!h || libHashes.has(h)) return false;
+    return s.kind !== 'library';
+  }).length;
+  const visible = opts.library.length + extraVisible;
+  const leftoverFromSwarm = opts.swarm.filter((s) => {
+    const h = String(s.infoHash || '').toLowerCase();
+    return Boolean(h) && !libHashes.has(h) && s.kind === 'library';
+  }).length;
+  const tracker = Number(opts.trackerTorrents);
+  const leftoverFromStats =
+    Number.isFinite(tracker) && tracker > visible ? tracker - visible : 0;
+  return { visible, leftover: Math.max(leftoverFromStats, leftoverFromSwarm) };
+}
+
 type TorrentJobRow = {
   id: string;
   shareId: string;
@@ -129,7 +154,11 @@ export function BtTrackerPage() {
   const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'running').length;
   const announceList = status?.announceUrls ?? [];
   const hasPublicHost = Boolean(status?.settings?.publicAnnounceHost?.trim());
-  const torrentCount = status?.stats?.torrents ?? torrents.length ?? 0;
+  const { visible: torrentCount, leftover: leftoverSwarm } = btVisibleAndLeftover({
+    library,
+    swarm: torrents,
+    trackerTorrents: status?.stats?.torrents,
+  });
   const peerCount = status?.stats?.peers ?? 0;
 
   function patchDraft<K extends keyof BtTrackerSettings>(key: K, value: BtTrackerSettings[K]) {
@@ -330,6 +359,11 @@ export function BtTrackerPage() {
               {!status?.executeEnabled ? (
                 <Alert variant="warn">{t('btTracker.needExecute')}</Alert>
               ) : null}
+              {leftoverSwarm > 0 ? (
+                <Alert variant="warn">
+                  {t('btTracker.swarmLeftover', { count: leftoverSwarm })}
+                </Alert>
+              ) : null}
 
               <Card>
                 <CardSection title={t('btTracker.exposureTitle')}>
@@ -380,6 +414,11 @@ export function BtTrackerPage() {
 
           {tab === 'torrents' ? (
             <>
+            {leftoverSwarm > 0 ? (
+              <Alert variant="warn">
+                {t('btTracker.swarmLeftover', { count: leftoverSwarm })}
+              </Alert>
+            ) : null}
             <TorrentLibrary
               library={library}
               swarm={torrents}

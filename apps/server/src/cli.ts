@@ -347,6 +347,17 @@ async function mainInner(
   }
 
   if (command === 'update') {
+    const sub = cliPositionals(args).slice(1)[0];
+    if (sub === 'help' || sub === '--help') {
+      process.stderr.write(
+        'Usage: ysk-server update [--check] [--apply] [--latest VER]\n' +
+          '  --check    Compare installed version to npm/GitHub (no overlay)\n' +
+          '  --apply    Overlay the running install onto the latest package\n' +
+          '  --latest   Override the target version\n' +
+          'Product overlay only — does not rewrite nginx, Apache, vsftpd, or Dovecot.\n',
+      );
+      return 0;
+    }
     const result = await runUpdate({
       checkOnly: hasFlag(args, '--check'),
       latest: getOpt(args, '--latest'),
@@ -415,8 +426,15 @@ async function mainInner(
     const ctx = openCliContext(args);
     try {
       if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'send' || leaf === 'test-send') {
+          process.stderr.write(
+            'Usage: ysk-server email send --from you@domain --to dest@domain [--subject TEXT] [--execute]\n',
+          );
+          return 0;
+        }
         process.stderr.write(`${tl('cli.usage.email.sub.--data-dir.path.--json.73dad0')}\n`);
-        return 2;
+        return 0;
       }
 
       const resolveDomain = () => {
@@ -2201,8 +2219,15 @@ async function mainInner(
     });
     try {
       if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'restore') {
+          process.stderr.write(
+            'Usage: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]\n',
+          );
+          return 0;
+        }
         process.stderr.write(`${tl('cli.usage.backup.sub.--data-dir.path.--json.777243')}\n`);
-        return 2;
+        return 0;
       }
 
       if (sub === 'list') {
@@ -2634,6 +2659,20 @@ async function mainInner(
     command === 'security'
   ) {
     const sub = cliPositionals(args).slice(1)[0] ?? 'list';
+    if (sub === 'help' || sub === '--help') {
+      const leaf = cliPositionals(args).slice(2)[0];
+      if (command === 'users' && (leaf === 'delete' || leaf === 'rm' || leaf === 'remove')) {
+        process.stderr.write('Usage: ysk-server users delete --id ID|--user NAME\n');
+        return 0;
+      }
+      process.stderr.write(
+        `Usage: ysk-server ${command} <sub> [--json]\n` +
+          (command === 'users'
+            ? '  list|create|delete|totp-clear|…\n'
+            : '  list|…\n'),
+      );
+      return 0;
+    }
     const configPath = getOpt(args, '--config');
     const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') });
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -2690,6 +2729,7 @@ async function mainInner(
             password,
             roles: [role],
             packageId: getOpt(args, '--package-id') ?? undefined,
+            locale: getOpt(args, '--locale') ?? undefined,
             actor: 'cli',
           });
           printJson({ ok: true, user: created });
@@ -3144,14 +3184,22 @@ async function mainInner(
           runtimeRaw === 'rust'
             ? runtimeRaw
             : 'node';
+        const gitUrl = getOpt(args, '--git-url') ?? getOpt(args, '--url');
+        if (gitUrl) {
+          const { assertGitUrl } = await import('ysk-server-core');
+          assertGitUrl(gitUrl);
+        }
         const created = await ctx.projects.create({
           name,
           domain: getOpt(args, '--domain'),
           runtime,
           runtimeVersion: getOpt(args, '--runtime-version'),
-          templateId: getOpt(args, '--template'),
+          templateId: gitUrl ? undefined : getOpt(args, '--template'),
           forceTemplate: hasFlag(args, '--force'),
-          actor: 'cli' });
+          actor: 'cli',
+          gitUrl: gitUrl || undefined,
+          gitBranch: getOpt(args, '--branch') ?? getOpt(args, '--ref'),
+        });
         const { attachProjectCreateExtras } = await import('ysk-server-core');
         const extras = attachProjectCreateExtras({
           db: ctx.db,
@@ -3209,7 +3257,121 @@ async function mainInner(
         printJson(result);
         return exitFromResult(result);
       }
-      if (sub === 'git-deploy' || sub === 'git') {
+      if (sub === 'git') {
+        const gitAction = cliPositionals(args).slice(2)[0] ?? 'status';
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(
+            'Usage: ysk-server projects git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
+          );
+          return 2;
+        }
+        if (gitAction === 'status') {
+          printJson(await ctx.projectOps.gitStatus(id));
+          return 0;
+        }
+        if (gitAction === 'log') {
+          const limit = getOpt(args, '--limit') ? Number(getOpt(args, '--limit')) : 10;
+          printJson(await ctx.projectOps.gitLog(id, limit));
+          return 0;
+        }
+        if (gitAction === 'fetch') {
+          const r = await ctx.projectOps.gitFetch(id, {
+            actor: 'cli',
+            unshallow: hasFlag(args, '--unshallow'),
+          });
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (gitAction === 'checkout') {
+          const ref = getOpt(args, '--ref') ?? getOpt(args, '--branch');
+          if (!ref) {
+            process.stderr.write('Usage: ysk-server projects git checkout --id UUID --ref REF\n');
+            return 2;
+          }
+          const r = await ctx.projectOps.gitCheckout(id, { actor: 'cli', ref });
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (gitAction === 'reset') {
+          if (!hasFlag(args, '--yes')) {
+            process.stderr.write(
+              'Usage: ysk-server projects git reset --id UUID --hard --yes [--ref origin/main]\n',
+            );
+            return 2;
+          }
+          const r = await ctx.projectOps.gitReset(id, {
+            actor: 'cli',
+            ref: getOpt(args, '--ref') ?? getOpt(args, '--branch'),
+          });
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (gitAction === 'hook') {
+          const action = hasFlag(args, '--enable')
+            ? 'enable'
+            : hasFlag(args, '--rotate')
+              ? 'rotate'
+              : hasFlag(args, '--disable')
+                ? 'disable'
+                : '';
+          if (!action) {
+            process.stderr.write(
+              'Usage: ysk-server projects git hook --id UUID --enable|--rotate|--disable\n',
+            );
+            return 2;
+          }
+          const r = ctx.projectOps.gitHookManage(id, { actor: 'cli', action });
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (gitAction === 'auth') {
+          const action = hasFlag(args, '--deploy-key')
+            ? 'make-deploy-key'
+            : hasFlag(args, '--pin-host')
+              ? 'pin-host'
+              : hasFlag(args, '--clear-token')
+                ? 'clear-token'
+                : hasFlag(args, '--clear-key')
+                  ? 'clear-deploy-key'
+                  : hasFlag(args, '--clear-host')
+                    ? 'clear-host'
+                    : getOpt(args, '--token')
+                      ? 'set-token'
+                      : '';
+          if (!action) {
+            process.stderr.write(
+              'Usage: ysk-server projects git auth --id UUID --token T | --deploy-key | --pin-host | --clear-token | --clear-key | --clear-host\n',
+            );
+            return 2;
+          }
+          const r = await ctx.projectOps.gitAuth(id, {
+            actor: 'cli',
+            action,
+            token: getOpt(args, '--token') ?? undefined,
+          });
+          printJson(r);
+          return r.ok ? 0 : 3;
+        }
+        if (gitAction === 'deploy' || gitAction === 'sync') {
+          const result = await ctx.projectOps.gitDeploy(id, {
+            actor: 'cli',
+            gitUrl: getOpt(args, '--git-url') ?? getOpt(args, '--url'),
+            branch: getOpt(args, '--branch') ?? getOpt(args, '--ref'),
+            redeploy: !hasFlag(args, '--no-redeploy'),
+            depth: getOpt(args, '--depth') ? Number(getOpt(args, '--depth')) : undefined,
+            entry: getOpt(args, '--entry'),
+            skipBuild: hasFlag(args, '--skip-build'),
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        process.stderr.write(
+          'Usage: ysk-server projects git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
+        );
+        return 2;
+      }
+      if (sub === 'git-deploy') {
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write(`${tl('cli.usage.projects.git-deploy.--id.id.--git-url.a513f5')}\n`);
@@ -3218,7 +3380,7 @@ async function mainInner(
         const result = await ctx.projectOps.gitDeploy(id, {
           actor: 'cli',
           gitUrl: getOpt(args, '--git-url') ?? getOpt(args, '--url'),
-          branch: getOpt(args, '--branch'),
+          branch: getOpt(args, '--branch') ?? getOpt(args, '--ref'),
           redeploy: !hasFlag(args, '--no-redeploy'),
           depth: getOpt(args, '--depth') ? Number(getOpt(args, '--depth')) : undefined,
           entry: getOpt(args, '--entry'),
@@ -3383,6 +3545,26 @@ async function mainInner(
         process.env.YSK_EXECUTE === '1' || wantsHostExecute(args),
     });
     try {
+      if (sub === 'help' || sub === '--help') {
+        process.stderr.write(
+          'Usage: ysk-server hosting nginx|nginx-sync|leftovers|… [--execute]\n' +
+            '  leftovers   Read-only leftover scan (Apache default, nginx catch-all, vsftpd, Dovecot TLS, stale CLI)\n',
+        );
+        return 0;
+      }
+      if (sub === 'leftovers') {
+        const { probeHostLeftovers } = await import('ysk-server-core');
+        const r = await probeHostLeftovers({ host: ctx.host, currentVersion: VERSION });
+        printJson({
+          ok: r.ok,
+          findings: r.findings,
+          notes: [
+            ...r.notes,
+            tl('notes.leftover.overlayDoesNotHeal'),
+          ],
+        });
+        return r.ok ? 0 : 1;
+      }
       if (sub === 'nginx' || sub === 'nginx-list') {
         const { listManagedNginxDetailed } = await import('ysk-server-core');
         printJson({
@@ -4977,6 +5159,19 @@ async function mainInner(
   /** SSL certificates list/get — read-only */
   if (command === 'ssl') {
     const sub = cliPositionals(args).slice(1)[0] ?? 'list';
+    if (sub === 'help' || sub === '--help') {
+      const leaf = cliPositionals(args).slice(2)[0];
+      if (leaf === 'issue') {
+        process.stderr.write(
+          'Usage: ysk-server ssl issue --domain example.com --email you@example.com [--execute]\n',
+        );
+        return 0;
+      }
+      process.stderr.write(
+        'Usage: ysk-server ssl list|get|issue [--domain D] [--email E] [--execute]\n',
+      );
+      return 0;
+    }
     const { listCertificatesView, dedupeCertificatesInStore } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {

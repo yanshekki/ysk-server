@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localPageHits, projectHitsFromRows } from './GlobalSearch';
+import { localPageHits, projectHitsFromRows, searchEmptyState } from './GlobalSearch';
 
 describe('localPageHits', () => {
   const t = (k: string) => {
@@ -32,3 +32,45 @@ describe('localPageHits', () => {
     expect(hits[0]?.href).toBe('/projects/p-hello');
   });
 });
+
+describe('searchEmptyState', () => {
+  it('does not flash empty while the query is still in flight', () => {
+    expect(
+      searchEmptyState({
+        loading: false,
+        searchError: null,
+        hitCount: 0,
+        query: 'hello',
+        completedQuery: '',
+      }),
+    ).toBe('loading');
+    expect(
+      searchEmptyState({
+        loading: true,
+        searchError: null,
+        hitCount: 0,
+        query: 'hello',
+        completedQuery: '',
+      }),
+    ).toBe('loading');
+    expect(
+      searchEmptyState({
+        loading: false,
+        searchError: null,
+        hitCount: 0,
+        query: 'hello',
+        completedQuery: 'hello',
+      }),
+    ).toBe('empty');
+    expect(
+      searchEmptyState({
+        loading: false,
+        searchError: null,
+        hitCount: 2,
+        query: 'hello',
+        completedQuery: '',
+      }),
+    ).toBeNull();
+  });
+});
+

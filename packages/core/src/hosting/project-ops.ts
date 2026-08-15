@@ -40,6 +40,37 @@ import {
   selectPhpRuntime,
 } from './runtime.js';
 import { gitSync } from './git-deploy.js';
+import {
+  gitCheckoutRef,
+  gitFetch,
+  gitLog,
+  gitResetHard,
+  probeGitStatus,
+  restoreEnvFile,
+  type GitOpResult,
+  type GitStatus,
+} from './git-control.js';
+import {
+  clearGitDeployKeyFile,
+  clearGitHostPin,
+  clearGitHttpsToken,
+  createProjectGitDeployKey,
+  hasGitHttpsToken,
+  describeGitAuth,
+  parseGitRemoteHost,
+  pinGitHostKeys,
+  resolveGitAuthRuntime,
+  saveGitHttpsToken,
+  scanGitHostKeys,
+  type GitAuthPublic,
+} from './git-auth.js';
+import {
+  describeGitHook,
+  generateGitHookSecret,
+  hasGitHookSecret,
+  saveGitHookSecret,
+  type GitHookPublic,
+} from './git-hook.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
 import { resolveBestCertPaths } from './ssl-certs.js';
@@ -263,6 +294,7 @@ export class ProjectOpsService {
     const nodeBinary = nodeResolved.path;
     notes.push(tl('notes.auto.t0172', { v0: (nodeBinary) }));
     notes.push(...nodeResolved.notes);
+    this.projects.updateRuntimeState(projectId, { runtime_bin: nodeBinary });
     const isolatedDeploy =
       this.host.executeEnabled() && this.host.isRoot() && Boolean(row.os_provisioned);
     if (isolatedDeploy && !nodeBinaryExists(nodeBinary, this.host)) {
@@ -1464,18 +1496,50 @@ export class ProjectOpsService {
         httpStatus: 400 });
     }
     const appDir = join(row.home_dir, 'app');
+    const auth = this.gitAuthRuntime(row, gitUrl);
+    if (auth.blocked) {
+      this.projects.updateRuntimeState(projectId, {
+        git_url: gitUrl,
+        git_last_error: {
+          code: auth.blocked.code,
+          message: auth.blocked.message,
+          at: new Date().toISOString(),
+        },
+      });
+      return {
+        ok: false,
+        projectId,
+        processStatus: (row.process_status as OpsProcessStatus) || 'stopped',
+        listening: false,
+        notes: [auth.blocked.message],
+        written: [],
+      };
+    }
     const git = await gitSync({
       host: this.host,
       gitUrl,
       targetDir: appDir,
       branch: opts.branch ?? row.git_branch,
-      depth: opts.depth ?? 1 });
+      depth: opts.depth ?? 1,
+      env: auth.env,
+    });
     this.projects.updateRuntimeState(projectId, {
       git_url: gitUrl,
       git_branch: git.branch ?? opts.branch,
-      git_commit: git.commit });
+      git_commit: git.commit,
+      git_shallow: existsSync(join(appDir, '.git', 'shallow')),
+      git_last_error: git.ok
+        ? undefined
+        : {
+            code: git.errorCode || 'unknown',
+            message: git.notes[git.notes.length - 1] || '',
+            at: new Date().toISOString(),
+          },
+    });
     const notes = [...git.notes];
     if (git.ok) {
+      const envPath = restoreEnvFile(appDir, row.env_vars);
+      if (envPath) notes.push(tl('notes.git.envRestored'));
       await chownProjectHome(this.host, row, notes);
     }
     const savedEntry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
@@ -1521,6 +1585,278 @@ export class ProjectOpsService {
       written: redeployResult?.written ?? [],
       git,
       degraded: redeployResult?.degraded ?? true };
+  }
+
+  private gitAuthRuntime(
+    row: ProjectRow,
+    gitUrl?: string,
+  ): { env?: Record<string, string>; blocked?: { code: string; message: string } } {
+    return resolveGitAuthRuntime({
+      dataDir: this.dataDir,
+      projectId: row.id,
+      gitUrl: gitUrl ?? row.git_url ?? '',
+      authKind: row.git_auth_kind,
+      identityId: row.git_identity_id,
+    });
+  }
+
+  async gitStatus(
+    projectId: string,
+  ): Promise<GitStatus & { auth: GitAuthPublic; hook: GitHookPublic }> {
+    const row = this.require(projectId);
+    const st = await probeGitStatus({
+      host: this.host,
+      appDir: join(row.home_dir, 'app'),
+      storedUrl: row.git_url,
+    });
+    const auth = describeGitAuth({
+      dataDir: this.dataDir,
+      projectId: row.id,
+      gitUrl: row.git_url,
+      authKind: row.git_auth_kind,
+      identityId: row.git_identity_id,
+    });
+    if (auth.scheme === 'ssh' && auth.host && !auth.hostPinned) {
+      auth.hostKeys = await scanGitHostKeys(this.host, auth.host);
+    }
+    return {
+      ...st,
+      auth,
+      hook: describeGitHook(this.dataDir, projectId, row.git_hook_enabled),
+    };
+  }
+
+  async gitLog(projectId: string, limit?: number) {
+    const row = this.require(projectId);
+    return gitLog({ host: this.host, appDir: join(row.home_dir, 'app'), limit });
+  }
+
+  async gitFetch(projectId: string, opts?: { actor: string; unshallow?: boolean }) {
+    const row = this.require(projectId);
+    const auth = this.gitAuthRuntime(row);
+    if (auth.blocked) {
+      return {
+        ok: false,
+        action: 'fetch',
+        notes: [auth.blocked.message],
+        code: auth.blocked.code,
+      } as GitOpResult;
+    }
+    const r = await gitFetch({
+      host: this.host,
+      appDir: join(row.home_dir, 'app'),
+      unshallow: opts?.unshallow,
+      env: auth.env,
+    });
+    this.audit?.append({
+      actor: opts?.actor ?? 'system',
+      action: 'project.git_fetch',
+      resource: projectId,
+      detail: r,
+      ok: r.ok,
+    });
+    return r;
+  }
+
+  async gitCheckout(projectId: string, opts: { actor: string; ref: string }) {
+    const row = this.require(projectId);
+    const appDir = join(row.home_dir, 'app');
+    const auth = this.gitAuthRuntime(row);
+    if (auth.blocked) {
+      return {
+        ok: false,
+        action: 'checkout',
+        notes: [auth.blocked.message],
+        code: auth.blocked.code,
+      } as GitOpResult;
+    }
+    const r = await gitCheckoutRef({ host: this.host, appDir, ref: opts.ref, env: auth.env });
+    if (r.ok) {
+      restoreEnvFile(appDir, row.env_vars);
+      this.projects.updateRuntimeState(projectId, {
+        git_branch: r.branch,
+        git_commit: r.commit,
+        git_last_error: undefined,
+      });
+    } else {
+      this.projects.updateRuntimeState(projectId, {
+        git_last_error: {
+          code: r.code || 'unknown',
+          message: r.notes[0] || '',
+          at: new Date().toISOString(),
+        },
+      });
+    }
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.git_checkout',
+      resource: projectId,
+      detail: r,
+      ok: r.ok,
+    });
+    return r;
+  }
+
+  async gitReset(projectId: string, opts: { actor: string; ref?: string }) {
+    const row = this.require(projectId);
+    const appDir = join(row.home_dir, 'app');
+    const auth = this.gitAuthRuntime(row);
+    if (auth.blocked) {
+      return {
+        ok: false,
+        action: 'reset',
+        notes: [auth.blocked.message],
+        code: auth.blocked.code,
+      } as GitOpResult;
+    }
+    const r = await gitResetHard({ host: this.host, appDir, ref: opts.ref, env: auth.env });
+    if (r.ok) {
+      restoreEnvFile(appDir, row.env_vars);
+      this.projects.updateRuntimeState(projectId, {
+        git_branch: r.branch,
+        git_commit: r.commit,
+        git_last_error: undefined,
+      });
+    } else {
+      this.projects.updateRuntimeState(projectId, {
+        git_last_error: {
+          code: r.code || 'unknown',
+          message: r.notes[0] || '',
+          at: new Date().toISOString(),
+        },
+      });
+    }
+    this.audit?.append({
+      actor: opts.actor,
+      action: 'project.git_reset',
+      resource: projectId,
+      detail: r,
+      ok: r.ok,
+    });
+    return r;
+  }
+
+  async gitAuth(
+    projectId: string,
+    opts: {
+      actor: string;
+      action: 'set-token' | 'clear-token' | 'make-deploy-key' | 'clear-deploy-key' | 'pin-host' | 'clear-host';
+      token?: string;
+      gitUrl?: string;
+    },
+  ): Promise<{ ok: boolean; notes: string[]; auth?: GitAuthPublic }> {
+    const row = this.require(projectId);
+    const notes: string[] = [];
+    if (opts.gitUrl?.trim()) {
+      this.projects.updateRuntimeState(projectId, { git_url: opts.gitUrl.trim() });
+    }
+    const url = (opts.gitUrl ?? row.git_url ?? '').trim();
+    try {
+      if (opts.action === 'set-token') {
+        const token = (opts.token ?? '').trim();
+        if (token.length < 8) {
+          return { ok: false, notes: [tl('notes.git.tokenInvalid')] };
+        }
+        saveGitHttpsToken(this.dataDir, projectId, token);
+        this.projects.updateRuntimeState(projectId, { git_auth_kind: 'https-token' });
+        notes.push(tl('notes.git.tokenSaved'));
+      } else if (opts.action === 'clear-token') {
+        clearGitHttpsToken(this.dataDir, projectId);
+        this.projects.updateRuntimeState(projectId, {
+          git_auth_kind: row.git_identity_id ? 'ssh' : 'none',
+        });
+        notes.push(tl('notes.git.tokenCleared'));
+      } else if (opts.action === 'make-deploy-key') {
+        const made = createProjectGitDeployKey({
+          dataDir: this.dataDir,
+          projectId,
+          projectName: row.name,
+          actor: opts.actor,
+        });
+        if (!made.ok || !made.identityId) {
+          return { ok: false, notes: made.notes };
+        }
+        this.projects.updateRuntimeState(projectId, {
+          git_auth_kind: 'ssh',
+          git_identity_id: made.identityId,
+        });
+        notes.push(...made.notes);
+      } else if (opts.action === 'clear-deploy-key') {
+        clearGitDeployKeyFile(this.dataDir, projectId);
+        this.projects.updateRuntimeState(projectId, {
+          git_identity_id: undefined,
+          git_auth_kind: hasGitHttpsToken(this.dataDir, projectId) ? 'https-token' : 'none',
+        });
+        notes.push(tl('notes.git.deployKeyCleared'));
+      } else if (opts.action === 'pin-host') {
+        const host = parseGitRemoteHost(url).host;
+        if (!host) return { ok: false, notes: [tl('notes.git.hostkey')] };
+        const keys = await scanGitHostKeys(this.host, host);
+        if (!keys.length) return { ok: false, notes: [tl('notes.git.hostScanFailed')] };
+        pinGitHostKeys(this.dataDir, projectId, host, keys);
+        notes.push(tl('notes.git.hostPinned', { host }));
+      } else if (opts.action === 'clear-host') {
+        clearGitHostPin(this.dataDir, projectId);
+        notes.push(tl('notes.git.hostUnpinned'));
+      }
+    } catch (e) {
+      return { ok: false, notes: [e instanceof Error ? e.message : tl('notes.git.unknown')] };
+    }
+    const fresh = this.require(projectId);
+    this.audit?.append({
+      actor: opts.actor,
+      action: `project.git_auth.${opts.action}`,
+      resource: projectId,
+      detail: { action: opts.action },
+      ok: true,
+    });
+    return {
+      ok: true,
+      notes,
+      auth: describeGitAuth({
+        dataDir: this.dataDir,
+        projectId,
+        gitUrl: fresh.git_url,
+        authKind: fresh.git_auth_kind,
+        identityId: fresh.git_identity_id,
+      }),
+    };
+  }
+
+  gitHookManage(
+    projectId: string,
+    opts: { actor: string; action: 'enable' | 'rotate' | 'disable' },
+  ): { ok: boolean; notes: string[]; hook?: GitHookPublic; hookSecret?: string } {
+    this.require(projectId);
+    const notes: string[] = [];
+    let hookSecret: string | undefined;
+    if (opts.action === 'disable') {
+      this.projects.updateRuntimeState(projectId, { git_hook_enabled: false });
+      notes.push(tl('notes.git.hookDisabled'));
+    } else {
+      const existing = hasGitHookSecret(this.dataDir, projectId);
+      if (opts.action === 'rotate' || !existing) {
+        hookSecret = generateGitHookSecret();
+        saveGitHookSecret(this.dataDir, projectId, hookSecret);
+        notes.push(tl('notes.git.hookSecretOnce'));
+      } else {
+        notes.push(tl('notes.git.hookEnabled'));
+      }
+      this.projects.updateRuntimeState(projectId, { git_hook_enabled: true });
+    }
+    const hook = describeGitHook(
+      this.dataDir,
+      projectId,
+      this.require(projectId).git_hook_enabled,
+    );
+    this.audit?.append({
+      actor: opts.actor,
+      action: `project.git_hook.${opts.action}`,
+      resource: projectId,
+      detail: { action: opts.action },
+      ok: true,
+    });
+    return { ok: true, notes, hook, hookSecret };
   }
 
   /**

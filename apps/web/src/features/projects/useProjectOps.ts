@@ -32,6 +32,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
       id: string,
       opts?: {
         gitUrl?: string;
+        gitBranch?: string;
         envText?: string;
         quotaMb?: number;
         memoryMax?: string;
@@ -82,6 +83,7 @@ export function useProjectOps(onSuccess?: () => void | Promise<void>) {
           case 'git-deploy':
             result = await projectsApi.gitDeploy(id, {
               gitUrl: opts?.gitUrl || undefined,
+              branch: opts?.gitBranch || undefined,
               redeploy: true,
               entry: opts?.entry,
               skipBuild: opts?.skipBuild,

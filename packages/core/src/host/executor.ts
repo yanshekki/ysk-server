@@ -39,6 +39,8 @@ export type RunCommandOpts = {
   dryRun?: boolean;
   timeoutMs?: number;
   cwd?: string;
+  /** Extra env (merged over process.env). Never log values — may hold tokens. */
+  env?: Record<string, string>;
   /** When set, use spawn and stream chunks as they arrive (line-ish). */
   onChunk?: CommandChunkHandler;
   /** Abort long installs (SSE client disconnect / cancel). */
@@ -218,6 +220,7 @@ export class LocalHostExecutor implements HostExecutor {
       return runCommandStreaming(argv, {
         timeoutMs: opts.timeoutMs ?? 30_000,
         cwd: opts.cwd,
+        env: opts.env,
         onChunk: opts.onChunk ?? (() => {}),
         signal: opts.signal,
       });
@@ -227,6 +230,7 @@ export class LocalHostExecutor implements HostExecutor {
         timeout: opts.timeoutMs ?? 30_000,
         cwd: opts.cwd,
         maxBuffer: 2 * 1024 * 1024,
+        env: opts.env ? { ...process.env, ...opts.env } : undefined,
       });
       return {
         stdout: String(stdout),
@@ -444,6 +448,48 @@ function isReadOnlyArgv(argv: string[]): boolean {
     }
     if (sub === 'networking' && /\b(on|off)\b/.test(rest)) return false;
     return true; // show / device status / general
+  }
+  if (bin === 'ssh-keyscan') return true;
+  if (bin === 'git') {
+    const rest = argv.slice(1);
+    const tokens: string[] = [];
+    for (let i = 0; i < rest.length; i++) {
+      const a = rest[i]!;
+      if (a === '-C' || a === '--git-dir' || a === '--work-tree') {
+        i += 1;
+        continue;
+      }
+      if (a.startsWith('-')) continue;
+      tokens.push(a);
+    }
+    const sub = tokens[0] ?? '';
+    const readSubs = new Set([
+      'status',
+      'log',
+      'rev-parse',
+      'rev-list',
+      'show',
+      'diff',
+      'ls-remote',
+      'cat-file',
+      'describe',
+      'symbolic-ref',
+    ]);
+    if (readSubs.has(sub)) return true;
+    if (sub === 'remote') {
+      const act = tokens[1] ?? '';
+      return !act || act === 'get-url' || act === '-v' || act === 'show' || act === 'show-ref';
+    }
+    if (sub === 'branch') {
+      return !tokens.some((s) => s === '-d' || s === '-D' || s === '-m' || s === '--delete' || s === '--move');
+    }
+    if (sub === 'tag') {
+      return tokens.includes('-l') || tokens.includes('--list') || tokens.length === 1;
+    }
+    if (sub === 'config') {
+      return tokens.includes('--get') || tokens.includes('--get-regexp') || tokens.includes('--list');
+    }
+    return false;
   }
   if (bin === 'kill') return argv[1] === '-0';
   if (bin === 'ip') {
@@ -788,6 +834,7 @@ export function runCommandStreaming(
   opts: {
     timeoutMs: number;
     cwd?: string;
+    env?: Record<string, string>;
     onChunk: CommandChunkHandler;
     signal?: AbortSignal;
   },
@@ -812,7 +859,12 @@ export function runCommandStreaming(
     }
     const child = spawn(bin, args, {
       cwd: opts.cwd,
-      env: { ...process.env, DEBIAN_FRONTEND: 'noninteractive', LC_ALL: 'C' },
+      env: {
+        ...process.env,
+        DEBIAN_FRONTEND: 'noninteractive',
+        LC_ALL: 'C',
+        ...(opts.env ?? {}),
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stdout = '';

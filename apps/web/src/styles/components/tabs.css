@@ -54,11 +54,12 @@
   flex-wrap: nowrap;
   gap: 0;
   overflow-x: auto;
-  overflow-y: visible;
+  /* overflow-x:auto forces overflow-y to auto; visible would still show a Y bar */
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  /* Native bar is redundant — overflow uses the arrow buttons */
+  scrollbar-width: none;
   padding: 0 0.15rem;
 }
 
@@ -68,12 +69,9 @@
 }
 
 .tabs__list::-webkit-scrollbar {
-  height: 3px;
-}
-
-.tabs__list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .tabs__arrow {

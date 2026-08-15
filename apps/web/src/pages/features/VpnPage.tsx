@@ -420,11 +420,10 @@ export function VpnPage() {
         <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
       ) : null}
       {status && !engSt?.installed ? (
-        <Alert variant="warn">{t('vpn.engineNotInstalled', { defaultValue: 'This VPN engine is not installed on the host.' })}</Alert>
+        <Alert variant="warn">{t('vpn.engineNotInstalled')}</Alert>
       ) : status && !engSt?.serverActive ? (
         <Alert variant="warn">
           {t('vpn.serverNotListening', {
-            defaultValue: 'Server unit is not active. UDP/TCP {{port}} may be closed.',
             port: listenPort,
           })}
         </Alert>
@@ -661,6 +660,9 @@ export function VpnPage() {
               },
             ]}
             compact
+            serviceInstalled={
+              status ? Boolean(engineStatus(status, engine)?.installed) : undefined
+            }
           />
         </div>
       </section>

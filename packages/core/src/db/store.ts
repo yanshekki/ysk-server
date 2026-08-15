@@ -155,6 +155,11 @@ export interface StoreProject {
   git_url?: string;
   git_branch?: string;
   git_commit?: string;
+  git_shallow?: boolean;
+  git_last_error?: { code: string; message: string; at: string };
+  git_auth_kind?: 'none' | 'ssh' | 'https-token';
+  git_identity_id?: string;
+  git_hook_enabled?: boolean;
   /** App env vars written to .env */
   env_vars?: Record<string, string>;
   last_backup_path?: string;
@@ -175,6 +180,8 @@ export interface StoreProject {
   account_locked?: boolean;
   /** Last process deploy entry (server.js, main:app, ./app, …) */
   deploy_entry?: string;
+  /** Last resolved runtime binary (may differ from planned runtime_version) */
+  runtime_bin?: string;
   /** Last deploy operator notes (short, newest first, max ~8) */
   last_deploy_notes?: string[];
   /**

@@ -558,7 +558,7 @@
     "saveRootPublic": "Public files",
     "newFolder": "New folder",
     "destPreview": "Will write to",
-    "startDownload": "Start",
+    "startDownload": "Start download",
     "filterDownloading": "Downloading",
     "filterPaused": "Paused",
     "filterError": "Error",
@@ -591,7 +591,23 @@
     "seedStatusDownloading": "Downloading",
     "seedStatusChecking": "Checking",
     "seedStatusPaused": "Paused",
-    "seedStatusQueued": "Queued"
+    "seedStatusQueued": "Queued",
+    "swarmLeftover": "Tracker has {{count}} announce(s) not in the library",
+    "addSourceSection": "Source",
+    "addSourceFile": "File",
+    "addSourceMagnet": "Magnet",
+    "previewSection": "Preview",
+    "saveRoot": "Root",
+    "clearFile": "Clear file",
+    "extraTrackersTitle": "Extra announce",
+    "extraTrackersEmptyTitle": "No extra trackers yet",
+    "extraEnabledCount": "{{count}} enabled",
+    "extraApplyHint": "Enable at least one tracker to apply to current seeds",
+    "destMode": "How to use this folder",
+    "seedExisting": "Seed existing files",
+    "downloadNewFolder": "Download into a new folder",
+    "destFileConflict": "A file named {{name}} already exists here. Pick another folder, or seed the existing file if it matches.",
+    "waitingPeers": "Waiting for peers. If the files are already on this host, add again and choose Seed existing files."
   },
   "catalog": {
     "sw": {
@@ -1352,7 +1368,7 @@
           "--name": {
             "name": {
               "--domain": {
-                "66e857": "Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]\n"
+                "66e857": "Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--git-url URL] [--branch B] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]\n"
               }
             }
           }
@@ -1370,7 +1386,7 @@
           "--id": {
             "id": {
               "--git-url": {
-                "a513f5": "Usage: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+                "a513f5": "Usage: ysk-server projects git-deploy --id ID [--git-url URL] [--branch|--ref main] [--no-redeploy] [--depth 1] [--entry f]\n"
               }
             }
           }
@@ -1388,7 +1404,7 @@
           "get": {
             "create": {
               "deploy": {
-                "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
+                "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|git|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--no-redeploy]\n  git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID [--ref R] [--unshallow] [--yes]\n  git auth --id UUID --token T|--deploy-key|--pin-host\n  git hook --id UUID --enable|--rotate|--disable\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
               }
             }
           }
@@ -1654,7 +1670,7 @@
           "--username": {
             "u": {
               "--password": {
-                "7145c7": "Usage: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+                "7145c7": "Usage: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id] [--locale zh-HK]\n"
               }
             }
           }
@@ -5352,6 +5368,40 @@
     "probe": "Probe",
     "install": "Install",
     "port": "Port",
+    "git": {
+      "missingBin": "git is not on PATH",
+      "auth": "Authentication failed. Add a deploy key or HTTPS token.",
+      "hostkey": "SSH host key verification failed. Confirm and pin the host key.",
+      "dirty": "Working tree has {{count}} local change(s). Pull is blocked.",
+      "diverged": "Cannot fast-forward. Reset to the remote ref if you intend to discard local Git history.",
+      "missingRef": "That branch, tag, or commit is not on the remote.",
+      "shallow": "This clone is shallow. Fetch full history before pinning an old commit.",
+      "notRepo": "app/ is not a Git repository yet.",
+      "unrelated": "Unrelated histories. Reclone only after confirm — custom files will be lost.",
+      "lock": "Git index.lock is present. Remove it only if no git process is running.",
+      "disk": "Disk full or quota exceeded.",
+      "timeout": "Git timed out.",
+      "network": "Network error talking to the remote.",
+      "lfs": "This repo uses Git LFS and git-lfs is not available.",
+      "submodule": "Submodule update failed.",
+      "unknown": "Git failed. See the command output.",
+      "fetchOk": "Fetched from origin.",
+      "checkoutOk": "Checked out {{ref}}.",
+      "resetOk": "Reset hard to {{ref}}.",
+      "envRestored": "Restored app/.env from the control plane.",
+      "needPinHost": "SSH host key is not pinned. Scan and pin it before clone or fetch.",
+      "tokenSaved": "HTTPS token stored (never shown again).",
+      "tokenCleared": "HTTPS token removed.",
+      "tokenInvalid": "Token must be at least 8 characters.",
+      "deployKeyCreated": "Deploy key created. Add the public key on the Git host.",
+      "deployKeyCleared": "Deploy key detached from this project.",
+      "hostPinned": "Pinned SSH host keys for {{host}}.",
+      "hostUnpinned": "Cleared pinned SSH host keys.",
+      "hostScanFailed": "ssh-keyscan returned no keys for that host.",
+      "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
+      "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
+      "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
     "auto": {
       "n0001": "Status: applied",
       "n0002": "User not found",
@@ -5975,7 +6025,7 @@
       "n0620": "startprocessnot process",
       "n0621": "OPcache",
       "n0622": "SSL",
-      "n0623": "",
+      "n0623": "Active",
       "n0624": "file",
       "n0625": "file",
       "n0626": "node wsrep, HA ≥2 node",
@@ -8165,7 +8215,25 @@
       "libraryFilesRemoved": "Deleted downloaded files",
       "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
       "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
-      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
+      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed.",
+      "libraryDestIsFile": "Cannot create a folder named {{name}} — a file with that name already exists.",
+      "librarySeedMissing": "No matching files in that folder to seed.",
+      "libraryWaitingPeers": "Waiting for peers. If the files are already on this host, add again and choose seed-existing."
+    },
+    "leftover": {
+      "staleCliTitle": "Stale leftover CLI",
+      "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
+      "apacheDefaultTitle": "Apache leftover default site",
+      "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+      "nginxCatchAllTitle": "Nginx catch-all missing",
+      "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
+      "vsftpdTitle": "vsftpd unit failed",
+      "vsftpd": "vsftpd is failed. Overlay does not rewrite listen/listen_ipv6. Apply FTP from the panel.",
+      "dovecotTitle": "Dovecot TLS points at missing cert",
+      "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
+      "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
+      "readinessTitle": "Host leftovers after overlay",
+      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
     }
   },
   "ops": {
@@ -8860,7 +8928,70 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "createGitHint": "Optional. Stored on the project; clone from the Deploy tab (does not clone on create).",
+    "gitBranch": "Branch",
+    "gitBranchHint": "Branch or tag. Empty uses the remote default. First clone is shallow (depth 1).",
+    "gitLastRef": "Last sync: {{branch}} @ {{commit}}",
+    "gitConfirmTitle": "Clone into this project?",
+    "gitConfirmBody": "If app/ is still the Hello World placeholder it will be cleared, then cloned. Custom files that are not a YSK scaffold are refused.",
+    "gitConfirmRemoteBody": "This points origin at the new URL and pulls. Unrelated histories fail; custom files are not wiped.",
+    "runtimeActual": "Actual binary {{path}}",
+    "runtimeFallback": "Chosen {{version}} is not on this host. Process uses {{path}}.",
+    "gitSync": "Sync",
+    "gitFetch": "Fetch",
+    "gitCheckout": "Checkout",
+    "gitReset": "Reset to remote",
+    "gitDeepen": "Fetch full history",
+    "gitLogTitle": "Recent commits",
+    "gitDirtyTitle": "Local changes block pull",
+    "gitDirtyBody": "{{count}} file(s) differ from Git (Files edits or the app). Discard them or abort.",
+    "gitDiscard": "Discard local files",
+    "gitOpenFiles": "Open in Files",
+    "gitNotCloned": "Not cloned",
+    "gitClean": "Clean",
+    "gitDirty": "Dirty",
+    "gitBehind": "Behind {{count}}",
+    "gitAhead": "Ahead {{count}}",
+    "gitDetached": "Pinned",
+    "gitShallow": "Shallow",
+    "gitMissing": "git missing",
+    "gitResetConfirmTitle": "Reset hard to remote?",
+    "gitResetConfirmBody": "This discards local Git history and untracked files except .env, then restores .env from the control plane.",
+    "gitHeads": "Remote branches",
+    "gitToken": "HTTPS token",
+    "gitTokenHint": "Personal access token. Stored encrypted; never written into the remote URL.",
+    "gitTokenPlaceholder": "ghp_… or glpat-…",
+    "gitTokenSet": "Token set",
+    "gitSaveToken": "Save token",
+    "gitClearToken": "Clear token",
+    "gitDeployKey": "Deploy public key",
+    "gitDeployKeyHint": "Add this as a read-only deploy key on the Git host.",
+    "gitDeployKeyOn": "Deploy key",
+    "gitMakeKey": "Create deploy key",
+    "gitCopyPub": "Copy public key",
+    "gitClearKey": "Clear deploy key",
+    "gitKeyCopied": "Public key copied",
+    "gitPinHost": "Pin host key",
+    "gitPinHostBody": "{{host}} is not pinned. Confirm the fingerprints, then pin before SSH clone.",
+    "gitHostUnpinned": "Host key not pinned",
+    "gitHookTitle": "Inbound hook",
+    "gitHookHint": "Paste this POST URL into GitHub / Gitea / GitLab yourself (push events only). Not Slack. Secret is HMAC or X-YSK-Git-Hook. Only the project ref is synced.",
+    "gitHookOn": "Hook on",
+    "gitHookOff": "Hook off",
+    "gitHookEnable": "Enable hook",
+    "gitHookRotate": "Rotate secret",
+    "gitHookDisable": "Disable hook",
+    "gitHookSecretOnce": "Copy this secret now — it is not stored in the page after you leave.",
+    "gitHookCopyUrl": "Copy URL",
+    "gitHookCopySecret": "Copy secret",
+    "gitHookCopied": "Copied",
+    "gitHookSetup": "Add the webhook yourself. Payload URL = the URL above. Content type application/json. Events: push only. Secret = the one-time value.",
+    "gitHookGithub": "GitHub: Settings → Webhooks → Add webhook. Content type application/json. Events: Just the push event. GitHub.com requires HTTPS.",
+    "gitHookGitea": "Gitea: Settings → Webhooks → Add Webhook → Gitea. HTTP Method POST. Push events.",
+    "gitHookGitlab": "GitLab: Settings → Webhooks. Trigger: Push events. Secret token = the hook secret (sent as X-Gitlab-Token).",
+    "gitHookHonesty": "The host unit must have YSK_EXECUTE=1. Without it the hook answers but does not clone or deploy.",
+    "gitHookSkipOther": "Pushes to other branches are ignored. Only the project ref syncs."
   },
   "protection": {
     "levels": {
@@ -12332,6 +12463,8 @@
       "lanCidrs": "LAN networks",
       "customCidr": "CIDR",
       "addCidr": "Add"
-    }
+    },
+    "engineNotInstalled": "This VPN engine is not installed on the host.",
+    "serverNotListening": "Server unit is not active. UDP/TCP {{port}} may be closed."
   }
 }

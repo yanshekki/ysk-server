@@ -127,5 +127,7 @@
     "lanCidrs": "شبكات LAN",
     "customCidr": "CIDR",
     "addCidr": "يضيف"
-  }
+  },
+  "engineNotInstalled": "محرك VPN هذا غير مثبت على المضيف.",
+  "serverNotListening": "وحدة الخادم غير نشطة. قد يكون UDP/TCP {{port}} مغلقاً."
 }

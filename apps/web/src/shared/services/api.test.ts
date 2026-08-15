@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, api } from './api';
+import { ApiError, api, localeHeaderFrom } from './api';
 import { authStore } from '../stores/auth-store';
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -28,6 +28,14 @@ describe('api service layer', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     authStore.clear();
+  });
+
+  it('localeHeaderFrom keeps ja/ko/fr (not zh-HK)', () => {
+    expect(localeHeaderFrom('ja')).toBe('ja');
+    expect(localeHeaderFrom('ko-KR')).toBe('ko');
+    expect(localeHeaderFrom('fr-FR')).toBe('fr');
+    expect(localeHeaderFrom('en-US')).toBe('en');
+    expect(localeHeaderFrom('zh-TW')).toBe('zh-HK');
   });
 
   it('exposes health and login entry points', () => {

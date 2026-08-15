@@ -2,6 +2,17 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next';
 import { bindCall1 } from '../../../pages/bind-handlers';
 
+/** Horizontal-only scroll so the page / tab bar never grows a Y scrollbar. */
+export function scrollTabListTo(list: HTMLElement, tabEl: HTMLElement): void {
+  const tabRect = tabEl.getBoundingClientRect();
+  const listRect = list.getBoundingClientRect();
+  if (tabRect.left < listRect.left) {
+    list.scrollLeft -= listRect.left - tabRect.left;
+  } else if (tabRect.right > listRect.right) {
+    list.scrollLeft += tabRect.right - listRect.right;
+  }
+}
+
 export interface TabItem {
   id: string;
   label: string;
@@ -56,8 +67,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
     if (!list) return;
     const tabEl = list.querySelector<HTMLElement>(`[data-tab-id="${active}"]`);
     if (!tabEl) return;
-    tabEl.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-    // re-check arrows after scroll
+    scrollTabListTo(list, tabEl);
     requestAnimationFrame(updateOverflow);
   }, [active, updateOverflow]);
 

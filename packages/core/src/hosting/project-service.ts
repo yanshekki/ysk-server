@@ -99,6 +99,9 @@ export class ProjectService {
     forceTemplate?: boolean;
     /** Preferred process listen port (optional) */
     preferredPort?: number;
+    /** Optional Git remote to store (does not clone on create) */
+    gitUrl?: string;
+    gitBranch?: string;
   }): Promise<{
     project: ProjectDto;
     osProvision: { attempted: boolean; ok: boolean; detail: string };
@@ -317,6 +320,8 @@ export class ProjectService {
       preferred_port: preferredPort,
       doc_root: defaultDocRoot,
       deploy_entry: scaffold?.entry ? String(scaffold.entry) : undefined,
+      git_url: input.gitUrl?.trim() || undefined,
+      git_branch: input.gitBranch?.trim() || undefined,
       owner_user_id: input.actorUserId,
       created_at: now,
       updated_at: now };
@@ -1114,6 +1119,9 @@ function toDto(row: ProjectRow): ProjectDto {
     gitUrl: row.git_url,
     gitBranch: row.git_branch,
     gitCommit: row.git_commit,
+    gitShallow: row.git_shallow,
+    gitLastError: row.git_last_error,
+    gitAuthKind: row.git_auth_kind,
     envVars: row.env_vars,
     lastBackupPath: row.last_backup_path,
     lastBackupAt: row.last_backup_at,
@@ -1126,6 +1134,7 @@ function toDto(row: ProjectRow): ProjectDto {
     accountLocked: row.account_locked,
     deployEntry: row.deploy_entry,
     lastDeployNotes: row.last_deploy_notes,
+    runtimeBin: row.runtime_bin,
     logExtraDirs: row.log_extra_dirs ?? [] };
 }
 

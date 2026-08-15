@@ -55,7 +55,7 @@
 | 域 | CLI 入口 |
 |----|----------|
 | 控制平面 | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
-| 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
+| 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|git\|isolation\|health` |
 | 檔案 | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
 | BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` |
 | 郵件 | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |

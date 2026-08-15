@@ -295,6 +295,37 @@ describe('ProjectCreateModal deep', () => {
     await user.click(cancel);
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('git URL clears the template and skips goLive on submit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn(async () => undefined);
+    installFetchMock(baseRoutes());
+    render(
+      <MemoryRouter>
+        <ProjectCreateModal open onClose={() => undefined} onSubmit={onSubmit} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(document.getElementById('pname')).toBeTruthy();
+    });
+    const name = document.getElementById('pname') as HTMLInputElement;
+    await user.type(name, 'from-git');
+    const git = document.getElementById('pgit') as HTMLInputElement;
+    await user.type(git, 'https://github.com/org/repo.git');
+    await waitFor(() => {
+      expect((document.getElementById('ptpl') as HTMLSelectElement).value).toBe('');
+    });
+    const createBtn = screen.getAllByRole('button', {
+      name: /create|建立|创建/i,
+    }).find((b) => !(b as HTMLButtonElement).disabled);
+    expect(createBtn).toBeTruthy();
+    await user.click(createBtn!);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    const payload = onSubmit.mock.calls[0]![0];
+    expect(payload.gitUrl).toBe('https://github.com/org/repo.git');
+    expect(payload.templateId).toBeUndefined();
+    expect(payload.goLive).toBe(false);
+  });
 });
 
 describe('ProjectNetworkTab deep', () => {

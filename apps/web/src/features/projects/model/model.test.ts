@@ -13,6 +13,7 @@ import {
   envToText,
   formatOpsMessage,
   formatRuntimeLabel,
+  isRuntimeBinFallback,
   parseEnvText,
 } from './ops';
 import {
@@ -210,6 +211,9 @@ describe('project model/ops', () => {
     ).toMatch(/opsFail|blocked|stop/i);
     expect(formatRuntimeLabel('node', '20', t)).toBeTruthy();
     expect(formatRuntimeLabel('static', null, t)).toBeTruthy();
+    expect(isRuntimeBinFallback('node', '20', '/usr/bin/node')).toBe(true);
+    expect(isRuntimeBinFallback('node', '20', '/usr/local/ysk/node/20/bin/node')).toBe(false);
+    expect(isRuntimeBinFallback('node', '20', '')).toBe(false);
   });
 });
 

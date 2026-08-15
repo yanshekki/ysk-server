@@ -127,5 +127,7 @@
     "lanCidrs": "jaringan LAN",
     "customCidr": "CIDR",
     "addCidr": "Menambahkan"
-  }
+  },
+  "engineNotInstalled": "Mesin VPN ini belum terpasang di host.",
+  "serverNotListening": "Unit server tidak aktif. UDP/TCP {{port}} mungkin tertutup."
 }

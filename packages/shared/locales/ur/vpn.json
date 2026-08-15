@@ -127,5 +127,7 @@
     "lanCidrs": "LAN نیٹ ورکس",
     "customCidr": "CIDR",
     "addCidr": "شامل کریں۔"
-  }
+  },
+  "engineNotInstalled": "یہ VPN انجن میزبان پر نصب نہیں ہے۔",
+  "serverNotListening": "سرور یونٹ فعال نہیں ہے۔ UDP/TCP {{port}} بند ہو سکتا ہے۔"
 }

@@ -1434,7 +1434,7 @@ describe('CLI deep coverage climb', () => {
     expect([0, 1, 3]).toContain(boot.code);
 
     const help = await cli('email', 'help');
-    expect(help.code).toBe(2);
+    expect(help.code).toBe(0);
 
     const flagsGet = await cli('email', 'flags', '--domain', 'cli-mail.test');
     expect(flagsGet.code).toBe(0);
@@ -2729,6 +2729,7 @@ describe('CLI deep coverage climb', () => {
     expect((await cli('projects', 'create')).code).toBe(2);
     expect((await cli('projects', 'deploy')).code).toBe(2);
     expect((await cli('projects', 'git-deploy')).code).toBe(2);
+    expect((await cli('projects', 'git', 'hook')).code).toBe(2);
     expect((await cli('projects', 'stop')).code).toBe(2);
     expect((await cli('projects', 'backup')).code).toBe(2);
     expect((await cli('projects', 'health')).code).toBe(2);

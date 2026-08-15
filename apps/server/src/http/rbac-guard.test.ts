@@ -99,6 +99,22 @@ describe('rbac-guard', () => {
     expect(auth).not.toHaveBeenCalled();
   });
 
+  it('enforceMutatingRouteCaps skips inbound git hook', () => {
+    const auth = vi.fn(() => {
+      throw new Error('should not auth');
+    });
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceMutatingRouteCaps(
+        ctx,
+        mockReq(),
+        'POST',
+        '/api/v1/hooks/git/11111111-2222-4333-a444-555555555555',
+      ),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
+  });
+
   it('enforceMutatingRouteCaps skips public auth login', () => {
     const auth = vi.fn(() => {
       throw new Error('should not auth');

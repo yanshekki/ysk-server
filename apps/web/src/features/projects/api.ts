@@ -14,6 +14,8 @@ export const projectsApi = {
     runtime?: string;
     runtimeVersion?: string;
     templateId?: string;
+    gitUrl?: string;
+    gitBranch?: string;
     goLive?: boolean;
     preferredPort?: number;
     createDnsZone?: boolean;
@@ -270,11 +272,33 @@ export const projectsApi = {
     id: string,
     body?: {
       gitUrl?: string;
+      branch?: string;
       redeploy?: boolean;
       entry?: string;
       skipBuild?: boolean;
     },
   ) => api.gitDeploy(id, body),
+  gitStatus: (id: string) => api.gitStatus(id),
+  gitLog: (id: string, limit?: number) => api.gitLog(id, limit),
+  gitFetch: (id: string, body?: { unshallow?: boolean }) => api.gitFetch(id, body),
+  gitCheckout: (id: string, body: { ref: string }) => api.gitCheckout(id, body),
+  gitReset: (id: string, body?: { ref?: string }) => api.gitReset(id, body),
+  gitAuth: (
+    id: string,
+    body: {
+      action:
+        | 'set-token'
+        | 'clear-token'
+        | 'make-deploy-key'
+        | 'clear-deploy-key'
+        | 'pin-host'
+        | 'clear-host';
+      token?: string;
+      gitUrl?: string;
+    },
+  ) => api.gitAuth(id, body),
+  gitHook: (id: string, body: { action: 'enable' | 'rotate' | 'disable' }) =>
+    api.gitHook(id, body),
   setEnv: (id: string, env: Record<string, string>) => api.setProjectEnv(id, env),
   backup: (id: string) => api.backupProject(id),
   logs: (

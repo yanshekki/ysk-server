@@ -15,7 +15,9 @@ import {
   parsePorts,
   parsePortSpecs,
   isValidAllowFrom,
+  firewallStatusChipLabel,
 } from './features/FirewallPage';
+import { fail2banStatusChipLabel } from './features/Fail2banPage';
 import { enabledLabel, actionLabel, toneFor, lifecycleDangerForUnit } from './features/ServicesPage';
 import { applyLabel } from './EmailPage';
 import { statusLabel as ftpsStatusLabel } from '../features/ftp';
@@ -138,6 +140,29 @@ describe('Firewall parsePorts', () => {
     expect(isValidAllowFrom('203.0.113.10')).toBe(true);
     expect(isValidAllowFrom('10.0.0.0/8')).toBe(true);
     expect(isValidAllowFrom('nope!')).toBe(false);
+  });
+
+  it('firewall / fail2ban chips use panel keys, not server activeLabel', () => {
+    const t = (k: string) => k;
+    expect(firewallStatusChipLabel(null, t)).toBe('—');
+    expect(firewallStatusChipLabel({ installed: false, active: 'inactive' }, t)).toBe(
+      'firewall.notInstalled',
+    );
+    expect(firewallStatusChipLabel({ installed: true, active: 'active' }, t)).toBe(
+      'firewall.ufwEnabled',
+    );
+    expect(firewallStatusChipLabel({ installed: true, active: 'inactive' }, t)).toBe(
+      'firewall.ufwDisabled',
+    );
+    expect(fail2banStatusChipLabel({ installed: false, active: 'inactive' }, t)).toBe(
+      'fail2ban.notInstalled',
+    );
+    expect(fail2banStatusChipLabel({ installed: true, active: 'active' }, t)).toBe(
+      'common.running',
+    );
+    expect(fail2banStatusChipLabel({ installed: true, active: 'inactive' }, t)).toBe(
+      'common.stopped',
+    );
   });
 });
 

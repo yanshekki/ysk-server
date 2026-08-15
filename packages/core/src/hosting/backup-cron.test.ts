@@ -181,6 +181,17 @@ describe('backup-cron depth', () => {
   it('skip note helpers and localizeLastBackupRun', () => {
     expect(isBackupSkipNote('skip: no home')).toBe(true);
     expect(isBackupSkipNote('failed tar')).toBe(false);
+    expect(isBackupSkipNote('kept: 10')).toBe(false);
+    expect(
+      isBackupSkippedResult({ ok: true, notes: ['kept: 10', '/var/lib/ysk-server/backups/x.tar.gz'] }),
+    ).toBe(false);
+    const single = localizeLastBackupRun({
+      ok: true,
+      source: 'projects.backup',
+      archivePath: '/tmp/hello.tar.gz',
+      results: [{ ok: true, notes: ['kept: 10'] }],
+    });
+    expect(String((single?.notes as string[])[0] ?? '')).toMatch(/1\/1/);
     expect(isBackupSkipNote('Command blocked: YSK_EXECUTE=1 required')).toBe(false);
     expect(isBackupSkipNote('YSK_FORBIDDEN')).toBe(false);
     const parsed = parseDbEnvFile('DB_NAME=hello\nDB_USER=hello_user\nENGINE=mariadb\n');

@@ -558,7 +558,7 @@
     "saveRootPublic": "公開檔案",
     "newFolder": "新資料夾",
     "destPreview": "將寫入",
-    "startDownload": "開始",
+    "startDownload": "開始下載",
     "filterDownloading": "下載中",
     "filterPaused": "已暫停",
     "filterError": "錯誤",
@@ -591,7 +591,23 @@
     "seedStatusDownloading": "下載中",
     "seedStatusChecking": "檢查中",
     "seedStatusPaused": "已暫停",
-    "seedStatusQueued": "排隊中"
+    "seedStatusQueued": "排隊中",
+    "swarmLeftover": "Tracker 另有 {{count}} 個未在資料庫的 announce",
+    "addSourceSection": "來源",
+    "addSourceFile": "檔案",
+    "addSourceMagnet": "Magnet",
+    "previewSection": "預覽",
+    "saveRoot": "根目錄",
+    "clearFile": "清除檔案",
+    "extraTrackersTitle": "額外 announce",
+    "extraTrackersEmptyTitle": "尚未加入 Tracker",
+    "extraEnabledCount": "{{count}} 條已啟用",
+    "extraApplyHint": "至少啟用一條才可套用到現有做種",
+    "destMode": "此資料夾的用法",
+    "seedExisting": "使用現有檔案做種",
+    "downloadNewFolder": "下載到新資料夾",
+    "destFileConflict": "此處已有檔案 {{name}}。請另選資料夾；若檔案就是此 Torrent 的內容，請選「使用現有檔案做種」。",
+    "waitingPeers": "正在等待 peers。若檔案已在此主機，請重新加入並選「使用現有檔案做種」。"
   },
   "catalog": {
     "sw": {
@@ -1352,7 +1368,7 @@
           "--name": {
             "name": {
               "--domain": {
-                "66e857": "用法： ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]"
+                "66e857": "用法： ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--git-url URL] [--branch B] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]"
               }
             }
           }
@@ -1370,7 +1386,7 @@
           "--id": {
             "id": {
               "--git-url": {
-                "a513f5": "用法： ysk-server 專案 git-deploy --識別碼 識別碼 [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]"
+                "a513f5": "用法： ysk-server 專案 git-deploy --識別碼 識別碼 [--git-url URL] [--branch|--ref main] [--no-redeploy] [--depth 1] [--entry f]"
               }
             }
           }
@@ -1388,7 +1404,7 @@
           "get": {
             "create": {
               "deploy": {
-                "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID --entry f [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]"
+                "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|git|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--no-redeploy]\n  git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID [--ref R] [--unshallow] [--yes]\n  git auth --id UUID --token T|--deploy-key|--pin-host\n  git hook --id UUID --enable|--rotate|--disable\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
               }
             }
           }
@@ -1654,7 +1670,7 @@
           "--username": {
             "u": {
               "--password": {
-                "7145c7": "用法： ysk-server users 建立 --username <u> --密碼 <p> [--role operator|viewer|管理員] [--套件-識別碼 識別碼]"
+                "7145c7": "用法： ysk-server users 建立 --username <u> --密碼 <p> [--role operator|viewer|管理員] [--套件-識別碼 識別碼] [--locale zh-HK]"
               }
             }
           }
@@ -5352,6 +5368,40 @@
     "probe": "探測",
     "install": "安裝",
     "port": "埠",
+    "git": {
+      "missingBin": "系統 PATH 找不到 git",
+      "auth": "驗證失敗。請加入 deploy key 或 HTTPS token。",
+      "hostkey": "SSH host key 驗證失敗。請確認後釘選。",
+      "dirty": "工作區有 {{count}} 項本機改動。已阻止 pull。",
+      "diverged": "無法 fast-forward。若要丟棄本機 Git 歷史，請重設到遠端 ref。",
+      "missingRef": "遠端沒有該分支、tag 或 commit。",
+      "shallow": "此 clone 為淺層。要釘舊 commit 請先抓完整歷史。",
+      "notRepo": "app/ 尚未是 Git repository。",
+      "unrelated": "歷史無關。確認後才可重新 clone——自訂檔會消失。",
+      "lock": "存在 Git index.lock。只在沒有 git 行程時才移除。",
+      "disk": "磁碟已滿或超出配額。",
+      "timeout": "Git 逾時。",
+      "network": "連接遠端時網絡出錯。",
+      "lfs": "此 repo 使用 Git LFS，但主機沒有 git-lfs。",
+      "submodule": "Submodule 更新失敗。",
+      "unknown": "Git 失敗。請查看指令輸出。",
+      "fetchOk": "已從 origin fetch。",
+      "checkoutOk": "已 checkout {{ref}}。",
+      "resetOk": "已 hard reset 到 {{ref}}。",
+      "envRestored": "已用控制面資料還原 app/.env。",
+      "needPinHost": "尚未釘選 SSH host key。請先掃描並釘選，再 clone 或 fetch。",
+      "tokenSaved": "已儲存 HTTPS token（不會再顯示）。",
+      "tokenCleared": "已移除 HTTPS token。",
+      "tokenInvalid": "Token 至少 8 個字元。",
+      "deployKeyCreated": "已建立 deploy key。請把 public key 加到 Git 主機。",
+      "deployKeyCleared": "已解除此專案的 deploy key。",
+      "hostPinned": "已釘選 {{host}} 的 SSH host key。",
+      "hostUnpinned": "已清除釘選的 SSH host key。",
+      "hostScanFailed": "ssh-keyscan 沒有傳回該主機的 key。",
+      "hookEnabled": "已開啟 inbound Git hook。請自行把 URL 貼到 GitHub、Gitea 或 GitLab。",
+      "hookDisabled": "已關閉 inbound Git hook。該 URL 不會再同步。",
+      "hookSecretOnce": "請立即複製此 hook secret。之後不會再顯示。"
+    },
     "auto": {
       "n0001": "狀態：已套用",
       "n0002": "找不到用戶",
@@ -8165,7 +8215,25 @@
       "libraryFilesRemoved": "已刪除下載的檔案",
       "libraryRestoreDone": "資料庫還原：已啟動 {{started}}／{{attempted}}（失敗 {{failed}}）",
       "applyTrackersDone": "已向 {{n}} 個現有 announce 套用常用 Tracker",
-      "libraryNeedServe": "已儲存。請在面板啟動 ysk-server serve，WebTorrent 才會下載／做種。"
+      "libraryNeedServe": "已儲存。請在面板啟動 ysk-server serve，WebTorrent 才會下載／做種。",
+      "libraryDestIsFile": "無法建立名為 {{name}} 的資料夾——該處已有同名檔案。",
+      "librarySeedMissing": "此資料夾沒有可做種的對應檔案。",
+      "libraryWaitingPeers": "正在等待 peers。若檔案已在此主機，請重新加入並選使用現有檔案做種。"
+    },
+    "leftover": {
+      "staleCliTitle": "遺留舊版 CLI",
+      "staleCli": "仍有舊 CLI：{{path}}（產品版本 {{version}}）。PATH 可能優先用它。移除：rm -f {{path}}",
+      "apacheDefaultTitle": "Apache 遺留預設站",
+      "apacheDefault": "Apache 000-default 仍佔 :80。產品 overlay 不會停用。請在面板套用 Apache，或 hosting apache apply --execute。",
+      "nginxCatchAllTitle": "Nginx 缺 catch-all",
+      "nginxCatchAll": "/etc/nginx/conf.d 沒有 ysk-000-default.conf。未知 SNI 可能落到其他站。請執行 projects nginx-sync --execute。",
+      "vsftpdTitle": "vsftpd 單元失敗",
+      "vsftpd": "vsftpd 失敗。overlay 不會重寫 listen／listen_ipv6。請在面板套用 FTP。",
+      "dovecotTitle": "Dovecot TLS 指住不存在的憑證",
+      "dovecot": "Dovecot ssl_cert 指住不存在的 {{path}}。overlay 不會改成 ssl=no。簽發郵件憑證後套用郵件 TLS。",
+      "overlayDoesNotHeal": "產品 overlay 不會改寫 nginx、Apache、vsftpd 或 Dovecot。請用列出的套用命令（root + YSK_EXECUTE=1）。",
+      "readinessTitle": "overlay 後主機遺留",
+      "readinessClean": "未偵測到 Apache 預設站、缺 nginx catch-all、vsftpd 失敗或舊 CLI。"
     }
   },
   "ops": {
@@ -8860,7 +8928,70 @@
     "resShell": "登入 shell",
     "resSaveHint": "「儲存並套用」會改主機。「僅存控制面」只記表單。「再套用」用已存值再寫入系統。",
     "resBashConfirmTitle": "允許互動式 bash？",
-    "resBashConfirmDesc": "這會讓專案用戶有互動登入 shell。只在需要以該用戶 SSH 或終端機時才確認。"
+    "resBashConfirmDesc": "這會讓專案用戶有互動登入 shell。只在需要以該用戶 SSH 或終端機時才確認。",
+    "createGitHint": "可選。會記在專案；到部署分頁再 clone（建立時不會 clone）。",
+    "gitBranch": "分支",
+    "gitBranchHint": "分支或 tag。留空則用遠端預設分支。首次 clone 為淺層（depth 1）。",
+    "gitLastRef": "上次同步：{{branch}} @ {{commit}}",
+    "gitConfirmTitle": "要 clone 到此專案？",
+    "gitConfirmBody": "若 app/ 仍是 Hello World 佔位會先清除再 clone。非 YSK 範本的自訂檔案會拒絕覆寫。",
+    "gitConfirmRemoteBody": "會把 origin 改為新網址再 pull。歷史無關則失敗；不會清除自訂檔案。",
+    "runtimeActual": "實際 binary {{path}}",
+    "runtimeFallback": "所選 {{version}} 並未安裝。行程實際使用 {{path}}。",
+    "gitSync": "同步",
+    "gitFetch": "Fetch",
+    "gitCheckout": "Checkout",
+    "gitReset": "重設到遠端",
+    "gitDeepen": "抓完整歷史",
+    "gitLogTitle": "最近 commit",
+    "gitDirtyTitle": "本機改動已阻止 pull",
+    "gitDirtyBody": "有 {{count}} 個檔與 Git 不同（Files 或應用改過）。請丟棄或取消。",
+    "gitDiscard": "丟棄本機檔",
+    "gitOpenFiles": "在 Files 開啟",
+    "gitNotCloned": "尚未 clone",
+    "gitClean": "乾淨",
+    "gitDirty": "有改動",
+    "gitBehind": "落後 {{count}}",
+    "gitAhead": "超前 {{count}}",
+    "gitDetached": "已釘選",
+    "gitShallow": "淺層",
+    "gitMissing": "沒有 git",
+    "gitResetConfirmTitle": "要 hard reset 到遠端？",
+    "gitResetConfirmBody": "會丟棄本機 Git 歷史及未追蹤檔（保留 .env），再用控制面資料還原 .env。",
+    "gitHeads": "遠端分支",
+    "gitToken": "HTTPS token",
+    "gitTokenHint": "Personal access token。加密存放；不會寫入 remote URL。",
+    "gitTokenPlaceholder": "ghp_… 或 glpat-…",
+    "gitTokenSet": "已設 token",
+    "gitSaveToken": "儲存 token",
+    "gitClearToken": "清除 token",
+    "gitDeployKey": "Deploy public key",
+    "gitDeployKeyHint": "請以唯讀 deploy key 加到 Git 主機。",
+    "gitDeployKeyOn": "Deploy key",
+    "gitMakeKey": "建立 deploy key",
+    "gitCopyPub": "複製 public key",
+    "gitClearKey": "清除 deploy key",
+    "gitKeyCopied": "已複製 public key",
+    "gitPinHost": "釘選 host key",
+    "gitPinHostBody": "尚未釘選 {{host}}。請核對 fingerprint，再釘選後才用 SSH clone。",
+    "gitHostUnpinned": "未釘選 host key",
+    "gitHookTitle": "Inbound hook",
+    "gitHookHint": "請自行把上方完整 POST URL 貼到 GitHub／Gitea／GitLab（只接收 push）。不是 Slack。密鑰用 HMAC 或 X-YSK-Git-Hook。只會同步本專案已選定的 ref。",
+    "gitHookOn": "Hook 已開",
+    "gitHookOff": "Hook 已關",
+    "gitHookEnable": "開啟 hook",
+    "gitHookRotate": "更換 secret",
+    "gitHookDisable": "關閉 hook",
+    "gitHookSecretOnce": "請立即複製此 secret——離開頁面後不會再顯示。",
+    "gitHookCopyUrl": "複製 URL",
+    "gitHookCopySecret": "複製 secret",
+    "gitHookCopied": "已複製",
+    "gitHookSetup": "請在 Git 平台自行新增 webhook：Payload URL 用上方完整網址；Content type 用 application/json；事件只選 push；Secret 用啟用時顯示的值。",
+    "gitHookGithub": "GitHub：Settings → Webhooks → Add webhook。Content type 選 application/json。Events 選 Just the push event。GitHub.com 需要 HTTPS。",
+    "gitHookGitea": "Gitea：Settings → Webhooks → Add Webhook → Gitea。方法 POST。事件選 Push。",
+    "gitHookGitlab": "GitLab：Settings → Webhooks。Trigger 選 Push events。Secret token 填 hook secret（以 X-Gitlab-Token 傳送）。",
+    "gitHookHonesty": "主機 systemd 必須設 YSK_EXECUTE=1，hook 才會真正 clone／部署。否則只回計劃結果。",
+    "gitHookSkipOther": "其他分支的 push 會被忽略，只同步本專案的 ref。"
   },
   "protection": {
     "levels": {
@@ -12332,6 +12463,8 @@
       "lanCidrs": "區域網段",
       "customCidr": "CIDR",
       "addCidr": "加入"
-    }
+    },
+    "engineNotInstalled": "此主機尚未安裝此 VPN 引擎。",
+    "serverNotListening": "伺服器單元未在運行。UDP/TCP {{port}} 可能未監聽。"
   }
 }

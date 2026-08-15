@@ -10,6 +10,8 @@ import {
   sanitizeTorrentFolderName,
   resolveLibraryDestAbs,
   addBtLibraryItem,
+  probeLibraryDest,
+  deriveLibraryLiveStatus,
   MAX_TORRENT_BYTES,
 } from './library-ops.js';
 import { getBtLibraryByHash, loadBtLibrary } from './library.js';
@@ -98,5 +100,104 @@ describe('bt library dest + inspect', () => {
     await expect(inspectTorrentInput({ magnet: 'http://example.com' })).rejects.toMatchObject({
       httpStatus: 400,
     });
+  });
+
+  it('probes seed-existing when the torrent file already sits in the parent', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bt-probe-'));
+    try {
+      const pub = join(dir, 'files', 'public');
+      mkdirSync(pub, { recursive: true });
+      writeFileSync(join(pub, 'hello.txt'), 'hello-bt-library\n');
+      const probe = probeLibraryDest({
+        dataDir: dir,
+        saveRoot: 'public',
+        parentRel: '',
+        name: 'hello.txt',
+        files: [{ path: 'hello.txt', length: 'hello-bt-library\n'.length }],
+      });
+      expect(probe.destKind).toBe('file-conflict');
+      expect(probe.canSeedExisting).toBe(true);
+      expect(probe.seedRel).toBe('.');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('download mode refuses when dest is an existing file', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bt-file-'));
+    try {
+      const pub = join(dir, 'files', 'public');
+      mkdirSync(pub, { recursive: true });
+      writeFileSync(join(pub, 'hello.txt'), 'x');
+      expect(() => resolveLibraryDestAbs(dir, 'public', 'hello.txt')).toThrow(/file|檔|同名/i);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('seed-existing add does not 409 when the payload file already exists', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bt-seedex-'));
+    try {
+      const content = join(dir, 'payload');
+      mkdirSync(content, { recursive: true });
+      writeFileSync(join(content, 'hello.txt'), 'hello-bt-library\n');
+      const pub = join(dir, 'files', 'public');
+      mkdirSync(pub, { recursive: true });
+      writeFileSync(join(pub, 'hello.txt'), 'hello-bt-library\n');
+      const settings = {
+        ...DEFAULT_BT_TRACKER_SETTINGS,
+        publicAnnounceHost: 'tracker.test',
+      };
+      saveBtTrackerSettings(dir, settings);
+      const created = await createShareTorrent({
+        dataDir: dir,
+        shareId: 's-seed',
+        name: 'hello.txt',
+        contentAbsPath: join(content, 'hello.txt'),
+        settings,
+      });
+      const buf = (await import('node:fs')).readFileSync(created.torrentAbsPath!);
+      const added = await addBtLibraryItem({
+        dataDir: dir,
+        torrentBuf: buf,
+        saveRoot: 'public',
+        saveRelPath: 'hello.txt',
+        parentRel: '',
+        mode: 'seed-existing',
+        start: false,
+      });
+      expect(added.ok).toBe(true);
+      expect(added.item?.saveRelPath).toBe('.');
+      if (added.item) await stopSeed(added.item.id);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 20_000);
+
+  it('maps progress 0 with no dest files to downloading, not checking', () => {
+    expect(
+      deriveLibraryLiveStatus({
+        stored: 'checking',
+        hasSeed: true,
+        progress: 0,
+        destHasFiles: false,
+      }),
+    ).toBe('downloading');
+    expect(
+      deriveLibraryLiveStatus({
+        stored: 'checking',
+        hasSeed: true,
+        progress: 0,
+        destHasFiles: true,
+      }),
+    ).toBe('checking');
+    expect(
+      deriveLibraryLiveStatus({
+        stored: 'checking',
+        hasSeed: true,
+        progress: 1,
+        done: true,
+      }),
+    ).toBe('seeding');
   });
 });

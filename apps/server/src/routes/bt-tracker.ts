@@ -32,6 +32,7 @@ import {
   listTorrentJobs,
   getTorrentJob,
   inspectTorrentInput,
+  probeLibraryDest,
   addBtLibraryItem,
   listBtLibraryLive,
   pauseBtLibraryItem,
@@ -229,6 +230,28 @@ export async function handleBtTrackerRoutes(
         sendJson(res, 200, { ok: true, ...inspected });
         return true;
       }
+      if (method === 'POST' && url.pathname === `${BASE}/library/probe`) {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req, { maxBytes: 64 * 1024 });
+        const data = JSON.parse(raw || '{}') as {
+          saveRoot?: string;
+          parentRel?: string;
+          name?: string;
+          files?: Array<{ path?: string; length?: number }>;
+        };
+        const probe = probeLibraryDest({
+          dataDir: ctx.dataDir,
+          saveRoot: String(data.saveRoot || 'public'),
+          parentRel: String(data.parentRel || ''),
+          name: String(data.name || ''),
+          files: (data.files ?? []).map((f) => ({
+            path: String(f.path || ''),
+            length: Number(f.length) || 0,
+          })),
+        });
+        sendJson(res, 200, { ok: true, ...probe });
+        return true;
+      }
       if (method === 'POST' && url.pathname === `${BASE}/library/apply-trackers`) {
         const user = ctx.auth.authenticate(getBearer(req));
         const r = applyExtraTrackersNow(ctx.dataDir);
@@ -249,6 +272,8 @@ export async function handleBtTrackerRoutes(
           magnet?: string;
           saveRoot?: string;
           saveRelPath?: string;
+          parentRel?: string;
+          mode?: 'download' | 'seed-existing';
         };
         let torrentBuf: Buffer | undefined;
         if (data.torrentBase64) {
@@ -260,6 +285,8 @@ export async function handleBtTrackerRoutes(
           magnet: data.magnet,
           saveRoot: String(data.saveRoot || 'public'),
           saveRelPath: String(data.saveRelPath || ''),
+          parentRel: data.parentRel,
+          mode: data.mode === 'seed-existing' ? 'seed-existing' : 'download',
         });
         ctx.audit.append({
           actor: user.username,

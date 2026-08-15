@@ -117,6 +117,23 @@ function mergeHits(primary: SearchHitDto[], extra: SearchHitDto[]): SearchHitDto
   return out;
 }
 
+/** Empty menu: never flash "no results" before the in-flight search finishes. */
+export function searchEmptyState(opts: {
+  loading: boolean;
+  searchError: string | null;
+  hitCount: number;
+  query: string;
+  completedQuery: string;
+}): 'loading' | 'error' | 'empty' | null {
+  if (opts.hitCount > 0) return null;
+  const q = opts.query.trim();
+  if (!q) return null;
+  const pending = opts.completedQuery !== q;
+  if (opts.loading || pending) return 'loading';
+  if (opts.searchError) return 'error';
+  return 'empty';
+}
+
 function groupHits(hits: SearchHitDto[]): Array<{ kind: string; items: SearchHitDto[] }> {
   const map = new Map<string, SearchHitDto[]>();
   for (const h of hits) {
@@ -213,8 +230,14 @@ export function GlobalSearch() {
     setSearchError(null);
     const local = localPageHits(value, t);
     setHits(local);
-    lastCompletedQ.current = local.length ? value.trim() : '';
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setLoading(false);
+      lastCompletedQ.current = '';
+      return;
+    }
+    setLoading(true);
     debounceRef.current = setTimeout(() => void runSearch(value), 160);
   };
 
@@ -275,13 +298,19 @@ export function GlobalSearch() {
       setActive((i) => (i - 1 + flat.length) % flat.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (lastCompletedQ.current !== q.trim()) return;
       const hit = flat[active];
       if (hit) go(hit);
     }
   };
 
   const showMenu = open && q.trim().length > 0;
+  const emptyKind = searchEmptyState({
+    loading,
+    searchError,
+    hitCount: hits.length,
+    query: q,
+    completedQuery: lastCompletedQ.current,
+  });
   let flatIndex = -1;
 
   return (
@@ -317,16 +346,14 @@ export function GlobalSearch() {
           role="listbox"
           aria-label={t('search.results', { defaultValue: 'Search results' })}
         >
-          {loading && hits.length === 0 ? (
-            <p className="shell-search__empty muted">{t('search.loading', { defaultValue: '…' })}</p>
+          {emptyKind === 'loading' ? (
+            <p className="shell-search__empty muted">{t('search.loading')}</p>
           ) : null}
-          {searchError && hits.length === 0 ? (
+          {emptyKind === 'error' ? (
             <p className="shell-search__empty muted">{searchError}</p>
           ) : null}
-          {!loading && !searchError && hits.length === 0 ? (
-            <p className="shell-search__empty muted">
-              {t('search.noResults', { defaultValue: 'No results' })}
-            </p>
+          {emptyKind === 'empty' ? (
+            <p className="shell-search__empty muted">{t('search.noResults')}</p>
           ) : null}
           {groups.map((g) => (
             <div key={g.kind} className="shell-search__group">

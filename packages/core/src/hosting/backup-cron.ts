@@ -91,13 +91,13 @@ export function listBackups(dataDir: string): BackupListItem[] {
 /** Notes that mean "not attempted" (skip) — Chinese or English */
 export function isBackupSkipNote(note: string): boolean {
   const n = note.trim();
+  if (!n) return false;
   if (/blocked|YSK_EXECUTE|YSK_FORBIDDEN|requires execute/i.test(n)) return false;
-  return (
-    /^skip\b/i.test(n) ||
-    /^skipped\b/i.test(n) ||
-    n.startsWith(tl('notes.auto.n1252')) ||
-    n.startsWith(tl('notes.auto.n1461'))
-  );
+  if (/^skip(?:ped)?\b/i.test(n)) return true;
+  const prefixes = [tl('notes.auto.n1252'), tl('notes.auto.n1461')]
+    .map((p) => p.trim())
+    .filter((p) => p.length >= 2);
+  return prefixes.some((p) => n.startsWith(p));
 }
 
 export function isBackupSkippedResult(r: {
@@ -198,9 +198,16 @@ export function localizeLastBackupRun(
     ? (last.results as Array<{ ok: boolean; notes?: string[]; skipped?: boolean }>)
     : [];
   const asSkip = (r: { ok: boolean; notes?: string[]; skipped?: boolean }) =>
+    r.skipped === true ||
     isBackupSkippedResult({ ok: r.ok, notes: r.notes ?? [], skipped: r.skipped });
-  const skipped = results.filter(asSkip);
-  const attempted = results.filter((r) => !asSkip(r));
+  let skipped = results.filter(asSkip);
+  let attempted = results.filter((r) => !asSkip(r));
+  const singleProjectOk =
+    String(last.source || '') === 'projects.backup' && Boolean(last.archivePath);
+  if (singleProjectOk && attempted.length === 0) {
+    attempted = [{ ok: true, notes: [] }];
+    skipped = [];
+  }
   const okCount = attempted.filter((r) => r.ok).length;
 
   const notes: string[] = [
@@ -208,8 +215,7 @@ export function localizeLastBackupRun(
       (skipped.length ? tl('notes.auto.t0327', { v0: skipped.length }) : ''),
   ];
   const singleOk =
-    last.ok === true ||
-    (String(last.source || '') === 'projects.backup' && Boolean(last.archivePath));
+    last.ok === true || singleProjectOk;
   if (singleOk) {
     notes.push(
       attempted.length === 0 && String(last.source || '') !== 'projects.backup'

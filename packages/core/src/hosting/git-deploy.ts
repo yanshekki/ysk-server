@@ -8,6 +8,8 @@ import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import { YSK_SCAFFOLD_MARKER } from './app-templates.js';
+import { classifyGitError } from './git-errors.js';
+import { blockingDirtyFiles, parsePorcelain } from './git-control.js';
 import { binPresent } from './software-probe/index.js';
 
 export interface GitDeployResult {
@@ -19,6 +21,7 @@ export interface GitDeployResult {
   notes: string[];
   stdout?: string;
   stderr?: string;
+  errorCode?: string;
 }
 
 export function assertGitUrl(url: string): void {
@@ -84,8 +87,6 @@ export function isYskScaffoldAppDir(repoDir: string, entries: string[]): boolean
       if (/\bYSK\b/i.test(head) && /(node-starter|python-|go-http|rust-|Django|scaffold)/i.test(head)) {
         return true;
       }
-      // shorter YSK banners used in templates
-      if (/^(\/\/|#)\s*YSK\b/m.test(head)) return true;
     } catch {
       /* ignore unreadable */
     }
@@ -103,6 +104,7 @@ export async function gitSync(input: {
   targetDir: string;
   branch?: string;
   depth?: number;
+  env?: Record<string, string>;
 }): Promise<GitDeployResult> {
   assertGitUrl(input.gitUrl);
   const notes: string[] = [];
@@ -149,40 +151,92 @@ export async function gitSync(input: {
       args.push('--branch', input.branch);
     }
     args.push(input.gitUrl, repoDir);
-    const r = await input.host.runCommand(args, { timeoutMs: 120_000 });
+    const r = await input.host.runCommand(args, { timeoutMs: 120_000, env: input.env });
     if (r.exitCode !== 0) {
+      const errorCode = classifyGitError(r.stderr || '', r.stdout || '');
       return {
         ok: false,
         action: 'clone',
         repoDir,
-        notes: [...notes, `git clone failed: ${r.stderr || r.stdout}`],
+        errorCode,
+        notes: [...notes, tl(`notes.git.${errorCode.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())}`), (r.stderr || r.stdout || '').slice(0, 400)],
         stdout: r.stdout,
         stderr: r.stderr,
       };
     }
     notes.push(tl('notes.auto.t0346', { v0: (input.gitUrl), v1: (repoDir) }));
   } else {
+    const origin = await input.host.runCommand(
+      ['git', '-C', repoDir, 'remote', 'get-url', 'origin'],
+      { timeoutMs: 10_000 },
+    );
+    const currentRemote = (origin.stdout || '').trim();
+    const nextRemote = input.gitUrl.trim();
+    if (currentRemote && currentRemote !== nextRemote) {
+      const setUrl = await input.host.runCommand(
+        ['git', '-C', repoDir, 'remote', 'set-url', 'origin', nextRemote],
+        { timeoutMs: 10_000 },
+      );
+      if (setUrl.exitCode === 0) {
+        notes.push(`git remote set-url origin ${nextRemote}`);
+      } else {
+        notes.push(`git remote set-url: ${setUrl.stderr || setUrl.stdout}`);
+      }
+    }
+    const porcelain = await input.host.runCommand(
+      ['git', '-C', repoDir, 'status', '--porcelain'],
+      { timeoutMs: 15_000 },
+    );
+    const dirty = blockingDirtyFiles(parsePorcelain(porcelain.stdout || ''));
+    if (dirty.length) {
+      return {
+        ok: false,
+        action: 'none',
+        repoDir,
+        errorCode: 'dirty',
+        notes: [tl('notes.git.dirty', { count: dirty.length }), dirty.slice(0, 8).join(', ')],
+      };
+    }
     if (input.branch) {
       await input.host.runCommand(['git', '-C', repoDir, 'fetch', 'origin', input.branch], {
         timeoutMs: 60_000,
+        env: input.env,
       });
       const co = await input.host.runCommand(
         ['git', '-C', repoDir, 'checkout', input.branch],
-        { timeoutMs: 30_000 },
+        { timeoutMs: 30_000, env: input.env },
       );
       if (co.exitCode !== 0) {
+        const errorCode = classifyGitError(co.stderr || '', co.stdout || '');
         notes.push(`checkout ${input.branch}: ${co.stderr}`);
+        if (errorCode === 'dirty' || errorCode === 'missing-ref' || errorCode === 'shallow') {
+          return {
+            ok: false,
+            action: 'pull',
+            repoDir,
+            errorCode,
+            notes,
+            stderr: co.stderr,
+          };
+        }
       }
     }
     const r = await input.host.runCommand(['git', '-C', repoDir, 'pull', '--ff-only'], {
       timeoutMs: 120_000,
+      env: input.env,
     });
     if (r.exitCode !== 0) {
+      const errorCode = classifyGitError(r.stderr || '', r.stdout || '');
       return {
         ok: false,
         action: 'pull',
         repoDir,
-        notes: [...notes, `git pull failed: ${r.stderr || r.stdout}`],
+        errorCode,
+        notes: [
+          ...notes,
+          tl(`notes.git.${errorCode.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())}`),
+          (r.stderr || r.stdout || '').slice(0, 400),
+        ],
         stdout: r.stdout,
         stderr: r.stderr,
       };

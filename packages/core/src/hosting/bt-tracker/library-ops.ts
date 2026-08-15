@@ -3,12 +3,15 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ErrorCodes,
   YskError,
   tl,
+  type BtLibraryDestMode,
+  type BtLibraryDestProbe,
+  type BtLibraryFile,
   type BtLibraryInspect,
   type BtLibraryItem,
   type BtLibraryStatus,
@@ -55,11 +58,12 @@ export function sanitizeSaveRelPath(raw: string): string {
     .replace(/\\/g, '/')
     .replace(/^\/+/, '')
     .trim();
-  if (!s || s.includes('\0')) {
+  if (s.includes('\0')) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.btTracker.libraryDestBad'), {
       httpStatus: 400,
     });
   }
+  if (!s || s === '.') return '.';
   const parts = s.split('/').filter((p) => p && p !== '.' && p !== '..');
   if (!parts.length) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.btTracker.libraryDestBad'), {
@@ -90,12 +94,136 @@ export function resolveLibraryDestAbs(
   dataDir: string,
   saveRoot: string,
   saveRelPath: string,
+  opts?: { mkdir?: boolean },
 ): { rootAbs: string; destAbs: string; saveRelPath: string } {
   const rel = sanitizeSaveRelPath(saveRelPath);
   const rootAbs = resolveLibraryRootAbs(dataDir, saveRoot);
+  const destAbs = rel === '.' ? rootAbs : join(rootAbs, rel);
+  if (opts?.mkdir === false || rel === '.') {
+    return { rootAbs, destAbs, saveRelPath: rel };
+  }
+  if (existsSync(destAbs) && statSync(destAbs).isFile()) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.btTracker.libraryDestIsFile', { name: rel }), {
+      httpStatus: 409,
+      details: { reason: 'EEXIST', path: rel, type: 'file' },
+    });
+  }
   const fm = new FileManager(rootAbs);
-  fm.mkdir(rel, { ifExists: 'merge' });
-  return { rootAbs, destAbs: join(rootAbs, rel), saveRelPath: rel };
+  if (rel !== '.') fm.mkdir(rel, { ifExists: 'merge' });
+  return { rootAbs, destAbs, saveRelPath: rel };
+}
+
+function countMatchingFiles(dirAbs: string, files: BtLibraryFile[]): number {
+  let n = 0;
+  for (const f of files) {
+    const rel = String(f.path || '').replace(/^\/+/, '');
+    if (!rel || rel.includes('..')) continue;
+    const abs = join(dirAbs, rel);
+    try {
+      if (!existsSync(abs) || !statSync(abs).isFile()) continue;
+      if (f.length > 0 && statSync(abs).size !== f.length) continue;
+      n += 1;
+    } catch {
+      /* */
+    }
+  }
+  return n;
+}
+
+/** Where to download vs seed-existing, given the folder the operator is browsing. */
+export function probeLibraryDest(input: {
+  dataDir: string;
+  saveRoot: string;
+  parentRel?: string;
+  name: string;
+  files: BtLibraryFile[];
+}): BtLibraryDestProbe {
+  const destName = sanitizeTorrentFolderName(input.name);
+  const parent = String(input.parentRel || '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+|\/+$/g, '');
+  const destRel = [parent, destName].filter(Boolean).join('/') || destName;
+  const rootAbs = resolveLibraryRootAbs(input.dataDir, input.saveRoot);
+  const destAbs = join(rootAbs, destRel);
+  const parentAbs = parent ? join(rootAbs, parent) : rootAbs;
+  const files = (input.files ?? []).filter((f) => f.path);
+  const totalFiles = files.length || 1;
+
+  let destKind: BtLibraryDestProbe['destKind'] = 'missing';
+  let conflictName: string | undefined;
+  if (existsSync(destAbs)) {
+    if (statSync(destAbs).isFile()) {
+      destKind = 'file-conflict';
+      conflictName = destName;
+    } else {
+      destKind = 'dir';
+    }
+  }
+
+  const matchInDest = destKind === 'dir' ? countMatchingFiles(destAbs, files) : 0;
+  const matchInParent =
+    existsSync(parentAbs) && statSync(parentAbs).isDirectory()
+      ? countMatchingFiles(parentAbs, files)
+      : 0;
+  let matchAtFile = 0;
+  if (destKind === 'file-conflict' && files.length === 1) {
+    const leaf = String(files[0]?.path || '').split('/').pop();
+    if (leaf === destName) {
+      try {
+        const st = statSync(destAbs);
+        if (st.isFile() && (!files[0]!.length || st.size === files[0]!.length)) matchAtFile = 1;
+      } catch {
+        /* */
+      }
+    }
+  }
+
+  const matchCount = Math.max(matchInDest, matchInParent, matchAtFile);
+  const canSeedExisting = totalFiles > 0 && matchCount >= totalFiles;
+  let seedRel: string | null = null;
+  if (canSeedExisting) {
+    if (matchInDest >= totalFiles && destKind === 'dir') seedRel = destRel;
+    else seedRel = parent || '.';
+  }
+
+  return {
+    destRel,
+    seedRel,
+    destKind,
+    matchCount,
+    totalFiles,
+    canSeedExisting,
+    conflictName,
+  };
+}
+
+export function destLooksPopulated(destAbs: string): boolean {
+  try {
+    if (!existsSync(destAbs)) return false;
+    const st = statSync(destAbs);
+    if (st.isFile()) return st.size > 0;
+    return readdirSync(destAbs).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+export function deriveLibraryLiveStatus(input: {
+  stored: BtLibraryStatus;
+  hasSeed: boolean;
+  progress?: number;
+  done?: boolean;
+  paused?: boolean;
+  destHasFiles?: boolean;
+}): BtLibraryStatus {
+  if (input.stored === 'paused' || input.stored === 'queued') return input.stored;
+  if (!input.hasSeed) return input.stored;
+  if (input.paused) return 'paused';
+  const progress = Number(input.progress) || 0;
+  if (input.done || progress >= 1) return 'seeding';
+  if (progress > 0) return 'downloading';
+  if (input.destHasFiles) return 'checking';
+  return 'downloading';
 }
 
 function hashToHex(h: unknown): string {
@@ -188,6 +316,9 @@ export async function addBtLibraryItem(input: {
   magnet?: string;
   saveRoot: string;
   saveRelPath: string;
+  /** Folder the operator is browsing (for seed-existing probe). */
+  parentRel?: string;
+  mode?: BtLibraryDestMode;
   /** When false, persist only (CLI outside serve). Default true. */
   start?: boolean;
 }): Promise<{
@@ -208,7 +339,26 @@ export async function addBtLibraryItem(input: {
       details: { id: existing.id, infoHash: existing.infoHash },
     });
   }
-  const dest = resolveLibraryDestAbs(input.dataDir, input.saveRoot, input.saveRelPath);
+  const mode: BtLibraryDestMode = input.mode === 'seed-existing' ? 'seed-existing' : 'download';
+  let saveRel = input.saveRelPath;
+  if (mode === 'seed-existing') {
+    const probe = probeLibraryDest({
+      dataDir: input.dataDir,
+      saveRoot: input.saveRoot,
+      parentRel: input.parentRel ?? '',
+      name: inspected.name,
+      files: inspected.files,
+    });
+    if (!probe.canSeedExisting || !probe.seedRel) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.btTracker.librarySeedMissing'), {
+        httpStatus: 400,
+      });
+    }
+    saveRel = probe.seedRel;
+  }
+  const dest = resolveLibraryDestAbs(input.dataDir, input.saveRoot, saveRel, {
+    mkdir: mode !== 'seed-existing',
+  });
   const settings = loadBtTrackerSettings(input.dataDir);
   const live = listLocalSeeds().length;
   const id = randomUUID();
@@ -364,13 +514,31 @@ export function listBtLibraryLive(dataDir: string): Array<
   return items.map((item) => {
     const seed = getSeedByShareId(item.id);
     const t = seed?.torrent;
-    let status: BtLibraryStatus = item.status;
-    if (item.status !== 'paused' && item.status !== 'queued' && seed) {
-      if (t?.paused) status = 'paused';
-      else if ((t?.progress ?? 0) >= 1 || t?.done) status = 'seeding';
-      else if ((t?.progress ?? 0) > 0) status = 'downloading';
-      else status = 'checking';
+    let destAbs = '';
+    try {
+      destAbs = resolveLibraryDestAbs(dataDir, item.saveRoot, item.saveRelPath, {
+        mkdir: false,
+      }).destAbs;
+    } catch {
+      destAbs = '';
     }
+    const destHasFiles = destAbs ? destLooksPopulated(destAbs) : false;
+    const status = deriveLibraryLiveStatus({
+      stored: item.status,
+      hasSeed: Boolean(seed),
+      progress: t?.progress,
+      done: t?.done,
+      paused: t?.paused,
+      destHasFiles,
+    });
+    const ageMs = Date.now() - Date.parse(item.createdAt || '') || 0;
+    const waitHint =
+      status === 'downloading' &&
+      !destHasFiles &&
+      (Number(t?.progress) || 0) <= 0 &&
+      ageMs > 15_000
+        ? tl('notes.btTracker.libraryWaitingPeers')
+        : undefined;
     return {
       ...item,
       status,
@@ -380,6 +548,7 @@ export function listBtLibraryLive(dataDir: string): Array<
       peers: t?.numPeers,
       downloaded: t?.downloaded,
       sizeBytes: item.sizeBytes ?? t?.length,
+      hint: waitHint,
     };
   });
 }

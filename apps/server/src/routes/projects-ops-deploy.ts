@@ -113,6 +113,117 @@ export async function handleProjectsOpsDeployRoutes(
     sendJson(res, 200, status);
     return true;
   }
+  if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git$/)) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const status = await ctx.projectOps.gitStatus(id);
+    sendJson(res, 200, status);
+    return true;
+  }
+  if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/log$/)) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const limit = url.searchParams.get('limit');
+    const log = await ctx.projectOps.gitLog(id, limit ? Number(limit) : undefined);
+    sendJson(res, 200, log);
+    return true;
+  }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/fetch$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { unshallow?: boolean };
+    const result = await ctx.projectOps.gitFetch(id, {
+      actor: user.username,
+      unshallow: data.unshallow,
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/checkout$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ref?: string };
+    if (!data.ref?.trim()) {
+      sendJson(res, 400, { ok: false, notes: ['ref required'] });
+      return true;
+    }
+    const result = await ctx.projectOps.gitCheckout(id, {
+      actor: user.username,
+      ref: data.ref.trim(),
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/reset$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ref?: string; confirm?: boolean };
+    if (data.confirm !== true) {
+      sendJson(res, 400, { ok: false, notes: ['confirm required'] });
+      return true;
+    }
+    const result = await ctx.projectOps.gitReset(id, {
+      actor: user.username,
+      ref: data.ref,
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/hook$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { action?: 'enable' | 'rotate' | 'disable' };
+    if (!data.action || !['enable', 'rotate', 'disable'].includes(data.action)) {
+      sendJson(res, 400, { ok: false, notes: ['action required'] });
+      return true;
+    }
+    const result = ctx.projectOps.gitHookManage(id, {
+      actor: user.username,
+      action: data.action,
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/auth$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      action?:
+        | 'set-token'
+        | 'clear-token'
+        | 'make-deploy-key'
+        | 'clear-deploy-key'
+        | 'pin-host'
+        | 'clear-host';
+      token?: string;
+      gitUrl?: string;
+    };
+    const allowed = new Set([
+      'set-token',
+      'clear-token',
+      'make-deploy-key',
+      'clear-deploy-key',
+      'pin-host',
+      'clear-host',
+    ]);
+    if (!data.action || !allowed.has(data.action)) {
+      sendJson(res, 400, { ok: false, notes: ['action required'] });
+      return true;
+    }
+    const result = await ctx.projectOps.gitAuth(id, {
+      actor: user.username,
+      action: data.action,
+      token: data.token,
+      gitUrl: data.gitUrl,
+    });
+    sendJson(res, 200, result);
+    return true;
+  }
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git-deploy$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[4];

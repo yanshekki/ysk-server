@@ -16,7 +16,7 @@ import {
   ProjectResourcesTab,
   projectsApi,
   useProjectOps } from '../features/projects';
-import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
+import { envToText, formatRuntimeLabel, isRuntimeBinFallback } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
 import { deriveProjectStatus } from '../features/projects/model/status';
 import {
@@ -347,9 +347,12 @@ export function ProjectDetailPage() {
     ? t(display.hintKey, { defaultValue: display.hintFallback ?? '' })
     : display.hintFallback;
 
+  const runtimeBit = formatRuntimeLabel(project.runtime, project.runtimeVersion, t);
   const subtitle = [
     project.domain ?? t('projects.noDomain'),
-    formatRuntimeLabel(project.runtime, project.runtimeVersion, t),
+    isRuntimeBinFallback(project.runtime, project.runtimeVersion, project.runtimeBin)
+      ? `${runtimeBit} · ${t('projects.runtimeActual', { path: project.runtimeBin })}`
+      : runtimeBit,
   ].join(' · ');
 
   return (
@@ -438,9 +441,11 @@ export function ProjectDetailPage() {
             onGitDeploy={(opts) =>
               void run('git-deploy', project.id, {
                 gitUrl,
+                gitBranch: opts?.branch,
                 entry: opts?.entry,
                 skipBuild: opts?.skipBuild }).catch(() => undefined)
             }
+            onGitChanged={() => void refreshProject()}
             onSaveEnv={bindRun(run, 'env', project.id, { envText })}
             onPhpVersionChange={setPhpVersion}
             onRuntimeVersionSaved={(v) => {

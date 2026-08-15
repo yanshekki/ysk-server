@@ -87,11 +87,18 @@ export async function handleProjectsCreateRoutes(
       createMailDomain?: boolean;
       serverIp?: string;
       serverIpv6?: string;
+      gitUrl?: string;
+      gitBranch?: string;
     };
     const { assertCanCreateProject } = await import('ysk-server-core');
     assertCanCreateProject(ctx.db, user.id);
     const runtime = data.runtime ?? 'node';
-    const { defaultRuntimeVersion, normalizeRuntimeVersion } = await import('ysk-server-core');
+    const { defaultRuntimeVersion, normalizeRuntimeVersion, assertGitUrl } = await import(
+      'ysk-server-core'
+    );
+    const gitUrl = data.gitUrl?.trim() || undefined;
+    const gitBranch = data.gitBranch?.trim() || undefined;
+    if (gitUrl) assertGitUrl(gitUrl);
     const created = await ctx.projects.create({
       name: data.name ?? '',
       domain: data.domain,
@@ -104,9 +111,11 @@ export async function handleProjectsCreateRoutes(
       env: data.env,
       actor: user.username,
       actorUserId: user.id,
-      templateId: data.templateId,
+      templateId: gitUrl ? undefined : data.templateId,
       forceTemplate: data.forceTemplate,
       preferredPort: data.preferredPort,
+      gitUrl,
+      gitBranch,
     });
     const extras: {
       dnsZoneId?: string;
@@ -116,9 +125,11 @@ export async function handleProjectsCreateRoutes(
     } = {
       notes: [],
     };
-    // Template (or explicit goLive) → deploy + nginx in one shot
-    const wantGoLive =
-      data.goLive === true || (data.goLive !== false && Boolean(data.templateId));
+    // Template (or explicit goLive) → deploy + nginx in one shot.
+    // Git-only create stores the remote; clone from the App tab (no empty deploy).
+    const wantGoLive = gitUrl
+      ? false
+      : data.goLive === true || (data.goLive !== false && Boolean(data.templateId));
     if (wantGoLive) {
       try {
         const live = await ctx.projectOps.goLive(created.project.id, {

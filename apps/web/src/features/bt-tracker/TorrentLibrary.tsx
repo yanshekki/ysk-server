@@ -1,10 +1,10 @@
 /**
  * WebTorrent library list — progress rows, not a hash admin table.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Modal, SegRadio } from '../../shared/components/ui';
+import { Badge, Button, EmptyState, Modal, SegRadio } from '../../shared/components/ui';
 import type { BtLibraryLive, BtTrackerTorrentRow } from './api';
 
 function formatSpeed(n: number | undefined): string {
@@ -46,8 +46,10 @@ export function TorrentLibrary(props: {
   onRemove: (id: string, deleteFiles: boolean) => void;
 }) {
   const { t } = useTranslation();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const rows = useMemo(() => {
     const q = props.query.trim().toLowerCase();
@@ -67,6 +69,7 @@ export function TorrentLibrary(props: {
       saveRelPath: i.saveRelPath,
       kind: 'library' as const,
       errorNote: i.errorNote,
+      hint: i.hint,
     }));
     const libHashes = new Set(fromLib.map((r) => r.infoHash));
     const fromShare = props.swarm
@@ -87,6 +90,7 @@ export function TorrentLibrary(props: {
         saveRelPath: s.saveRelPath,
         kind: (s.kind === 'share' ? 'share' : 'swarm') as 'share' | 'swarm',
         errorNote: undefined as string | undefined,
+        hint: undefined as string | undefined,
       }));
     return [...fromLib, ...fromShare].filter((r) => {
       if (props.filter === 'downloading' && r.status !== 'downloading' && r.status !== 'checking') {
@@ -111,6 +115,8 @@ export function TorrentLibrary(props: {
     if (s === 'stopped') return t('btTracker.seedStatusStopped');
     return s;
   }
+
+  const emptyLib = props.library.length === 0 && props.swarm.length === 0;
 
   return (
     <div className="tab-panel tab-panel--fill">
@@ -147,34 +153,45 @@ export function TorrentLibrary(props: {
         </Link>
       </div>
 
-      {rows.length === 0 && props.library.length === 0 && props.swarm.length === 0 ? (
-        <label
-          className="bt-drop bt-drop--page"
+      {rows.length === 0 && emptyLib ? (
+        <div
+          className={`bt-drop bt-drop--page${dragOver ? ' is-over' : ''}`}
+          onClick={() => fileRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileRef.current?.click();
+            }
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
+            setDragOver(true);
           }}
+          onDragLeave={() => setDragOver(false)}
           onDrop={(e) => {
             e.preventDefault();
+            setDragOver(false);
             if (e.dataTransfer.files?.length) props.onDropFiles(e.dataTransfer.files);
           }}
+          role="button"
+          tabIndex={0}
         >
           <input
+            ref={fileRef}
             type="file"
             accept=".torrent,application/x-bittorrent"
-            className="u-sr-only"
+            className="sr-only"
+            tabIndex={-1}
             onChange={(e) => {
               if (e.target.files?.length) props.onDropFiles(e.target.files);
               e.target.value = '';
             }}
           />
-          <p className="bt-empty__title">{t('btTracker.emptyDrop')}</p>
-          <p className="bt-empty__desc">{t('btTracker.emptyHint')}</p>
-        </label>
-      ) : rows.length === 0 ? (
-        <div className="bt-empty bt-empty--compact">
-          <p className="bt-empty__title">{t('btTracker.noMatch')}</p>
+          <EmptyState title={t('btTracker.emptyDrop')} description={t('btTracker.emptyHint')} />
         </div>
+      ) : rows.length === 0 ? (
+        <EmptyState title={t('btTracker.noMatch')} />
       ) : (
         <ul className="bt-lib">
           {rows.map((r) => {
@@ -185,80 +202,85 @@ export function TorrentLibrary(props: {
                 : null;
             return (
               <li key={r.key} className="bt-lib__row">
-                <button
-                  type="button"
-                  className="bt-lib__main"
-                  onClick={() => setOpenId((id) => (id === r.key ? null : r.key))}
-                >
-                  <div className="bt-lib__title">
-                    <strong>{r.name}</strong>
-                    {r.kind === 'share' ? (
-                      <Badge tone="neutral">{t('btTracker.kindShare')}</Badge>
+                <div className="bt-lib__top">
+                  <button
+                    type="button"
+                    className="bt-lib__main"
+                    onClick={() => setOpenId((id) => (id === r.key ? null : r.key))}
+                  >
+                    <div className="bt-lib__title">
+                      <strong>{r.name}</strong>
+                      {r.kind === 'share' ? (
+                        <Badge tone="neutral">{t('btTracker.kindShare')}</Badge>
+                      ) : null}
+                      <Badge tone={statusTone(r.status)}>{statusLabel(r.status)}</Badge>
+                    </div>
+                  </button>
+                  <div className="bt-lib__actions">
+                    {r.libraryId && (r.status === 'paused' || r.status === 'queued') ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={props.busy}
+                        onClick={() => props.onResume(r.libraryId!)}
+                      >
+                        {t('btTracker.resume')}
+                      </Button>
+                    ) : r.libraryId ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={props.busy}
+                        onClick={() => props.onPause(r.libraryId!)}
+                      >
+                        {t('btTracker.pause')}
+                      </Button>
                     ) : null}
-                    <Badge tone={statusTone(r.status)}>{statusLabel(r.status)}</Badge>
-                  </div>
-                  <div className="bt-lib__bar" aria-hidden>
-                    <span style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="bt-lib__meta">
-                    <span>
-                      {pct}% · {formatBytes(r.downloaded)} / {formatBytes(r.sizeBytes)}
-                    </span>
-                    {r.saveRelPath ? (
-                      <span>
-                        {t('btTracker.savedTo')} {r.saveRoot === 'public' ? t('btTracker.saveRootPublic') : r.saveRoot}
-                        ／{r.saveRelPath}
-                      </span>
+                    {filesHref ? (
+                      <Link className="btn btn--secondary btn--sm" to={filesHref}>
+                        {t('btTracker.openFolder')}
+                      </Link>
                     ) : null}
-                    <span>
-                      ↓ {formatSpeed(r.downloadSpeed)} · ↑ {formatSpeed(r.uploadSpeed)} ·{' '}
-                      {r.peers ?? 0} peers
-                    </span>
+                    {r.libraryId ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={props.busy}
+                        onClick={() => setRemoveId(r.libraryId!)}
+                      >
+                        {t('btTracker.remove')}
+                      </Button>
+                    ) : null}
                   </div>
-                </button>
-                <div className="bt-lib__actions">
-                  {r.libraryId && (r.status === 'paused' || r.status === 'queued') ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      disabled={props.busy}
-                      onClick={() => props.onResume(r.libraryId!)}
-                    >
-                      {t('btTracker.resume')}
-                    </Button>
-                  ) : r.libraryId ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      disabled={props.busy}
-                      onClick={() => props.onPause(r.libraryId!)}
-                    >
-                      {t('btTracker.pause')}
-                    </Button>
-                  ) : null}
-                  {filesHref ? (
-                    <Link className="btn btn--secondary btn--sm" to={filesHref}>
-                      {t('btTracker.openFolder')}
-                    </Link>
-                  ) : null}
-                  {r.libraryId ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={props.busy}
-                      onClick={() => setRemoveId(r.libraryId!)}
-                    >
-                      {t('btTracker.remove')}
-                    </Button>
-                  ) : null}
                 </div>
+                <div className="bt-lib__bar" aria-hidden>
+                  <span style={{ width: `${pct}%` }} />
+                </div>
+                <div className="bt-lib__meta">
+                  <span>
+                    {pct}% · {formatBytes(r.downloaded)} / {formatBytes(r.sizeBytes)}
+                  </span>
+                  {r.saveRelPath ? (
+                    <span>
+                      {t('btTracker.savedTo')}{' '}
+                      {r.saveRoot === 'public' ? t('btTracker.saveRootPublic') : r.saveRoot}／
+                      {r.saveRelPath}
+                    </span>
+                  ) : null}
+                  <span>
+                    ↓ {formatSpeed(r.downloadSpeed)} · ↑ {formatSpeed(r.uploadSpeed)} ·{' '}
+                    {r.peers ?? 0} peers
+                  </span>
+                </div>
+                {r.hint ? <p className="muted u-text-sm u-mb-0">{r.hint}</p> : null}
                 {openId === r.key ? (
                   <div className="bt-lib__detail">
                     <code>{r.infoHash}</code>
                     {r.errorNote ? <p className="bt-add__err">{r.errorNote}</p> : null}
+                    {r.hint ? <p className="muted u-text-sm">{r.hint}</p> : null}
                   </div>
                 ) : null}
               </li>
@@ -275,7 +297,7 @@ export function TorrentLibrary(props: {
         footer={
           <>
             <Button type="button" variant="secondary" onClick={() => setRemoveId(null)}>
-              {t('common.cancel', { defaultValue: 'Cancel' })}
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
