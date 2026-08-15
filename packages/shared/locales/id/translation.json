@@ -2884,142 +2884,145 @@
   },
   "docker": {
     "title": "Docker",
-    "subtitle": "Install and control the Docker engine, containers, images, Compose projects, and disk on this host.",
-    "refresh": "Refresh",
-    "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
-    "protected": "Protected",
-    "pruneConfirm": "Type PRUNE to confirm volume or system prune",
-    "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
+    "subtitle": "Pasang dan kendalikan mesin Docker, kontainer, citra, proyek Compose, dan disk di host ini.",
+    "refresh": "Segarkan",
+    "notInstalled": "Docker Engine belum terpasang. Pasang docker.io dan docker-compose-v2 dari halaman ini.",
+    "protected": "Dilindungi",
+    "pruneConfirm": "Ketik PRUNE untuk mengonfirmasi pembersihan volume atau sistem",
+    "settingsHint": "Hanya subset aman daemon.json. Menerapkan menulis berkas dan memulai ulang docker.service.",
     "cli": {
-      "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+      "usage": "Pemakaian: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
     },
     "tab": {
-      "overview": "Overview",
-      "containers": "Containers",
-      "images": "Images",
+      "overview": "Ringkasan",
+      "containers": "Kontainer",
+      "images": "Citra",
       "compose": "Compose",
-      "volumes": "Volumes",
-      "networks": "Networks",
-      "prune": "Prune",
-      "settings": "Settings",
-      "about": "About"
+      "volumes": "Volume",
+      "networks": "Jaringan",
+      "prune": "Bersihkan",
+      "settings": "Pengaturan",
+      "about": "Tentang"
     },
     "col": {
-      "engine": "Engine",
-      "containers": "Containers",
-      "version": "Version",
-      "dataRoot": "Data root",
-      "validators": "Validator stacks",
-      "name": "Name",
-      "image": "Image",
+      "engine": "Mesin",
+      "containers": "Kontainer",
+      "version": "Versi",
+      "dataRoot": "Direktori data",
+      "disk": "Cakram",
+      "validators": "Tumpukan validator",
+      "name": "Nama",
+      "image": "Citra",
       "status": "Status",
-      "ports": "Ports",
-      "managed": "Managed",
-      "size": "Size",
+      "ports": "Port",
+      "managed": "Dikelola panel",
+      "size": "Ukuran",
       "driver": "Driver",
-      "type": "Type",
-      "reclaimable": "Reclaimable",
-      "disk": "Disk"
+      "type": "Jenis",
+      "reclaimable": "Dapat diklaim ulang"
     },
     "state": {
-      "up": "Active",
-      "down": "Stopped"
+      "up": "Aktif",
+      "down": "Berhenti"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "logs": "Logs",
-      "run": "Run image",
-      "pull": "Pull",
-      "up": "Up",
-      "down": "Down",
-      "createVolume": "Create volume",
-      "createNetwork": "Create network",
-      "pruneContainers": "Prune containers",
-      "pruneImages": "Prune images",
-      "pruneVolumes": "Prune volumes",
-      "pruneSystem": "System prune",
-      "startEngine": "Start engine",
-      "stopEngine": "Stop engine",
-      "restartEngine": "Restart engine",
-      "applyDaemon": "Apply daemon settings",
-      "inspect": "Inspect"
+      "start": "Mulai",
+      "stop": "Henti",
+      "restart": "Mulai ulang",
+      "remove": "Hapus",
+      "logs": "Log",
+      "inspect": "Periksa",
+      "exec": "Exec (versi)",
+      "run": "Jalankan citra",
+      "pull": "Ambil",
+      "up": "Naikkan",
+      "down": "Turunkan",
+      "createVolume": "Buat volume",
+      "createNetwork": "Buat jaringan",
+      "pruneContainers": "Bersihkan kontainer",
+      "pruneImages": "Bersihkan citra",
+      "pruneVolumes": "Bersihkan volume",
+      "pruneSystem": "Bersihkan sistem",
+      "startEngine": "Mulai mesin",
+      "stopEngine": "Henti mesin",
+      "restartEngine": "Mulai ulang mesin",
+      "applyDaemon": "Terapkan pengaturan mesin"
     },
     "empty": {
-      "containers": "No containers",
-      "images": "No images",
-      "compose": "No Compose projects",
-      "volumes": "No volumes",
-      "networks": "No networks"
+      "containers": "Tidak ada kontainer",
+      "images": "Tidak ada citra",
+      "compose": "Tidak ada proyek Compose",
+      "volumes": "Tidak ada volume",
+      "networks": "Tidak ada jaringan"
     },
     "logs": {
-      "empty": "No logs yet"
+      "empty": "Belum ada log"
     },
     "settings": {
-      "logMaxSize": "Container log max size",
-      "liveRestore": "Live restore (keep containers if the daemon restarts)",
-      "mirrors": "Registry mirrors (one URL per line)",
-      "insecure": "Insecure registries (one host per line)"
+      "logMaxSize": "Batas log kontainer",
+      "liveRestore": "Pemulihan langsung (pertahankan kontainer jika daemon dimulai ulang)",
+      "mirrors": "Cermin Registry (satu URL per baris)",
+      "insecure": "Registry tanpa enkripsi (satu host per baris)"
     },
     "about": {
-      "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
-      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
-      "validators": "Open validator nodes"
+      "body": "Docker adalah layanan host kelas satu di YSK Server, setara Nginx. Dipasang lewat panel (Ubuntu docker.io + docker-compose-v2). Node validator berjalan sebagai proyek Compose yskval-*.",
+      "honesty": "Perubahan host membutuhkan root dan YSK_EXECUTE=1. Default adalah dry-run. Halaman ini bukan Kubernetes.",
+      "validators": "Buka node validator"
     },
     "alerts": {
-      "daemonTitle": "Docker daemon is down",
-      "daemonBody": "The Docker engine is installed but docker.service is not active. Validator stacks cannot start."
+      "daemonTitle": "Daemon Docker tidak berjalan",
+      "daemonBody": "Docker terpasang tetapi docker.service tidak aktif. Tumpukan validator tidak dapat dimulai."
     },
     "errors": {
-      "notInstalled": "Docker is not installed",
-      "daemonDown": "Docker daemon is not active",
-      "needCompose": "docker compose (v2 plugin) is required",
-      "badImage": "Invalid image reference",
-      "badName": "Invalid name",
-      "badPort": "Invalid port publish",
-      "badEnv": "Invalid environment variable",
-      "badVolume": "Invalid volume mount",
-      "badNetwork": "Invalid network",
-      "protectedNetwork": "Cannot remove a built-in Docker network",
-      "badRestart": "Invalid restart policy",
-      "badPrune": "Invalid prune scope",
-      "needPruneConfirm": "Volume or system prune requires confirm=PRUNE",
-      "badDaemon": "Invalid daemon setting",
-      "composeMissing": "Compose file for this project was not found",
-      "logsFailed": "Could not read container logs",
-      "mutateFailed": "Docker command failed",
-      "engineFailed": "Could not control docker.service",
-      "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+      "notInstalled": "Docker belum terpasang",
+      "daemonDown": "Daemon Docker tidak aktif",
+      "needCompose": "docker compose (plugin v2) wajib",
+      "badImage": "Referensi citra tidak valid",
+      "badName": "Nama tidak valid",
+      "badPort": "Publikasi port tidak valid",
+      "badEnv": "Variabel lingkungan tidak valid",
+      "badVolume": "Kait volume tidak valid",
+      "badNetwork": "Jaringan tidak valid",
+      "protectedNetwork": "Tidak dapat menghapus jaringan Docker bawaan",
+      "badRestart": "Kebijakan mulai ulang tidak valid",
+      "badPrune": "Lingkup pembersihan tidak valid",
+      "needPruneConfirm": "Membersihkan volume atau sistem memerlukan confirm=PRUNE",
+      "badDaemon": "Pengaturan mesin tidak valid",
+      "composeMissing": "Berkas Compose proyek ini tidak ditemukan",
+      "logsFailed": "Tidak dapat membaca log kontainer",
+      "mutateFailed": "Perintah Docker gagal",
+      "engineFailed": "Tidak dapat mengendalikan docker.service",
+      "badExec": "Exec terbatas pada biner dan prasetel yang diizinkan (tanpa shell, tanpa TTY)",
+      "uninstallBusy": "Hentikan kontainer yang dikelola panel (termasuk tumpukan validator) sebelum mencopot Docker"
     },
     "notes": {
-      "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",
-      "dryPrune": "Prune preview (not applied).",
-      "dryEngine": "Engine control is dry-run.",
-      "dryDaemon": "Would write /etc/docker/daemon.json and restart docker.service.",
-      "daemonWrote": "Wrote daemon.json",
-      "start": "Container started",
-      "stop": "Container stopped",
-      "restart": "Container restarted",
-      "remove": "Container removed",
-      "ran": "Container started from image",
-      "pulled": "Image pulled",
-      "imageRemoved": "Image removed",
-      "volumeCreated": "Volume created",
-      "volumeRemoved": "Volume removed",
-      "networkCreated": "Network created",
-      "networkRemoved": "Network removed",
-      "pruned": "Prune finished",
+      "dryMutate": "Hanya dry-run. Tambahkan --execute dan YSK_EXECUTE=1 untuk mengubah host.",
+      "dryPrune": "Pratinjau pembersihan (belum diterapkan).",
+      "dryEngine": "Kontrol mesin adalah dry-run.",
+      "dryDaemon": "Akan menulis /etc/docker/daemon.json dan memulai ulang docker.service.",
+      "daemonWrote": "daemon.json ditulis",
+      "start": "Kontainer dimulai",
+      "stop": "Kontainer dihentikan",
+      "restart": "Kontainer dimulai ulang",
+      "remove": "Kontainer dihapus",
+      "ran": "Kontainer dimulai dari citra",
+      "pulled": "Citra diambil",
+      "exec": "Exec yang diizinkan dijalankan",
+      "imageRemoved": "Citra dihapus",
+      "volumeCreated": "Volume dibuat",
+      "volumeRemoved": "Volume dihapus",
+      "networkCreated": "Jaringan dibuat",
+      "networkRemoved": "Jaringan dihapus",
+      "pruned": "Pembersihan selesai",
       "compose": {
-        "up": "Compose project started",
-        "down": "Compose project stopped",
-        "restart": "Compose project restarted"
+        "up": "Proyek Compose dimulai",
+        "down": "Proyek Compose dihentikan",
+        "restart": "Proyek Compose dimulai ulang"
       },
       "engine": {
-        "start": "docker.service started",
-        "stop": "docker.service stopped",
-        "restart": "docker.service restarted"
+        "start": "docker.service dimulai",
+        "stop": "docker.service dihentikan",
+        "restart": "docker.service dimulai ulang"
       }
     }
   },
@@ -5046,8 +5049,8 @@
       "security": "Keamanan",
       "system": "Sistem",
       "ai": "AI",
-      "validators": "Validators",
-      "containers": "Containers"
+      "validators": "Validator",
+      "containers": "Kontainer"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -5071,7 +5074,7 @@
     "noAccessTitle": "Tidak ada akses",
     "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
     "backToDashboard": "Kembali ke dasbor",
-    "validators": "Validators (Beta)",
+    "validators": "Validator (Beta)",
     "docker": "Docker"
   },
   "network": {
@@ -9652,12 +9655,12 @@
       "securityApiKeysAdmin": "Admin kunci API",
       "networkBrowse": "Penjelajahan web yang dimediasi host",
       "networkVnc": "Desktop jarak jauh VNC",
-      "validatorsRead": "Validators (read)",
-      "validatorsManage": "Validators manage",
-      "validatorsWipe": "Validators wipe data",
-      "dockerRead": "Docker (read)",
-      "dockerManage": "Docker manage",
-      "dockerWipe": "Docker wipe / prune"
+      "validatorsRead": "Validator (baca)",
+      "validatorsManage": "Validator kelola",
+      "validatorsWipe": "Validator hapus data",
+      "dockerRead": "Docker (baca)",
+      "dockerManage": "Docker kelola",
+      "dockerWipe": "Docker hapus / bersihkan"
     },
     "aboutRoles": "Peran (default pabrik)",
     "aboutRolesBody": "Peran menetapkan kemampuan default; pengguna dapat menggantinya satu per satu.",
@@ -11143,8 +11146,8 @@
       "purgeData": "Jalur data akan dihapus",
       "protectedSkipped": "Komponen yang dilindungi dilewati",
       "runtimeStack": "Semua versi runtime yang dikelola panel ini akan dihapus",
-      "containers": "Running containers will stop",
-      "validators": "Validator node stacks that use Docker Compose will stop"
+      "containers": "Kontainer yang berjalan akan berhenti",
+      "validators": "Tumpukan validator yang memakai Docker Compose akan berhenti"
     },
     "requestCancel": "Permintaan pembatalan",
     "cancelling": "Membatalkan…",
@@ -12284,28 +12287,28 @@
     "bandwidthHint": "0 means unlimited."
   },
   "validators": {
-    "title": "Validators (Beta)",
-    "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+    "title": "Validator (Beta)",
+    "subtitle": "Pasang dan kelola node L1 di host ini. Non-kustodian — kunci tetap Anda pegang.",
     "beta": "Beta",
     "tab": {
-      "nodes": "Nodes",
-      "disk": "Disk",
-      "about": "About"
+      "nodes": "Node",
+      "disk": "Cakram",
+      "about": "Tentang"
     },
     "empty": {
-      "title": "No validator nodes yet",
-      "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "title": "Belum ada node validator",
+      "desc": "Buat node testnet dalam beberapa klik. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
     },
-    "refresh": "Refresh",
+    "refresh": "Segarkan",
     "disk": {
-      "title": "Validator disk",
-      "root": "Data directory",
-      "free": "Free",
-      "used": "Used",
-      "none": "No instance data yet",
-      "warn": "Disk usage is high (70%+)",
-      "danger": "Disk usage is critical (85%+)",
-      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+      "title": "Disk validator",
+      "root": "Direktori data",
+      "free": "Kosong",
+      "used": "Terpakai",
+      "none": "Belum ada data instans",
+      "warn": "Pemakaian disk tinggi (70%+)",
+      "danger": "Pemakaian disk kritis (85%+)",
+      "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)"
     },
     "chain": {
       "eth": "Ethereum",
@@ -12322,148 +12325,173 @@
     "network": {
       "hoodi": "Hoodi",
       "sepolia": "Sepolia",
-      "mainnet": "Mainnet",
+      "mainnet": "Jaringan utama",
       "fuji": "Fuji",
-      "testnet": "Testnet",
+      "testnet": "Jaringan uji",
       "preview": "Preview",
       "preprod": "Preprod",
       "westend": "Westend"
     },
     "networkKind": {
-      "testnet": "Testnet",
-      "mainnet": "Mainnet"
+      "testnet": "Jaringan uji",
+      "mainnet": "Jaringan utama"
     },
     "profile": {
-      "minimal": "Minimal",
-      "pruned": "Pruned",
-      "validator-ready": "Validator-ready",
+      "minimal": "Paling kecil",
+      "pruned": "Dipangkas",
+      "validator-ready": "Siap validator",
       "rpc": "RPC"
     },
     "col": {
       "id": "ID",
-      "chain": "Chain",
-      "network": "Network",
-      "profile": "Profile",
-      "status": "Status",
-      "disk": "Disk"
+      "chain": "Rantai",
+      "network": "Jaringan",
+      "profile": "Profil",
+      "status": "Keadaan",
+      "disk": "Cakram"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-    },
-    "errors": {
-      "notFound": "Validator instance not found",
-      "invalidId": "Invalid instance id",
-      "diskLow": "Not enough free disk for this chain, network, and profile",
-      "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-      "needDocker": "Docker Compose is required and was not found",
-      "composeFailed": "docker compose failed",
-      "needConfirm": "Clear requires confirm=instance id or CLEAR",
-      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-      "mithrilKey": "Could not load the Mithril genesis verification key",
-      "mithrilFailed": "Mithril snapshot download failed",
-      "pruneFailed": "Prune failed",
-      "switchNeedStop": "Stop the node before switching network",
-      "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-      "composeMissing": "Compose file not found",
-      "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-    },
-    "notes": {
-      "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-      "noKeys": "YSK Server never generates or stores staking keys.",
-      "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-      "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-      "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "created": "Node created and compose started",
-      "started": "Node started",
-      "stopped": "Node stopped",
-      "cleared": "Chain data cleared",
-      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "mithril": "Mithril snapshot restored; node restarted",
-      "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "pruned": "Unused project images pruned",
-      "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-      "sameNetwork": "Already on that network",
-      "drySwitch": "Network switch is dry-run.",
-      "switched": "Network switched and chain data cleared",
-      "dryCompose": "Would write compose.yml",
-      "composeWrote": "Wrote compose.yml",
-      "statsEmpty": "No running containers to measure",
-      "autoClearNone": "No stopped instance to auto-clear"
-    },
-    "create": "Create node",
-    "wizard": {
-      "title": "Create node",
-      "back": "Back",
-      "next": "Next",
-      "install": "Install",
-      "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-      "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-      "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-      "memory": "Memory limit (e.g. 4g)",
-      "cpus": "CPU limit (e.g. 2.0)"
-    },
-    "actions": {
-      "detail": "Details",
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "clear": "Clear",
-      "upgrade": "Upgrade",
-      "clearConfirm": "Type instance id or CLEAR",
-      "prune": "Prune",
-      "switchNetwork": "Switch network",
-      "removeUnit": "Also remove compose / instance record",
-      "restoreAfter": "Restore snapshot after clear"
-    },
-    "policy": {
-      "label": "Upgrade policy",
-      "manual": "Manual",
-      "notify": "Notify",
-      "auto-safe": "Auto (safe)",
-      "auto-all": "Auto (all)"
-    },
-    "logs": {
-      "empty": "No logs yet",
-      "follow": "Follow logs"
-    },
-    "alerts": {
-      "diskTitle": "Validator disk critical",
-      "diskBody": "Free space on the validator data volume is critically low.",
-      "upgradeTitle": "Validator upgrade available",
-      "upgradeBody": "One or more node clients have a newer pinned version.",
-      "syncTitle": "Validator node needs attention",
-      "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+      "usage": "Pemakaian: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
     },
     "clients": {
-      "el": "Execution client",
-      "cl": "Consensus client"
+      "el": "Klien eksekusi",
+      "cl": "Klien konsensus"
     },
     "mithril": {
-      "label": "Restore from Mithril snapshot first (recommended on testnet)",
-      "action": "Restore with Mithril"
+      "label": "Pulihkan dulu dari snapshot Mithril (disarankan di testnet)",
+      "action": "Pulihkan dengan Mithril"
+    },
+    "errors": {
+      "notFound": "Instans validator tidak ditemukan",
+      "invalidId": "Id instans tidak valid",
+      "diskLow": "Disk kosong tidak cukup untuk rantai, jaringan, dan profil ini",
+      "diskUnknownMainnet": "Tidak dapat mengukur disk kosong; pembuatan jaringan utama ditolak",
+      "needDocker": "Docker Compose wajib dan tidak ditemukan",
+      "composeFailed": "docker compose gagal",
+      "needConfirm": "Mengosongkan memerlukan confirm=id instans atau CLEAR",
+      "mithrilAdaOnly": "Pemulihan Mithril hanya untuk Cardano",
+      "needMithrilConfirm": "Mithril memerlukan confirm=id instans atau MITHRIL",
+      "mithrilBlocked": "docker run Mithril diblokir oleh daftar izin",
+      "mithrilKey": "Tidak dapat memuat kunci verifikasi genesis Mithril",
+      "mithrilFailed": "Unduhan snapshot Mithril gagal",
+      "pruneFailed": "Pembersihan gagal",
+      "switchNeedStop": "Hentikan node sebelum mengganti jaringan",
+      "switchNeedClear": "Mengganti jaringan menghapus data rantai. Konfirmasi dengan id instans atau CLEAR",
+      "composeMissing": "Berkas Compose tidak ditemukan",
+      "composeNotManaged": "Menolak menulis berkas Compose yang tidak dikelola YSK",
+      "badDataPath": "Jalur data harus direktori absolut di luar jalur sistem",
+      "portInUse": "Port RPC itu sudah dipakai instans validator lain",
+      "snapshotUnsupported": "Tidak ada sumber snapshot yang diizinkan untuk rantai ini",
+      "snapshotLookup": "Tidak dapat menyelesaikan penunjuk snapshot resmi",
+      "needSnapshotConfirm": "Pemulihan snapshot memerlukan confirm=id instans atau SNAPSHOT",
+      "snapshotBlocked": "docker run snapshot diblokir oleh daftar izin",
+      "snapshotFailed": "Unduhan atau ekstraksi snapshot gagal"
+    },
+    "notes": {
+      "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
+      "noKeys": "YSK Server tidak pernah membuat atau menyimpan kunci staking.",
+      "dockerSoon": "Pasang, mulai, dan henti menyusul di tahap berikutnya. Halaman ini hanya menampilkan instans dan disk.",
+      "dryCreate": "Spesifikasi instans dan compose ditulis (dry-run). Tambahkan --execute dan YSK_EXECUTE=1 untuk memulai kontainer.",
+      "dryStart": "Mulai adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "dryStop": "Henti adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "dryClear": "Kosongkan adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "created": "Node dibuat dan compose dimulai",
+      "started": "Node dimulai",
+      "stopped": "Node dihentikan",
+      "cleared": "Data rantai dikosongkan",
+      "dryMithril": "Pemulihan Mithril adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "mithril": "Snapshot Mithril dipulihkan; node dimulai ulang",
+      "dryPrune": "Pembersihan adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "pruned": "Citra proyek yang tidak terpakai dibersihkan",
+      "pruneProfile": "Pangkas native klien adalah profil pruned／minimal. Buat ulang untuk mengubahnya.",
+      "sameNetwork": "Sudah di jaringan itu",
+      "drySwitch": "Pergantian jaringan adalah dry-run.",
+      "switched": "Jaringan diganti dan data rantai dikosongkan",
+      "dryCompose": "Akan menulis compose.yml",
+      "composeWrote": "compose.yml ditulis",
+      "statsEmpty": "Tidak ada kontainer berjalan untuk diukur",
+      "autoClearNone": "Tidak ada instans berhenti untuk dikosongkan otomatis",
+      "drySnapshot": "Pemulihan snapshot adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+      "snapshotEthEl": "Arsip EL ethPandaOps dipulihkan dan CL diatur ulang untuk checkpoint sync",
+      "snapshotEthCl": "Data CL diatur ulang untuk checkpoint sync resmi",
+      "snapshotNear": "Data NEAR dihapus; compose akan inisialisasi ulang dengan genesis resmi dan epoch sync",
+      "nativePrune": "Perintah pangkas native klien dijalankan"
+    },
+    "create": "Buat node",
+    "wizard": {
+      "title": "Buat node",
+      "back": "Kembali",
+      "next": "Berikutnya",
+      "install": "Pasang",
+      "mainnetWarn": "Jaringan utama membutuhkan banyak disk kosong (ETH sering 800 GiB+). Testnet disarankan.",
+      "mainnetAck": "Saya memahami risiko disk dan slashing. Lanjutkan jaringan utama.",
+      "heavyWarn": "Rantai ini berat (disk besar dan IOPS tinggi). Solana jaringan utama biasanya butuh 2 TiB+.",
+      "memory": "Batas memori (mis. 4g)",
+      "cpus": "Batas CPU (mis. 2.0)",
+      "dataPath": "Jalur data (opsional)",
+      "rpcPort": "Port RPC (opsional)"
+    },
+    "actions": {
+      "detail": "Rincian",
+      "start": "Mulai",
+      "stop": "Henti",
+      "restart": "Mulai ulang",
+      "clear": "Kosongkan",
+      "upgrade": "Tingkatkan",
+      "clearConfirm": "Ketik id instans atau CLEAR",
+      "prune": "Bersihkan citra",
+      "switchNetwork": "Ganti jaringan",
+      "removeUnit": "Hapus juga compose / catatan instans",
+      "restoreAfter": "Pulihkan snapshot setelah mengosongkan"
+    },
+    "policy": {
+      "label": "Kebijakan peningkatan",
+      "manual": "Manual (tangan)",
+      "notify": "Beritahu",
+      "auto-safe": "Otomatis (aman)",
+      "auto-all": "Otomatis (semua)"
+    },
+    "logs": {
+      "empty": "Belum ada log",
+      "follow": "Ikuti log"
     },
     "compose": {
-      "label": "Compose file",
-      "save": "Save compose"
+      "label": "Berkas Compose",
+      "save": "Simpan compose"
     },
     "snapshot": {
-      "action": "Restore snapshot",
-      "mithril": "Cardano uses Mithril for certified snapshot restore.",
-      "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-      "avax": "Avalanche uses state-sync in the compose profile.",
-      "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-      "none": "No snapshot source is configured for this chain."
+      "action": "Pulihkan snapshot",
+      "mithril": "Cardano memakai Mithril untuk pemulihan snapshot bersertifikat.",
+      "eth": "Jaringan utama Ethereum boot lewat checkpoint sync resmi klien konsensus. EL lanjut snap sync.",
+      "ethEl": "Hoodi/Sepolia dapat memulihkan arsip EL ethPandaOps, lalu checkpoint-sync CL.",
+      "avax": "Avalanche memakai state-sync di profil compose.",
+      "near": "Snapshot tar gratis resmi NEAR sudah dihentikan. Pulihkan menghapus data dan memakai genesis resmi plus epoch sync.",
+      "none": "Tidak ada sumber snapshot untuk rantai ini."
     },
     "stake": {
-      "title": "Prepare for staking (you keep the keys)",
-      "offlineKeys": "Generate keys offline. The panel never stores them.",
-      "deposit": "Complete deposit / registration on the official launchpad.",
-      "withdrawal": "Set withdrawal credentials yourself.",
-      "monitor": "Watch disk, peers, and upgrade badges on this page."
+      "title": "Siapkan staking (kunci tetap Anda pegang)",
+      "offlineKeys": "Buat kunci secara offline. Panel tidak pernah menyimpannya.",
+      "deposit": "Selesaikan deposit / pendaftaran di launchpad resmi.",
+      "withdrawal": "Atur sendiri kredensial penarikan.",
+      "monitor": "Pantau disk, peer, dan lencana peningkatan di halaman ini."
+    },
+    "alerts": {
+      "diskTitle": "Disk validator kritis",
+      "diskBody": "Ruang kosong volume data validator sangat rendah.",
+      "upgradeTitle": "Peningkatan validator tersedia",
+      "upgradeBody": "Satu atau lebih klien node memiliki versi pin yang lebih baru.",
+      "syncTitle": "Node validator perlu perhatian",
+      "syncBody": "Sebuah node telah sinkron lebih dari 6 jam atau melaporkan kesalahan.",
+      "rollbackTitle": "Peningkatan validator dibatalkan",
+      "rollbackBody": "Peningkatan {{id}} gagal pemeriksaan kesehatan dan dibatalkan."
+    },
+    "upgrade": {
+      "changelog": "Catatan perubahan"
+    },
+    "readiness": {
+      "dockerTitle": "Docker untuk node validator",
+      "dockerOk": "{{count}} instans validator; Docker terpasang",
+      "dockerMissing": "Ada instans validator tetapi perintah docker tidak ditemukan"
     }
   },
   "vnc": {

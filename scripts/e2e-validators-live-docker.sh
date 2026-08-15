@@ -53,4 +53,13 @@ if printf '%s\n' "$BAD" | docker compose -f - -p ysk-e2e-rollback up -d >/dev/nu
   printf '%s\n' "$GOOD" | docker compose -f - -p ysk-e2e-rollback up -d >/dev/null
   printf '%s\n' "$GOOD" | docker compose -f - -p ysk-e2e-rollback down >/dev/null
 fi
+# Allowlisted exec (no TTY / no shell) is the panel docker exec path.
+docker run -d --name ysk-e2e-exec alpine:3.20 sleep 8 >/dev/null
+if docker exec ysk-e2e-exec hostname >/dev/null; then
+  log "exec hostname OK"
+else
+  fail "docker exec hostname failed"
+fi
+docker rm -f ysk-e2e-exec >/dev/null 2>&1 || true
+
 log "OK"

@@ -1,4 +1,4 @@
-export { validatorsApi } from './api';
+export { streamValidatorAction, validatorsApi } from './api';
 export type {
   ValidatorChainSpec,
   ValidatorDiskInstance,

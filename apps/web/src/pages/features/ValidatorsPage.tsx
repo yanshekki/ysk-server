@@ -19,8 +19,11 @@ import {
   SoftwareInstallBanner,
   type OpsResultLike,
 } from '../../shared/components/ui';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
+  streamValidatorAction,
   validatorsApi,
   type ValidatorChainSpec,
   type ValidatorDiskInstance,
@@ -60,6 +63,9 @@ export function ValidatorsPage() {
   const [mithril, setMithril] = useState(true);
   const [memory, setMemory] = useState('');
   const [cpus, setCpus] = useState('');
+  const [dataPath, setDataPath] = useState('');
+  const [rpcPort, setRpcPort] = useState('');
+  const stream = useOpsStreamOptional();
   const [summaries, setSummaries] = useState<Record<string, ValidatorSummaryDto>>({});
   const [autoClear, setAutoClear] = useState(false);
   const [followLogs, setFollowLogs] = useState(false);
@@ -131,6 +137,8 @@ export function ValidatorsPage() {
     setMithril(true);
     setMemory('');
     setCpus('');
+    setDataPath('');
+    setRpcPort('');
     setOps(null);
   };
 
@@ -146,6 +154,8 @@ export function ValidatorsPage() {
         mithril: chain === 'ada' ? mithril : undefined,
         memory: memory.trim() || undefined,
         cpus: cpus.trim() || undefined,
+        dataPath: dataPath.trim() || undefined,
+        rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
         execute,
       });
       setOps(toOps(r));
@@ -157,18 +167,46 @@ export function ValidatorsPage() {
     }
   };
 
-  const runAction = async (fn: () => Promise<ValidatorOpsResponse>) => {
+  const runAction = async (
+    fn: () => Promise<ValidatorOpsResponse>,
+    streamTitle?: string,
+    streamSpec?: { id: string; action: string; body?: Record<string, unknown> },
+  ) => {
     setBusy(true);
+    const job = streamTitle && stream ? stream.begin({ kind: 'apply', title: streamTitle }) : null;
     try {
-      const r = await fn();
+      if (job) stream?.appendLog(job.id, { stream: 'status', line: streamTitle ?? '' });
+      let r: ValidatorOpsResponse;
+      if (job && streamSpec) {
+        const streamed = await streamValidatorAction(streamSpec.id, streamSpec.action, streamSpec.body ?? { execute: true }, {
+          onLog: (line: { stream: 'stdout' | 'stderr' | 'status'; line: string }) =>
+            stream?.appendLog(job.id, line),
+          signal: job.signal,
+        });
+        r = {
+          ok: streamed.ops.ok !== false,
+          blocked: streamed.ops.blocked,
+          notes: streamed.ops.notes,
+          blockMessage: streamed.ops.blockMessage,
+          apply_status: (streamed.raw as ValidatorOpsResponse | null)?.apply_status,
+          instanceId: (streamed.raw as ValidatorOpsResponse | null)?.instanceId,
+        };
+      } else {
+        r = await fn();
+      }
       setOps(toOps(r));
+      if (job) {
+        stream?.finish(job.id, { ok: r.ok !== false && !r.blocked, error: r.blockMessage, toast: false });
+      }
       await load();
       if (detail) {
         const st = await validatorsApi.status(detail.id);
         setStatus(st);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
     } finally {
       setBusy(false);
     }
@@ -520,6 +558,22 @@ export function ValidatorsPage() {
             <Field htmlFor="val-cpus" label={t('validators.wizard.cpus')}>
               <input id="val-cpus" value={cpus} onChange={(e) => setCpus(e.target.value)} placeholder="2.0" />
             </Field>
+            <Field htmlFor="val-datapath" label={t('validators.wizard.dataPath')}>
+              <input
+                id="val-datapath"
+                value={dataPath}
+                onChange={(e) => setDataPath(e.target.value)}
+                placeholder="/var/lib/ysk-server/validators/…"
+              />
+            </Field>
+            <Field htmlFor="val-rpcport" label={t('validators.wizard.rpcPort')}>
+              <input
+                id="val-rpcport"
+                value={rpcPort}
+                onChange={(e) => setRpcPort(e.target.value)}
+                placeholder="8545"
+              />
+            </Field>
           </>
         ) : null}
         {step === 3 ? (
@@ -552,7 +606,13 @@ export function ValidatorsPage() {
                 {t('validators.actions.restart')}
               </Button>
               <Button
-                onClick={() => void runAction(() => validatorsApi.upgrade(detail.id))}
+                onClick={() =>
+                  void runAction(
+                    () => validatorsApi.upgrade(detail.id),
+                    t('validators.actions.upgrade'),
+                    { id: detail.id, action: 'update', body: { execute: true } },
+                  )
+                }
                 disabled={!status?.upgrade}
               >
                 {t('validators.actions.upgrade')}
@@ -563,7 +623,15 @@ export function ValidatorsPage() {
               {detail.chain === 'ada' ? (
                 <Button
                   onClick={() =>
-                    void runAction(() => validatorsApi.mithril(detail.id, detail.id))
+                    void runAction(
+                      () => validatorsApi.mithril(detail.id, detail.id),
+                      t('validators.mithril.action'),
+                      {
+                        id: detail.id,
+                        action: 'mithril',
+                        body: { confirm: detail.id, execute: true },
+                      },
+                    )
                   }
                 >
                   {t('validators.mithril.action')}
@@ -571,7 +639,15 @@ export function ValidatorsPage() {
               ) : null}
               <Button
                 onClick={() =>
-                  void runAction(() => validatorsApi.snapshot(detail.id, detail.id))
+                  void runAction(
+                    () => validatorsApi.snapshot(detail.id, detail.id),
+                    t('validators.snapshot.action'),
+                    {
+                      id: detail.id,
+                      action: 'snapshot',
+                      body: { confirm: detail.id, execute: true },
+                    },
+                  )
                 }
               >
                 {t('validators.snapshot.action')}
@@ -602,9 +678,30 @@ export function ValidatorsPage() {
                 ? `${Math.round(status.syncProgress * 100)}%`
                 : '—'}
             </p>
+            <ServiceAccessStrip
+              serviceId={`val-${detail.id}`.slice(0, 48)}
+              heading={detail.id}
+              ports={[
+                ...(detail.ports.p2p
+                  ? [{ role: 'p2p', port: String(detail.ports.p2p), proto: 'tcp' }]
+                  : []),
+                ...(detail.ports.rpc
+                  ? [{ role: 'rpc', port: String(detail.ports.rpc), proto: 'tcp' }]
+                  : []),
+              ]}
+              compact
+            />
             {status?.upgrade ? (
               <Alert variant="info">
                 {status.upgrade.clientId} {status.upgrade.currentTag} → {status.upgrade.nextTag}
+                {status.upgrade.changelogUrl ? (
+                  <>
+                    {' '}
+                    <a href={status.upgrade.changelogUrl} target="_blank" rel="noreferrer">
+                      {t('validators.upgrade.changelog')}
+                    </a>
+                  </>
+                ) : null}
               </Alert>
             ) : null}
             <Field htmlFor="val-policy" label={t('validators.policy.label')}>

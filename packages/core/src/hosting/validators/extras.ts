@@ -38,6 +38,9 @@ import { statusValidatorInstance } from './manager.js';
 import { restoreAdaMithril } from './mithril.js';
 import { loadValidatorSettings } from './settings.js';
 import { clearValidatorInstance } from './manager.js';
+import { nativePruneArgvOk, nativePrunePlan } from './native-prune.js';
+import { restoreEthSnapshot, restoreNearEpoch } from './snapshots.js';
+import { runOpts, type OpsLogFn } from '../ops-log.js';
 
 export async function summarizeValidatorInstances(input: {
   dataDir: string;
@@ -85,28 +88,56 @@ export async function pruneValidatorInstance(input: {
   host: HostExecutor;
   execute: boolean;
   id: string;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<ValidatorOpsResult> {
   const inst = getValidatorInstance(input.dataDir, input.id);
   if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
   const project = composeProjectName(inst.id);
   const argv = ['image', 'prune', '-f', '--filter', `label=com.docker.compose.project=${project}`];
+  const native = nativePrunePlan(inst);
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenValidatorOp({
       instanceId: inst.id,
       written: [],
-      notes: [tl('validators.notes.dryPrune'), argv.join(' ')],
+      notes: [
+        tl('validators.notes.dryPrune'),
+        argv.join(' '),
+        ...(native?.notes ?? []),
+        ...(native?.argv.length ? [native.argv.join(' ')] : []),
+      ],
     });
   }
-  const r = await input.host.runCommand(['docker', ...argv], { timeoutMs: 180_000 });
+  const r = await input.host.runCommand(['docker', ...argv], {
+    ...runOpts({ execute: true, timeoutMs: 180_000, onLog: input.onLog, signal: input.signal }),
+  });
   if (r.exitCode !== 0) {
     return failedValidatorOp({
       instanceId: inst.id,
       notes: [tl('validators.errors.pruneFailed'), r.stderr || r.stdout],
     });
   }
+  const notes = [tl('validators.notes.pruned'), tl('validators.notes.pruneProfile'), ...(native?.notes ?? [])];
+  if (native?.argv.length) {
+    if (!nativePruneArgvOk(native.argv)) {
+      notes.push(tl('validators.errors.pruneFailed'));
+    } else {
+      input.onLog?.({ stream: 'status', line: native.notes[0] ?? 'native prune' });
+      const n = await input.host.runCommand(['docker', ...native.argv], {
+        ...runOpts({ execute: true, timeoutMs: 600_000, onLog: input.onLog, signal: input.signal }),
+      });
+      if (n.exitCode !== 0) {
+        return failedValidatorOp({
+          instanceId: inst.id,
+          notes: [...notes, tl('validators.errors.pruneFailed'), n.stderr || n.stdout],
+        });
+      }
+      notes.push(tl('validators.notes.nativePrune'));
+    }
+  }
   return appliedValidatorOp({
     instanceId: inst.id,
-    notes: [tl('validators.notes.pruned'), tl('validators.notes.pruneProfile')],
+    notes,
   });
 }
 
@@ -208,14 +239,16 @@ export function writeValidatorCompose(input: {
 }
 
 export function snapshotOffer(chain: string, network: string): {
-  kind: 'mithril' | 'checkpoint' | 'none';
+  kind: 'mithril' | 'checkpoint' | 'archive' | 'epoch' | 'none';
   notes: string[];
 } {
   if (chain === 'ada') return { kind: 'mithril', notes: [tl('validators.snapshot.mithril')] };
+  if (chain === 'eth' && (network === 'hoodi' || network === 'sepolia')) {
+    return { kind: 'archive', notes: [tl('validators.snapshot.ethEl')] };
+  }
   if (chain === 'eth') return { kind: 'checkpoint', notes: [tl('validators.snapshot.eth')] };
   if (chain === 'avax') return { kind: 'none', notes: [tl('validators.snapshot.avax')] };
-  if (chain === 'near') return { kind: 'none', notes: [tl('validators.snapshot.near')] };
-  void network;
+  if (chain === 'near') return { kind: 'epoch', notes: [tl('validators.snapshot.near')] };
   return { kind: 'none', notes: [tl('validators.snapshot.none')] };
 }
 
@@ -225,6 +258,9 @@ export async function restoreValidatorSnapshot(input: {
   execute: boolean;
   id: string;
   confirm?: string;
+  fetchFn?: typeof fetch;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<ValidatorOpsResult> {
   const inst = getValidatorInstance(input.dataDir, input.id);
   if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
@@ -236,6 +272,31 @@ export async function restoreValidatorSnapshot(input: {
       execute: input.execute,
       id: inst.id,
       confirm: input.confirm ?? inst.id,
+      onLog: input.onLog,
+      signal: input.signal,
+    });
+  }
+  if (offer.kind === 'archive' || offer.kind === 'checkpoint') {
+    return restoreEthSnapshot({
+      dataDir: input.dataDir,
+      host: input.host,
+      execute: input.execute,
+      id: inst.id,
+      confirm: input.confirm ?? inst.id,
+      fetchFn: input.fetchFn,
+      onLog: input.onLog,
+      signal: input.signal,
+    });
+  }
+  if (offer.kind === 'epoch') {
+    return restoreNearEpoch({
+      dataDir: input.dataDir,
+      host: input.host,
+      execute: input.execute,
+      id: inst.id,
+      confirm: input.confirm ?? inst.id,
+      onLog: input.onLog,
+      signal: input.signal,
     });
   }
   return writtenValidatorOp({

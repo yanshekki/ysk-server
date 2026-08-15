@@ -1,13 +1,13 @@
 {
   "title": "Docker",
-  "subtitle": "在這部伺服器安裝同控制 Docker 引擎、容器、映像、Compose 專案同磁碟。",
+  "subtitle": "在這部伺服器安裝與控制 Docker 引擎、容器、映像、Compose 專案與磁碟。",
   "refresh": "重新整理",
-  "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 同 docker-compose-v2。",
+  "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 及 docker-compose-v2。",
   "protected": "受保護",
   "pruneConfirm": "輸入 PRUNE 以確認清理 volume 或系統",
   "settingsHint": "只開放安全的 daemon.json 選項。套用會寫入檔案並重啟 docker.service。",
   "cli": {
-    "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+    "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
   },
   "tab": {
     "overview": "概覽",
@@ -25,6 +25,7 @@
     "containers": "容器",
     "version": "版本",
     "dataRoot": "資料目錄",
+    "disk": "磁碟",
     "validators": "驗證者堆疊",
     "name": "名稱",
     "image": "映像",
@@ -34,8 +35,7 @@
     "size": "大小",
     "driver": "驅動",
     "type": "類型",
-    "reclaimable": "可回收",
-    "disk": "Disk"
+    "reclaimable": "可回收"
   },
   "state": {
     "up": "運行中",
@@ -47,6 +47,8 @@
     "restart": "重啟",
     "remove": "刪除",
     "logs": "日誌",
+    "inspect": "檢查",
+    "exec": "執行（version）",
     "run": "執行映像",
     "pull": "拉取",
     "up": "啟動",
@@ -60,8 +62,7 @@
     "startEngine": "啟動引擎",
     "stopEngine": "停止引擎",
     "restartEngine": "重啟引擎",
-    "applyDaemon": "套用引擎設定",
-    "inspect": "Inspect"
+    "applyDaemon": "套用引擎設定"
   },
   "empty": {
     "containers": "未有容器",
@@ -76,12 +77,12 @@
   "settings": {
     "logMaxSize": "容器日誌上限",
     "liveRestore": "即時還原（引擎重啟時保留容器）",
-    "mirrors": "Registry mirrors (one URL per line)",
-    "insecure": "Insecure registries (one host per line)"
+    "mirrors": "Registry 來源（每行一個網址）",
+    "insecure": "未加密 Registry（每行一個主機）"
   },
   "about": {
-    "body": "Docker 是 YSK Server 的一級主機服務，地位同 Nginx 一樣。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
-    "honesty": "變更主機需要 root 同 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
+    "body": "Docker 是 YSK Server 的一級主機服務，與 Nginx 同級。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
+    "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
     "validators": "開啟驗證者節點"
   },
   "alerts": {
@@ -107,12 +108,13 @@
     "logsFailed": "讀不到容器日誌",
     "mutateFailed": "Docker 指令失敗",
     "engineFailed": "無法控制 docker.service",
-    "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+    "badExec": "exec 只限允許清單內的二進制與預設（不可用 shell，不可開 TTY）",
+    "uninstallBusy": "請先停止由面板管理的容器（包括驗證者堆疊）再卸載 Docker"
   },
   "notes": {
-    "dryMutate": "只係試行。要改主機請加 --execute 同 YSK_EXECUTE=1。",
+    "dryMutate": "此為試行。要改主機請加 --execute 及 YSK_EXECUTE=1。",
     "dryPrune": "清理預覽（未套用）。",
-    "dryEngine": "引擎控制只係試行。",
+    "dryEngine": "引擎控制此為試行。",
     "dryDaemon": "會寫入 /etc/docker/daemon.json 並重啟 docker.service。",
     "daemonWrote": "已寫入 daemon.json",
     "start": "已啟動容器",
@@ -121,6 +123,7 @@
     "remove": "已刪除容器",
     "ran": "已用映像啟動容器",
     "pulled": "已拉取映像",
+    "exec": "已執行允許清單內的 exec",
     "imageRemoved": "已刪除映像",
     "volumeCreated": "已建立 volume",
     "volumeRemoved": "已刪除 volume",

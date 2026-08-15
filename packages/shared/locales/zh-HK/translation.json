@@ -2884,14 +2884,14 @@
   },
   "docker": {
     "title": "Docker",
-    "subtitle": "在這部伺服器安裝同控制 Docker 引擎、容器、映像、Compose 專案同磁碟。",
+    "subtitle": "在這部伺服器安裝與控制 Docker 引擎、容器、映像、Compose 專案與磁碟。",
     "refresh": "重新整理",
-    "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 同 docker-compose-v2。",
+    "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 及 docker-compose-v2。",
     "protected": "受保護",
     "pruneConfirm": "輸入 PRUNE 以確認清理 volume 或系統",
     "settingsHint": "只開放安全的 daemon.json 選項。套用會寫入檔案並重啟 docker.service。",
     "cli": {
-      "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+      "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
     },
     "tab": {
       "overview": "概覽",
@@ -2909,6 +2909,7 @@
       "containers": "容器",
       "version": "版本",
       "dataRoot": "資料目錄",
+      "disk": "磁碟",
       "validators": "驗證者堆疊",
       "name": "名稱",
       "image": "映像",
@@ -2918,8 +2919,7 @@
       "size": "大小",
       "driver": "驅動",
       "type": "類型",
-      "reclaimable": "可回收",
-      "disk": "Disk"
+      "reclaimable": "可回收"
     },
     "state": {
       "up": "運行中",
@@ -2931,6 +2931,8 @@
       "restart": "重啟",
       "remove": "刪除",
       "logs": "日誌",
+      "inspect": "檢查",
+      "exec": "執行（version）",
       "run": "執行映像",
       "pull": "拉取",
       "up": "啟動",
@@ -2944,8 +2946,7 @@
       "startEngine": "啟動引擎",
       "stopEngine": "停止引擎",
       "restartEngine": "重啟引擎",
-      "applyDaemon": "套用引擎設定",
-      "inspect": "Inspect"
+      "applyDaemon": "套用引擎設定"
     },
     "empty": {
       "containers": "未有容器",
@@ -2960,12 +2961,12 @@
     "settings": {
       "logMaxSize": "容器日誌上限",
       "liveRestore": "即時還原（引擎重啟時保留容器）",
-      "mirrors": "Registry mirrors (one URL per line)",
-      "insecure": "Insecure registries (one host per line)"
+      "mirrors": "Registry 來源（每行一個網址）",
+      "insecure": "未加密 Registry（每行一個主機）"
     },
     "about": {
-      "body": "Docker 是 YSK Server 的一級主機服務，地位同 Nginx 一樣。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
-      "honesty": "變更主機需要 root 同 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
+      "body": "Docker 是 YSK Server 的一級主機服務，與 Nginx 同級。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
+      "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
       "validators": "開啟驗證者節點"
     },
     "alerts": {
@@ -2991,12 +2992,13 @@
       "logsFailed": "讀不到容器日誌",
       "mutateFailed": "Docker 指令失敗",
       "engineFailed": "無法控制 docker.service",
-      "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+      "badExec": "exec 只限允許清單內的二進制與預設（不可用 shell，不可開 TTY）",
+      "uninstallBusy": "請先停止由面板管理的容器（包括驗證者堆疊）再卸載 Docker"
     },
     "notes": {
-      "dryMutate": "只係試行。要改主機請加 --execute 同 YSK_EXECUTE=1。",
+      "dryMutate": "此為試行。要改主機請加 --execute 及 YSK_EXECUTE=1。",
       "dryPrune": "清理預覽（未套用）。",
-      "dryEngine": "引擎控制只係試行。",
+      "dryEngine": "引擎控制此為試行。",
       "dryDaemon": "會寫入 /etc/docker/daemon.json 並重啟 docker.service。",
       "daemonWrote": "已寫入 daemon.json",
       "start": "已啟動容器",
@@ -3005,6 +3007,7 @@
       "remove": "已刪除容器",
       "ran": "已用映像啟動容器",
       "pulled": "已拉取映像",
+      "exec": "已執行允許清單內的 exec",
       "imageRemoved": "已刪除映像",
       "volumeCreated": "已建立 volume",
       "volumeRemoved": "已刪除 volume",
@@ -12305,7 +12308,7 @@
       "none": "尚未有實例資料",
       "warn": "磁碟用量偏高（70% 或以上）",
       "danger": "磁碟用量危急（85% 或以上）",
-      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+      "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）"
     },
     "chain": {
       "eth": "Ethereum",
@@ -12348,7 +12351,15 @@
       "disk": "磁碟"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|create|start|stop|restart|clear [--chain C] [--network N] [--profile P] [--id ID] [--confirm TOKEN] [--execute] [--json]"
+      "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "clients": {
+      "el": "執行層客戶端",
+      "cl": "共識層客戶端"
+    },
+    "mithril": {
+      "label": "先用 Mithril 快照還原（測試網建議）",
+      "action": "用 Mithril 還原"
     },
     "errors": {
       "notFound": "找不到驗證者節點實例",
@@ -12358,16 +12369,23 @@
       "needDocker": "需要 Docker Compose，但找不到",
       "composeFailed": "docker compose 失敗",
       "needConfirm": "清空須 confirm=實例識別碼 或 CLEAR",
-      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-      "mithrilKey": "Could not load the Mithril genesis verification key",
-      "mithrilFailed": "Mithril snapshot download failed",
-      "pruneFailed": "Prune failed",
-      "switchNeedStop": "Stop the node before switching network",
-      "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-      "composeMissing": "Compose file not found",
-      "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
+      "mithrilAdaOnly": "Mithril 還原只適用於 Cardano",
+      "needMithrilConfirm": "Mithril 需要 confirm=實例識別碼 或 MITHRIL",
+      "mithrilBlocked": "Mithril 的 docker run 被允許清單拒絕",
+      "mithrilKey": "無法載入 Mithril genesis 驗證金鑰",
+      "mithrilFailed": "Mithril 快照下載失敗",
+      "pruneFailed": "清理失敗",
+      "switchNeedStop": "轉網絡前請先停止節點",
+      "switchNeedClear": "轉網絡會清空鏈資料。請用實例識別碼或 CLEAR 確認",
+      "composeMissing": "找不到 Compose 檔",
+      "composeNotManaged": "拒絕寫入非 YSK 管理的 Compose 檔",
+      "badDataPath": "資料路徑必須是絕對目錄，並且不可使用系統路徑",
+      "portInUse": "這個 RPC 埠已被另一個驗證者實例使用",
+      "snapshotUnsupported": "此鏈沒有在允許清單內的快照來源",
+      "snapshotLookup": "無法解析官方快照指標",
+      "needSnapshotConfirm": "還原快照須 confirm=實例識別碼 或 SNAPSHOT",
+      "snapshotBlocked": "快照的 docker run 被允許清單拒絕",
+      "snapshotFailed": "快照下載或解壓失敗"
     },
     "notes": {
       "beta": "此功能屬 Beta。變更主機須 root 及 YSK_EXECUTE=1。",
@@ -12381,18 +12399,23 @@
       "started": "已啟動節點",
       "stopped": "已停止節點",
       "cleared": "已清空鏈資料",
-      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "mithril": "Mithril snapshot restored; node restarted",
-      "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "pruned": "Unused project images pruned",
-      "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-      "sameNetwork": "Already on that network",
-      "drySwitch": "Network switch is dry-run.",
-      "switched": "Network switched and chain data cleared",
-      "dryCompose": "Would write compose.yml",
-      "composeWrote": "Wrote compose.yml",
-      "statsEmpty": "No running containers to measure",
-      "autoClearNone": "No stopped instance to auto-clear"
+      "dryMithril": "Mithril 還原為試行。請加 --execute 及 YSK_EXECUTE=1。",
+      "mithril": "已用 Mithril 還原快照並重啟節點",
+      "dryPrune": "清理為試行。請加 --execute 及 YSK_EXECUTE=1。",
+      "pruned": "已清理此專案未用映像",
+      "pruneProfile": "客戶端原生修剪靠 pruned／minimal 設定檔。要改請重建實例。",
+      "sameNetwork": "已經在這個網絡",
+      "drySwitch": "轉網絡為試行。",
+      "switched": "已轉網絡並清空鏈資料",
+      "dryCompose": "會寫入 compose.yml",
+      "composeWrote": "已寫入 compose.yml",
+      "statsEmpty": "沒有運行中的容器可量度",
+      "autoClearNone": "沒有已停止的實例可供自動清空",
+      "drySnapshot": "快照還原為試行。請加 --execute 及 YSK_EXECUTE=1。",
+      "snapshotEthEl": "已還原 ethPandaOps 執行層封存，並重設共識層以用 checkpoint sync",
+      "snapshotEthCl": "已重設共識層資料，使用官方 checkpoint sync",
+      "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
+      "nativePrune": "已執行客戶端原生清理指令"
     },
     "create": "建立節點",
     "wizard": {
@@ -12403,8 +12426,10 @@
       "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
       "mainnetAck": "我明白磁碟與罰沒風險，仍要建立主網節點。",
       "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
-      "memory": "Memory limit (e.g. 4g)",
-      "cpus": "CPU limit (e.g. 2.0)"
+      "memory": "記憶體上限（例如 4g）",
+      "cpus": "CPU 上限（例如 2.0）",
+      "dataPath": "資料路徑（可選）",
+      "rpcPort": "RPC 埠（可選）"
     },
     "actions": {
       "detail": "詳情",
@@ -12414,10 +12439,10 @@
       "clear": "清空",
       "upgrade": "升級",
       "clearConfirm": "輸入實例識別碼或 CLEAR",
-      "prune": "Prune",
-      "switchNetwork": "Switch network",
-      "removeUnit": "Also remove compose / instance record",
-      "restoreAfter": "Restore snapshot after clear"
+      "prune": "清理映像",
+      "switchNetwork": "轉網絡",
+      "removeUnit": "一併刪除 compose／實例紀錄",
+      "restoreAfter": "清空後還原快照"
     },
     "policy": {
       "label": "升級政策",
@@ -12428,42 +12453,45 @@
     },
     "logs": {
       "empty": "尚無日誌",
-      "follow": "Follow logs"
+      "follow": "跟隨日誌"
+    },
+    "compose": {
+      "label": "Compose 檔",
+      "save": "儲存 compose"
+    },
+    "snapshot": {
+      "action": "還原快照",
+      "mithril": "Cardano 用 Mithril 做認證快照還原。",
+      "eth": "Ethereum 主網用官方 checkpoint sync 引導共識客戶端。執行層繼續 snap sync。",
+      "ethEl": "Hoodi／Sepolia 可還原 ethPandaOps 執行層封存，再用 checkpoint sync 引導共識層。",
+      "avax": "Avalanche 在 compose 設定檔使用 state-sync。",
+      "near": "官方免費 NEAR tar 快照已停用。還原會清空資料，再用官方 genesis 與 epoch sync。",
+      "none": "此鏈未設定快照來源。"
+    },
+    "stake": {
+      "title": "準備質押（私鑰由你保管）",
+      "offlineKeys": "離線產生金鑰。面板永不保存。",
+      "deposit": "在官方 launchpad 完成存款／登記。",
+      "withdrawal": "自行設定提取憑證。",
+      "monitor": "在此頁留意磁碟、對等節點與升級徽章。"
     },
     "alerts": {
       "diskTitle": "驗證者節點磁碟危急",
       "diskBody": "驗證者資料卷可用空間極低。",
       "upgradeTitle": "驗證者節點有可用升級",
       "upgradeBody": "一個或多個客戶端有較新的釘選版本。",
-      "syncTitle": "Validator node needs attention",
-      "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+      "syncTitle": "驗證者節點需要留意",
+      "syncBody": "有節點已同步超過 6 小時，或回報錯誤。",
+      "rollbackTitle": "驗證者升級已回滾",
+      "rollbackBody": "{{id}} 升級健康檢查失敗，已回滾。"
     },
-    "clients": {
-      "el": "執行層客戶端",
-      "cl": "共識層客戶端"
+    "upgrade": {
+      "changelog": "更新紀錄"
     },
-    "mithril": {
-      "label": "先用 Mithril 快照還原（測試網建議）",
-      "action": "用 Mithril 還原"
-    },
-    "compose": {
-      "label": "Compose file",
-      "save": "Save compose"
-    },
-    "snapshot": {
-      "action": "Restore snapshot",
-      "mithril": "Cardano uses Mithril for certified snapshot restore.",
-      "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-      "avax": "Avalanche uses state-sync in the compose profile.",
-      "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-      "none": "No snapshot source is configured for this chain."
-    },
-    "stake": {
-      "title": "Prepare for staking (you keep the keys)",
-      "offlineKeys": "Generate keys offline. The panel never stores them.",
-      "deposit": "Complete deposit / registration on the official launchpad.",
-      "withdrawal": "Set withdrawal credentials yourself.",
-      "monitor": "Watch disk, peers, and upgrade badges on this page."
+    "readiness": {
+      "dockerTitle": "驗證者節點所需的 Docker",
+      "dockerOk": "有 {{count}} 個驗證者實例；已安裝 Docker",
+      "dockerMissing": "已有驗證者實例，但找不到 docker 指令"
     }
   },
   "vnc": {

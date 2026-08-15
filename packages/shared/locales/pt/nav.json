@@ -54,8 +54,8 @@
     "security": "Segurança",
     "system": "Sistema",
     "ai": "AI",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "Validadores",
+    "containers": "Contentores"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "Sem acesso",
   "noAccessDesc": "A sua função não inclui esta página. Peça a um administrador se precisar dela.",
   "backToDashboard": "Voltar ao painel",
-  "validators": "Validators (Beta)",
+  "validators": "Validadores (Beta)",
   "docker": "Docker"
 }

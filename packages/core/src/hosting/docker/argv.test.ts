@@ -28,6 +28,9 @@ describe('classifyDockerArgv', () => {
 
   it('blocks dangerous argv', () => {
     expect(classifyDockerArgv(['docker', 'exec', '-it', 'x', 'sh'])).toBe('blocked');
+    expect(classifyDockerArgv(['docker', 'exec', 'x', 'sh'])).toBe('blocked');
+    expect(classifyDockerArgv(['docker', 'exec', 'yskval-el', 'geth', 'version'])).toBe('mutate');
+    expect(classifyDockerArgv(['docker', 'exec', 'yskval-el', 'hostname'])).toBe('mutate');
     expect(classifyDockerArgv(['docker', 'build', '.'])).toBe('blocked');
     expect(classifyDockerArgv(['docker', 'run', '--privileged', 'alpine'])).toBe('blocked');
     expect(classifyDockerArgv(['docker', 'run', '--network', 'host', 'alpine'])).toBe('blocked');

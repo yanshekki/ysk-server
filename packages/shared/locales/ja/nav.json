@@ -54,8 +54,8 @@
     "security": "セキュリティ",
     "system": "システム",
     "ai": "AI",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "バリデーター",
+    "containers": "コンテナ"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "アクセス権がありません",
   "noAccessDesc": "このページは現在の役割では開けません。必要な場合は管理者に依頼してください。",
   "backToDashboard": "ダッシュボードに戻る",
-  "validators": "Validators (Beta)",
+  "validators": "バリデーター (Beta)",
   "docker": "Docker"
 }

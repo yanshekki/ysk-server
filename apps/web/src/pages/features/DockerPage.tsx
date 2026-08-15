@@ -19,6 +19,7 @@ import {
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
   dockerApi,
@@ -73,6 +74,7 @@ export function DockerPage() {
   const [mirrors, setMirrors] = useState('');
   const [insecure, setInsecure] = useState('');
   const [inspectText, setInspectText] = useState('');
+  const stream = useOpsStreamOptional();
 
   const load = useCallback(async () => {
     setError(null);
@@ -110,10 +112,32 @@ export function DockerPage() {
     void load();
   }, [load]);
 
-  const run = async (fn: () => Promise<DockerOpsResponse>) => {
+  const run = async (
+    fn: () => Promise<DockerOpsResponse>,
+    streamTitle?: string,
+    streamPath?: string,
+    streamBody?: Record<string, unknown>,
+  ) => {
     setBusy(true);
+    const job = streamTitle && stream ? stream.begin({ kind: 'apply', title: streamTitle }) : null;
     try {
-      const r = await fn();
+      if (job) stream?.appendLog(job.id, { stream: 'status', line: streamTitle ?? '' });
+      let r: DockerOpsResponse;
+      if (job && streamPath) {
+        const streamed = await dockerApi.stream(streamPath, streamBody ?? { execute: true }, {
+          onLog: (line) => stream?.appendLog(job.id, line),
+          signal: job.signal,
+        });
+        r = {
+          ok: streamed.ops.ok !== false,
+          blocked: streamed.ops.blocked,
+          notes: streamed.ops.notes,
+          blockMessage: streamed.ops.blockMessage,
+          apply_status: (streamed.raw as DockerOpsResponse | null)?.apply_status,
+        };
+      } else {
+        r = await fn();
+      }
       setOps({
         ok: r.ok,
         blocked: r.blocked,
@@ -121,9 +145,17 @@ export function DockerPage() {
         notes: r.notes ?? [],
         blockMessage: r.blockMessage,
       });
+      if (job) {
+        for (const n of r.notes ?? []) {
+          stream?.appendLog(job.id, { stream: 'stdout', line: n });
+        }
+        stream?.finish(job.id, { ok: r.ok !== false && !r.blocked, error: r.blockMessage, toast: false });
+      }
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
     } finally {
       setBusy(false);
     }
@@ -276,6 +308,19 @@ export function DockerPage() {
                 <Button
                   size="sm"
                   onClick={() =>
+                    void run(
+                      () => dockerApi.exec(row.name || row.id, 'version'),
+                      t('docker.actions.exec'),
+                      `/api/v1/docker/containers/${encodeURIComponent(row.name || row.id)}/exec`,
+                      { preset: 'version', execute: true },
+                    )
+                  }
+                >
+                  {t('docker.actions.exec')}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() =>
                     void dockerApi.inspect(row.name || row.id).then((r) => {
                       setInspectText(JSON.stringify(r.inspect, null, 2));
                       setLogTitle(`${row.name || row.id} inspect`);
@@ -302,7 +347,16 @@ export function DockerPage() {
               <Field htmlFor="dock-pull" label={t('docker.actions.pull')}>
                 <input id="dock-pull" value={pullImage} onChange={(e) => setPullImage(e.target.value)} />
               </Field>
-              <Button onClick={() => void run(() => dockerApi.pull(pullImage.trim()))}>
+              <Button
+                onClick={() =>
+                  void run(
+                    () => dockerApi.pull(pullImage.trim()),
+                    t('docker.actions.pull'),
+                    '/api/v1/docker/images/pull',
+                    { image: pullImage.trim(), execute: true },
+                  )
+                }
+              >
                 {t('docker.actions.pull')}
               </Button>
             </div>
@@ -348,7 +402,17 @@ export function DockerPage() {
             rows={compose}
             rowActions={(row) => (
               <>
-                <Button size="sm" onClick={() => void run(() => dockerApi.composeAction(row.name, 'up'))}>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    void run(
+                      () => dockerApi.composeAction(row.name, 'up'),
+                      t('docker.actions.up'),
+                      `/api/v1/docker/compose/${encodeURIComponent(row.name)}/up`,
+                      { execute: true },
+                    )
+                  }
+                >
                   {t('docker.actions.up')}
                 </Button>
                 <Button size="sm" onClick={() => void run(() => dockerApi.composeAction(row.name, 'down'))}>
@@ -453,7 +517,17 @@ export function DockerPage() {
               <Button onClick={() => void run(() => dockerApi.prune('volumes', pruneConfirm))}>
                 {t('docker.actions.pruneVolumes')}
               </Button>
-              <Button variant="danger" onClick={() => void run(() => dockerApi.prune('system', pruneConfirm))}>
+              <Button
+                variant="danger"
+                onClick={() =>
+                  void run(
+                    () => dockerApi.prune('system', pruneConfirm),
+                    t('docker.actions.pruneSystem'),
+                    '/api/v1/docker/prune',
+                    { scope: 'system', confirm: pruneConfirm, execute: true },
+                  )
+                }
+              >
                 {t('docker.actions.pruneSystem')}
               </Button>
             </div>

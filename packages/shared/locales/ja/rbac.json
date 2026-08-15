@@ -81,12 +81,12 @@
     "securityApiKeysAdmin": "API キー管理者",
     "networkBrowse": "ホスト仲介の Web ブラウズ",
     "networkVnc": "VNCリモートデスクトップ",
-    "validatorsRead": "Validators (read)",
-    "validatorsManage": "Validators manage",
-    "validatorsWipe": "Validators wipe data",
-    "dockerRead": "Docker (read)",
-    "dockerManage": "Docker manage",
-    "dockerWipe": "Docker wipe / prune"
+    "validatorsRead": "バリデーター（読み取り）",
+    "validatorsManage": "バリデーター管理",
+    "validatorsWipe": "バリデーターデータ消去",
+    "dockerRead": "Docker（読み取り）",
+    "dockerManage": "Docker 管理",
+    "dockerWipe": "Docker 削除／整理"
   },
   "aboutRoles": "役割 (工場出荷時のデフォルト)",
   "aboutRolesBody": "ロールはデフォルトの機能を設定します。ユーザーは個々の設定をオーバーライドできます。",

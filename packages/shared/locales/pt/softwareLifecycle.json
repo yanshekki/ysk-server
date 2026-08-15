@@ -51,8 +51,8 @@
     "purgeData": "Os caminhos de dados serão excluídos",
     "protectedSkipped": "Os componentes protegidos são ignorados",
     "runtimeStack": "Todas as versões gerenciadas pelo painel deste ambiente de execução serão removidas",
-    "containers": "Running containers will stop",
-    "validators": "Validator node stacks that use Docker Compose will stop"
+    "containers": "Os contentores em execução vão parar",
+    "validators": "As pilhas de validador que usam Docker Compose vão parar"
   },
   "requestCancel": "Solicitar cancelamento",
   "cancelling": "Cancelando…",

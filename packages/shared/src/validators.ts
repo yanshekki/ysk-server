@@ -118,6 +118,20 @@ export function isSafeValidatorLimitCpus(value: string): boolean {
   return /^\d+(\.\d+)?$/.test(String(value ?? '').trim());
 }
 
+/** Absolute host path for chain data. Rejects traversal and system prefixes. */
+export function isSafeValidatorDataPath(value: string): boolean {
+  const p = String(value ?? '').trim();
+  if (!p.startsWith('/') || p.includes('..') || p.includes('\0') || p.length < 5 || p.length > 256) {
+    return false;
+  }
+  if (!/^\/[\w./-]+$/.test(p)) return false;
+  const blocked = ['/etc', '/boot', '/proc', '/sys', '/dev', '/root', '/bin', '/sbin', '/lib', '/lib64', '/run'];
+  for (const b of blocked) {
+    if (p === b || p.startsWith(`${b}/`)) return false;
+  }
+  return p !== '/';
+}
+
 export type ValidatorSummaryDto = {
   id: string;
   status: ValidatorRuntimeStatus;
@@ -131,6 +145,7 @@ export type ValidatorSummaryDto = {
     currentTag: string;
     nextTag: string;
     breaking: boolean;
+    changelogUrl?: string;
   } | null;
 };
 

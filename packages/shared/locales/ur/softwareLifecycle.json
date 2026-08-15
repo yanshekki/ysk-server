@@ -51,8 +51,8 @@
     "purgeData": "ڈیٹا پاتھز کو حذف کر دیا جائے گا۔",
     "protectedSkipped": "محفوظ اجزاء کو چھوڑ دیا گیا ہے۔",
     "runtimeStack": "اس رن ٹائم کے پینل کے زیر انتظام تمام ورژن ہٹا دیے جائیں گے۔",
-    "containers": "Running containers will stop",
-    "validators": "Validator node stacks that use Docker Compose will stop"
+    "containers": "چلتے کنٹینر رک جائیں گے",
+    "validators": "Docker Compose والے ویلیڈیٹر ڈھیر رک جائیں گے"
   },
   "requestCancel": "منسوخی کی درخواست کریں۔",
   "cancelling": "منسوخ ہو رہا ہے…",

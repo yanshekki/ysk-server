@@ -16,48 +16,55 @@ import {
 } from './compose-runner.js';
 import type { HostExecutor } from '../../host/executor.js';
 import type { ValidatorUpgradeOffer } from './adapters/base.js';
+import {
+  changelogForClient,
+  loadRemoteClientTags,
+  pickAllowedNextTag,
+  refreshRemoteClientTags,
+} from './releases.js';
+import { tagIsBreaking, tagIsNewer } from './versions.js';
+import type { OpsLogFn } from '../ops-log.js';
+
+export { parseVersionParts, tagIsBreaking, tagIsNewer } from './versions.js';
 
 export type StoredUpgradeOffer = ValidatorUpgradeOffer & { instanceId: string };
 
-export function parseVersionParts(tag: string): { major: number; minor: number; patch: number } {
-  const m = String(tag).replace(/^v/i, '').match(/^(\d+)\.(\d+)\.(\d+)/);
-  if (!m) return { major: 0, minor: 0, patch: 0 };
-  return { major: Number(m[1]), minor: Number(m[2]), patch: Number(m[3]) };
-}
-
-export function tagIsNewer(current: string, next: string): boolean {
-  const a = parseVersionParts(current);
-  const b = parseVersionParts(next);
-  if (b.major !== a.major) return b.major > a.major;
-  if (b.minor !== a.minor) return b.minor > a.minor;
-  return b.patch > a.patch;
-}
-
-export function tagIsBreaking(current: string, next: string): boolean {
-  return parseVersionParts(next).major > parseVersionParts(current).major;
-}
-
-export function detectUpgradeForInstance(spec: ValidatorInstanceDto): ValidatorUpgradeOffer | null {
+export function detectUpgradeForInstance(
+  spec: ValidatorInstanceDto,
+  remoteTags?: Record<string, string>,
+): ValidatorUpgradeOffer | null {
   const pinned = v1ValidatorClients(spec.chain);
+  const remotes = remoteTags;
   for (const pin of pinned) {
     const have = Object.values(spec.clients).find((c) => c.id === pin.id);
-    const current = have?.tag ?? pin.tag;
-    if (tagIsNewer(current, pin.tag)) {
+    if (!have) continue;
+    const current = have.tag || pin.tag;
+    const picked = pickAllowedNextTag({
+      current,
+      pin: pin.tag,
+      remote: remotes?.[pin.id],
+    });
+    if (tagIsNewer(current, picked.next)) {
       return {
         currentTag: current,
-        nextTag: pin.tag,
+        nextTag: picked.next,
         clientId: pin.id,
-        breaking: tagIsBreaking(current, pin.tag),
+        breaking: tagIsBreaking(current, picked.next),
+        changelogUrl: changelogForClient(pin.id),
       };
     }
   }
   return null;
 }
 
-export function scanValidatorUpgrades(dataDir: string): StoredUpgradeOffer[] {
+export function scanValidatorUpgrades(
+  dataDir: string,
+  remoteTags?: Record<string, string>,
+): StoredUpgradeOffer[] {
+  const remotes = remoteTags ?? loadRemoteClientTags(dataDir);
   const out: StoredUpgradeOffer[] = [];
   for (const inst of listValidatorInstances(dataDir)) {
-    const offer = detectUpgradeForInstance(inst);
+    const offer = detectUpgradeForInstance(inst, remotes);
     if (offer) out.push({ ...offer, instanceId: inst.id });
   }
   return out;
@@ -101,13 +108,15 @@ export async function applyValidatorUpgrade(input: {
   health?: (spec: ValidatorInstanceDto) => Promise<boolean>;
   healthTimeoutMs?: number;
   sleep?: (ms: number) => Promise<void>;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<{
   ok: boolean;
   rolledBack: boolean;
   notes: string[];
   spec: ValidatorInstanceDto;
 }> {
-  const offer = detectUpgradeForInstance(input.spec);
+  const offer = detectUpgradeForInstance(input.spec, loadRemoteClientTags(input.dataDir));
   if (!offer) return { ok: true, rolledBack: false, notes: ['no upgrade'], spec: input.spec };
   const prev = input.spec;
   const nextClients = { ...input.spec.clients };
@@ -140,12 +149,16 @@ export async function applyValidatorUpgrade(input: {
     file: composePath,
     project: composeProjectName(next.id),
     execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
   });
   const up = await composeUp({
     host: input.host,
     file: composePath,
     project: composeProjectName(next.id),
     execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
   });
   if (!up.ok) {
     const rb = await rollbackUpgrade({
@@ -263,6 +276,11 @@ export async function runValidatorUpgradeScan(input: {
   dataDir: string;
   host: HostExecutor;
 }): Promise<StoredUpgradeOffer[]> {
+  try {
+    await refreshRemoteClientTags({ dataDir: input.dataDir });
+  } catch {
+    /* keep last cache / pins */
+  }
   const offers = scanValidatorUpgrades(input.dataDir);
   saveUpgradeScan(input.dataDir, offers);
   for (const inst of listValidatorInstances(input.dataDir)) {

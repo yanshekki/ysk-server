@@ -81,12 +81,12 @@
     "securityApiKeysAdmin": "Admin kunci API",
     "networkBrowse": "Penjelajahan web yang dimediasi host",
     "networkVnc": "Desktop jarak jauh VNC",
-    "validatorsRead": "Validators (read)",
-    "validatorsManage": "Validators manage",
-    "validatorsWipe": "Validators wipe data",
-    "dockerRead": "Docker (read)",
-    "dockerManage": "Docker manage",
-    "dockerWipe": "Docker wipe / prune"
+    "validatorsRead": "Validator (baca)",
+    "validatorsManage": "Validator kelola",
+    "validatorsWipe": "Validator hapus data",
+    "dockerRead": "Docker (baca)",
+    "dockerManage": "Docker kelola",
+    "dockerWipe": "Docker hapus / bersihkan"
   },
   "aboutRoles": "Peran (default pabrik)",
   "aboutRolesBody": "Peran menetapkan kemampuan default; pengguna dapat menggantinya satu per satu.",

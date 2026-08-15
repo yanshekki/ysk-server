@@ -800,6 +800,27 @@ export async function assessProductionReadiness(input: {
     });
   }
 
+  try {
+    const { listValidatorInstances } = await import('./validators/store.js');
+    const vals = listValidatorInstances(input.dataDir);
+    if (vals.length) {
+      const dockerOk = await hasCmd(input.host, 'docker');
+      push({
+        id: 'validators-docker',
+        category: 'ops',
+        title: tl('validators.readiness.dockerTitle'),
+        level: dockerOk ? 'ready' : 'degraded',
+        detail: dockerOk
+          ? tl('validators.readiness.dockerOk', { count: vals.length })
+          : tl('validators.readiness.dockerMissing'),
+        fixHref: '/docker',
+        severity: 'recommended',
+      });
+    }
+  } catch {
+    /* optional */
+  }
+
   const ready = items.filter((i) => i.level === 'ready').length;
   const degraded = items.filter((i) => i.level === 'degraded').length;
   const missing = items.filter((i) => i.level === 'missing').length;

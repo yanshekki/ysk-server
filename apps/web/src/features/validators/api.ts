@@ -10,6 +10,8 @@ import type {
   ValidatorSummaryDto,
 } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
+import { postSseJson } from '../runtimes/stream-sse';
+import type { InstallLogLine } from '../runtimes/stream-runtime-install';
 
 export type ValidatorsListResponse = {
   ok: boolean;
@@ -51,6 +53,8 @@ export const validatorsApi = {
     mithril?: boolean;
     memory?: string;
     cpus?: string;
+    dataPath?: string;
+    rpcPort?: number;
     execute?: boolean;
   }) =>
     api.requestRaw<ValidatorOpsResponse>('/api/v1/validators', {
@@ -129,7 +133,13 @@ export type ValidatorStatusResponse = {
   peers?: number | null;
   version?: string | null;
   lastError?: string | null;
-  upgrade?: { clientId: string; currentTag: string; nextTag: string; breaking: boolean } | null;
+  upgrade?: {
+    clientId: string;
+    currentTag: string;
+    nextTag: string;
+    breaking: boolean;
+    changelogUrl?: string;
+  } | null;
 };
 
 export type ValidatorOpsResponse = {
@@ -146,6 +156,15 @@ function postAction(id: string, action: string, body: Record<string, unknown>) {
     `/api/v1/validators/${encodeURIComponent(id)}/${action}`,
     { method: 'POST', body: JSON.stringify(body) },
   );
+}
+
+export function streamValidatorAction(
+  id: string,
+  action: string,
+  body: Record<string, unknown>,
+  opts?: { onLog?: (line: InstallLogLine) => void; signal?: AbortSignal },
+) {
+  return postSseJson(`/api/v1/validators/${encodeURIComponent(id)}/${action}`, body, opts);
 }
 
 export type {

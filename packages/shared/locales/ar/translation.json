@@ -2884,142 +2884,145 @@
   },
   "docker": {
     "title": "Docker",
-    "subtitle": "Install and control the Docker engine, containers, images, Compose projects, and disk on this host.",
-    "refresh": "Refresh",
-    "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
-    "protected": "Protected",
-    "pruneConfirm": "Type PRUNE to confirm volume or system prune",
-    "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
+    "subtitle": "ثبّت وتحكّم بمحرك Docker والحاويات والصور ومشاريع Compose والقرص على هذا المضيف.",
+    "refresh": "تحديث",
+    "notInstalled": "Docker Engine غير مثبت. ثبّت docker.io و docker-compose-v2 من هذه الصفحة.",
+    "protected": "محمي",
+    "pruneConfirm": "اكتب PRUNE لتأكيد تنظيف volume أو النظام",
+    "settingsHint": "مجموعة آمنة فقط من daemon.json. التطبيق يكتب الملف ويعيد تشغيل docker.service.",
     "cli": {
-      "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+      "usage": "الاستخدام: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
     },
     "tab": {
-      "overview": "Overview",
-      "containers": "Containers",
-      "images": "Images",
+      "overview": "نظرة عامة",
+      "containers": "الحاويات",
+      "images": "الصور",
       "compose": "Compose",
       "volumes": "Volumes",
-      "networks": "Networks",
-      "prune": "Prune",
-      "settings": "Settings",
-      "about": "About"
+      "networks": "الشبكات",
+      "prune": "تنظيف",
+      "settings": "الإعدادات",
+      "about": "حول"
     },
     "col": {
-      "engine": "Engine",
-      "containers": "Containers",
-      "version": "Version",
-      "dataRoot": "Data root",
-      "validators": "Validator stacks",
-      "name": "Name",
-      "image": "Image",
-      "status": "Status",
-      "ports": "Ports",
-      "managed": "Managed",
-      "size": "Size",
-      "driver": "Driver",
-      "type": "Type",
-      "reclaimable": "Reclaimable",
-      "disk": "Disk"
+      "engine": "المحرك",
+      "containers": "الحاويات",
+      "version": "الإصدار",
+      "dataRoot": "دليل البيانات",
+      "disk": "القرص",
+      "validators": "مكدسات المدقق",
+      "name": "الاسم",
+      "image": "الصورة",
+      "status": "الحالة",
+      "ports": "المنافذ",
+      "managed": "تديره اللوحة",
+      "size": "الحجم",
+      "driver": "المشغّل",
+      "type": "النوع",
+      "reclaimable": "قابل للاسترداد"
     },
     "state": {
-      "up": "Active",
-      "down": "Stopped"
+      "up": "نشط",
+      "down": "متوقف"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "logs": "Logs",
-      "run": "Run image",
-      "pull": "Pull",
-      "up": "Up",
-      "down": "Down",
-      "createVolume": "Create volume",
-      "createNetwork": "Create network",
-      "pruneContainers": "Prune containers",
-      "pruneImages": "Prune images",
-      "pruneVolumes": "Prune volumes",
-      "pruneSystem": "System prune",
-      "startEngine": "Start engine",
-      "stopEngine": "Stop engine",
-      "restartEngine": "Restart engine",
-      "applyDaemon": "Apply daemon settings",
-      "inspect": "Inspect"
+      "start": "بدء",
+      "stop": "إيقاف",
+      "restart": "إعادة تشغيل",
+      "remove": "حذف",
+      "logs": "السجلات",
+      "inspect": "فحص",
+      "exec": "Exec (الإصدار)",
+      "run": "تشغيل صورة",
+      "pull": "سحب",
+      "up": "رفع",
+      "down": "إنزال",
+      "createVolume": "إنشاء volume",
+      "createNetwork": "إنشاء شبكة",
+      "pruneContainers": "تنظيف الحاويات",
+      "pruneImages": "تنظيف الصور",
+      "pruneVolumes": "تنظيف volumes",
+      "pruneSystem": "تنظيف النظام",
+      "startEngine": "بدء المحرك",
+      "stopEngine": "إيقاف المحرك",
+      "restartEngine": "إعادة تشغيل المحرك",
+      "applyDaemon": "تطبيق إعدادات المحرك"
     },
     "empty": {
-      "containers": "No containers",
-      "images": "No images",
-      "compose": "No Compose projects",
-      "volumes": "No volumes",
-      "networks": "No networks"
+      "containers": "لا حاويات",
+      "images": "لا صور",
+      "compose": "لا مشاريع Compose",
+      "volumes": "لا volumes",
+      "networks": "لا شبكات"
     },
     "logs": {
-      "empty": "No logs yet"
+      "empty": "لا سجلات بعد"
     },
     "settings": {
-      "logMaxSize": "Container log max size",
-      "liveRestore": "Live restore (keep containers if the daemon restarts)",
-      "mirrors": "Registry mirrors (one URL per line)",
-      "insecure": "Insecure registries (one host per line)"
+      "logMaxSize": "الحد الأقصى لسجل الحاوية",
+      "liveRestore": "استعادة حية (الإبقاء على الحاويات إن أُعيد تشغيل الشيطان)",
+      "mirrors": "مرايا Registry (عنوان لكل سطر)",
+      "insecure": "سجلات غير مشفّرة (مضيف لكل سطر)"
     },
     "about": {
-      "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
-      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
-      "validators": "Open validator nodes"
+      "body": "Docker خدمة مضيف من الدرجة الأولى في YSK Server مثل Nginx. يُثبَّت من اللوحة (Ubuntu docker.io + docker-compose-v2). تعمل عُقد المدقق كمشاريع Compose باسم yskval-*.",
+      "honesty": "تغييرات المضيف تحتاج root و YSK_EXECUTE=1. الافتراضي dry-run. هذه الصفحة ليست Kubernetes.",
+      "validators": "فتح عُقد المدقق"
     },
     "alerts": {
-      "daemonTitle": "Docker daemon is down",
-      "daemonBody": "The Docker engine is installed but docker.service is not active. Validator stacks cannot start."
+      "daemonTitle": "شيطان Docker متوقف",
+      "daemonBody": "Docker مثبت لكن docker.service غير نشط. لا يمكن بدء مكدسات المدقق."
     },
     "errors": {
-      "notInstalled": "Docker is not installed",
-      "daemonDown": "Docker daemon is not active",
-      "needCompose": "docker compose (v2 plugin) is required",
-      "badImage": "Invalid image reference",
-      "badName": "Invalid name",
-      "badPort": "Invalid port publish",
-      "badEnv": "Invalid environment variable",
-      "badVolume": "Invalid volume mount",
-      "badNetwork": "Invalid network",
-      "protectedNetwork": "Cannot remove a built-in Docker network",
-      "badRestart": "Invalid restart policy",
-      "badPrune": "Invalid prune scope",
-      "needPruneConfirm": "Volume or system prune requires confirm=PRUNE",
-      "badDaemon": "Invalid daemon setting",
-      "composeMissing": "Compose file for this project was not found",
-      "logsFailed": "Could not read container logs",
-      "mutateFailed": "Docker command failed",
-      "engineFailed": "Could not control docker.service",
-      "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+      "notInstalled": "Docker غير مثبت",
+      "daemonDown": "شيطان Docker غير نشط",
+      "needCompose": "مطلوب docker compose (إضافة v2)",
+      "badImage": "مرجع صورة غير صالح",
+      "badName": "اسم غير صالح",
+      "badPort": "نشر منفذ غير صالح",
+      "badEnv": "متغير بيئة غير صالح",
+      "badVolume": "تركيب مجلد غير صالح",
+      "badNetwork": "شبكة غير صالحة",
+      "protectedNetwork": "لا يمكن حذف شبكة Docker مدمجة",
+      "badRestart": "سياسة إعادة التشغيل غير صالحة",
+      "badPrune": "نطاق التنظيف غير صالح",
+      "needPruneConfirm": "تنظيف volume أو النظام يتطلب confirm=PRUNE",
+      "badDaemon": "إعداد المحرك غير صالح",
+      "composeMissing": "ملف Compose لهذا المشروع غير موجود",
+      "logsFailed": "تعذر قراءة سجلات الحاوية",
+      "mutateFailed": "فشل أمر Docker",
+      "engineFailed": "تعذر التحكم بـ docker.service",
+      "badExec": "exec مقتصر على الثنائيات والإعدادات المسبقة المسموحة (بدون صدفة ولا TTY)",
+      "uninstallBusy": "أوقف الحاويات التي تديرها اللوحة (بما فيها مكدسات المدقق) قبل إزالة Docker"
     },
     "notes": {
-      "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",
-      "dryPrune": "Prune preview (not applied).",
-      "dryEngine": "Engine control is dry-run.",
-      "dryDaemon": "Would write /etc/docker/daemon.json and restart docker.service.",
-      "daemonWrote": "Wrote daemon.json",
-      "start": "Container started",
-      "stop": "Container stopped",
-      "restart": "Container restarted",
-      "remove": "Container removed",
-      "ran": "Container started from image",
-      "pulled": "Image pulled",
-      "imageRemoved": "Image removed",
-      "volumeCreated": "Volume created",
-      "volumeRemoved": "Volume removed",
-      "networkCreated": "Network created",
-      "networkRemoved": "Network removed",
-      "pruned": "Prune finished",
+      "dryMutate": "dry-run فقط. مرّر --execute و YSK_EXECUTE=1 لتغيير المضيف.",
+      "dryPrune": "معاينة التنظيف (غير مطبّقة).",
+      "dryEngine": "التحكم بالمحرك dry-run.",
+      "dryDaemon": "سيُكتب /etc/docker/daemon.json ويُعاد تشغيل docker.service.",
+      "daemonWrote": "كُتب daemon.json",
+      "start": "بدأت الحاوية",
+      "stop": "توقفت الحاوية",
+      "restart": "أُعيد تشغيل الحاوية",
+      "remove": "حُذفت الحاوية",
+      "ran": "بدأت الحاوية من صورة",
+      "pulled": "سُحبت الصورة",
+      "exec": "شُغّل exec مسموح",
+      "imageRemoved": "حُذفت الصورة",
+      "volumeCreated": "أُنشئ volume",
+      "volumeRemoved": "حُذف volume",
+      "networkCreated": "أُنشئت الشبكة",
+      "networkRemoved": "حُذفت الشبكة",
+      "pruned": "اكتمل التنظيف",
       "compose": {
-        "up": "Compose project started",
-        "down": "Compose project stopped",
-        "restart": "Compose project restarted"
+        "up": "بدأ مشروع Compose",
+        "down": "توقف مشروع Compose",
+        "restart": "أُعيد تشغيل مشروع Compose"
       },
       "engine": {
-        "start": "docker.service started",
-        "stop": "docker.service stopped",
-        "restart": "docker.service restarted"
+        "start": "بدأ docker.service",
+        "stop": "توقف docker.service",
+        "restart": "أُعيد تشغيل docker.service"
       }
     }
   },
@@ -5046,8 +5049,8 @@
       "security": "حماية",
       "system": "نظام",
       "ai": "AI",
-      "validators": "Validators",
-      "containers": "Containers"
+      "validators": "المدققون",
+      "containers": "الحاويات"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -5071,7 +5074,7 @@
     "noAccessTitle": "لا صلاحية",
     "noAccessDesc": "دورك لا يشمل هذه الصفحة. اطلب من مسؤول إن احتجت إليها.",
     "backToDashboard": "العودة إلى لوحة المعلومات",
-    "validators": "Validators (Beta)",
+    "validators": "المدققون (Beta)",
     "docker": "Docker"
   },
   "network": {
@@ -9652,12 +9655,12 @@
       "securityApiKeysAdmin": "مسؤول مفاتيح API",
       "networkBrowse": "تصفح الويب بوساطة المضيف",
       "networkVnc": "سطح المكتب البعيد VNC",
-      "validatorsRead": "Validators (read)",
-      "validatorsManage": "Validators manage",
-      "validatorsWipe": "Validators wipe data",
-      "dockerRead": "Docker (read)",
-      "dockerManage": "Docker manage",
-      "dockerWipe": "Docker wipe / prune"
+      "validatorsRead": "المدققون (قراءة)",
+      "validatorsManage": "المدققون إدارة",
+      "validatorsWipe": "المدققون مسح البيانات",
+      "dockerRead": "Docker (قراءة)",
+      "dockerManage": "Docker إدارة",
+      "dockerWipe": "Docker حذف / تنظيف"
     },
     "aboutRoles": "الأدوار (افتراضيات المصنع)",
     "aboutRolesBody": "تحدد الأدوار القدرات الافتراضية؛ يمكن للمستخدمين تجاوز تلك الفردية.",
@@ -11143,8 +11146,8 @@
       "purgeData": "سيتم حذف مسارات البيانات",
       "protectedSkipped": "يتم تخطي المكونات المحمية",
       "runtimeStack": "ستتم إزالة كافة الإصدارات التي تديرها اللوحة من وقت التشغيل هذا",
-      "containers": "Running containers will stop",
-      "validators": "Validator node stacks that use Docker Compose will stop"
+      "containers": "ستتوقف الحاويات قيد التشغيل",
+      "validators": "ستتوقف مكدسات المدقق التي تستخدم Docker Compose"
     },
     "requestCancel": "طلب الإلغاء",
     "cancelling": "جارٍ الإلغاء…",
@@ -12284,28 +12287,28 @@
     "bandwidthHint": "0 means unlimited."
   },
   "validators": {
-    "title": "Validators (Beta)",
-    "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+    "title": "المدققون (Beta)",
+    "subtitle": "ثبّت وأدر عُقد L1 على هذا المضيف. غير وصائي — المفاتيح تبقى لديك.",
     "beta": "Beta",
     "tab": {
-      "nodes": "Nodes",
-      "disk": "Disk",
-      "about": "About"
+      "nodes": "العُقد",
+      "disk": "القرص",
+      "about": "حول"
     },
     "empty": {
-      "title": "No validator nodes yet",
-      "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "title": "لا توجد عُقد مدقق بعد",
+      "desc": "أنشئ عقدة شبكة اختبار بعدة نقرات. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
     },
-    "refresh": "Refresh",
+    "refresh": "تحديث",
     "disk": {
-      "title": "Validator disk",
-      "root": "Data directory",
-      "free": "Free",
-      "used": "Used",
-      "none": "No instance data yet",
-      "warn": "Disk usage is high (70%+)",
-      "danger": "Disk usage is critical (85%+)",
-      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+      "title": "قرص المدققين",
+      "root": "دليل البيانات",
+      "free": "حر",
+      "used": "مستخدم",
+      "none": "لا توجد بيانات مثيل بعد",
+      "warn": "استخدام القرص مرتفع (٧٠٪+)",
+      "danger": "استخدام القرص حرج (٨٥٪+)",
+      "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)"
     },
     "chain": {
       "eth": "Ethereum",
@@ -12322,148 +12325,173 @@
     "network": {
       "hoodi": "Hoodi",
       "sepolia": "Sepolia",
-      "mainnet": "Mainnet",
+      "mainnet": "الشبكة الرئيسية",
       "fuji": "Fuji",
-      "testnet": "Testnet",
+      "testnet": "شبكة الاختبار",
       "preview": "Preview",
       "preprod": "Preprod",
       "westend": "Westend"
     },
     "networkKind": {
-      "testnet": "Testnet",
-      "mainnet": "Mainnet"
+      "testnet": "شبكة الاختبار",
+      "mainnet": "الشبكة الرئيسية"
     },
     "profile": {
-      "minimal": "Minimal",
-      "pruned": "Pruned",
-      "validator-ready": "Validator-ready",
+      "minimal": "أدنى",
+      "pruned": "مقلّم",
+      "validator-ready": "جاهز للمدقق",
       "rpc": "RPC"
     },
     "col": {
       "id": "ID",
-      "chain": "Chain",
-      "network": "Network",
-      "profile": "Profile",
-      "status": "Status",
-      "disk": "Disk"
+      "chain": "السلسلة",
+      "network": "الشبكة",
+      "profile": "الملف",
+      "status": "الحالة",
+      "disk": "القرص"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-    },
-    "errors": {
-      "notFound": "Validator instance not found",
-      "invalidId": "Invalid instance id",
-      "diskLow": "Not enough free disk for this chain, network, and profile",
-      "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-      "needDocker": "Docker Compose is required and was not found",
-      "composeFailed": "docker compose failed",
-      "needConfirm": "Clear requires confirm=instance id or CLEAR",
-      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-      "mithrilKey": "Could not load the Mithril genesis verification key",
-      "mithrilFailed": "Mithril snapshot download failed",
-      "pruneFailed": "Prune failed",
-      "switchNeedStop": "Stop the node before switching network",
-      "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-      "composeMissing": "Compose file not found",
-      "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-    },
-    "notes": {
-      "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-      "noKeys": "YSK Server never generates or stores staking keys.",
-      "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-      "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-      "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "created": "Node created and compose started",
-      "started": "Node started",
-      "stopped": "Node stopped",
-      "cleared": "Chain data cleared",
-      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "mithril": "Mithril snapshot restored; node restarted",
-      "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "pruned": "Unused project images pruned",
-      "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-      "sameNetwork": "Already on that network",
-      "drySwitch": "Network switch is dry-run.",
-      "switched": "Network switched and chain data cleared",
-      "dryCompose": "Would write compose.yml",
-      "composeWrote": "Wrote compose.yml",
-      "statsEmpty": "No running containers to measure",
-      "autoClearNone": "No stopped instance to auto-clear"
-    },
-    "create": "Create node",
-    "wizard": {
-      "title": "Create node",
-      "back": "Back",
-      "next": "Next",
-      "install": "Install",
-      "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-      "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-      "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-      "memory": "Memory limit (e.g. 4g)",
-      "cpus": "CPU limit (e.g. 2.0)"
-    },
-    "actions": {
-      "detail": "Details",
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "clear": "Clear",
-      "upgrade": "Upgrade",
-      "clearConfirm": "Type instance id or CLEAR",
-      "prune": "Prune",
-      "switchNetwork": "Switch network",
-      "removeUnit": "Also remove compose / instance record",
-      "restoreAfter": "Restore snapshot after clear"
-    },
-    "policy": {
-      "label": "Upgrade policy",
-      "manual": "Manual",
-      "notify": "Notify",
-      "auto-safe": "Auto (safe)",
-      "auto-all": "Auto (all)"
-    },
-    "logs": {
-      "empty": "No logs yet",
-      "follow": "Follow logs"
-    },
-    "alerts": {
-      "diskTitle": "Validator disk critical",
-      "diskBody": "Free space on the validator data volume is critically low.",
-      "upgradeTitle": "Validator upgrade available",
-      "upgradeBody": "One or more node clients have a newer pinned version.",
-      "syncTitle": "Validator node needs attention",
-      "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+      "usage": "الاستخدام: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
     },
     "clients": {
-      "el": "Execution client",
-      "cl": "Consensus client"
+      "el": "عميل التنفيذ",
+      "cl": "عميل الإجماع"
     },
     "mithril": {
-      "label": "Restore from Mithril snapshot first (recommended on testnet)",
-      "action": "Restore with Mithril"
+      "label": "استعادة من لقطة Mithril أولًا (موصى به في شبكة الاختبار)",
+      "action": "استعادة بـ Mithril"
+    },
+    "errors": {
+      "notFound": "مثيل المدقق غير موجود",
+      "invalidId": "معرّف المثيل غير صالح",
+      "diskLow": "لا يكفي القرص الحر لهذه السلسلة والشبكة والملف",
+      "diskUnknownMainnet": "تعذر قياس القرص الحر؛ رُفض الإنشاء على الشبكة الرئيسية",
+      "needDocker": "Docker Compose مطلوب ولم يُعثر عليه",
+      "composeFailed": "فشل docker compose",
+      "needConfirm": "المسح يتطلب confirm=معرّف المثيل أو CLEAR",
+      "mithrilAdaOnly": "استعادة Mithril متاحة لـ Cardano فقط",
+      "needMithrilConfirm": "Mithril يتطلب confirm=معرّف المثيل أو MITHRIL",
+      "mithrilBlocked": "حُظر docker run الخاص بـ Mithril بواسطة قائمة السماح",
+      "mithrilKey": "تعذر تحميل مفتاح التحقق genesis لـ Mithril",
+      "mithrilFailed": "فشل تنزيل لقطة Mithril",
+      "pruneFailed": "فشل التنظيف",
+      "switchNeedStop": "أوقف العقدة قبل تبديل الشبكة",
+      "switchNeedClear": "تبديل الشبكة يمسح بيانات السلسلة. أكّد بمعرّف المثيل أو CLEAR",
+      "composeMissing": "ملف Compose غير موجود",
+      "composeNotManaged": "رفض كتابة ملف Compose لا تديره YSK",
+      "badDataPath": "يجب أن يكون مسار البيانات مجلدًا مطلقًا خارج مسارات النظام",
+      "portInUse": "منفذ RPC هذا مستخدم فعلًا من مثيل مدقق آخر",
+      "snapshotUnsupported": "لا يوجد مصدر لقطة مسموح لهذه السلسلة",
+      "snapshotLookup": "تعذر حل مؤشر اللقطة الرسمي",
+      "needSnapshotConfirm": "استعادة اللقطة تتطلب confirm=معرّف المثيل أو SNAPSHOT",
+      "snapshotBlocked": "حُظر docker run الخاص باللقطة بواسطة قائمة السماح",
+      "snapshotFailed": "فشل تنزيل اللقطة أو استخراجها"
+    },
+    "notes": {
+      "beta": "هذه الميزة Beta. تغييرات المضيف تحتاج root و YSK_EXECUTE=1.",
+      "noKeys": "لا يولّد YSK Server مفاتيح الرهن ولا يخزنها أبدًا.",
+      "dockerSoon": "التثبيت والبدء والإيقاف في المرحلة التالية. تعرض هذه الصفحة المثيلات والقرص فقط.",
+      "dryCreate": "كُتبت مواصفات المثيل وcompose (dry-run). مرّر --execute و YSK_EXECUTE=1 لبدء الحاويات.",
+      "dryStart": "البدء dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "dryStop": "الإيقاف dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "dryClear": "المسح dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "created": "أُنشئت العقدة وبدأ compose",
+      "started": "بدأت العقدة",
+      "stopped": "توقفت العقدة",
+      "cleared": "مُسحت بيانات السلسلة",
+      "dryMithril": "استعادة Mithril dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "mithril": "استُعيدت لقطة Mithril؛ أُعيد تشغيل العقدة",
+      "dryPrune": "التنظيف dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "pruned": "نُظفت صور المشروع غير المستخدمة",
+      "pruneProfile": "التقليم الأصلي للعميل هو ملف pruned／minimal. أعد الإنشاء لتغييره.",
+      "sameNetwork": "موجود أصلًا على تلك الشبكة",
+      "drySwitch": "تبديل الشبكة dry-run.",
+      "switched": "بُدّلت الشبكة ومُسحت بيانات السلسلة",
+      "dryCompose": "سيُكتب compose.yml",
+      "composeWrote": "كُتب compose.yml",
+      "statsEmpty": "لا توجد حاويات قيد التشغيل للقياس",
+      "autoClearNone": "لا يوجد مثيل متوقف للمسح التلقائي",
+      "drySnapshot": "استعادة اللقطة dry-run. مرّر --execute و YSK_EXECUTE=1.",
+      "snapshotEthEl": "استُعيد أرشيف EL من ethPandaOps وأُعيد ضبط CL لمزامنة نقطة التحقق",
+      "snapshotEthCl": "أُعيد ضبط بيانات CL لمزامنة نقطة التحقق الرسمية",
+      "snapshotNear": "مُسحت بيانات NEAR؛ سيعيد compose التهيئة بالـ genesis الرسمي وepoch sync",
+      "nativePrune": "شُغّل أمر التقليم الأصلي للعميل"
+    },
+    "create": "إنشاء عقدة",
+    "wizard": {
+      "title": "إنشاء عقدة",
+      "back": "رجوع",
+      "next": "التالي",
+      "install": "تثبيت",
+      "mainnetWarn": "الشبكة الرئيسية تحتاج مساحة حرة كبيرة (ETH غالبًا ٨٠٠ جيبيبايت+). يُنصح بشبكة الاختبار.",
+      "mainnetAck": "أفهم مخاطر القرص والقطع. المتابعة على الشبكة الرئيسية.",
+      "heavyWarn": "هذه السلسلة ثقيلة (قرص كبير وIOPS مرتفع). Solana على الشبكة الرئيسية تحتاج عادة ٢ تيبيبايت+.",
+      "memory": "حد الذاكرة (مثل 4g)",
+      "cpus": "حد المعالج (مثل 2.0)",
+      "dataPath": "مسار البيانات (اختياري)",
+      "rpcPort": "منفذ RPC (اختياري)"
+    },
+    "actions": {
+      "detail": "التفاصيل",
+      "start": "بدء",
+      "stop": "إيقاف",
+      "restart": "إعادة تشغيل",
+      "clear": "مسح",
+      "upgrade": "ترقية",
+      "clearConfirm": "اكتب معرّف المثيل أو CLEAR",
+      "prune": "تنظيف الصور",
+      "switchNetwork": "تبديل الشبكة",
+      "removeUnit": "احذف أيضًا compose / سجل المثيل",
+      "restoreAfter": "استعادة اللقطة بعد المسح"
+    },
+    "policy": {
+      "label": "سياسة الترقية",
+      "manual": "يدوي",
+      "notify": "إشعار",
+      "auto-safe": "تلقائي (آمن)",
+      "auto-all": "تلقائي (الكل)"
+    },
+    "logs": {
+      "empty": "لا سجلات بعد",
+      "follow": "متابعة السجلات"
     },
     "compose": {
-      "label": "Compose file",
-      "save": "Save compose"
+      "label": "ملف Compose",
+      "save": "حفظ compose"
     },
     "snapshot": {
-      "action": "Restore snapshot",
-      "mithril": "Cardano uses Mithril for certified snapshot restore.",
-      "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-      "avax": "Avalanche uses state-sync in the compose profile.",
-      "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-      "none": "No snapshot source is configured for this chain."
+      "action": "استعادة اللقطة",
+      "mithril": "يستخدم Cardano Mithril لاستعادة لقطة معتمدة.",
+      "eth": "تبدأ Ethereum على الشبكة الرئيسية بمزامنة نقطة التحقق الرسمية لعميل الإجماع. يستمر EL بمزامنة snap.",
+      "ethEl": "يمكن لـ Hoodi／Sepolia استعادة أرشيف EL من ethPandaOps ثم مزامنة نقطة التحقق للـ CL.",
+      "avax": "تستخدم Avalanche state-sync في ملف compose.",
+      "near": "أُوقفت لقطات tar المجانية الرسمية لـ NEAR. الاستعادة تمسح البيانات وتستخدم genesis الرسمي وepoch sync.",
+      "none": "لا يوجد مصدر لقطة مضبوط لهذه السلسلة."
     },
     "stake": {
-      "title": "Prepare for staking (you keep the keys)",
-      "offlineKeys": "Generate keys offline. The panel never stores them.",
-      "deposit": "Complete deposit / registration on the official launchpad.",
-      "withdrawal": "Set withdrawal credentials yourself.",
-      "monitor": "Watch disk, peers, and upgrade badges on this page."
+      "title": "الاستعداد للرهن (المفاتيح تبقى لديك)",
+      "offlineKeys": "ولّد المفاتيح دون اتصال. اللوحة لا تخزنها أبدًا.",
+      "deposit": "أكمل الإيداع / التسجيل على المنصة الرسمية.",
+      "withdrawal": "اضبط بيانات اعتماد السحب بنفسك.",
+      "monitor": "راقب القرص والأقران وشارات الترقية في هذه الصفحة."
+    },
+    "alerts": {
+      "diskTitle": "قرص المدقق حرج",
+      "diskBody": "المساحة الحرة على مجلد بيانات المدقق منخفضة جدًا.",
+      "upgradeTitle": "تتوفر ترقية للمدقق",
+      "upgradeBody": "لدى عميل عقدة واحد أو أكثر إصدار مثبت أحدث.",
+      "syncTitle": "عقدة المدقق تحتاج انتباهًا",
+      "syncBody": "عقدة تُزامن منذ أكثر من ٦ ساعات أو أبلغت عن خطأ.",
+      "rollbackTitle": "أُلغيت ترقية المدقق",
+      "rollbackBody": "فشلت ترقية {{id}} في فحص الصحة وأُلغيت."
+    },
+    "upgrade": {
+      "changelog": "سجل التغييرات"
+    },
+    "readiness": {
+      "dockerTitle": "Docker لعُقد المدقق",
+      "dockerOk": "{{count}} مثيل مدقق؛ Docker مثبت",
+      "dockerMissing": "توجد مثيلات مدقق لكن أمر docker غير موجود"
     }
   },
   "vnc": {

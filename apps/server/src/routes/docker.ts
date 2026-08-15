@@ -20,6 +20,7 @@ import {
   dockerSystemDf,
   getDockerDaemonSettings,
   inspectDocker,
+  dockerExec,
   listDockerComposeProjects,
   listDockerContainers,
   listDockerImages,
@@ -30,6 +31,7 @@ import {
 import { ErrorCodes, isDockerComposeAction, isDockerContainerAction, isDockerEngineAction } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
+import { sendMaybeStreamedOps } from '../http/sse-ops.js';
 import { requireAnyCap, requireCap } from '../http/rbac-guard.js';
 
 const BASE = '/api/v1/docker';
@@ -119,9 +121,22 @@ export async function handleDockerRoutes(
 
     if (method === 'POST' && url.pathname === `${BASE}/images/pull`) {
       const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
-      const result = await dockerPull({ ...ctxOf(ctx, body), image: String(body.image ?? '') });
-      ctx.audit.append({ actor: user.username, action: 'docker.container', detail: { op: 'pull' }, ok: result.ok });
-      sendOpsResult(res, result);
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await dockerPull({
+            ...ctxOf(ctx, body),
+            image: String(body.image ?? ''),
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({ actor: user.username, action: 'docker.container', detail: { op: 'pull' }, ok: result.ok });
+          return result;
+        },
+      });
       return true;
     }
 
@@ -199,13 +214,28 @@ export async function handleDockerRoutes(
 
     if (method === 'POST' && url.pathname === `${BASE}/prune`) {
       const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
-      const result = await dockerPrune({
-        ...ctxOf(ctx, body),
-        scope: String(body.scope ?? ''),
-        confirm: body.confirm != null ? String(body.confirm) : undefined,
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await dockerPrune({
+            ...ctxOf(ctx, body),
+            scope: String(body.scope ?? ''),
+            confirm: body.confirm != null ? String(body.confirm) : undefined,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'docker.prune',
+            detail: { scope: body.scope },
+            ok: result.ok,
+          });
+          return result;
+        },
       });
-      ctx.audit.append({ actor: user.username, action: 'docker.prune', detail: { scope: body.scope }, ok: result.ok });
-      sendOpsResult(res, result);
       return true;
     }
 
@@ -241,7 +271,7 @@ export async function handleDockerRoutes(
       return true;
     }
 
-    if (parts[0] === 'containers' && parts[1] && parts[2] && method === 'POST') {
+    if (parts[0] === 'containers' && parts[1] && parts[2] && parts[2] !== 'exec' && method === 'POST') {
       const action = parts[2] === 'remove' ? 'remove' : parts[2];
       if (!isDockerContainerAction(action)) {
         sendJson(res, 400, { ok: false, code: ErrorCodes.VALIDATION, message: 'bad container action' });
@@ -294,6 +324,41 @@ export async function handleDockerRoutes(
       return true;
     }
 
+    if (parts[0] === 'containers' && parts[1] && parts[2] === 'exec' && method === 'POST') {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const presetRaw = String(body.preset ?? 'version');
+      const preset =
+        presetRaw === 'help' || presetRaw === 'hostname' || presetRaw === 'version' ? presetRaw : '';
+      if (!preset) {
+        sendJson(res, 400, { ok: false, code: ErrorCodes.VALIDATION, message: 'bad exec preset' });
+        return true;
+      }
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await dockerExec({
+            ...ctxOf(ctx, body),
+            id: decodeURIComponent(parts[1]),
+            preset,
+            bin: body.bin != null ? String(body.bin) : undefined,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'docker.exec',
+            detail: { id: parts[1], preset },
+            ok: result.ok,
+          });
+          return result;
+        },
+      });
+      return true;
+    }
+
     if (parts[0] === 'compose' && parts[1] && parts[2] && method === 'POST') {
       const action = parts[2];
       if (!isDockerComposeAction(action)) {
@@ -301,18 +366,28 @@ export async function handleDockerRoutes(
         return true;
       }
       const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
-      const result = await dockerComposeAction({
-        ...ctxOf(ctx, body),
-        project: decodeURIComponent(parts[1]),
-        action,
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await dockerComposeAction({
+            ...ctxOf(ctx, body),
+            project: decodeURIComponent(parts[1]),
+            action,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'docker.container',
+            detail: { project: parts[1], op: action },
+            ok: result.ok,
+          });
+          return result;
+        },
       });
-      ctx.audit.append({
-        actor: user.username,
-        action: 'docker.container',
-        detail: { project: parts[1], op: action },
-        ok: result.ok,
-      });
-      sendOpsResult(res, result);
       return true;
     }
 

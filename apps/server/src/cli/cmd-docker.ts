@@ -10,6 +10,7 @@ import {
   dockerEngineStatus,
   dockerPrune,
   dockerPull,
+  dockerExec,
   dockerRun,
   dockerSystemDf,
   getDockerDaemonSettings,
@@ -121,6 +122,29 @@ export async function runDockerCommand(
     const action = sub === 'rm' ? 'remove' : sub;
     if (!isDockerContainerAction(action)) return 2;
     const result = await dockerContainerAction({ ...base, id, action });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'exec') {
+    const id = h.getOpt(args, '--name') ?? h.getOpt(args, '--id') ?? tokens[2];
+    if (!id) {
+      process.stderr.write(`${tl('docker.cli.usage')}\n`);
+      return 2;
+    }
+    const presetRaw = h.getOpt(args, '--preset') ?? 'version';
+    const preset =
+      presetRaw === 'help' || presetRaw === 'hostname' || presetRaw === 'version' ? presetRaw : '';
+    if (!preset) {
+      process.stderr.write(`${tl('docker.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await dockerExec({
+      ...base,
+      id,
+      preset,
+      bin: h.getOpt(args, '--bin') ?? undefined,
+    });
     h.printJson(result);
     return h.exitFromResult(result);
   }

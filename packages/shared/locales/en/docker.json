@@ -7,7 +7,7 @@
   "pruneConfirm": "Type PRUNE to confirm volume or system prune",
   "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
   "cli": {
-    "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+    "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
   },
   "tab": {
     "overview": "Overview",
@@ -48,6 +48,7 @@
     "remove": "Remove",
     "logs": "Logs",
     "inspect": "Inspect",
+    "exec": "Exec (version)",
     "run": "Run image",
     "pull": "Pull",
     "up": "Up",
@@ -107,6 +108,7 @@
     "logsFailed": "Could not read container logs",
     "mutateFailed": "Docker command failed",
     "engineFailed": "Could not control docker.service",
+    "badExec": "Exec is limited to allowlisted binaries and presets (no shell, no TTY)",
     "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
   },
   "notes": {
@@ -121,6 +123,7 @@
     "remove": "Container removed",
     "ran": "Container started from image",
     "pulled": "Image pulled",
+    "exec": "Ran allowlisted exec",
     "imageRemoved": "Image removed",
     "volumeCreated": "Volume created",
     "volumeRemoved": "Volume removed",

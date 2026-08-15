@@ -15,6 +15,7 @@ import {
 import { composeProjectName, composeFilePath, composeDown, composeUp } from './compose-runner.js';
 import { getValidatorInstance, instanceDir, upsertValidatorInstance } from './store.js';
 import { probeDockerCompose } from './compose-runner.js';
+import { runOpts, type OpsLogFn } from '../ops-log.js';
 
 export const MITHRIL_CLIENT_IMAGE = 'ghcr.io/input-output-hk/mithril-client:2537.1';
 
@@ -81,6 +82,8 @@ export async function restoreAdaMithril(input: {
   id: string;
   confirm?: string;
   fetchFn?: typeof fetch;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<ValidatorOpsResult> {
   const inst = getValidatorInstance(input.dataDir, input.id);
   if (!inst) {
@@ -134,7 +137,14 @@ export async function restoreAdaMithril(input: {
 
   const composePath = composeFilePath(instanceDir(input.dataDir, inst.id));
   const project = composeProjectName(inst.id);
-  await composeDown({ host: input.host, file: composePath, project, execute: true });
+  await composeDown({
+    host: input.host,
+    file: composePath,
+    project,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
 
   const runArgv = buildMithrilRunArgv({
     instanceId: inst.id,
@@ -142,7 +152,9 @@ export async function restoreAdaMithril(input: {
     aggregator: cfg.aggregator,
     genesisKey,
   });
-  const run = await input.host.runCommand(['docker', ...runArgv], { timeoutMs: 3_600_000 });
+  const run = await input.host.runCommand(['docker', ...runArgv], {
+    ...runOpts({ execute: true, timeoutMs: 3_600_000, onLog: input.onLog, signal: input.signal }),
+  });
   if (run.exitCode !== 0) {
     return failedValidatorOp({
       instanceId: inst.id,
@@ -150,7 +162,14 @@ export async function restoreAdaMithril(input: {
     });
   }
 
-  await composeUp({ host: input.host, file: composePath, project, execute: true });
+  await composeUp({
+    host: input.host,
+    file: composePath,
+    project,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
   const next: ValidatorInstanceDto = {
     ...inst,
     lastMithril: { at: new Date().toISOString(), network: inst.network },

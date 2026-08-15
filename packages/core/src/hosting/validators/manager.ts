@@ -5,6 +5,9 @@ import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import {
+  isSafeValidatorDataPath,
+  isSafeValidatorLimitCpus,
+  isSafeValidatorLimitMemory,
   isValidatorChainId,
   isValidatorInstanceId,
   isValidatorProfileId,
@@ -59,15 +62,19 @@ import {
   probeSolStatus,
   probeSuiStatus,
 } from './adapters/phase2.js';
-import { allocateValidatorPorts } from './ports.js';
+import { allocateValidatorPorts, usedValidatorPorts } from './ports.js';
 import { syncServiceExposure } from '../service-exposure/sync.js';
 import type { ValidatorNodeStatus } from './adapters/base.js';
 import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
+import { loadRemoteClientTags } from './releases.js';
+import type { OpsLogFn } from '../ops-log.js';
 
 export type ValidatorMutateOpts = {
   dataDir: string;
   host: HostExecutor;
   execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 };
 
 export async function createValidatorInstance(
@@ -117,13 +124,31 @@ export async function createValidatorInstance(
     });
   }
 
+  const customPath = input.dataPath?.trim();
+  if (customPath && !isSafeValidatorDataPath(customPath)) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.badDataPath')] });
+  }
+  if (input.memory && !isSafeValidatorLimitMemory(input.memory)) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
+  }
+  if (input.cpus && !isSafeValidatorLimitCpus(input.cpus)) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
+  }
+
   const clients: ValidatorInstanceDto['clients'] = resolveValidatorClients(chain, {
     el: input.el,
     cl: input.cl,
   });
   const ports = allocateValidatorPorts(input.dataDir, chain);
-  if (input.rpcPort && Number.isInteger(input.rpcPort) && input.rpcPort > 1024 && input.rpcPort <= 65535) {
-    ports.rpc = input.rpcPort;
+  if (input.rpcPort != null && Number.isFinite(input.rpcPort)) {
+    const n = Number(input.rpcPort);
+    if (!Number.isInteger(n) || n <= 1024 || n > 65535) {
+      return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
+    }
+    if (usedValidatorPorts(input.dataDir).has(n)) {
+      return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.portInUse')] });
+    }
+    ports.rpc = n;
   }
   const limits =
     input.memory || input.cpus
@@ -254,6 +279,8 @@ export async function startValidatorInstance(
       file: composePath,
       project: composeProjectName(inst.id),
       execute: true,
+      onLog: input.onLog,
+      signal: input.signal,
     });
     if (!up.ok) {
       return failedValidatorOp({
@@ -283,6 +310,8 @@ export async function stopValidatorInstance(
       file: composePath,
       project: composeProjectName(inst.id),
       execute: true,
+      onLog: input.onLog,
+      signal: input.signal,
     });
     if (!down.ok) {
       return failedValidatorOp({
@@ -441,7 +470,7 @@ export async function statusValidatorInstance(input: {
     diskUsedBytes: null,
     notes: [],
     instance: inst,
-    upgrade: detectUpgradeForInstance(inst),
+    upgrade: detectUpgradeForInstance(inst, loadRemoteClientTags(input.dataDir)),
     ...extra,
   };
 }
@@ -498,6 +527,8 @@ export async function upgradeValidatorInstance(
       host: input.host,
       spec: inst,
       execute: true,
+      onLog: input.onLog,
+      signal: input.signal,
     });
     if (!r.ok) return failedValidatorOp({ instanceId: inst.id, notes: r.notes });
     return appliedValidatorOp({ instanceId: inst.id, notes: r.notes });

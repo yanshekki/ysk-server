@@ -1,26 +1,26 @@
 {
-  "title": "Validators (Beta)",
-  "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+  "title": "المدققون (Beta)",
+  "subtitle": "ثبّت وأدر عُقد L1 على هذا المضيف. غير وصائي — المفاتيح تبقى لديك.",
   "beta": "Beta",
   "tab": {
-    "nodes": "Nodes",
-    "disk": "Disk",
-    "about": "About"
+    "nodes": "العُقد",
+    "disk": "القرص",
+    "about": "حول"
   },
   "empty": {
-    "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "title": "لا توجد عُقد مدقق بعد",
+    "desc": "أنشئ عقدة شبكة اختبار بعدة نقرات. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
   },
-  "refresh": "Refresh",
+  "refresh": "تحديث",
   "disk": {
-    "title": "Validator disk",
-    "root": "Data directory",
-    "free": "Free",
-    "used": "Used",
-    "none": "No instance data yet",
-    "warn": "Disk usage is high (70%+)",
-    "danger": "Disk usage is critical (85%+)",
-    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+    "title": "قرص المدققين",
+    "root": "دليل البيانات",
+    "free": "حر",
+    "used": "مستخدم",
+    "none": "لا توجد بيانات مثيل بعد",
+    "warn": "استخدام القرص مرتفع (٧٠٪+)",
+    "danger": "استخدام القرص حرج (٨٥٪+)",
+    "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)"
   },
   "chain": {
     "eth": "Ethereum",
@@ -37,147 +37,172 @@
   "network": {
     "hoodi": "Hoodi",
     "sepolia": "Sepolia",
-    "mainnet": "Mainnet",
+    "mainnet": "الشبكة الرئيسية",
     "fuji": "Fuji",
-    "testnet": "Testnet",
+    "testnet": "شبكة الاختبار",
     "preview": "Preview",
     "preprod": "Preprod",
     "westend": "Westend"
   },
   "networkKind": {
-    "testnet": "Testnet",
-    "mainnet": "Mainnet"
+    "testnet": "شبكة الاختبار",
+    "mainnet": "الشبكة الرئيسية"
   },
   "profile": {
-    "minimal": "Minimal",
-    "pruned": "Pruned",
-    "validator-ready": "Validator-ready",
+    "minimal": "أدنى",
+    "pruned": "مقلّم",
+    "validator-ready": "جاهز للمدقق",
     "rpc": "RPC"
   },
   "col": {
     "id": "ID",
-    "chain": "Chain",
-    "network": "Network",
-    "profile": "Profile",
-    "status": "Status",
-    "disk": "Disk"
+    "chain": "السلسلة",
+    "network": "الشبكة",
+    "profile": "الملف",
+    "status": "الحالة",
+    "disk": "القرص"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-  },
-  "errors": {
-    "notFound": "Validator instance not found",
-    "invalidId": "Invalid instance id",
-    "diskLow": "Not enough free disk for this chain, network, and profile",
-    "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-    "needDocker": "Docker Compose is required and was not found",
-    "composeFailed": "docker compose failed",
-    "needConfirm": "Clear requires confirm=instance id or CLEAR",
-    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-    "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed",
-    "pruneFailed": "Prune failed",
-    "switchNeedStop": "Stop the node before switching network",
-    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-    "composeMissing": "Compose file not found",
-    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-  },
-  "notes": {
-    "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-    "noKeys": "YSK Server never generates or stores staking keys.",
-    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-    "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-    "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "created": "Node created and compose started",
-    "started": "Node started",
-    "stopped": "Node stopped",
-    "cleared": "Chain data cleared",
-    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted",
-    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "pruned": "Unused project images pruned",
-    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-    "sameNetwork": "Already on that network",
-    "drySwitch": "Network switch is dry-run.",
-    "switched": "Network switched and chain data cleared",
-    "dryCompose": "Would write compose.yml",
-    "composeWrote": "Wrote compose.yml",
-    "statsEmpty": "No running containers to measure",
-    "autoClearNone": "No stopped instance to auto-clear"
-  },
-  "create": "Create node",
-  "wizard": {
-    "title": "Create node",
-    "back": "Back",
-    "next": "Next",
-    "install": "Install",
-    "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-    "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-    "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)"
-  },
-  "actions": {
-    "detail": "Details",
-    "start": "Start",
-    "stop": "Stop",
-    "restart": "Restart",
-    "clear": "Clear",
-    "upgrade": "Upgrade",
-    "clearConfirm": "Type instance id or CLEAR",
-    "prune": "Prune",
-    "switchNetwork": "Switch network",
-    "removeUnit": "Also remove compose / instance record",
-    "restoreAfter": "Restore snapshot after clear"
-  },
-  "policy": {
-    "label": "Upgrade policy",
-    "manual": "Manual",
-    "notify": "Notify",
-    "auto-safe": "Auto (safe)",
-    "auto-all": "Auto (all)"
-  },
-  "logs": {
-    "empty": "No logs yet",
-    "follow": "Follow logs"
-  },
-  "alerts": {
-    "diskTitle": "Validator disk critical",
-    "diskBody": "Free space on the validator data volume is critically low.",
-    "upgradeTitle": "Validator upgrade available",
-    "upgradeBody": "One or more node clients have a newer pinned version.",
-    "syncTitle": "Validator node needs attention",
-    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+    "usage": "الاستخدام: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
-    "el": "Execution client",
-    "cl": "Consensus client"
+    "el": "عميل التنفيذ",
+    "cl": "عميل الإجماع"
   },
   "mithril": {
-    "label": "Restore from Mithril snapshot first (recommended on testnet)",
-    "action": "Restore with Mithril"
+    "label": "استعادة من لقطة Mithril أولًا (موصى به في شبكة الاختبار)",
+    "action": "استعادة بـ Mithril"
+  },
+  "errors": {
+    "notFound": "مثيل المدقق غير موجود",
+    "invalidId": "معرّف المثيل غير صالح",
+    "diskLow": "لا يكفي القرص الحر لهذه السلسلة والشبكة والملف",
+    "diskUnknownMainnet": "تعذر قياس القرص الحر؛ رُفض الإنشاء على الشبكة الرئيسية",
+    "needDocker": "Docker Compose مطلوب ولم يُعثر عليه",
+    "composeFailed": "فشل docker compose",
+    "needConfirm": "المسح يتطلب confirm=معرّف المثيل أو CLEAR",
+    "mithrilAdaOnly": "استعادة Mithril متاحة لـ Cardano فقط",
+    "needMithrilConfirm": "Mithril يتطلب confirm=معرّف المثيل أو MITHRIL",
+    "mithrilBlocked": "حُظر docker run الخاص بـ Mithril بواسطة قائمة السماح",
+    "mithrilKey": "تعذر تحميل مفتاح التحقق genesis لـ Mithril",
+    "mithrilFailed": "فشل تنزيل لقطة Mithril",
+    "pruneFailed": "فشل التنظيف",
+    "switchNeedStop": "أوقف العقدة قبل تبديل الشبكة",
+    "switchNeedClear": "تبديل الشبكة يمسح بيانات السلسلة. أكّد بمعرّف المثيل أو CLEAR",
+    "composeMissing": "ملف Compose غير موجود",
+    "composeNotManaged": "رفض كتابة ملف Compose لا تديره YSK",
+    "badDataPath": "يجب أن يكون مسار البيانات مجلدًا مطلقًا خارج مسارات النظام",
+    "portInUse": "منفذ RPC هذا مستخدم فعلًا من مثيل مدقق آخر",
+    "snapshotUnsupported": "لا يوجد مصدر لقطة مسموح لهذه السلسلة",
+    "snapshotLookup": "تعذر حل مؤشر اللقطة الرسمي",
+    "needSnapshotConfirm": "استعادة اللقطة تتطلب confirm=معرّف المثيل أو SNAPSHOT",
+    "snapshotBlocked": "حُظر docker run الخاص باللقطة بواسطة قائمة السماح",
+    "snapshotFailed": "فشل تنزيل اللقطة أو استخراجها"
+  },
+  "notes": {
+    "beta": "هذه الميزة Beta. تغييرات المضيف تحتاج root و YSK_EXECUTE=1.",
+    "noKeys": "لا يولّد YSK Server مفاتيح الرهن ولا يخزنها أبدًا.",
+    "dockerSoon": "التثبيت والبدء والإيقاف في المرحلة التالية. تعرض هذه الصفحة المثيلات والقرص فقط.",
+    "dryCreate": "كُتبت مواصفات المثيل وcompose (dry-run). مرّر --execute و YSK_EXECUTE=1 لبدء الحاويات.",
+    "dryStart": "البدء dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "dryStop": "الإيقاف dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "dryClear": "المسح dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "created": "أُنشئت العقدة وبدأ compose",
+    "started": "بدأت العقدة",
+    "stopped": "توقفت العقدة",
+    "cleared": "مُسحت بيانات السلسلة",
+    "dryMithril": "استعادة Mithril dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "mithril": "استُعيدت لقطة Mithril؛ أُعيد تشغيل العقدة",
+    "dryPrune": "التنظيف dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "pruned": "نُظفت صور المشروع غير المستخدمة",
+    "pruneProfile": "التقليم الأصلي للعميل هو ملف pruned／minimal. أعد الإنشاء لتغييره.",
+    "sameNetwork": "موجود أصلًا على تلك الشبكة",
+    "drySwitch": "تبديل الشبكة dry-run.",
+    "switched": "بُدّلت الشبكة ومُسحت بيانات السلسلة",
+    "dryCompose": "سيُكتب compose.yml",
+    "composeWrote": "كُتب compose.yml",
+    "statsEmpty": "لا توجد حاويات قيد التشغيل للقياس",
+    "autoClearNone": "لا يوجد مثيل متوقف للمسح التلقائي",
+    "drySnapshot": "استعادة اللقطة dry-run. مرّر --execute و YSK_EXECUTE=1.",
+    "snapshotEthEl": "استُعيد أرشيف EL من ethPandaOps وأُعيد ضبط CL لمزامنة نقطة التحقق",
+    "snapshotEthCl": "أُعيد ضبط بيانات CL لمزامنة نقطة التحقق الرسمية",
+    "snapshotNear": "مُسحت بيانات NEAR؛ سيعيد compose التهيئة بالـ genesis الرسمي وepoch sync",
+    "nativePrune": "شُغّل أمر التقليم الأصلي للعميل"
+  },
+  "create": "إنشاء عقدة",
+  "wizard": {
+    "title": "إنشاء عقدة",
+    "back": "رجوع",
+    "next": "التالي",
+    "install": "تثبيت",
+    "mainnetWarn": "الشبكة الرئيسية تحتاج مساحة حرة كبيرة (ETH غالبًا ٨٠٠ جيبيبايت+). يُنصح بشبكة الاختبار.",
+    "mainnetAck": "أفهم مخاطر القرص والقطع. المتابعة على الشبكة الرئيسية.",
+    "heavyWarn": "هذه السلسلة ثقيلة (قرص كبير وIOPS مرتفع). Solana على الشبكة الرئيسية تحتاج عادة ٢ تيبيبايت+.",
+    "memory": "حد الذاكرة (مثل 4g)",
+    "cpus": "حد المعالج (مثل 2.0)",
+    "dataPath": "مسار البيانات (اختياري)",
+    "rpcPort": "منفذ RPC (اختياري)"
+  },
+  "actions": {
+    "detail": "التفاصيل",
+    "start": "بدء",
+    "stop": "إيقاف",
+    "restart": "إعادة تشغيل",
+    "clear": "مسح",
+    "upgrade": "ترقية",
+    "clearConfirm": "اكتب معرّف المثيل أو CLEAR",
+    "prune": "تنظيف الصور",
+    "switchNetwork": "تبديل الشبكة",
+    "removeUnit": "احذف أيضًا compose / سجل المثيل",
+    "restoreAfter": "استعادة اللقطة بعد المسح"
+  },
+  "policy": {
+    "label": "سياسة الترقية",
+    "manual": "يدوي",
+    "notify": "إشعار",
+    "auto-safe": "تلقائي (آمن)",
+    "auto-all": "تلقائي (الكل)"
+  },
+  "logs": {
+    "empty": "لا سجلات بعد",
+    "follow": "متابعة السجلات"
   },
   "compose": {
-    "label": "Compose file",
-    "save": "Save compose"
+    "label": "ملف Compose",
+    "save": "حفظ compose"
   },
   "snapshot": {
-    "action": "Restore snapshot",
-    "mithril": "Cardano uses Mithril for certified snapshot restore.",
-    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-    "avax": "Avalanche uses state-sync in the compose profile.",
-    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-    "none": "No snapshot source is configured for this chain."
+    "action": "استعادة اللقطة",
+    "mithril": "يستخدم Cardano Mithril لاستعادة لقطة معتمدة.",
+    "eth": "تبدأ Ethereum على الشبكة الرئيسية بمزامنة نقطة التحقق الرسمية لعميل الإجماع. يستمر EL بمزامنة snap.",
+    "ethEl": "يمكن لـ Hoodi／Sepolia استعادة أرشيف EL من ethPandaOps ثم مزامنة نقطة التحقق للـ CL.",
+    "avax": "تستخدم Avalanche state-sync في ملف compose.",
+    "near": "أُوقفت لقطات tar المجانية الرسمية لـ NEAR. الاستعادة تمسح البيانات وتستخدم genesis الرسمي وepoch sync.",
+    "none": "لا يوجد مصدر لقطة مضبوط لهذه السلسلة."
   },
   "stake": {
-    "title": "Prepare for staking (you keep the keys)",
-    "offlineKeys": "Generate keys offline. The panel never stores them.",
-    "deposit": "Complete deposit / registration on the official launchpad.",
-    "withdrawal": "Set withdrawal credentials yourself.",
-    "monitor": "Watch disk, peers, and upgrade badges on this page."
+    "title": "الاستعداد للرهن (المفاتيح تبقى لديك)",
+    "offlineKeys": "ولّد المفاتيح دون اتصال. اللوحة لا تخزنها أبدًا.",
+    "deposit": "أكمل الإيداع / التسجيل على المنصة الرسمية.",
+    "withdrawal": "اضبط بيانات اعتماد السحب بنفسك.",
+    "monitor": "راقب القرص والأقران وشارات الترقية في هذه الصفحة."
+  },
+  "alerts": {
+    "diskTitle": "قرص المدقق حرج",
+    "diskBody": "المساحة الحرة على مجلد بيانات المدقق منخفضة جدًا.",
+    "upgradeTitle": "تتوفر ترقية للمدقق",
+    "upgradeBody": "لدى عميل عقدة واحد أو أكثر إصدار مثبت أحدث.",
+    "syncTitle": "عقدة المدقق تحتاج انتباهًا",
+    "syncBody": "عقدة تُزامن منذ أكثر من ٦ ساعات أو أبلغت عن خطأ.",
+    "rollbackTitle": "أُلغيت ترقية المدقق",
+    "rollbackBody": "فشلت ترقية {{id}} في فحص الصحة وأُلغيت."
+  },
+  "upgrade": {
+    "changelog": "سجل التغييرات"
+  },
+  "readiness": {
+    "dockerTitle": "Docker لعُقد المدقق",
+    "dockerOk": "{{count}} مثيل مدقق؛ Docker مثبت",
+    "dockerMissing": "توجد مثيلات مدقق لكن أمر docker غير موجود"
   }
 }

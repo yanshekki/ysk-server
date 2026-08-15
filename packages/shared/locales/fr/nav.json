@@ -54,8 +54,8 @@
     "security": "Sécurité",
     "system": "Système",
     "ai": "IA",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "Validateurs",
+    "containers": "Conteneurs"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "Accès refusé",
   "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
   "backToDashboard": "Retour au tableau de bord",
-  "validators": "Validators (Beta)",
+  "validators": "Validateurs (Beta)",
   "docker": "Docker"
 }

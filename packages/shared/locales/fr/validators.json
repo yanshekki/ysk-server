@@ -1,26 +1,26 @@
 {
-  "title": "Validators (Beta)",
-  "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+  "title": "Validateurs (Beta)",
+  "subtitle": "Installez et gérez des nœuds L1 sur cet hôte. Non dépositaire — vous gardez les clés.",
   "beta": "Beta",
   "tab": {
-    "nodes": "Nodes",
-    "disk": "Disk",
-    "about": "About"
+    "nodes": "Nœuds",
+    "disk": "Disque",
+    "about": "À propos"
   },
   "empty": {
-    "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "title": "Aucun nœud validateur pour l’instant",
+    "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json"
   },
-  "refresh": "Refresh",
+  "refresh": "Actualiser",
   "disk": {
-    "title": "Validator disk",
-    "root": "Data directory",
-    "free": "Free",
-    "used": "Used",
-    "none": "No instance data yet",
-    "warn": "Disk usage is high (70%+)",
-    "danger": "Disk usage is critical (85%+)",
-    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+    "title": "Disque des validateurs",
+    "root": "Répertoire de données",
+    "free": "Libre",
+    "used": "Utilisé",
+    "none": "Pas encore de données d’instance",
+    "warn": "Utilisation du disque élevée (70 %+)",
+    "danger": "Utilisation du disque critique (85 %+)",
+    "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)"
   },
   "chain": {
     "eth": "Ethereum",
@@ -37,147 +37,172 @@
   "network": {
     "hoodi": "Hoodi",
     "sepolia": "Sepolia",
-    "mainnet": "Mainnet",
+    "mainnet": "Réseau principal",
     "fuji": "Fuji",
-    "testnet": "Testnet",
+    "testnet": "Réseau de test",
     "preview": "Preview",
     "preprod": "Preprod",
     "westend": "Westend"
   },
   "networkKind": {
-    "testnet": "Testnet",
-    "mainnet": "Mainnet"
+    "testnet": "Réseau de test",
+    "mainnet": "Réseau principal"
   },
   "profile": {
-    "minimal": "Minimal",
-    "pruned": "Pruned",
-    "validator-ready": "Validator-ready",
+    "minimal": "Minimaliste",
+    "pruned": "Élagué",
+    "validator-ready": "Prêt validateur",
     "rpc": "RPC"
   },
   "col": {
     "id": "ID",
-    "chain": "Chain",
-    "network": "Network",
-    "profile": "Profile",
-    "status": "Status",
-    "disk": "Disk"
+    "chain": "Chaîne",
+    "network": "Réseau",
+    "profile": "Profil",
+    "status": "État",
+    "disk": "Disque"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-  },
-  "errors": {
-    "notFound": "Validator instance not found",
-    "invalidId": "Invalid instance id",
-    "diskLow": "Not enough free disk for this chain, network, and profile",
-    "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-    "needDocker": "Docker Compose is required and was not found",
-    "composeFailed": "docker compose failed",
-    "needConfirm": "Clear requires confirm=instance id or CLEAR",
-    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-    "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed",
-    "pruneFailed": "Prune failed",
-    "switchNeedStop": "Stop the node before switching network",
-    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-    "composeMissing": "Compose file not found",
-    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-  },
-  "notes": {
-    "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-    "noKeys": "YSK Server never generates or stores staking keys.",
-    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-    "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-    "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "created": "Node created and compose started",
-    "started": "Node started",
-    "stopped": "Node stopped",
-    "cleared": "Chain data cleared",
-    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted",
-    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "pruned": "Unused project images pruned",
-    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-    "sameNetwork": "Already on that network",
-    "drySwitch": "Network switch is dry-run.",
-    "switched": "Network switched and chain data cleared",
-    "dryCompose": "Would write compose.yml",
-    "composeWrote": "Wrote compose.yml",
-    "statsEmpty": "No running containers to measure",
-    "autoClearNone": "No stopped instance to auto-clear"
-  },
-  "create": "Create node",
-  "wizard": {
-    "title": "Create node",
-    "back": "Back",
-    "next": "Next",
-    "install": "Install",
-    "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-    "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-    "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)"
-  },
-  "actions": {
-    "detail": "Details",
-    "start": "Start",
-    "stop": "Stop",
-    "restart": "Restart",
-    "clear": "Clear",
-    "upgrade": "Upgrade",
-    "clearConfirm": "Type instance id or CLEAR",
-    "prune": "Prune",
-    "switchNetwork": "Switch network",
-    "removeUnit": "Also remove compose / instance record",
-    "restoreAfter": "Restore snapshot after clear"
-  },
-  "policy": {
-    "label": "Upgrade policy",
-    "manual": "Manual",
-    "notify": "Notify",
-    "auto-safe": "Auto (safe)",
-    "auto-all": "Auto (all)"
-  },
-  "logs": {
-    "empty": "No logs yet",
-    "follow": "Follow logs"
-  },
-  "alerts": {
-    "diskTitle": "Validator disk critical",
-    "diskBody": "Free space on the validator data volume is critically low.",
-    "upgradeTitle": "Validator upgrade available",
-    "upgradeBody": "One or more node clients have a newer pinned version.",
-    "syncTitle": "Validator node needs attention",
-    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+    "usage": "Utilisation : ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
-    "el": "Execution client",
-    "cl": "Consensus client"
+    "el": "Client d’exécution",
+    "cl": "Client de consensus"
   },
   "mithril": {
-    "label": "Restore from Mithril snapshot first (recommended on testnet)",
-    "action": "Restore with Mithril"
+    "label": "Restaurer d’abord depuis un instantané Mithril (recommandé en testnet)",
+    "action": "Restaurer avec Mithril"
+  },
+  "errors": {
+    "notFound": "Instance de validateur introuvable",
+    "invalidId": "Identifiant d’instance invalide",
+    "diskLow": "Pas assez d’espace disque libre pour cette chaîne, ce réseau et ce profil",
+    "diskUnknownMainnet": "Impossible de mesurer l’espace libre ; création en réseau principal refusée",
+    "needDocker": "Docker Compose est requis et introuvable",
+    "composeFailed": "docker compose a échoué",
+    "needConfirm": "Vider exige confirm=identifiant d’instance ou CLEAR",
+    "mithrilAdaOnly": "La restauration Mithril n’est disponible que pour Cardano",
+    "needMithrilConfirm": "Mithril exige confirm=identifiant d’instance ou MITHRIL",
+    "mithrilBlocked": "Le docker run Mithril a été bloqué par la liste d’autorisation",
+    "mithrilKey": "Impossible de charger la clé de vérification genesis Mithril",
+    "mithrilFailed": "Échec du téléchargement de l’instantané Mithril",
+    "pruneFailed": "Le nettoyage a échoué",
+    "switchNeedStop": "Arrêtez le nœud avant de changer de réseau",
+    "switchNeedClear": "Changer de réseau efface les données de chaîne. Confirmez avec l’identifiant d’instance ou CLEAR",
+    "composeMissing": "Fichier Compose introuvable",
+    "composeNotManaged": "Refus d’écrire un fichier Compose non géré par YSK",
+    "badDataPath": "Le chemin de données doit être un répertoire absolu hors des chemins système",
+    "portInUse": "Ce port RPC est déjà utilisé par une autre instance de validateur",
+    "snapshotUnsupported": "Aucune source d’instantané autorisée pour cette chaîne",
+    "snapshotLookup": "Impossible de résoudre le pointeur d’instantané officiel",
+    "needSnapshotConfirm": "La restauration d’instantané exige confirm=identifiant d’instance ou SNAPSHOT",
+    "snapshotBlocked": "Le docker run d’instantané a été bloqué par la liste d’autorisation",
+    "snapshotFailed": "Échec du téléchargement ou de l’extraction de l’instantané"
+  },
+  "notes": {
+    "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
+    "noKeys": "YSK Server ne génère ni n’enregistre jamais de clés de staking.",
+    "dockerSoon": "Installation, démarrage et arrêt arrivent à l’étape suivante. Cette page liste seulement les instances et le disque.",
+    "dryCreate": "Spécification d’instance et compose écrits (dry-run). Passez --execute et YSK_EXECUTE=1 pour démarrer les conteneurs.",
+    "dryStart": "Le démarrage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "dryStop": "L’arrêt est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "dryClear": "Le vidage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "created": "Nœud créé et compose démarré",
+    "started": "Nœud démarré",
+    "stopped": "Nœud arrêté",
+    "cleared": "Données de chaîne vidées",
+    "dryMithril": "La restauration Mithril est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "mithril": "Instantané Mithril restauré ; nœud redémarré",
+    "dryPrune": "Le nettoyage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "pruned": "Images de projet inutilisées nettoyées",
+    "pruneProfile": "L’élagage natif du client est le profil pruned／minimal. Recréez pour le changer.",
+    "sameNetwork": "Déjà sur ce réseau",
+    "drySwitch": "Le changement de réseau est un dry-run.",
+    "switched": "Réseau changé et données de chaîne vidées",
+    "dryCompose": "Écrirait compose.yml",
+    "composeWrote": "compose.yml écrit",
+    "statsEmpty": "Aucun conteneur en cours d’exécution à mesurer",
+    "autoClearNone": "Aucune instance arrêtée à vider automatiquement",
+    "drySnapshot": "La restauration d’instantané est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+    "snapshotEthEl": "Archive EL ethPandaOps restaurée et CL réinitialisé pour le checkpoint sync",
+    "snapshotEthCl": "Données CL réinitialisées pour le checkpoint sync officiel",
+    "snapshotNear": "Données NEAR effacées ; compose réinitialisera avec le genesis officiel et epoch sync",
+    "nativePrune": "Commande d’élagage native du client exécutée"
+  },
+  "create": "Créer un nœud",
+  "wizard": {
+    "title": "Créer un nœud",
+    "back": "Retour",
+    "next": "Suivant",
+    "install": "Installer",
+    "mainnetWarn": "Le réseau principal demande beaucoup d’espace libre (ETH souvent 800 Gio+). Le testnet est recommandé.",
+    "mainnetAck": "Je comprends le risque disque et slashing. Continuer en réseau principal.",
+    "heavyWarn": "Cette chaîne est lourde (gros disque et IOPS élevés). Solana en réseau principal demande généralement 2 Tio+.",
+    "memory": "Limite mémoire (ex. 4g)",
+    "cpus": "Limite CPU (ex. 2.0)",
+    "dataPath": "Chemin de données (facultatif)",
+    "rpcPort": "Port RPC (facultatif)"
+  },
+  "actions": {
+    "detail": "Détails",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "restart": "Redémarrer",
+    "clear": "Vider",
+    "upgrade": "Mettre à jour",
+    "clearConfirm": "Saisissez l’identifiant d’instance ou CLEAR",
+    "prune": "Nettoyer les images",
+    "switchNetwork": "Changer de réseau",
+    "removeUnit": "Supprimer aussi compose / l’enregistrement d’instance",
+    "restoreAfter": "Restaurer l’instantané après vidage"
+  },
+  "policy": {
+    "label": "Politique de mise à jour",
+    "manual": "Manuel",
+    "notify": "Notifier",
+    "auto-safe": "Auto (sûr)",
+    "auto-all": "Auto (tout)"
+  },
+  "logs": {
+    "empty": "Pas encore de journaux",
+    "follow": "Suivre les journaux"
   },
   "compose": {
-    "label": "Compose file",
-    "save": "Save compose"
+    "label": "Fichier Compose",
+    "save": "Enregistrer compose"
   },
   "snapshot": {
-    "action": "Restore snapshot",
-    "mithril": "Cardano uses Mithril for certified snapshot restore.",
-    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-    "avax": "Avalanche uses state-sync in the compose profile.",
-    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-    "none": "No snapshot source is configured for this chain."
+    "action": "Restaurer l’instantané",
+    "mithril": "Cardano utilise Mithril pour restaurer un instantané certifié.",
+    "eth": "Ethereum en réseau principal démarre via le checkpoint sync officiel du client de consensus. L’EL continue en snap sync.",
+    "ethEl": "Hoodi／Sepolia peuvent restaurer une archive EL ethPandaOps, puis faire un checkpoint-sync du CL.",
+    "avax": "Avalanche utilise state-sync dans le profil compose.",
+    "near": "Les instantanés tar NEAR gratuits officiels ont été retirés. Restaurer efface les données et utilise le genesis officiel plus epoch sync.",
+    "none": "Aucune source d’instantané n’est configurée pour cette chaîne."
   },
   "stake": {
-    "title": "Prepare for staking (you keep the keys)",
-    "offlineKeys": "Generate keys offline. The panel never stores them.",
-    "deposit": "Complete deposit / registration on the official launchpad.",
-    "withdrawal": "Set withdrawal credentials yourself.",
-    "monitor": "Watch disk, peers, and upgrade badges on this page."
+    "title": "Préparer le staking (vous gardez les clés)",
+    "offlineKeys": "Générez les clés hors ligne. Le panneau ne les stocke jamais.",
+    "deposit": "Terminez le dépôt / l’enregistrement sur le launchpad officiel.",
+    "withdrawal": "Définissez vous-même les identifiants de retrait.",
+    "monitor": "Surveillez disque, pairs et badges de mise à jour sur cette page."
+  },
+  "alerts": {
+    "diskTitle": "Disque validateur critique",
+    "diskBody": "L’espace libre du volume de données validateur est critique.",
+    "upgradeTitle": "Mise à jour validateur disponible",
+    "upgradeBody": "Un ou plusieurs clients de nœud ont une version épinglée plus récente.",
+    "syncTitle": "Le nœud validateur nécessite une attention",
+    "syncBody": "Un nœud se synchronise depuis plus de 6 heures ou a signalé une erreur.",
+    "rollbackTitle": "Mise à jour validateur annulée",
+    "rollbackBody": "La mise à jour de {{id}} a échoué au contrôle de santé et a été annulée."
+  },
+  "upgrade": {
+    "changelog": "Journal des changements"
+  },
+  "readiness": {
+    "dockerTitle": "Docker pour les nœuds validateurs",
+    "dockerOk": "{{count}} instance(s) de validateur ; Docker est installé",
+    "dockerMissing": "Des instances de validateur existent mais la commande docker est introuvable"
   }
 }

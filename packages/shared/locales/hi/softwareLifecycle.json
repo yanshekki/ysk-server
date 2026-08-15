@@ -51,8 +51,8 @@
     "purgeData": "डेटा पथ हटा दिए जाएंगे",
     "protectedSkipped": "संरक्षित घटकों को छोड़ दिया गया है",
     "runtimeStack": "इस रनटाइम के सभी पैनल-प्रबंधित संस्करण हटा दिए जाएंगे",
-    "containers": "Running containers will stop",
-    "validators": "Validator node stacks that use Docker Compose will stop"
+    "containers": "चल रहे कंटेनर रुकेंगे",
+    "validators": "Docker Compose वाले वैलिडेटर स्टैक रुकेंगे"
   },
   "requestCancel": "अनुरोध रद्द करें",
   "cancelling": "रद्द किया जा रहा है...",

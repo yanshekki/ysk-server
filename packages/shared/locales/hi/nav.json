@@ -54,8 +54,8 @@
     "security": "सुरक्षा",
     "system": "प्रणाली",
     "ai": "AI",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "वैलिडेटर",
+    "containers": "कंटेनर"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "पहुँच नहीं",
   "noAccessDesc": "आपकी भूमिका इस पृष्ठ को नहीं खोल सकती। आवश्यकता हो तो व्यवस्थापक से पूछें।",
   "backToDashboard": "डैशबोर्ड पर वापस",
-  "validators": "Validators (Beta)",
+  "validators": "वैलिडेटर (Beta)",
   "docker": "Docker"
 }

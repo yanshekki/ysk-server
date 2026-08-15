@@ -113,6 +113,18 @@ export async function collectNotifications(input: {
         source: 'validators',
       });
     }
+    for (const inst of listValidatorInstances(input.dataDir)) {
+      if (inst.lastUpgrade?.result === 'rolled-back') {
+        push({
+          id: `validators-rollback-${inst.id}`,
+          level: 'warn',
+          title: tl('validators.alerts.rollbackTitle'),
+          body: tl('validators.alerts.rollbackBody', { id: inst.id }),
+          href: '/validators',
+          source: 'validators',
+        });
+      }
+    }
     const lagCut = Date.now() - 6 * 60 * 60_000;
     for (const inst of listValidatorInstances(input.dataDir)) {
       const ls = inst.lastStatus;

@@ -81,12 +81,12 @@
     "securityApiKeysAdmin": "Administrador de chaves de API",
     "networkBrowse": "Navegação na web mediada por host",
     "networkVnc": "Área de trabalho remota VNC",
-    "validatorsRead": "Validators (read)",
-    "validatorsManage": "Validators manage",
-    "validatorsWipe": "Validators wipe data",
-    "dockerRead": "Docker (read)",
-    "dockerManage": "Docker manage",
-    "dockerWipe": "Docker wipe / prune"
+    "validatorsRead": "Validadores (leitura)",
+    "validatorsManage": "Validadores gerir",
+    "validatorsWipe": "Validadores limpar dados",
+    "dockerRead": "Docker (leitura)",
+    "dockerManage": "Docker gerir",
+    "dockerWipe": "Docker remover / limpar"
   },
   "aboutRoles": "Funções (padrões de fábrica)",
   "aboutRolesBody": "As funções definem recursos padrão; os usuários podem substituir os individuais.",

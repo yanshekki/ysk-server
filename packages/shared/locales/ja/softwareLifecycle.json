@@ -51,8 +51,8 @@
     "purgeData": "データパスが削除されます",
     "protectedSkipped": "保護されたコンポーネントはスキップされます",
     "runtimeStack": "このランタイムのパネル管理バージョンはすべて削除されます",
-    "containers": "Running containers will stop",
-    "validators": "Validator node stacks that use Docker Compose will stop"
+    "containers": "実行中のコンテナは停止します",
+    "validators": "Docker Compose を使うバリデータースタックは停止します"
   },
   "requestCancel": "キャンセルのリクエスト",
   "cancelling": "キャンセルしています...",

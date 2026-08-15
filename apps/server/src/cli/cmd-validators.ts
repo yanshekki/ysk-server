@@ -161,6 +161,8 @@ export async function runValidatorsCommand(
       cl: h.getOpt(args, '--cl') ?? undefined,
       memory: h.getOpt(args, '--memory') ?? undefined,
       cpus: h.getOpt(args, '--cpus') ?? undefined,
+      dataPath: h.getOpt(args, '--data-path') ?? undefined,
+      rpcPort: h.getOpt(args, '--rpc-port') != null ? Number(h.getOpt(args, '--rpc-port')) : undefined,
     });
     h.printJson(result);
     return h.exitFromResult(result);

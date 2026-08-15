@@ -63,7 +63,7 @@
     "disk": "Disk"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
     "el": "Execution client",
@@ -90,7 +90,14 @@
     "switchNeedStop": "Stop the node before switching network",
     "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
     "composeMissing": "Compose file not found",
-    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
+    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed",
+    "badDataPath": "Data path must be an absolute directory outside system paths",
+    "portInUse": "That RPC port is already used by another validator instance",
+    "snapshotUnsupported": "No allowlisted snapshot source for this chain",
+    "snapshotLookup": "Could not resolve the official snapshot pointer",
+    "needSnapshotConfirm": "Snapshot restore requires confirm=instance id or SNAPSHOT",
+    "snapshotBlocked": "Snapshot docker run was blocked by the allowlist",
+    "snapshotFailed": "Snapshot download or extract failed"
   },
   "notes": {
     "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
@@ -115,7 +122,12 @@
     "dryCompose": "Would write compose.yml",
     "composeWrote": "Wrote compose.yml",
     "statsEmpty": "No running containers to measure",
-    "autoClearNone": "No stopped instance to auto-clear"
+    "autoClearNone": "No stopped instance to auto-clear",
+    "drySnapshot": "Snapshot restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "snapshotEthEl": "Restored ethPandaOps EL archive and reset CL for checkpoint sync",
+    "snapshotEthCl": "Reset CL data for official checkpoint sync",
+    "snapshotNear": "Wiped NEAR data; compose will re-init official genesis and epoch sync",
+    "nativePrune": "Ran the client-native prune command"
   },
   "create": "Create node",
   "wizard": {
@@ -127,7 +139,9 @@
     "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
     "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
     "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)"
+    "cpus": "CPU limit (e.g. 2.0)",
+    "dataPath": "Data path (optional)",
+    "rpcPort": "RPC port (optional)"
   },
   "actions": {
     "detail": "Details",
@@ -160,9 +174,10 @@
   "snapshot": {
     "action": "Restore snapshot",
     "mithril": "Cardano uses Mithril for certified snapshot restore.",
-    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
+    "eth": "Ethereum mainnet uses official checkpoint sync on the consensus client. EL continues snap sync.",
+    "ethEl": "Hoodi/Sepolia can restore an ethPandaOps EL archive, then checkpoint-sync the CL.",
     "avax": "Avalanche uses state-sync in the compose profile.",
-    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
+    "near": "Official free NEAR tarball snapshots were retired. Restore wipes data and uses official genesis plus epoch sync.",
     "none": "No snapshot source is configured for this chain."
   },
   "stake": {
@@ -178,6 +193,16 @@
     "upgradeTitle": "Validator upgrade available",
     "upgradeBody": "One or more node clients have a newer pinned version.",
     "syncTitle": "Validator node needs attention",
-    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+    "syncBody": "A node has been syncing for more than 6 hours or reported an error.",
+    "rollbackTitle": "Validator upgrade rolled back",
+    "rollbackBody": "Upgrade of {{id}} failed the health check and was rolled back."
+  },
+  "upgrade": {
+    "changelog": "Changelog"
+  },
+  "readiness": {
+    "dockerTitle": "Docker for validator nodes",
+    "dockerOk": "{{count}} validator instance(s); Docker is installed",
+    "dockerMissing": "Validator instances exist but the docker binary was not found"
   }
 }

@@ -10,6 +10,8 @@ import type {
   DockerVolumeRow,
 } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
+import { postSseJson } from '../runtimes/stream-sse';
+import type { InstallLogLine } from '../runtimes/stream-runtime-install';
 
 export type DockerOpsResponse = {
   ok: boolean;
@@ -75,6 +77,17 @@ export const dockerApi = {
     post('/api/v1/docker/prune', { scope, confirm, execute }),
   engine: (action: 'start' | 'stop' | 'restart', execute = true) =>
     post(`/api/v1/docker/engine/${action}`, { execute }),
+  exec: (
+    id: string,
+    preset: 'version' | 'help' | 'hostname' = 'version',
+    execute = true,
+    bin?: string,
+  ) => post(`/api/v1/docker/containers/${encodeURIComponent(id)}/exec`, { preset, execute, bin }),
+  stream: (
+    path: string,
+    body: Record<string, unknown>,
+    opts?: { onLog?: (line: InstallLogLine) => void; signal?: AbortSignal },
+  ) => postSseJson(path, body, opts),
   patchDaemon: (body: Record<string, unknown>, execute = true) =>
     api.requestRaw<DockerOpsResponse>('/api/v1/docker/daemon', {
       method: 'PATCH',

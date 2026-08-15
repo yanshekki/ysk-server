@@ -23,6 +23,7 @@ import {
   validatorIdFromComposeProject,
 } from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
+import { runOpts, type OpsLogFn } from '../ops-log.js';
 import { classifyDockerArgv } from './argv.js';
 import {
   applyDaemonPatch,
@@ -53,12 +54,14 @@ export type DockerCtx = {
   host: HostExecutor;
   dataDir: string;
   execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 };
 
 async function docker(
   host: HostExecutor,
   argv: string[],
-  opts?: { timeoutMs?: number; dryRun?: boolean },
+  opts?: { timeoutMs?: number; dryRun?: boolean; onLog?: OpsLogFn; signal?: AbortSignal },
 ): Promise<{ exitCode: number; stdout: string; stderr: string; argv: string[] }> {
   const cls = classifyDockerArgv(['docker', ...argv]);
   if (cls === 'blocked') {
@@ -66,7 +69,12 @@ async function docker(
   }
   try {
     const r = await host.runCommand(['docker', ...argv], {
-      timeoutMs: opts?.timeoutMs ?? 30_000,
+      ...runOpts({
+        execute: opts?.dryRun === true ? false : true,
+        timeoutMs: opts?.timeoutMs ?? 30_000,
+        onLog: opts?.onLog,
+        signal: opts?.signal,
+      }),
       dryRun: opts?.dryRun,
     });
     return { exitCode: r.exitCode, stdout: r.stdout, stderr: r.stderr, argv: ['docker', ...argv] };
@@ -286,6 +294,97 @@ export async function dockerContainerLogs(input: {
   };
 }
 
+export function inferExecBin(image: string): string | null {
+  const s = String(image ?? '').toLowerCase();
+  if (s.includes('client-go') || /\/geth(?::|$)/.test(s) || s.includes('ethereum/client-go')) return 'geth';
+  if (s.includes('reth')) return 'reth';
+  if (s.includes('nethermind')) return 'nethermind';
+  if (s.includes('lighthouse')) return 'lighthouse';
+  if (s.includes('prysm')) return 'beacon-chain';
+  if (s.includes('teku')) return 'teku';
+  if (s.includes('nimbus')) return 'nimbus_beacon_node';
+  if (s.includes('avalanche')) return 'avalanchego';
+  if (s.includes('near')) return 'neard';
+  if (s.includes('cardano')) return 'cardano-node';
+  if (s.includes('bitcoin')) return 'bitcoin-cli';
+  if (s.includes('gaia') || s.includes('cosmos')) return 'gaiad';
+  if (s.includes('sui')) return 'sui';
+  if (s.includes('aptos')) return 'aptos';
+  if (s.includes('agave') || s.includes('solana')) return 'solana';
+  if (s.includes('polkadot')) return 'polkadot';
+  if (s.includes('alpine') || s.includes('busybox')) return 'busybox';
+  return null;
+}
+
+export function buildDockerExecArgv(input: {
+  id: string;
+  preset: 'version' | 'help' | 'hostname';
+  bin?: string;
+  image?: string;
+}): { ok: true; argv: string[] } | { ok: false; notes: string[] } {
+  const id = String(input.id ?? '').trim();
+  if (!isSafeDockerName(id) && !/^[a-f0-9]{6,64}$/i.test(id)) {
+    return { ok: false, notes: [tl('docker.errors.badName')] };
+  }
+  const bin = (input.bin?.trim() || inferExecBin(input.image ?? '') || '').trim();
+  if (!bin) return { ok: false, notes: [tl('docker.errors.badExec')] };
+  const tail =
+    input.preset === 'hostname'
+      ? bin === 'busybox'
+        ? ['busybox', 'hostname']
+        : ['hostname']
+      : input.preset === 'help'
+        ? [bin, '--help']
+        : bin === 'geth'
+          ? ['geth', 'version']
+          : [bin, '--version'];
+  const argv = ['exec', id, ...tail];
+  if (classifyDockerArgv(['docker', ...argv]) === 'blocked') {
+    return { ok: false, notes: [tl('docker.errors.badExec')] };
+  }
+  return { ok: true, argv };
+}
+
+export async function dockerExec(
+  input: DockerCtx & {
+    id: string;
+    preset?: 'version' | 'help' | 'hostname';
+    bin?: string;
+  },
+): Promise<DockerOpsResult> {
+  const probe = await probeDockerEngine(input.host);
+  const missing = needDocker(probe);
+  if (missing) return missing;
+  let image = '';
+  const ins = await inspectDocker({ host: input.host, id: input.id });
+  if (ins.ok && ins.raw && typeof ins.raw === 'object') {
+    const arr = Array.isArray(ins.raw) ? ins.raw : [ins.raw];
+    const cfg = arr[0] as { Config?: { Image?: string }; Image?: string };
+    image = String(cfg?.Config?.Image ?? cfg?.Image ?? '');
+  }
+  const built = buildDockerExecArgv({
+    id: input.id,
+    preset: input.preset ?? 'version',
+    bin: input.bin,
+    image,
+  });
+  if (!built.ok) return blockedDockerOp({ reason: 'validation', notes: built.notes });
+  if (!input.execute || !input.host.executeEnabled()) {
+    return writtenDockerOp({ notes: [tl('docker.notes.dryMutate'), built.argv.join(' ')] });
+  }
+  const r = await docker(input.host, built.argv, {
+    timeoutMs: 30_000,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
+  if (r.exitCode !== 0) {
+    return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed'), r.stdout.trim()] });
+  }
+  return appliedDockerOp({
+    notes: [tl('docker.notes.exec'), r.stdout.trim() || r.stderr.trim()].filter(Boolean),
+  });
+}
+
 export async function inspectDocker(input: {
   host: HostExecutor;
   id: string;
@@ -414,7 +513,11 @@ export async function dockerPull(input: DockerCtx & { image: string }): Promise<
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenDockerOp({ notes: [tl('docker.notes.dryMutate'), `docker pull ${input.image}`] });
   }
-  const r = await docker(input.host, ['pull', input.image], { timeoutMs: 600_000 });
+  const r = await docker(input.host, ['pull', input.image], {
+    timeoutMs: 600_000,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
   if (r.exitCode !== 0) return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed')] });
   return appliedDockerOp({ notes: [tl('docker.notes.pulled')] });
 }
@@ -531,7 +634,11 @@ export async function dockerComposeAction(input: DockerCtx & {
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenDockerOp({ notes: [tl('docker.notes.dryMutate'), argv.join(' ')] });
   }
-  const r = await docker(input.host, argv, { timeoutMs: 600_000 });
+  const r = await docker(input.host, argv, {
+    timeoutMs: 600_000,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
   if (r.exitCode !== 0) return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed')] });
   return appliedDockerOp({ notes: [tl(`docker.notes.compose.${input.action}`)] });
 }
@@ -596,7 +703,11 @@ export async function dockerPrune(input: DockerCtx & {
       ],
     });
   }
-  const r = await docker(input.host, safeArgv, { timeoutMs: 300_000 });
+  const r = await docker(input.host, safeArgv, {
+    timeoutMs: 300_000,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
   if (r.exitCode !== 0) return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed')] });
   return appliedDockerOp({ notes: [tl('docker.notes.pruned'), r.stdout.trim()].filter(Boolean) });
 }

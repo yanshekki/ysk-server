@@ -54,8 +54,8 @@
     "security": "보안",
     "system": "시스템",
     "ai": "AI",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "검증자",
+    "containers": "컨테이너"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "접근 권한 없음",
   "noAccessDesc": "현재 역할로는 이 페이지를 열 수 없습니다. 필요하면 관리자에게 요청하세요.",
   "backToDashboard": "대시보드로 돌아가기",
-  "validators": "Validators (Beta)",
+  "validators": "검증자 (Beta)",
   "docker": "Docker"
 }

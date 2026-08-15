@@ -14,7 +14,9 @@ describe('validator extras', () => {
 
   it('offers mithril for ada and checkpoint for eth', () => {
     expect(snapshotOffer('ada', 'preview').kind).toBe('mithril');
-    expect(snapshotOffer('eth', 'hoodi').kind).toBe('checkpoint');
+    expect(snapshotOffer('eth', 'hoodi').kind).toBe('archive');
+    expect(snapshotOffer('eth', 'mainnet').kind).toBe('checkpoint');
+    expect(snapshotOffer('near', 'testnet').kind).toBe('epoch');
     expect(snapshotOffer('btc', 'testnet').kind).toBe('none');
   });
 

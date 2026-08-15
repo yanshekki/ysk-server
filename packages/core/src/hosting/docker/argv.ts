@@ -39,7 +39,6 @@ const BLOCKED_TOP = new Set([
   'build',
   'login',
   'logout',
-  'exec',
   'attach',
   'swarm',
   'stack',
@@ -68,6 +67,83 @@ const BLOCKED_FLAGS = [
   '--cap-add=ALL',
   '--cap-add',
 ];
+
+const EXEC_BINS = new Set([
+  'geth',
+  'reth',
+  'nethermind',
+  'lighthouse',
+  'lighthousebn',
+  'beacon-chain',
+  'teku',
+  'nimbus_beacon_node',
+  'avalanchego',
+  'neard',
+  'cardano-node',
+  'cardano-cli',
+  'bitcoind',
+  'bitcoin-cli',
+  'gaiad',
+  'sui',
+  'aptos',
+  'agave-validator',
+  'solana',
+  'polkadot',
+  'busybox',
+  'ls',
+  'cat',
+  'hostname',
+  'id',
+  'printenv',
+]);
+
+const EXEC_BLOCKED_BINS = new Set([
+  'sh',
+  'bash',
+  'ash',
+  'dash',
+  'zsh',
+  'fish',
+  'python',
+  'python3',
+  'perl',
+  'ruby',
+  'node',
+  'npm',
+  'curl',
+  'wget',
+  'chmod',
+  'chown',
+  'su',
+  'sudo',
+]);
+
+export function classifyDockerExec(args: readonly string[]): DockerArgvClass {
+  let i = 0;
+  while (i < args.length && String(args[i]).startsWith('-')) {
+    const a = args[i]!;
+    if (a === '-it' || a === '-ti' || a === '-t' || a === '--tty' || a === '-i' || a === '--interactive') {
+      return 'blocked';
+    }
+    if (a === '--privileged' || a.startsWith('--privileged=')) return 'blocked';
+    if (a === '-d' || a === '--detach') return 'blocked';
+    if (a === '-e' || a === '--env' || a === '-w' || a === '--workdir' || a === '-u' || a === '--user') {
+      i += 2;
+      continue;
+    }
+    i += 1;
+  }
+  const container = args[i] ?? '';
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$/.test(container)) return 'blocked';
+  const cmd = args.slice(i + 1).map(String);
+  if (!cmd.length || cmd.length > 16) return 'blocked';
+  const bin = cmd[0]!.includes('/') ? cmd[0]!.slice(cmd[0]!.lastIndexOf('/') + 1) : cmd[0]!;
+  if (EXEC_BLOCKED_BINS.has(bin.toLowerCase()) || !EXEC_BINS.has(bin)) return 'blocked';
+  for (const t of cmd) {
+    if (!/^[A-Za-z0-9._:/=+-]+$/.test(t)) return 'blocked';
+  }
+  return 'mutate';
+}
 
 function hasFollow(args: string[]): boolean {
   return args.includes('-f') || args.includes('--follow');
@@ -118,6 +194,7 @@ export function classifyDockerArgv(argv: readonly string[]): DockerArgvClass {
   if (args.includes('--cap-add')) return 'blocked';
 
   const top = args[0] ?? '';
+  if (top === 'exec') return classifyDockerExec(args.slice(1));
   if (BLOCKED_TOP.has(top)) return 'blocked';
   for (const f of BLOCKED_FLAGS) {
     if (args.includes(f)) return 'blocked';

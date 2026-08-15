@@ -61,6 +61,37 @@ describe('validator manager', () => {
     return d;
   }
 
+  it('honours safe dataPath and rpcPort; rejects system paths', async () => {
+    const dataDir = tmp();
+    const host = mockHost({ execute: false });
+    const bad = await createValidatorInstance({
+      dataDir,
+      host,
+      execute: false,
+      chain: 'eth',
+      network: 'hoodi',
+      profile: 'minimal',
+      dataPath: '/etc/passwd',
+    });
+    expect(bad.blocked).toBe(true);
+
+    const dataPath = join(dataDir, 'chain-data');
+    const ok = await createValidatorInstance({
+      dataDir,
+      host,
+      execute: false,
+      chain: 'eth',
+      network: 'hoodi',
+      profile: 'minimal',
+      dataPath,
+      rpcPort: 18545,
+    });
+    expect(ok.ok).toBe(true);
+    const inst = getValidatorInstance(dataDir, 'eth-hoodi-1');
+    expect(inst?.dataPath).toBe(dataPath);
+    expect(inst?.ports.rpc).toBe(18545);
+  });
+
   it('create dry-run writes spec without claiming applied', async () => {
     const dataDir = tmp();
     const r = await createValidatorInstance({

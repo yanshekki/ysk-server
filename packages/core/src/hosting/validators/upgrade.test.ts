@@ -37,6 +37,30 @@ describe('validator upgrade helpers', () => {
     const offer = detectUpgradeForInstance(spec);
     expect(offer?.clientId).toBe('reth');
     expect(offer?.nextTag).toBe('v1.4.8');
+    expect(offer?.changelogUrl).toContain('paradigmxyz/reth');
+  });
+
+  it('offers a newer official remote tag when it is within one major of the pin', () => {
+    const spec = {
+      id: 'eth-hoodi-1',
+      chain: 'eth',
+      network: 'hoodi',
+      profile: 'minimal',
+      slug: '1',
+      dataPath: '/x',
+      rpcHost: '127.0.0.1',
+      upgradePolicy: 'notify',
+      desiredState: 'stopped',
+      createdAt: '',
+      updatedAt: '',
+      clients: {
+        el: { id: 'reth', image: 'ghcr.io/paradigmxyz/reth', tag: 'v1.4.8' },
+      },
+      ports: {},
+    } as ValidatorInstanceDto;
+    const offer = detectUpgradeForInstance(spec, { reth: 'v1.5.1' });
+    expect(offer?.nextTag).toBe('v1.5.1');
+    expect(offer?.breaking).toBe(false);
   });
 
   it('never auto-applies on mainnet', () => {

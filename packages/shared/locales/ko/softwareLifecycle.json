@@ -51,8 +51,8 @@
     "purgeData": "데이터 경로가 삭제됩니다.",
     "protectedSkipped": "보호된 구성 요소를 건너뜁니다.",
     "runtimeStack": "이 런타임의 모든 패널 관리 버전이 삭제됩니다.",
-    "containers": "Running containers will stop",
-    "validators": "Validator node stacks that use Docker Compose will stop"
+    "containers": "실행 중인 컨테이너가 중지됩니다",
+    "validators": "Docker Compose를 쓰는 검증자 스택이 중지됩니다"
   },
   "requestCancel": "취소 요청",
   "cancelling": "취소 중…",

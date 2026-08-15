@@ -1,26 +1,26 @@
 {
-  "title": "Validators (Beta)",
-  "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+  "title": "バリデーター (Beta)",
+  "subtitle": "このホストで L1 ノードを導入・管理します。ノンカストディアル — 鍵は自分で保管してください。",
   "beta": "Beta",
   "tab": {
-    "nodes": "Nodes",
-    "disk": "Disk",
-    "about": "About"
+    "nodes": "ノード",
+    "disk": "ディスク",
+    "about": "説明"
   },
   "empty": {
-    "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "title": "バリデーターノードはまだありません",
+    "desc": "ウィザードでテストネットノードを作成できます。CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
   },
-  "refresh": "Refresh",
+  "refresh": "更新",
   "disk": {
-    "title": "Validator disk",
-    "root": "Data directory",
-    "free": "Free",
-    "used": "Used",
-    "none": "No instance data yet",
-    "warn": "Disk usage is high (70%+)",
-    "danger": "Disk usage is critical (85%+)",
-    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+    "title": "バリデーターディスク",
+    "root": "データディレクトリ",
+    "free": "空き",
+    "used": "使用中",
+    "none": "インスタンスデータはまだありません",
+    "warn": "ディスク使用率が高い（70% 以上）",
+    "danger": "ディスク使用率が危険（85% 以上）",
+    "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）"
   },
   "chain": {
     "eth": "Ethereum",
@@ -37,147 +37,172 @@
   "network": {
     "hoodi": "Hoodi",
     "sepolia": "Sepolia",
-    "mainnet": "Mainnet",
+    "mainnet": "メインネット",
     "fuji": "Fuji",
-    "testnet": "Testnet",
+    "testnet": "テストネット",
     "preview": "Preview",
     "preprod": "Preprod",
     "westend": "Westend"
   },
   "networkKind": {
-    "testnet": "Testnet",
-    "mainnet": "Mainnet"
+    "testnet": "テストネット",
+    "mainnet": "メインネット"
   },
   "profile": {
-    "minimal": "Minimal",
-    "pruned": "Pruned",
-    "validator-ready": "Validator-ready",
+    "minimal": "最小",
+    "pruned": "プルーニング済み",
+    "validator-ready": "バリデーター準備",
     "rpc": "RPC"
   },
   "col": {
     "id": "ID",
-    "chain": "Chain",
-    "network": "Network",
-    "profile": "Profile",
-    "status": "Status",
-    "disk": "Disk"
+    "chain": "チェーン",
+    "network": "ネットワーク",
+    "profile": "プロファイル",
+    "status": "状態",
+    "disk": "ディスク"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-  },
-  "errors": {
-    "notFound": "Validator instance not found",
-    "invalidId": "Invalid instance id",
-    "diskLow": "Not enough free disk for this chain, network, and profile",
-    "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-    "needDocker": "Docker Compose is required and was not found",
-    "composeFailed": "docker compose failed",
-    "needConfirm": "Clear requires confirm=instance id or CLEAR",
-    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-    "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed",
-    "pruneFailed": "Prune failed",
-    "switchNeedStop": "Stop the node before switching network",
-    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-    "composeMissing": "Compose file not found",
-    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-  },
-  "notes": {
-    "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-    "noKeys": "YSK Server never generates or stores staking keys.",
-    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-    "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-    "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "created": "Node created and compose started",
-    "started": "Node started",
-    "stopped": "Node stopped",
-    "cleared": "Chain data cleared",
-    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted",
-    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "pruned": "Unused project images pruned",
-    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-    "sameNetwork": "Already on that network",
-    "drySwitch": "Network switch is dry-run.",
-    "switched": "Network switched and chain data cleared",
-    "dryCompose": "Would write compose.yml",
-    "composeWrote": "Wrote compose.yml",
-    "statsEmpty": "No running containers to measure",
-    "autoClearNone": "No stopped instance to auto-clear"
-  },
-  "create": "Create node",
-  "wizard": {
-    "title": "Create node",
-    "back": "Back",
-    "next": "Next",
-    "install": "Install",
-    "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-    "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-    "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)"
-  },
-  "actions": {
-    "detail": "Details",
-    "start": "Start",
-    "stop": "Stop",
-    "restart": "Restart",
-    "clear": "Clear",
-    "upgrade": "Upgrade",
-    "clearConfirm": "Type instance id or CLEAR",
-    "prune": "Prune",
-    "switchNetwork": "Switch network",
-    "removeUnit": "Also remove compose / instance record",
-    "restoreAfter": "Restore snapshot after clear"
-  },
-  "policy": {
-    "label": "Upgrade policy",
-    "manual": "Manual",
-    "notify": "Notify",
-    "auto-safe": "Auto (safe)",
-    "auto-all": "Auto (all)"
-  },
-  "logs": {
-    "empty": "No logs yet",
-    "follow": "Follow logs"
-  },
-  "alerts": {
-    "diskTitle": "Validator disk critical",
-    "diskBody": "Free space on the validator data volume is critically low.",
-    "upgradeTitle": "Validator upgrade available",
-    "upgradeBody": "One or more node clients have a newer pinned version.",
-    "syncTitle": "Validator node needs attention",
-    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+    "usage": "使い方: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
-    "el": "Execution client",
-    "cl": "Consensus client"
+    "el": "実行クライアント",
+    "cl": "コンセンサスクライアント"
   },
   "mithril": {
-    "label": "Restore from Mithril snapshot first (recommended on testnet)",
-    "action": "Restore with Mithril"
+    "label": "先に Mithril スナップショットから復元（テストネット推奨）",
+    "action": "Mithril で復元"
+  },
+  "errors": {
+    "notFound": "バリデーターインスタンスが見つかりません",
+    "invalidId": "インスタンス ID が無効です",
+    "diskLow": "このチェーン・ネットワーク・プロファイルに必要な空きディスクが不足しています",
+    "diskUnknownMainnet": "空きディスクを測定できないため、メインネット作成を拒否しました",
+    "needDocker": "Docker Compose が必要ですが見つかりません",
+    "composeFailed": "docker compose に失敗しました",
+    "needConfirm": "消去には confirm=インスタンス ID または CLEAR が必要です",
+    "mithrilAdaOnly": "Mithril 復元は Cardano のみです",
+    "needMithrilConfirm": "Mithril には confirm=インスタンス ID または MITHRIL が必要です",
+    "mithrilBlocked": "Mithril の docker run は許可リストで拒否されました",
+    "mithrilKey": "Mithril genesis 検証鍵を読み込めませんでした",
+    "mithrilFailed": "Mithril スナップショットのダウンロードに失敗しました",
+    "pruneFailed": "プルーニングに失敗しました",
+    "switchNeedStop": "ネットワーク切替の前にノードを停止してください",
+    "switchNeedClear": "ネットワーク切替はチェーンデータを消します。インスタンス ID または CLEAR で確認してください",
+    "composeMissing": "Compose ファイルが見つかりません",
+    "composeNotManaged": "YSK 管理外の Compose ファイルは書き込みません",
+    "badDataPath": "データパスはシステムパス以外の絶対ディレクトリである必要があります",
+    "portInUse": "その RPC ポートは別のバリデーターインスタンスが使用中です",
+    "snapshotUnsupported": "このチェーンに許可されたスナップショット源はありません",
+    "snapshotLookup": "公式スナップショットポインタを解決できませんでした",
+    "needSnapshotConfirm": "スナップショット復元には confirm=インスタンス ID または SNAPSHOT が必要です",
+    "snapshotBlocked": "スナップショットの docker run は許可リストで拒否されました",
+    "snapshotFailed": "スナップショットのダウンロードまたは展開に失敗しました"
+  },
+  "notes": {
+    "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",
+    "noKeys": "YSK Server はステーキング鍵を生成も保存もしません。",
+    "dockerSoon": "導入・起動・停止は次の段階です。このページはインスタンスとディスクのみ表示します。",
+    "dryCreate": "インスタンス仕様と compose を書き込みました（dry-run）。コンテナ起動には --execute と YSK_EXECUTE=1 を付けてください。",
+    "dryStart": "起動は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "dryStop": "停止は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "dryClear": "消去は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "created": "ノードを作成し compose を起動しました",
+    "started": "ノードを起動しました",
+    "stopped": "ノードを停止しました",
+    "cleared": "チェーンデータを消去しました",
+    "dryMithril": "Mithril 復元は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "mithril": "Mithril スナップショットを復元し、ノードを再起動しました",
+    "dryPrune": "プルーニングは dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "pruned": "未使用のプロジェクトイメージを削除しました",
+    "pruneProfile": "クライアント側プルーニングは pruned／minimal プロファイルです。変更するには作り直してください。",
+    "sameNetwork": "すでにそのネットワークです",
+    "drySwitch": "ネットワーク切替は dry-run です。",
+    "switched": "ネットワークを切り替え、チェーンデータを消去しました",
+    "dryCompose": "compose.yml を書き込みます",
+    "composeWrote": "compose.yml を書き込みました",
+    "statsEmpty": "計測できる実行中コンテナがありません",
+    "autoClearNone": "自動消去できる停止中インスタンスがありません",
+    "drySnapshot": "スナップショット復元は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+    "snapshotEthEl": "ethPandaOps の EL アーカイブを復元し、CL を checkpoint sync 用にリセットしました",
+    "snapshotEthCl": "CL データをリセットし、公式 checkpoint sync を使います",
+    "snapshotNear": "NEAR データを消去しました。compose は公式 genesis と epoch sync で再初期化します",
+    "nativePrune": "クライアントネイティブのプルーニングを実行しました"
+  },
+  "create": "ノードを作成",
+  "wizard": {
+    "title": "ノードを作成",
+    "back": "戻る",
+    "next": "次へ",
+    "install": "導入",
+    "mainnetWarn": "メインネットは大量の空きディスクが必要です（ETH はしばしば 800 GiB 以上）。テストネットを推奨します。",
+    "mainnetAck": "ディスクとスラッシングのリスクを理解したうえで、メインネットを続行します。",
+    "heavyWarn": "このチェーンは負荷が大きいです（大容量ディスクと高い IOPS）。Solana メインネットは通常 2 TiB 以上必要です。",
+    "memory": "メモリ上限（例: 4g）",
+    "cpus": "CPU 上限（例: 2.0）",
+    "dataPath": "データパス（任意）",
+    "rpcPort": "RPC ポート（任意）"
+  },
+  "actions": {
+    "detail": "詳細",
+    "start": "起動",
+    "stop": "停止",
+    "restart": "再起動",
+    "clear": "消去",
+    "upgrade": "アップグレード",
+    "clearConfirm": "インスタンス ID または CLEAR を入力",
+    "prune": "イメージを削除",
+    "switchNetwork": "ネットワーク切替",
+    "removeUnit": "compose／インスタンス記録も削除",
+    "restoreAfter": "消去後にスナップショットを復元"
+  },
+  "policy": {
+    "label": "アップグレード方針",
+    "manual": "手動",
+    "notify": "通知",
+    "auto-safe": "自動（安全）",
+    "auto-all": "自動（すべて）"
+  },
+  "logs": {
+    "empty": "ログはまだありません",
+    "follow": "ログを追従"
   },
   "compose": {
-    "label": "Compose file",
-    "save": "Save compose"
+    "label": "Compose ファイル",
+    "save": "compose を保存"
   },
   "snapshot": {
-    "action": "Restore snapshot",
-    "mithril": "Cardano uses Mithril for certified snapshot restore.",
-    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-    "avax": "Avalanche uses state-sync in the compose profile.",
-    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-    "none": "No snapshot source is configured for this chain."
+    "action": "スナップショットを復元",
+    "mithril": "Cardano は認証済みスナップショット復元に Mithril を使います。",
+    "eth": "Ethereum メインネットはコンセンサスクライアントの公式 checkpoint sync で起動します。EL は snap sync を続けます。",
+    "ethEl": "Hoodi／Sepolia は ethPandaOps の EL アーカイブを復元し、CL を checkpoint-sync できます。",
+    "avax": "Avalanche は compose プロファイルで state-sync を使います。",
+    "near": "公式の無料 NEAR tar スナップショットは終了しました。復元はデータを消し、公式 genesis と epoch sync を使います。",
+    "none": "このチェーンにスナップショット源は設定されていません。"
   },
   "stake": {
-    "title": "Prepare for staking (you keep the keys)",
-    "offlineKeys": "Generate keys offline. The panel never stores them.",
-    "deposit": "Complete deposit / registration on the official launchpad.",
-    "withdrawal": "Set withdrawal credentials yourself.",
-    "monitor": "Watch disk, peers, and upgrade badges on this page."
+    "title": "ステーキング準備（鍵は自分で保管）",
+    "offlineKeys": "鍵はオフラインで生成してください。パネルは保存しません。",
+    "deposit": "公式 launchpad でデポジット／登録を完了してください。",
+    "withdrawal": "引き出し資格情報は自分で設定してください。",
+    "monitor": "このページでディスク、ピア、アップグレードバッジを確認してください。"
+  },
+  "alerts": {
+    "diskTitle": "バリデーターディスクが危険",
+    "diskBody": "バリデーターデータボリュームの空き容量が極めて少ないです。",
+    "upgradeTitle": "バリデーターのアップグレードがあります",
+    "upgradeBody": "1 つ以上のノードクライアントに新しい固定版があります。",
+    "syncTitle": "バリデーターノード要確認",
+    "syncBody": "6 時間以上同期中のノードがあるか、エラーを報告しました。",
+    "rollbackTitle": "バリデーターのアップグレードをロールバックしました",
+    "rollbackBody": "{{id}} のアップグレードはヘルスチェックに失敗し、ロールバックされました。"
+  },
+  "upgrade": {
+    "changelog": "変更履歴"
+  },
+  "readiness": {
+    "dockerTitle": "バリデーターノード用 Docker",
+    "dockerOk": "バリデーターインスタンス {{count}} 件。Docker は導入済みです",
+    "dockerMissing": "バリデーターインスタンスがありますが、docker コマンドが見つかりません"
   }
 }

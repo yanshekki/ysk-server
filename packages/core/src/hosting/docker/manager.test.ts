@@ -3,7 +3,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { HostExecutor } from '../../host/executor.js';
-import { buildDockerRunArgv, dockerContainerAction, dockerEngineStatus, dockerRun } from './manager.js';
+import {
+  buildDockerExecArgv,
+  buildDockerRunArgv,
+  dockerContainerAction,
+  dockerEngineStatus,
+  dockerRun,
+  inferExecBin,
+} from './manager.js';
 
 function mockHost(opts: { execute?: boolean; docker?: boolean; info?: string } = {}): HostExecutor {
   const execute = opts.execute ?? false;
@@ -117,5 +124,17 @@ describe('docker manager', () => {
       action: 'start',
     });
     expect(r.apply_status).toBe('written');
+  });
+
+  it('builds allowlisted exec argv from image', () => {
+    expect(inferExecBin('ethereum/client-go:v1.15.11')).toBe('geth');
+    const built = buildDockerExecArgv({
+      id: 'yskval-el',
+      preset: 'version',
+      image: 'ghcr.io/paradigmxyz/reth:v1.4.8',
+    });
+    expect(built.ok).toBe(true);
+    if (built.ok) expect(built.argv).toEqual(['exec', 'yskval-el', 'reth', '--version']);
+    expect(buildDockerExecArgv({ id: 'x', preset: 'version' }).ok).toBe(false);
   });
 });

@@ -54,8 +54,8 @@
     "security": "নিরাপত্তা",
     "system": "সিস্টেম",
     "ai": "AI",
-    "validators": "Validators",
-    "containers": "Containers"
+    "validators": "ভ্যালিডেটর",
+    "containers": "কন্টেইনার"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -79,6 +79,6 @@
   "noAccessTitle": "অ্যাক্সেস নেই",
   "noAccessDesc": "আপনার ভূমিকায় এই পৃষ্ঠা নেই। প্রয়োজন হলে অ্যাডমিনকে জানান।",
   "backToDashboard": "ড্যাশবোর্ডে ফিরুন",
-  "validators": "Validators (Beta)",
+  "validators": "ভ্যালিডেটর (Beta)",
   "docker": "Docker"
 }

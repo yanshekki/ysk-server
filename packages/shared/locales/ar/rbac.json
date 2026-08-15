@@ -81,12 +81,12 @@
     "securityApiKeysAdmin": "مسؤول مفاتيح API",
     "networkBrowse": "تصفح الويب بوساطة المضيف",
     "networkVnc": "سطح المكتب البعيد VNC",
-    "validatorsRead": "Validators (read)",
-    "validatorsManage": "Validators manage",
-    "validatorsWipe": "Validators wipe data",
-    "dockerRead": "Docker (read)",
-    "dockerManage": "Docker manage",
-    "dockerWipe": "Docker wipe / prune"
+    "validatorsRead": "المدققون (قراءة)",
+    "validatorsManage": "المدققون إدارة",
+    "validatorsWipe": "المدققون مسح البيانات",
+    "dockerRead": "Docker (قراءة)",
+    "dockerManage": "Docker إدارة",
+    "dockerWipe": "Docker حذف / تنظيف"
   },
   "aboutRoles": "الأدوار (افتراضيات المصنع)",
   "aboutRolesBody": "تحدد الأدوار القدرات الافتراضية؛ يمكن للمستخدمين تجاوز تلك الفردية.",

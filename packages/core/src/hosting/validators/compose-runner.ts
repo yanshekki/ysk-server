@@ -6,6 +6,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
+import { runOpts, type OpsLogFn } from '../ops-log.js';
 
 export function composeProjectName(id: string): string {
   return `yskval-${id}`.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 48);
@@ -99,11 +100,12 @@ export async function composePull(input: {
   file: string;
   project: string;
   execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<{ ok: boolean; stdout: string; stderr: string }> {
   const argv = ['docker', 'compose', '-f', input.file, '-p', input.project, 'pull'];
   const r = await input.host.runCommand(argv, {
-    timeoutMs: 600_000,
-    dryRun: !input.execute,
+    ...runOpts({ execute: input.execute, timeoutMs: 600_000, onLog: input.onLog, signal: input.signal }),
   });
   return {
     ok: input.execute ? r.exitCode === 0 : true,
@@ -117,11 +119,12 @@ export async function composeUp(input: {
   file: string;
   project: string;
   execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<{ ok: boolean; stdout: string; stderr: string; argv: string[] }> {
   const argv = ['docker', 'compose', '-f', input.file, '-p', input.project, 'up', '-d'];
   const r = await input.host.runCommand(argv, {
-    timeoutMs: 600_000,
-    dryRun: !input.execute,
+    ...runOpts({ execute: input.execute, timeoutMs: 600_000, onLog: input.onLog, signal: input.signal }),
   });
   return {
     ok: input.execute ? r.exitCode === 0 : true,
@@ -136,11 +139,12 @@ export async function composeDown(input: {
   file: string;
   project: string;
   execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
 }): Promise<{ ok: boolean; stdout: string; stderr: string; argv: string[] }> {
   const argv = ['docker', 'compose', '-f', input.file, '-p', input.project, 'down'];
   const r = await input.host.runCommand(argv, {
-    timeoutMs: 180_000,
-    dryRun: !input.execute,
+    ...runOpts({ execute: input.execute, timeoutMs: 180_000, onLog: input.onLog, signal: input.signal }),
   });
   return {
     ok: input.execute ? r.exitCode === 0 : true,

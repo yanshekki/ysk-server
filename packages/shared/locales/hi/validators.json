@@ -1,26 +1,26 @@
 {
-  "title": "Validators (Beta)",
-  "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+  "title": "वैलिडेटर (Beta)",
+  "subtitle": "इस होस्ट पर L1 नोड स्थापित और प्रबंधित करें। गैर-कस्टोडियल — कुंजियाँ आपके पास रहें।",
   "beta": "Beta",
   "tab": {
-    "nodes": "Nodes",
-    "disk": "Disk",
-    "about": "About"
+    "nodes": "नोड",
+    "disk": "डिस्क",
+    "about": "परिचय"
   },
   "empty": {
-    "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "title": "अभी कोई वैलिडेटर नोड नहीं",
+    "desc": "कुछ क्लिक में टेस्टनेट नोड बनाएँ। CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
   },
-  "refresh": "Refresh",
+  "refresh": "ताज़ा करें",
   "disk": {
-    "title": "Validator disk",
-    "root": "Data directory",
-    "free": "Free",
-    "used": "Used",
-    "none": "No instance data yet",
-    "warn": "Disk usage is high (70%+)",
-    "danger": "Disk usage is critical (85%+)",
-    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+    "title": "वैलिडेटर डिस्क",
+    "root": "डेटा निर्देशिका",
+    "free": "खाली",
+    "used": "प्रयुक्त",
+    "none": "अभी कोई इंस्टेंस डेटा नहीं",
+    "warn": "डिस्क उपयोग अधिक है (70%+)",
+    "danger": "डिस्क उपयोग गंभीर है (85%+)",
+    "autoClear": "डिस्क गंभीर होने पर सबसे बड़े रुके इंस्टेंस को स्वतः साफ़ करें (डिफ़ॉल्ट बंद)"
   },
   "chain": {
     "eth": "Ethereum",
@@ -37,147 +37,172 @@
   "network": {
     "hoodi": "Hoodi",
     "sepolia": "Sepolia",
-    "mainnet": "Mainnet",
+    "mainnet": "मुख्य नेट",
     "fuji": "Fuji",
-    "testnet": "Testnet",
+    "testnet": "परीक्षण नेट",
     "preview": "Preview",
     "preprod": "Preprod",
     "westend": "Westend"
   },
   "networkKind": {
-    "testnet": "Testnet",
-    "mainnet": "Mainnet"
+    "testnet": "परीक्षण नेट",
+    "mainnet": "मुख्य नेट"
   },
   "profile": {
-    "minimal": "Minimal",
-    "pruned": "Pruned",
-    "validator-ready": "Validator-ready",
+    "minimal": "न्यूनतम",
+    "pruned": "काटा गया",
+    "validator-ready": "वैलिडेटर तैयार",
     "rpc": "RPC"
   },
   "col": {
     "id": "ID",
-    "chain": "Chain",
-    "network": "Network",
-    "profile": "Profile",
-    "status": "Status",
-    "disk": "Disk"
+    "chain": "श्रृंखला",
+    "network": "नेटवर्क",
+    "profile": "प्रोफ़ाइल",
+    "status": "स्थिति",
+    "disk": "डिस्क"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-  },
-  "errors": {
-    "notFound": "Validator instance not found",
-    "invalidId": "Invalid instance id",
-    "diskLow": "Not enough free disk for this chain, network, and profile",
-    "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-    "needDocker": "Docker Compose is required and was not found",
-    "composeFailed": "docker compose failed",
-    "needConfirm": "Clear requires confirm=instance id or CLEAR",
-    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-    "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed",
-    "pruneFailed": "Prune failed",
-    "switchNeedStop": "Stop the node before switching network",
-    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-    "composeMissing": "Compose file not found",
-    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-  },
-  "notes": {
-    "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-    "noKeys": "YSK Server never generates or stores staking keys.",
-    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-    "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-    "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "created": "Node created and compose started",
-    "started": "Node started",
-    "stopped": "Node stopped",
-    "cleared": "Chain data cleared",
-    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted",
-    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "pruned": "Unused project images pruned",
-    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-    "sameNetwork": "Already on that network",
-    "drySwitch": "Network switch is dry-run.",
-    "switched": "Network switched and chain data cleared",
-    "dryCompose": "Would write compose.yml",
-    "composeWrote": "Wrote compose.yml",
-    "statsEmpty": "No running containers to measure",
-    "autoClearNone": "No stopped instance to auto-clear"
-  },
-  "create": "Create node",
-  "wizard": {
-    "title": "Create node",
-    "back": "Back",
-    "next": "Next",
-    "install": "Install",
-    "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-    "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-    "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)"
-  },
-  "actions": {
-    "detail": "Details",
-    "start": "Start",
-    "stop": "Stop",
-    "restart": "Restart",
-    "clear": "Clear",
-    "upgrade": "Upgrade",
-    "clearConfirm": "Type instance id or CLEAR",
-    "prune": "Prune",
-    "switchNetwork": "Switch network",
-    "removeUnit": "Also remove compose / instance record",
-    "restoreAfter": "Restore snapshot after clear"
-  },
-  "policy": {
-    "label": "Upgrade policy",
-    "manual": "Manual",
-    "notify": "Notify",
-    "auto-safe": "Auto (safe)",
-    "auto-all": "Auto (all)"
-  },
-  "logs": {
-    "empty": "No logs yet",
-    "follow": "Follow logs"
-  },
-  "alerts": {
-    "diskTitle": "Validator disk critical",
-    "diskBody": "Free space on the validator data volume is critically low.",
-    "upgradeTitle": "Validator upgrade available",
-    "upgradeBody": "One or more node clients have a newer pinned version.",
-    "syncTitle": "Validator node needs attention",
-    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+    "usage": "उपयोग: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
-    "el": "Execution client",
-    "cl": "Consensus client"
+    "el": "निष्पादन क्लाइंट",
+    "cl": "सहमति क्लाइंट"
   },
   "mithril": {
-    "label": "Restore from Mithril snapshot first (recommended on testnet)",
-    "action": "Restore with Mithril"
+    "label": "पहले Mithril स्नैपशॉट से पुनर्स्थापित करें (टेस्टनेट पर अनुशंसित)",
+    "action": "Mithril से पुनर्स्थापित करें"
+  },
+  "errors": {
+    "notFound": "वैलिडेटर इंस्टेंस नहीं मिला",
+    "invalidId": "इंस्टेंस आईडी अमान्य है",
+    "diskLow": "इस श्रृंखला, नेटवर्क और प्रोफ़ाइल के लिए पर्याप्त खाली डिस्क नहीं",
+    "diskUnknownMainnet": "खाली डिस्क मापी नहीं जा सकी; मुख्य नेट बनाना अस्वीकृत",
+    "needDocker": "Docker Compose आवश्यक है और नहीं मिला",
+    "composeFailed": "docker compose विफल",
+    "needConfirm": "साफ़ करने के लिए confirm=इंस्टेंस आईडी या CLEAR चाहिए",
+    "mithrilAdaOnly": "Mithril पुनर्स्थापना केवल Cardano के लिए है",
+    "needMithrilConfirm": "Mithril के लिए confirm=इंस्टेंस आईडी या MITHRIL चाहिए",
+    "mithrilBlocked": "Mithril docker run अनुमति सूची से अवरुद्ध हुआ",
+    "mithrilKey": "Mithril genesis सत्यापन कुंजी लोड नहीं हो सकी",
+    "mithrilFailed": "Mithril स्नैपशॉट डाउनलोड विफल",
+    "pruneFailed": "सफ़ाई विफल",
+    "switchNeedStop": "नेटवर्क बदलने से पहले नोड रोकें",
+    "switchNeedClear": "नेटवर्क बदलने से श्रृंखला डेटा मिटता है। इंस्टेंस आईडी या CLEAR से पुष्टि करें",
+    "composeMissing": "Compose फ़ाइल नहीं मिली",
+    "composeNotManaged": "YSK-प्रबंधित न होने वाली Compose फ़ाइल नहीं लिखी जाएगी",
+    "badDataPath": "डेटा पथ सिस्टम पथों से बाहर एक पूर्ण निर्देशिका होना चाहिए",
+    "portInUse": "वह RPC पोर्ट पहले से किसी अन्य वैलिडेटर इंस्टेंस के उपयोग में है",
+    "snapshotUnsupported": "इस श्रृंखला के लिए कोई अनुमत स्नैपशॉट स्रोत नहीं",
+    "snapshotLookup": "आधिकारिक स्नैपशॉट सूचक हल नहीं हो सका",
+    "needSnapshotConfirm": "स्नैपशॉट पुनर्स्थापना के लिए confirm=इंस्टेंस आईडी या SNAPSHOT चाहिए",
+    "snapshotBlocked": "स्नैपशॉट docker run अनुमति सूची से अवरुद्ध हुआ",
+    "snapshotFailed": "स्नैपशॉट डाउनलोड या निकालना विफल"
+  },
+  "notes": {
+    "beta": "यह सुविधा Beta है। होस्ट परिवर्तन के लिए root और YSK_EXECUTE=1 चाहिए।",
+    "noKeys": "YSK Server कभी स्टेकिंग कुंजियाँ बनाता या रखता नहीं।",
+    "dockerSoon": "स्थापना, चालू और बंद अगले चरण में आएंगे। यह पृष्ठ केवल इंस्टेंस और डिस्क दिखाता है।",
+    "dryCreate": "इंस्टेंस विनिर्देश और compose लिखा (dry-run)। कंटेनर चालू करने के लिए --execute और YSK_EXECUTE=1 दें।",
+    "dryStart": "चालू dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "dryStop": "बंद dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "dryClear": "साफ़ करना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "created": "नोड बना और compose चालू हुआ",
+    "started": "नोड चालू हुआ",
+    "stopped": "नोड रुका",
+    "cleared": "श्रृंखला डेटा साफ़ हुआ",
+    "dryMithril": "Mithril पुनर्स्थापना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "mithril": "Mithril स्नैपशॉट पुनर्स्थापित; नोड पुनः चालू",
+    "dryPrune": "सफ़ाई dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "pruned": "अप्रयुक्त प्रोजेक्ट छवियाँ साफ़ हुईं",
+    "pruneProfile": "क्लाइंट-नेटिव काटना pruned／minimal प्रोफ़ाइल है। बदलने के लिए फिर बनाएँ।",
+    "sameNetwork": "पहले से उसी नेटवर्क पर है",
+    "drySwitch": "नेटवर्क बदलना dry-run है।",
+    "switched": "नेटवर्क बदला और श्रृंखला डेटा साफ़ हुआ",
+    "dryCompose": "compose.yml लिखा जाएगा",
+    "composeWrote": "compose.yml लिखा गया",
+    "statsEmpty": "मापने के लिए कोई चालू कंटेनर नहीं",
+    "autoClearNone": "स्वतः साफ़ करने के लिए कोई रुका इंस्टेंस नहीं",
+    "drySnapshot": "स्नैपशॉट पुनर्स्थापना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+    "snapshotEthEl": "ethPandaOps EL संग्रह पुनर्स्थापित और checkpoint sync के लिए CL रीसेट",
+    "snapshotEthCl": "आधिकारिक checkpoint sync के लिए CL डेटा रीसेट",
+    "snapshotNear": "NEAR डेटा मिटाया; compose आधिकारिक genesis और epoch sync से फिर आरंभ करेगा",
+    "nativePrune": "क्लाइंट-नेटिव सफ़ाई आदेश चला"
+  },
+  "create": "नोड बनाएँ",
+  "wizard": {
+    "title": "नोड बनाएँ",
+    "back": "पीछे",
+    "next": "आगे",
+    "install": "स्थापित करें",
+    "mainnetWarn": "मुख्य नेट को बहुत खाली डिस्क चाहिए (ETH अक्सर 800 GiB+)। टेस्टनेट अनुशंसित है।",
+    "mainnetAck": "मैं डिस्क और स्लैशिंग जोखिम समझता हूँ। मुख्य नेट जारी रखें।",
+    "heavyWarn": "यह श्रृंखला भारी है (बड़ी डिस्क और उच्च IOPS)। Solana मुख्य नेट को आमतौर पर 2 TiB+ चाहिए।",
+    "memory": "मेमोरी सीमा (जैसे 4g)",
+    "cpus": "CPU सीमा (जैसे 2.0)",
+    "dataPath": "डेटा पथ (वैकल्पिक)",
+    "rpcPort": "RPC पोर्ट (वैकल्पिक)"
+  },
+  "actions": {
+    "detail": "विवरण",
+    "start": "चालू",
+    "stop": "बंद",
+    "restart": "पुनः चालू",
+    "clear": "साफ़ करें",
+    "upgrade": "उन्नयन",
+    "clearConfirm": "इंस्टेंस आईडी या CLEAR लिखें",
+    "prune": "छवियाँ साफ़ करें",
+    "switchNetwork": "नेटवर्क बदलें",
+    "removeUnit": "compose / इंस्टेंस रिकॉर्ड भी हटाएँ",
+    "restoreAfter": "साफ़ करने के बाद स्नैपशॉट पुनर्स्थापित करें"
+  },
+  "policy": {
+    "label": "उन्नयन नीति",
+    "manual": "मैन्युअल",
+    "notify": "सूचित करें",
+    "auto-safe": "स्वतः (सुरक्षित)",
+    "auto-all": "स्वतः (सभी)"
+  },
+  "logs": {
+    "empty": "अभी कोई लॉग नहीं",
+    "follow": "लॉग अनुसरण करें"
   },
   "compose": {
-    "label": "Compose file",
-    "save": "Save compose"
+    "label": "Compose फ़ाइल",
+    "save": "compose सहेजें"
   },
   "snapshot": {
-    "action": "Restore snapshot",
-    "mithril": "Cardano uses Mithril for certified snapshot restore.",
-    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-    "avax": "Avalanche uses state-sync in the compose profile.",
-    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-    "none": "No snapshot source is configured for this chain."
+    "action": "स्नैपशॉट पुनर्स्थापित करें",
+    "mithril": "Cardano प्रमाणित स्नैपशॉट पुनर्स्थापना के लिए Mithril उपयोग करता है।",
+    "eth": "Ethereum मुख्य नेट सहमति क्लाइंट के आधिकारिक checkpoint sync से आरंभ होता है। EL snap sync जारी रखता है।",
+    "ethEl": "Hoodi／Sepolia ethPandaOps EL संग्रह पुनर्स्थापित कर सकते हैं, फिर CL का checkpoint-sync।",
+    "avax": "Avalanche compose प्रोफ़ाइल में state-sync उपयोग करता है।",
+    "near": "आधिकारिक मुफ़्त NEAR tar स्नैपशॉट बंद हो गए। पुनर्स्थापना डेटा मिटाती है और आधिकारिक genesis तथा epoch sync उपयोग करती है।",
+    "none": "इस श्रृंखला के लिए कोई स्नैपशॉट स्रोत नहीं है।"
   },
   "stake": {
-    "title": "Prepare for staking (you keep the keys)",
-    "offlineKeys": "Generate keys offline. The panel never stores them.",
-    "deposit": "Complete deposit / registration on the official launchpad.",
-    "withdrawal": "Set withdrawal credentials yourself.",
-    "monitor": "Watch disk, peers, and upgrade badges on this page."
+    "title": "स्टेकिंग की तैयारी (कुंजियाँ आपके पास)",
+    "offlineKeys": "कुंजियाँ ऑफ़लाइन बनाएँ। पैनल उन्हें कभी नहीं रखता।",
+    "deposit": "आधिकारिक launchpad पर जमा / पंजीकरण पूरा करें।",
+    "withdrawal": "निकासी प्रमाण स्वयं सेट करें।",
+    "monitor": "इस पृष्ठ पर डिस्क, पीयर और उन्नयन बैज देखें।"
+  },
+  "alerts": {
+    "diskTitle": "वैलिडेटर डिस्क गंभीर",
+    "diskBody": "वैलिडेटर डेटा वॉल्यूम पर खाली स्थान अत्यंत कम है।",
+    "upgradeTitle": "वैलिडेटर उन्नयन उपलब्ध",
+    "upgradeBody": "एक या अधिक नोड क्लाइंट के पास नया पिन संस्करण है।",
+    "syncTitle": "वैलिडेटर नोड पर ध्यान दें",
+    "syncBody": "कोई नोड 6 घंटे से अधिक सिंक कर रहा है या त्रुटि बताई।",
+    "rollbackTitle": "वैलिडेटर उन्नयन वापस लिया गया",
+    "rollbackBody": "{{id}} का उन्नयन स्वास्थ्य जाँच में विफल हुआ और वापस लिया गया।"
+  },
+  "upgrade": {
+    "changelog": "परिवर्तन सूची"
+  },
+  "readiness": {
+    "dockerTitle": "वैलिडेटर नोड के लिए Docker",
+    "dockerOk": "{{count}} वैलिडेटर इंस्टेंस; Docker स्थापित है",
+    "dockerMissing": "वैलिडेटर इंस्टेंस हैं लेकिन docker आदेश नहीं मिला"
   }
 }

@@ -32,6 +32,7 @@ import {
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
+import { sendMaybeStreamedOps } from '../http/sse-ops.js';
 import { requireAnyCap, requireCap } from '../http/rbac-guard.js';
 
 const BASE = '/api/v1/validators';
@@ -232,48 +233,70 @@ export async function handleValidatorsRoutes(
       const body = JSON.parse(raw || '{}') as Record<string, unknown>;
       const exec = wantsExecute(ctx, body);
       const base = { dataDir: ctx.dataDir, host: ctx.host, execute: exec, id };
-      let result;
-      if (action === 'start') result = await startValidatorInstance(base);
-      else if (action === 'stop') result = await stopValidatorInstance(base);
-      else if (action === 'restart') result = await restartValidatorInstance(base);
-      else if (action === 'update' || action === 'upgrade') {
-        result = await upgradeValidatorInstance(base);
-      } else if (action === 'prune') {
-        result = await pruneValidatorInstance(base);
-      } else if (action === 'switch-network') {
-        result = await switchValidatorNetwork({
-          ...base,
-          network: String(body.network ?? ''),
-          confirm: body.confirm != null ? String(body.confirm) : undefined,
-        });
-      } else if (action === 'snapshot') {
-        result = await restoreValidatorSnapshot({
-          ...base,
-          confirm: body.confirm != null ? String(body.confirm) : undefined,
-        });
-      } else if (action === 'mithril') {
-        result = await restoreAdaMithril({
-          ...base,
-          confirm: body.confirm != null ? String(body.confirm) : undefined,
-        });
-      } else if (action === 'clear') {
-        result = await clearValidatorInstance({
-          ...base,
-          confirm: body.confirm != null ? String(body.confirm) : undefined,
-          removeUnit: Boolean(body.removeUnit),
-          restoreSnapshot: Boolean(body.restoreSnapshot),
-        });
-      } else {
+      const known = new Set([
+        'start',
+        'stop',
+        'restart',
+        'update',
+        'upgrade',
+        'prune',
+        'switch-network',
+        'snapshot',
+        'mithril',
+        'clear',
+      ]);
+      if (!known.has(action)) {
         sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND, message: 'not found' });
         return true;
       }
-      ctx.audit.append({
-        actor: user.username,
-        action: `validators.${action}`,
-        detail: { id, execute: exec },
-        ok: result.ok,
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const hooked = { ...base, onLog: hooks.onLog, signal: hooks.signal };
+          let result;
+          if (action === 'start') result = await startValidatorInstance(hooked);
+          else if (action === 'stop') result = await stopValidatorInstance(hooked);
+          else if (action === 'restart') result = await restartValidatorInstance(hooked);
+          else if (action === 'update' || action === 'upgrade') {
+            result = await upgradeValidatorInstance(hooked);
+          } else if (action === 'prune') {
+            result = await pruneValidatorInstance(hooked);
+          } else if (action === 'switch-network') {
+            result = await switchValidatorNetwork({
+              ...hooked,
+              network: String(body.network ?? ''),
+              confirm: body.confirm != null ? String(body.confirm) : undefined,
+            });
+          } else if (action === 'snapshot') {
+            result = await restoreValidatorSnapshot({
+              ...hooked,
+              confirm: body.confirm != null ? String(body.confirm) : undefined,
+            });
+          } else if (action === 'mithril') {
+            result = await restoreAdaMithril({
+              ...hooked,
+              confirm: body.confirm != null ? String(body.confirm) : undefined,
+            });
+          } else {
+            result = await clearValidatorInstance({
+              ...hooked,
+              confirm: body.confirm != null ? String(body.confirm) : undefined,
+              removeUnit: Boolean(body.removeUnit),
+              restoreSnapshot: Boolean(body.restoreSnapshot),
+            });
+          }
+          ctx.audit.append({
+            actor: user.username,
+            action: `validators.${action}`,
+            detail: { id, execute: exec },
+            ok: result.ok,
+          });
+          return result;
+        },
       });
-      sendOpsResult(res, result);
       return true;
     }
 

@@ -2884,142 +2884,145 @@
   },
   "docker": {
     "title": "Docker",
-    "subtitle": "Install and control the Docker engine, containers, images, Compose projects, and disk on this host.",
-    "refresh": "Refresh",
-    "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
-    "protected": "Protected",
-    "pruneConfirm": "Type PRUNE to confirm volume or system prune",
-    "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
+    "subtitle": "Instale e controle o motor Docker, contentores, imagens, projetos Compose e disco neste anfitrião.",
+    "refresh": "Atualizar",
+    "notInstalled": "O Docker Engine não está instalado. Instale docker.io e docker-compose-v2 nesta página.",
+    "protected": "Protegido",
+    "pruneConfirm": "Escreva PRUNE para confirmar a limpeza de volume ou do sistema",
+    "settingsHint": "Apenas um subconjunto seguro de daemon.json. Aplicar escreve o ficheiro e reinicia docker.service.",
     "cli": {
-      "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+      "usage": "Utilização: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
     },
     "tab": {
-      "overview": "Overview",
-      "containers": "Containers",
-      "images": "Images",
+      "overview": "Visão geral",
+      "containers": "Contentores",
+      "images": "Imagens",
       "compose": "Compose",
       "volumes": "Volumes",
-      "networks": "Networks",
-      "prune": "Prune",
-      "settings": "Settings",
-      "about": "About"
+      "networks": "Redes",
+      "prune": "Limpar",
+      "settings": "Definições",
+      "about": "Acerca"
     },
     "col": {
-      "engine": "Engine",
-      "containers": "Containers",
-      "version": "Version",
-      "dataRoot": "Data root",
-      "validators": "Validator stacks",
-      "name": "Name",
-      "image": "Image",
-      "status": "Status",
-      "ports": "Ports",
-      "managed": "Managed",
-      "size": "Size",
-      "driver": "Driver",
-      "type": "Type",
-      "reclaimable": "Reclaimable",
-      "disk": "Disk"
+      "engine": "Motor",
+      "containers": "Contentores",
+      "version": "Versão",
+      "dataRoot": "Diretório de dados",
+      "disk": "Disco",
+      "validators": "Pilhas de validador",
+      "name": "Nome",
+      "image": "Imagem",
+      "status": "Estado",
+      "ports": "Portos",
+      "managed": "Gerido pelo painel",
+      "size": "Tamanho",
+      "driver": "Controlador",
+      "type": "Tipo",
+      "reclaimable": "Recuperável"
     },
     "state": {
-      "up": "Active",
-      "down": "Stopped"
+      "up": "Ativo",
+      "down": "Parado"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "logs": "Logs",
-      "run": "Run image",
-      "pull": "Pull",
-      "up": "Up",
-      "down": "Down",
-      "createVolume": "Create volume",
-      "createNetwork": "Create network",
-      "pruneContainers": "Prune containers",
-      "pruneImages": "Prune images",
-      "pruneVolumes": "Prune volumes",
-      "pruneSystem": "System prune",
-      "startEngine": "Start engine",
-      "stopEngine": "Stop engine",
-      "restartEngine": "Restart engine",
-      "applyDaemon": "Apply daemon settings",
-      "inspect": "Inspect"
+      "start": "Iniciar",
+      "stop": "Parar",
+      "restart": "Reiniciar",
+      "remove": "Remover",
+      "logs": "Registos",
+      "inspect": "Inspecionar",
+      "exec": "Exec (versão)",
+      "run": "Executar imagem",
+      "pull": "Obter",
+      "up": "Subir",
+      "down": "Descer",
+      "createVolume": "Criar volume",
+      "createNetwork": "Criar rede",
+      "pruneContainers": "Limpar contentores",
+      "pruneImages": "Limpar imagens",
+      "pruneVolumes": "Limpar volumes",
+      "pruneSystem": "Limpeza do sistema",
+      "startEngine": "Iniciar motor",
+      "stopEngine": "Parar motor",
+      "restartEngine": "Reiniciar motor",
+      "applyDaemon": "Aplicar definições do motor"
     },
     "empty": {
-      "containers": "No containers",
-      "images": "No images",
-      "compose": "No Compose projects",
-      "volumes": "No volumes",
-      "networks": "No networks"
+      "containers": "Sem contentores",
+      "images": "Sem imagens",
+      "compose": "Sem projetos Compose",
+      "volumes": "Sem volumes",
+      "networks": "Sem redes"
     },
     "logs": {
-      "empty": "No logs yet"
+      "empty": "Ainda sem registos"
     },
     "settings": {
-      "logMaxSize": "Container log max size",
-      "liveRestore": "Live restore (keep containers if the daemon restarts)",
-      "mirrors": "Registry mirrors (one URL per line)",
-      "insecure": "Insecure registries (one host per line)"
+      "logMaxSize": "Tamanho máximo do registo do contentor",
+      "liveRestore": "Restauro em direto (manter contentores se o daemon reiniciar)",
+      "mirrors": "Espelhos Registry (um URL por linha)",
+      "insecure": "Registries sem cifra (um anfitrião por linha)"
     },
     "about": {
-      "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
-      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
-      "validators": "Open validator nodes"
+      "body": "O Docker é um serviço de anfitrião de primeira linha no YSK Server, como o Nginx. Instala-se pelo painel (Ubuntu docker.io + docker-compose-v2). Os nós validador correm como projetos Compose yskval-*.",
+      "honesty": "Alterações no anfitrião precisam de root e YSK_EXECUTE=1. O predefinido é dry-run. Esta página não é Kubernetes.",
+      "validators": "Abrir nós validador"
     },
     "alerts": {
-      "daemonTitle": "Docker daemon is down",
-      "daemonBody": "The Docker engine is installed but docker.service is not active. Validator stacks cannot start."
+      "daemonTitle": "O daemon Docker está parado",
+      "daemonBody": "O Docker está instalado mas o docker.service não está ativo. As pilhas de validador não conseguem arrancar."
     },
     "errors": {
-      "notInstalled": "Docker is not installed",
-      "daemonDown": "Docker daemon is not active",
-      "needCompose": "docker compose (v2 plugin) is required",
-      "badImage": "Invalid image reference",
-      "badName": "Invalid name",
-      "badPort": "Invalid port publish",
-      "badEnv": "Invalid environment variable",
-      "badVolume": "Invalid volume mount",
-      "badNetwork": "Invalid network",
-      "protectedNetwork": "Cannot remove a built-in Docker network",
-      "badRestart": "Invalid restart policy",
-      "badPrune": "Invalid prune scope",
-      "needPruneConfirm": "Volume or system prune requires confirm=PRUNE",
-      "badDaemon": "Invalid daemon setting",
-      "composeMissing": "Compose file for this project was not found",
-      "logsFailed": "Could not read container logs",
-      "mutateFailed": "Docker command failed",
-      "engineFailed": "Could not control docker.service",
-      "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+      "notInstalled": "O Docker não está instalado",
+      "daemonDown": "O daemon Docker não está ativo",
+      "needCompose": "É necessário docker compose (extensão v2)",
+      "badImage": "Referência de imagem inválida",
+      "badName": "Nome inválido",
+      "badPort": "Publicação de porto inválida",
+      "badEnv": "Variável de ambiente inválida",
+      "badVolume": "Montagem de volume inválida",
+      "badNetwork": "Rede inválida",
+      "protectedNetwork": "Não é possível remover uma rede Docker integrada",
+      "badRestart": "Política de reinício inválida",
+      "badPrune": "Âmbito de limpeza inválido",
+      "needPruneConfirm": "Limpar volume ou sistema exige confirm=PRUNE",
+      "badDaemon": "Definição do motor inválida",
+      "composeMissing": "Ficheiro Compose deste projeto não encontrado",
+      "logsFailed": "Não foi possível ler os registos do contentor",
+      "mutateFailed": "O comando Docker falhou",
+      "engineFailed": "Não foi possível controlar o docker.service",
+      "badExec": "O exec limita-se a binários e predefinições permitidos (sem shell nem TTY)",
+      "uninstallBusy": "Pare os contentores geridos pelo painel (incluindo pilhas de validador) antes de desinstalar o Docker"
     },
     "notes": {
-      "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",
-      "dryPrune": "Prune preview (not applied).",
-      "dryEngine": "Engine control is dry-run.",
-      "dryDaemon": "Would write /etc/docker/daemon.json and restart docker.service.",
-      "daemonWrote": "Wrote daemon.json",
-      "start": "Container started",
-      "stop": "Container stopped",
-      "restart": "Container restarted",
-      "remove": "Container removed",
-      "ran": "Container started from image",
-      "pulled": "Image pulled",
-      "imageRemoved": "Image removed",
-      "volumeCreated": "Volume created",
-      "volumeRemoved": "Volume removed",
-      "networkCreated": "Network created",
-      "networkRemoved": "Network removed",
-      "pruned": "Prune finished",
+      "dryMutate": "Apenas dry-run. Passe --execute e YSK_EXECUTE=1 para alterar o anfitrião.",
+      "dryPrune": "Pré-visualização da limpeza (não aplicada).",
+      "dryEngine": "O controlo do motor é dry-run.",
+      "dryDaemon": "Escreveria /etc/docker/daemon.json e reiniciaria o docker.service.",
+      "daemonWrote": "daemon.json escrito",
+      "start": "Contentor iniciado",
+      "stop": "Contentor parado",
+      "restart": "Contentor reiniciado",
+      "remove": "Contentor removido",
+      "ran": "Contentor iniciado a partir da imagem",
+      "pulled": "Imagem obtida",
+      "exec": "Exec permitido executado",
+      "imageRemoved": "Imagem removida",
+      "volumeCreated": "Volume criado",
+      "volumeRemoved": "Volume removido",
+      "networkCreated": "Rede criada",
+      "networkRemoved": "Rede removida",
+      "pruned": "Limpeza concluída",
       "compose": {
-        "up": "Compose project started",
-        "down": "Compose project stopped",
-        "restart": "Compose project restarted"
+        "up": "Projeto Compose iniciado",
+        "down": "Projeto Compose parado",
+        "restart": "Projeto Compose reiniciado"
       },
       "engine": {
-        "start": "docker.service started",
-        "stop": "docker.service stopped",
-        "restart": "docker.service restarted"
+        "start": "docker.service iniciado",
+        "stop": "docker.service parado",
+        "restart": "docker.service reiniciado"
       }
     }
   },
@@ -5046,8 +5049,8 @@
       "security": "Segurança",
       "system": "Sistema",
       "ai": "AI",
-      "validators": "Validators",
-      "containers": "Containers"
+      "validators": "Validadores",
+      "containers": "Contentores"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -5071,7 +5074,7 @@
     "noAccessTitle": "Sem acesso",
     "noAccessDesc": "A sua função não inclui esta página. Peça a um administrador se precisar dela.",
     "backToDashboard": "Voltar ao painel",
-    "validators": "Validators (Beta)",
+    "validators": "Validadores (Beta)",
     "docker": "Docker"
   },
   "network": {
@@ -9652,12 +9655,12 @@
       "securityApiKeysAdmin": "Administrador de chaves de API",
       "networkBrowse": "Navegação na web mediada por host",
       "networkVnc": "Área de trabalho remota VNC",
-      "validatorsRead": "Validators (read)",
-      "validatorsManage": "Validators manage",
-      "validatorsWipe": "Validators wipe data",
-      "dockerRead": "Docker (read)",
-      "dockerManage": "Docker manage",
-      "dockerWipe": "Docker wipe / prune"
+      "validatorsRead": "Validadores (leitura)",
+      "validatorsManage": "Validadores gerir",
+      "validatorsWipe": "Validadores limpar dados",
+      "dockerRead": "Docker (leitura)",
+      "dockerManage": "Docker gerir",
+      "dockerWipe": "Docker remover / limpar"
     },
     "aboutRoles": "Funções (padrões de fábrica)",
     "aboutRolesBody": "As funções definem recursos padrão; os usuários podem substituir os individuais.",
@@ -11143,8 +11146,8 @@
       "purgeData": "Os caminhos de dados serão excluídos",
       "protectedSkipped": "Os componentes protegidos são ignorados",
       "runtimeStack": "Todas as versões gerenciadas pelo painel deste ambiente de execução serão removidas",
-      "containers": "Running containers will stop",
-      "validators": "Validator node stacks that use Docker Compose will stop"
+      "containers": "Os contentores em execução vão parar",
+      "validators": "As pilhas de validador que usam Docker Compose vão parar"
     },
     "requestCancel": "Solicitar cancelamento",
     "cancelling": "Cancelando…",
@@ -12284,28 +12287,28 @@
     "bandwidthHint": "0 means unlimited."
   },
   "validators": {
-    "title": "Validators (Beta)",
-    "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+    "title": "Validadores (Beta)",
+    "subtitle": "Instale e gira nós L1 neste anfitrião. Não detentor — as chaves ficam consigo.",
     "beta": "Beta",
     "tab": {
-      "nodes": "Nodes",
-      "disk": "Disk",
-      "about": "About"
+      "nodes": "Nós",
+      "disk": "Disco",
+      "about": "Acerca"
     },
     "empty": {
-      "title": "No validator nodes yet",
-      "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "title": "Ainda não há nós validador",
+      "desc": "Crie um nó de testnet em poucos cliques. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
     },
-    "refresh": "Refresh",
+    "refresh": "Atualizar",
     "disk": {
-      "title": "Validator disk",
-      "root": "Data directory",
-      "free": "Free",
-      "used": "Used",
-      "none": "No instance data yet",
-      "warn": "Disk usage is high (70%+)",
-      "danger": "Disk usage is critical (85%+)",
-      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+      "title": "Disco dos validadores",
+      "root": "Diretório de dados",
+      "free": "Livre",
+      "used": "Usado",
+      "none": "Ainda sem dados de instância",
+      "warn": "A utilização do disco está alta (70%+)",
+      "danger": "A utilização do disco é crítica (85%+)",
+      "autoClear": "Limpar automaticamente a maior instância parada quando o disco é crítico (desligado por omissão)"
     },
     "chain": {
       "eth": "Ethereum",
@@ -12322,148 +12325,173 @@
     "network": {
       "hoodi": "Hoodi",
       "sepolia": "Sepolia",
-      "mainnet": "Mainnet",
+      "mainnet": "Rede principal",
       "fuji": "Fuji",
-      "testnet": "Testnet",
+      "testnet": "Rede de testes",
       "preview": "Preview",
       "preprod": "Preprod",
       "westend": "Westend"
     },
     "networkKind": {
-      "testnet": "Testnet",
-      "mainnet": "Mainnet"
+      "testnet": "Rede de testes",
+      "mainnet": "Rede principal"
     },
     "profile": {
-      "minimal": "Minimal",
-      "pruned": "Pruned",
-      "validator-ready": "Validator-ready",
+      "minimal": "Mínimo",
+      "pruned": "Podado",
+      "validator-ready": "Pronto para validador",
       "rpc": "RPC"
     },
     "col": {
       "id": "ID",
-      "chain": "Chain",
-      "network": "Network",
-      "profile": "Profile",
-      "status": "Status",
-      "disk": "Disk"
+      "chain": "Cadeia",
+      "network": "Rede",
+      "profile": "Perfil",
+      "status": "Estado",
+      "disk": "Disco"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
-    },
-    "errors": {
-      "notFound": "Validator instance not found",
-      "invalidId": "Invalid instance id",
-      "diskLow": "Not enough free disk for this chain, network, and profile",
-      "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
-      "needDocker": "Docker Compose is required and was not found",
-      "composeFailed": "docker compose failed",
-      "needConfirm": "Clear requires confirm=instance id or CLEAR",
-      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
-      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
-      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
-      "mithrilKey": "Could not load the Mithril genesis verification key",
-      "mithrilFailed": "Mithril snapshot download failed",
-      "pruneFailed": "Prune failed",
-      "switchNeedStop": "Stop the node before switching network",
-      "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
-      "composeMissing": "Compose file not found",
-      "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
-    },
-    "notes": {
-      "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
-      "noKeys": "YSK Server never generates or stores staking keys.",
-      "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
-      "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
-      "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "created": "Node created and compose started",
-      "started": "Node started",
-      "stopped": "Node stopped",
-      "cleared": "Chain data cleared",
-      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "mithril": "Mithril snapshot restored; node restarted",
-      "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "pruned": "Unused project images pruned",
-      "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
-      "sameNetwork": "Already on that network",
-      "drySwitch": "Network switch is dry-run.",
-      "switched": "Network switched and chain data cleared",
-      "dryCompose": "Would write compose.yml",
-      "composeWrote": "Wrote compose.yml",
-      "statsEmpty": "No running containers to measure",
-      "autoClearNone": "No stopped instance to auto-clear"
-    },
-    "create": "Create node",
-    "wizard": {
-      "title": "Create node",
-      "back": "Back",
-      "next": "Next",
-      "install": "Install",
-      "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
-      "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-      "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-      "memory": "Memory limit (e.g. 4g)",
-      "cpus": "CPU limit (e.g. 2.0)"
-    },
-    "actions": {
-      "detail": "Details",
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "clear": "Clear",
-      "upgrade": "Upgrade",
-      "clearConfirm": "Type instance id or CLEAR",
-      "prune": "Prune",
-      "switchNetwork": "Switch network",
-      "removeUnit": "Also remove compose / instance record",
-      "restoreAfter": "Restore snapshot after clear"
-    },
-    "policy": {
-      "label": "Upgrade policy",
-      "manual": "Manual",
-      "notify": "Notify",
-      "auto-safe": "Auto (safe)",
-      "auto-all": "Auto (all)"
-    },
-    "logs": {
-      "empty": "No logs yet",
-      "follow": "Follow logs"
-    },
-    "alerts": {
-      "diskTitle": "Validator disk critical",
-      "diskBody": "Free space on the validator data volume is critically low.",
-      "upgradeTitle": "Validator upgrade available",
-      "upgradeBody": "One or more node clients have a newer pinned version.",
-      "syncTitle": "Validator node needs attention",
-      "syncBody": "A node has been syncing for more than 6 hours or reported an error."
+      "usage": "Utilização: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
     },
     "clients": {
-      "el": "Execution client",
-      "cl": "Consensus client"
+      "el": "Cliente de execução",
+      "cl": "Cliente de consenso"
     },
     "mithril": {
-      "label": "Restore from Mithril snapshot first (recommended on testnet)",
-      "action": "Restore with Mithril"
+      "label": "Restaurar primeiro a partir de um instantâneo Mithril (recomendado em testnet)",
+      "action": "Restaurar com Mithril"
+    },
+    "errors": {
+      "notFound": "Instância de validador não encontrada",
+      "invalidId": "Identificador de instância inválido",
+      "diskLow": "Disco livre insuficiente para esta cadeia, rede e perfil",
+      "diskUnknownMainnet": "Não é possível medir o disco livre; recusada a criação em rede principal",
+      "needDocker": "É necessário Docker Compose e não foi encontrado",
+      "composeFailed": "docker compose falhou",
+      "needConfirm": "Limpar exige confirm=identificador da instância ou CLEAR",
+      "mithrilAdaOnly": "A restauração Mithril só está disponível para Cardano",
+      "needMithrilConfirm": "Mithril exige confirm=identificador da instância ou MITHRIL",
+      "mithrilBlocked": "O docker run do Mithril foi bloqueado pela lista permitida",
+      "mithrilKey": "Não foi possível carregar a chave de verificação genesis do Mithril",
+      "mithrilFailed": "A transferência do instantâneo Mithril falhou",
+      "pruneFailed": "A limpeza falhou",
+      "switchNeedStop": "Pare o nó antes de mudar de rede",
+      "switchNeedClear": "Mudar de rede apaga os dados da cadeia. Confirme com o identificador da instância ou CLEAR",
+      "composeMissing": "Ficheiro Compose não encontrado",
+      "composeNotManaged": "Recusa de escrever um ficheiro Compose que não é gerido pelo YSK",
+      "badDataPath": "O caminho de dados deve ser um diretório absoluto fora dos caminhos do sistema",
+      "portInUse": "Esse porto RPC já é usado por outra instância de validador",
+      "snapshotUnsupported": "Não há origem de instantâneo permitida para esta cadeia",
+      "snapshotLookup": "Não foi possível resolver o ponteiro oficial do instantâneo",
+      "needSnapshotConfirm": "Restaurar instantâneo exige confirm=identificador da instância ou SNAPSHOT",
+      "snapshotBlocked": "O docker run do instantâneo foi bloqueado pela lista permitida",
+      "snapshotFailed": "A transferência ou extração do instantâneo falhou"
+    },
+    "notes": {
+      "beta": "Esta funcionalidade é Beta. Alterações no anfitrião precisam de root e YSK_EXECUTE=1.",
+      "noKeys": "O YSK Server nunca gera nem guarda chaves de staking.",
+      "dockerSoon": "Instalar, iniciar e parar chegam no próximo incremento. Esta página só lista instâncias e disco.",
+      "dryCreate": "Especificação da instância e compose escritos (dry-run). Passe --execute e YSK_EXECUTE=1 para iniciar contentores.",
+      "dryStart": "O arranque é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "dryStop": "A paragem é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "dryClear": "A limpeza é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "created": "Nó criado e compose iniciado",
+      "started": "Nó iniciado",
+      "stopped": "Nó parado",
+      "cleared": "Dados da cadeia limpos",
+      "dryMithril": "A restauração Mithril é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "mithril": "Instantâneo Mithril restaurado; nó reiniciado",
+      "dryPrune": "A limpeza é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "pruned": "Imagens não usadas do projeto limpas",
+      "pruneProfile": "A poda nativa do cliente é o perfil pruned／minimal. Recrie para o alterar.",
+      "sameNetwork": "Já está nessa rede",
+      "drySwitch": "A mudança de rede é dry-run.",
+      "switched": "Rede alterada e dados da cadeia limpos",
+      "dryCompose": "Escreveria compose.yml",
+      "composeWrote": "compose.yml escrito",
+      "statsEmpty": "Não há contentores em execução para medir",
+      "autoClearNone": "Não há instância parada para limpar automaticamente",
+      "drySnapshot": "A restauração de instantâneo é dry-run. Passe --execute e YSK_EXECUTE=1.",
+      "snapshotEthEl": "Arquivo EL ethPandaOps restaurado e CL redefinido para checkpoint sync",
+      "snapshotEthCl": "Dados CL redefinidos para o checkpoint sync oficial",
+      "snapshotNear": "Dados NEAR apagados; o compose vai reinicializar com genesis oficial e epoch sync",
+      "nativePrune": "Comando de poda nativa do cliente executado"
+    },
+    "create": "Criar nó",
+    "wizard": {
+      "title": "Criar nó",
+      "back": "Voltar",
+      "next": "Seguinte",
+      "install": "Instalar",
+      "mainnetWarn": "A rede principal precisa de muito disco livre (ETH costuma ser 800 GiB+). Recomenda-se testnet.",
+      "mainnetAck": "Compreendo o risco de disco e slashing. Continuar na rede principal.",
+      "heavyWarn": "Esta cadeia é pesada (muito disco e IOPS altos). Solana na rede principal costuma precisar de 2 TiB+.",
+      "memory": "Limite de memória (p. ex. 4g)",
+      "cpus": "Limite de CPU (p. ex. 2.0)",
+      "dataPath": "Caminho de dados (opcional)",
+      "rpcPort": "Porto RPC (opcional)"
+    },
+    "actions": {
+      "detail": "Detalhes",
+      "start": "Iniciar",
+      "stop": "Parar",
+      "restart": "Reiniciar",
+      "clear": "Limpar",
+      "upgrade": "Atualizar",
+      "clearConfirm": "Escreva o identificador da instância ou CLEAR",
+      "prune": "Limpar imagens",
+      "switchNetwork": "Mudar de rede",
+      "removeUnit": "Também remover compose / o registo da instância",
+      "restoreAfter": "Restaurar instantâneo após limpar"
+    },
+    "policy": {
+      "label": "Política de atualização",
+      "manual": "À mão",
+      "notify": "Notificar",
+      "auto-safe": "Automático (seguro)",
+      "auto-all": "Automático (tudo)"
+    },
+    "logs": {
+      "empty": "Ainda sem registos",
+      "follow": "Seguir registos"
     },
     "compose": {
-      "label": "Compose file",
-      "save": "Save compose"
+      "label": "Ficheiro Compose",
+      "save": "Guardar compose"
     },
     "snapshot": {
-      "action": "Restore snapshot",
-      "mithril": "Cardano uses Mithril for certified snapshot restore.",
-      "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
-      "avax": "Avalanche uses state-sync in the compose profile.",
-      "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
-      "none": "No snapshot source is configured for this chain."
+      "action": "Restaurar instantâneo",
+      "mithril": "O Cardano usa Mithril para restaurar instantâneos certificados.",
+      "eth": "A rede principal Ethereum arranca com o checkpoint sync oficial do cliente de consenso. O EL continua com snap sync.",
+      "ethEl": "Hoodi/Sepolia podem restaurar um arquivo EL ethPandaOps e depois fazer checkpoint-sync do CL.",
+      "avax": "A Avalanche usa state-sync no perfil compose.",
+      "near": "Os instantâneos tar gratuitos oficiais da NEAR foram retirados. Restaurar apaga dados e usa genesis oficial mais epoch sync.",
+      "none": "Não há origem de instantâneo configurada para esta cadeia."
     },
     "stake": {
-      "title": "Prepare for staking (you keep the keys)",
-      "offlineKeys": "Generate keys offline. The panel never stores them.",
-      "deposit": "Complete deposit / registration on the official launchpad.",
-      "withdrawal": "Set withdrawal credentials yourself.",
-      "monitor": "Watch disk, peers, and upgrade badges on this page."
+      "title": "Preparar staking (as chaves ficam consigo)",
+      "offlineKeys": "Gere as chaves offline. O painel nunca as guarda.",
+      "deposit": "Conclua o depósito / registo no launchpad oficial.",
+      "withdrawal": "Defina você mesmo as credenciais de levantamento.",
+      "monitor": "Vigie disco, pares e distintivos de atualização nesta página."
+    },
+    "alerts": {
+      "diskTitle": "Disco do validador crítico",
+      "diskBody": "O espaço livre no volume de dados do validador está criticamente baixo.",
+      "upgradeTitle": "Atualização de validador disponível",
+      "upgradeBody": "Um ou mais clientes de nó têm uma versão fixada mais recente.",
+      "syncTitle": "O nó validador precisa de atenção",
+      "syncBody": "Um nó está a sincronizar há mais de 6 horas ou reportou um erro.",
+      "rollbackTitle": "Atualização de validador revertida",
+      "rollbackBody": "A atualização de {{id}} falhou a verificação de saúde e foi revertida."
+    },
+    "upgrade": {
+      "changelog": "Registo de alterações"
+    },
+    "readiness": {
+      "dockerTitle": "Docker para nós validador",
+      "dockerOk": "{{count}} instância(s) de validador; Docker está instalado",
+      "dockerMissing": "Existem instâncias de validador mas o comando docker não foi encontrado"
     }
   },
   "vnc": {
