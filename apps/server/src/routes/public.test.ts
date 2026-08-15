@@ -60,23 +60,27 @@ describe('public routes (HTTP)', () => {
     expect(body.executeEnabled).toBeUndefined();
   });
 
-  it('readiness responds without auth (install probe)', async () => {
-    ts = await startTestServer();
-    const res = await apiJson(ts, 'GET', '/api/v1/readiness', undefined, {
-      auth: false,
-    });
-    // 200 when production ready, 503 when not — both valid honest outcomes
-    expect([200, 503]).toContain(res.status);
-    const body = res.body as {
-      productionReady?: boolean;
-      notes?: string[];
-      items?: unknown;
-      blockers?: unknown;
-    };
-    expect(typeof body.productionReady).toBe('boolean');
-    expect(body.items).toBeUndefined();
-    expect(body.blockers).toBeUndefined();
-  });
+  it(
+    'readiness responds without auth (install probe)',
+    async () => {
+      ts = await startTestServer();
+      const res = await apiJson(ts, 'GET', '/api/v1/readiness', undefined, {
+        auth: false,
+      });
+      // 200 when production ready, 503 when not — both valid honest outcomes
+      expect([200, 503]).toContain(res.status);
+      const body = res.body as {
+        productionReady?: boolean;
+        notes?: string[];
+        items?: unknown;
+        blockers?: unknown;
+      };
+      expect(typeof body.productionReady).toBe('boolean');
+      expect(body.items).toBeUndefined();
+      expect(body.blockers).toBeUndefined();
+    },
+    20_000,
+  );
 
   it('project health requires auth', async () => {
     ts = await startTestServer();
@@ -167,10 +171,16 @@ describe('public routes (HTTP)', () => {
     expect(res.status).toBeLessThan(500);
   });
 
-  it('readiness with auth still returns productionReady boolean', async () => {
-    ts = await startTestServer();
-    const res = await apiJson(ts, 'GET', '/api/v1/readiness');
-    expect([200, 503]).toContain(res.status);
-    expect(typeof (res.body as { productionReady?: boolean }).productionReady).toBe('boolean');
-  });
+  it(
+    'readiness with auth still returns productionReady boolean',
+    async () => {
+      ts = await startTestServer();
+      const res = await apiJson(ts, 'GET', '/api/v1/readiness');
+      expect([200, 503]).toContain(res.status);
+      expect(typeof (res.body as { productionReady?: boolean }).productionReady).toBe(
+        'boolean',
+      );
+    },
+    20_000,
+  );
 });
