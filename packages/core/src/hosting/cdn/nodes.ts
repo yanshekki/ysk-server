@@ -76,7 +76,7 @@ export function resolveCdnSshTarget(node: CdnNodeDto): {
   const onlinePanel = panelTransport && node.status === 'online';
   // Online panel / fleet edges use inbound apply — leftover root@sshHost must not win.
   if (onlinePanel && !explicitIdentity) return null;
-  if (panelTransport && !explicitIdentity && !explicitUser) return null;
+  if (node.fleetAgentId?.trim() && !explicitIdentity && !explicitUser) return null;
   const host =
     node.sshHost?.trim() ||
     node.publicIpv4[0] ||

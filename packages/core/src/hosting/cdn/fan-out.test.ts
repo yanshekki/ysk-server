@@ -136,7 +136,7 @@ describe('cdn fan-out (PR-C3)', () => {
       const site = upsertCdnSite(db, {
         name: 's',
         domains: ['f.example.com'],
-        origin: { kind: 'url', url: 'http://127.0.0.1:3000' },
+        origin: { kind: 'url', url: 'http://origin.example.com' },
         edgeNodeIds: [edge.id],
       });
       const queued: unknown[] = [];
