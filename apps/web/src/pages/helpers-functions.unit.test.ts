@@ -179,8 +179,8 @@ describe('Services helpers', () => {
   it('enabledLabel / actionLabel / toneFor', () => {
     expect(enabledLabel('enabled', t as never)).toMatch(/enabledBoot/);
     expect(enabledLabel('disabled', t as never)).toMatch(/common.no|no/i);
-    expect(enabledLabel('static', t as never)).toBe('static');
-    expect(enabledLabel('indirect', t as never)).toBe('indirect');
+    expect(enabledLabel('static', t as never)).toBe('services.unitStatic');
+    expect(enabledLabel('indirect', t as never)).toBe('services.unitIndirect');
     expect(enabledLabel('', t as never)).toMatch(/noneSelected|common/);
 
     for (const a of ['start', 'stop', 'restart', 'reload', 'enable'] as const) {
