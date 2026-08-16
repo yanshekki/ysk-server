@@ -71,5 +71,8 @@
   "enabledOk": "已设置 {{label}} 开机启动",
   "bootDisabledWarn": "{{label}} 正在运行，但重启后不会自动启动。请启用开机启动。",
   "bootDisabledShort": "未开机启动",
-  "mariadbNotInstalled": "尚未安装 MariaDB"
+  "mariadbNotInstalled": "尚未安装 MariaDB",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

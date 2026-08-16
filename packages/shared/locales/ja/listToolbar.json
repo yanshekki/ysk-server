@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} フィルターが有効です",
   "noResults": "該当するものがありません",
   "noResultsHint": "別のキーワードを試すか、フィルターをクリアしてください。",
-  "searching": "検索中…"
+  "searching": "検索中…",
+  "emptyChip": "No items in this filter"
 }

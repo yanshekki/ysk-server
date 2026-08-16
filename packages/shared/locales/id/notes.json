@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "ular piton",
-    "runtimesGo": "Pergi",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "Instal Node dari /runtimes/node",
     "runtimesPhpFix": "Instal PHP dari /runtimes/php",

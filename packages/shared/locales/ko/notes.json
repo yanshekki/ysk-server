@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "파이썬",
-    "runtimesGo": "가다",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "/runtimes/node에서 노드 설치",
     "runtimesPhpFix": "/runtimes/php에서 PHP 설치",

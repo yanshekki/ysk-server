@@ -1750,7 +1750,7 @@
       "變更主機須 root 及 YSK_EXECUTE=1"
     ],
     "notes": [
-      "Beta：安裝與啟動需要 Docker Engine、root 及 YSK_EXECUTE=1",
+      "Beta：有 Docker Engine、root 及 YSK_EXECUTE=1 才可安裝與啟動",
       "ETH 主網需要數百 GB 可用空間 — 空間不足時會拒絕建立",
       "RPC 預設只綁本機"
     ],

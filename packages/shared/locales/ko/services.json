@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} 부팅 시 사용으로 설정됨",
   "bootDisabledWarn": "{{label}}이(가) 실행 중이지만 부팅 시 시작되지 않습니다. 재부팅 후에도 유지하려면 사용으로 설정하세요.",
   "bootDisabledShort": "부팅 시 아님",
-  "mariadbNotInstalled": "MariaDB가 설치되지 않음"
+  "mariadbNotInstalled": "MariaDB가 설치되지 않음",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

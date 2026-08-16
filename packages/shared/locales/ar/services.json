@@ -71,5 +71,8 @@
   "enabledOk": "تم تمكين {{label}} عند الإقلاع",
   "bootDisabledWarn": "{{label}} يعمل لكنه لن يبدأ عند الإقلاع. مكّنه ليثبت بعد إعادة التشغيل.",
   "bootDisabledShort": "ليس عند الإقلاع",
-  "mariadbNotInstalled": "MariaDB غير مثبّت"
+  "mariadbNotInstalled": "MariaDB غير مثبّت",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

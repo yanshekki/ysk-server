@@ -2,9 +2,9 @@
   "pageDesc": "वीपीएन सर्वर और क्लाइंट",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "वायरगार्ड",
-    "openvpn": "ओपनवीपीएन",
-    "outline": "शैडोसॉक्स",
+    "wireguard": "WireGuard",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "स्थानीय ग्राहक",
     "software": "सॉफ़्टवेयर",
     "monitor": "निगरानी करना",

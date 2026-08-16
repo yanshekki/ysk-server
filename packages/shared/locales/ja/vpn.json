@@ -2,9 +2,9 @@
   "pageDesc": "VPNサーバーとクライアント",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "ワイヤーガード",
+    "wireguard": "WireGuard",
     "openvpn": "OpenVPN",
-    "outline": "シャドーソックス",
+    "outline": "Shadowsocks",
     "client": "ローカルクライアント",
     "software": "ソフトウェア",
     "monitor": "監視",

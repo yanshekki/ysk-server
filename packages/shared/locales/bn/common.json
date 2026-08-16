@@ -35,6 +35,7 @@
   "noData": "কোন তথ্য নেই",
   "input": "ইনপুট",
   "pleaseEnter": "{{value}} লিখুন",
+  "required": "প্রয়োজনীয়",
   "about": "সম্পর্কে",
   "operation": "কর্ম",
   "delete": "মুছে দিন",

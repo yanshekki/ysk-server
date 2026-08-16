@@ -35,6 +35,7 @@
   "noData": "لا توجد بيانات",
   "input": "مدخل",
   "pleaseEnter": "أدخل {{value}}",
+  "required": "مطلوب",
   "about": "عن",
   "operation": "الإجراءات",
   "delete": "يمسح",

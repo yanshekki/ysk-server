@@ -2,9 +2,9 @@
   "pageDesc": "VPN 서버 및 클라이언트",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "와이어가드",
-    "openvpn": "오픈VPN",
-    "outline": "섀도우삭스",
+    "wireguard": "WireGuard",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "로컬 클라이언트",
     "software": "소프트웨어",
     "monitor": "감시 장치",

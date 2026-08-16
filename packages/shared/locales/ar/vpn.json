@@ -3,8 +3,8 @@
   "eyebrow": "VPN",
   "tab": {
     "wireguard": "WireGuard",
-    "openvpn": "المسنجر",
-    "outline": "شادوسوكس",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "العميل المحلي",
     "software": "برمجة",
     "monitor": "شاشة",

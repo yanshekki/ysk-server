@@ -48,6 +48,7 @@ export function ServiceLifecycleBar({
   const { busy, run } = useFeatureAction();
   const [resolvedUnit, setResolvedUnit] = useState(unitProp?.trim() || '');
   const [pendingStop, setPendingStop] = useState(false);
+  const [pendingRestart, setPendingRestart] = useState(false);
   const [bootEnabled, setBootEnabled] = useState<string | undefined>();
 
   useEffect(() => {
@@ -193,7 +194,11 @@ export function ServiceLifecycleBar({
           size={size}
           loading={busy}
           disabled={!canAct || running === false}
-          onClick={() => void fire('restart')}
+          title={danger === 'panel' ? t('services.stopConfirmPanelDesc') : undefined}
+          onClick={() => {
+            if (danger === 'panel') setPendingRestart(true);
+            else void fire('restart');
+          }}
         >
           {t('services.action.restart')}
         </Button>
@@ -235,6 +240,21 @@ export function ServiceLifecycleBar({
         confirmText={confirmCopy.confirmText}
         severity={confirmCopy.severity}
         confirmLabel={t('services.action.stop')}
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={pendingRestart}
+        onClose={() => setPendingRestart(false)}
+        onConfirm={() => {
+          setPendingRestart(false);
+          void fire('restart');
+        }}
+        title={t('services.restartConfirmPanelTitle')}
+        description={t('services.restartConfirmPanelDesc')}
+        consequences={confirmCopy.consequences}
+        confirmText={confirmCopy.confirmText}
+        severity={confirmCopy.severity}
+        confirmLabel={t('services.action.restart')}
         busy={busy}
       />
     </div>

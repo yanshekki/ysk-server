@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} filter aktif",
   "noResults": "Tidak ada kecocokan",
   "noResultsHint": "Coba kata kunci lain atau hapus filter.",
-  "searching": "Mencari…"
+  "searching": "Mencari…",
+  "emptyChip": "No items in this filter"
 }

@@ -144,5 +144,6 @@
   "ftpsNeedCert": "Escolha primeiro um domínio de certificado",
   "detectPublicIp": "Detectar IP público",
   "detectPublicIpTitle": "Preencha o primeiro IPv4 sem loopback deste host",
-  "pasvIpRequired": "Defina um IP público PASV antes de aplicar (NAT/nuvem). Detete ou escreva um endereço."
+  "pasvIpRequired": "Defina um IP público PASV antes de aplicar (NAT/nuvem). Detete ou escreva um endereço.",
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
 }

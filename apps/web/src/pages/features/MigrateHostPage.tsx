@@ -305,13 +305,13 @@ export function MigrateHostPage() {
                         <ul className="list-plain">
                           {((inventory.manifest as { orphanHomes?: string[] }).orphanHomes ?? []).map(
                             (p) => (
-                              <li key={p} className="u-justify-between">
+                              <li key={p} className="u-flex u-justify-between u-gap-2 u-items-center">
                                 <code className="inline u-text-sm">{p}</code>
                                 <Button
                                   variant="danger"
                                   size="sm"
                                   title={t('migrate.orphanRemoveNeedConfirm')}
-                                  aria-label={t('migrate.orphanRemoveNeedConfirm')}
+                                  aria-label={`${t('migrate.orphanRemove')} ${p}`}
                                   onClick={() => setOrphanTarget(p)}
                                 >
                                   {t('migrate.orphanRemove')}

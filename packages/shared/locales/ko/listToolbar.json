@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} 필터 활성화됨",
   "noResults": "일치하는 항목 없음",
   "noResultsHint": "다른 키워드를 사용하거나 필터를 삭제해 보세요.",
-  "searching": "수색…"
+  "searching": "수색…",
+  "emptyChip": "No items in this filter"
 }

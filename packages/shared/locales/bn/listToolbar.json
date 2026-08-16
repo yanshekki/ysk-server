@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} ফিল্টার সক্রিয়",
   "noResults": "কোন মিল নেই",
   "noResultsHint": "অন্য কীওয়ার্ড বা পরিষ্কার ফিল্টার চেষ্টা করুন.",
-  "searching": "অনুসন্ধান করা হচ্ছে..."
+  "searching": "অনুসন্ধান করা হচ্ছে...",
+  "emptyChip": "No items in this filter"
 }

@@ -515,6 +515,7 @@ export function ProtectionPage() {
   const [showWl, setShowWl] = useState(false);
   const [presetConfirmId, setPresetConfirmId] = useState<string | null>(null);
   const [emergencyPromptOpen, setEmergencyPromptOpen] = useState(false);
+  const [pendingBan, setPendingBan] = useState<{ ip: string; reason?: string } | null>(null);
   const [showMech, setShowMech] = useState(true);
   const [automation, setAutomation] = useState<DefenseAutomation | null>(null);
   const [mechanisms, setMechanisms] = useState<
@@ -1919,7 +1920,7 @@ export function ProtectionPage() {
                           size="sm"
                           loading={busy}
                           disabled={disabled}
-                          onClick={bindBanOne(banOne, s.ip, s.reasons[0])}
+                          onClick={() => setPendingBan({ ip: s.ip, reason: s.reasons[0] })}
                         >
                           {t('protection.ban')}
                         </Button>
@@ -2996,6 +2997,22 @@ export function ProtectionPage() {
           const id = presetConfirmId;
           setPresetConfirmId(null);
           if (id) void applyPreset(id, true, false, 'ok');
+        }}
+      />
+
+      <ConfirmDialog
+        open={pendingBan != null}
+        onClose={bindCloseIfIdle(busy, () => setPendingBan(null))}
+        title={t('protection.banConfirmTitle', { ip: pendingBan?.ip ?? '' })}
+        description={t('protection.banConfirmDesc', { ip: pendingBan?.ip ?? '' })}
+        confirmLabel={t('protection.ban')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+        onConfirm={() => {
+          const next = pendingBan;
+          setPendingBan(null);
+          if (next) void banOne(next.ip, next.reason);
         }}
       />
 

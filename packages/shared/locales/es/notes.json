@@ -238,7 +238,7 @@
     "runtimesNode": "Nodo.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "Pitón",
-    "runtimesGo": "Ir",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "Instalar Node desde /runtimes/node",
     "runtimesPhpFix": "Instalar PHP desde /runtimes/php",

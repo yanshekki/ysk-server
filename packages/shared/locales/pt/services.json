@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} ativado no arranque",
   "bootDisabledWarn": "{{label}} está a correr mas não arranca no boot. Ative para persistir após reinício.",
   "bootDisabledShort": "Não no arranque",
-  "mariadbNotInstalled": "MariaDB não está instalado"
+  "mariadbNotInstalled": "MariaDB não está instalado",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

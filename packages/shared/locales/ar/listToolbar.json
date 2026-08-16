@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} المرشحات نشطة",
   "noResults": "لا توجد مباريات",
   "noResultsHint": "جرّب كلمة رئيسية أخرى أو امسح عوامل التصفية.",
-  "searching": "البحث…"
+  "searching": "البحث…",
+  "emptyChip": "No items in this filter"
 }

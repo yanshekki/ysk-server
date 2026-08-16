@@ -2,9 +2,9 @@
   "pageDesc": "Servidor y cliente VPN",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "AlambreGuardia",
+    "wireguard": "WireGuard",
     "openvpn": "OpenVPN",
-    "outline": "calcetines de sombra",
+    "outline": "Shadowsocks",
     "client": "Cliente local",
     "software": "Software",
     "monitor": "Monitor",

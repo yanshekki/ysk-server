@@ -20,6 +20,7 @@ const FORBIDDEN = [
   { term: '設置', prefer: '設定' },
   { term: '服務器', prefer: '伺服器' },
   { term: '默認', prefer: '預設' },
+  { term: '预设', prefer: '預設' },
   { term: '信息', prefer: '資訊／訊息' },
   { term: '登錄', prefer: '登入／登記' },
   { term: '點擊', prefer: '點選' },

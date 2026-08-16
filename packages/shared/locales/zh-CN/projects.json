@@ -523,7 +523,7 @@
   "railBun": "Bun 进程",
   "deployProcessManager": "进程管理",
   "deployProcessManagerSystemd": "systemd（推荐）",
-  "deployProcessManagerPm2": "颗粒物",
+  "deployProcessManagerPm2": "PM2",
   "proc_restart": "重启",
   "proc_stop": "停止",
   "proc_reload": "重新加载",

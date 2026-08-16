@@ -2,9 +2,9 @@
   "pageDesc": "VPN 服务器／客户端",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "线卫",
-    "openvpn": "开放VPN",
-    "outline": "影袜",
+    "wireguard": "WireGuard",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "本机连出",
     "software": "软件",
     "monitor": "监控",

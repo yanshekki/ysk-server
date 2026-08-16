@@ -2061,6 +2061,7 @@
     "noData": "Sem dados",
     "input": "Entrada",
     "pleaseEnter": "Digite {{value}}",
+    "required": "Obrigatório",
     "about": "Sobre",
     "operation": "Ações",
     "delete": "Excluir",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "Escolha primeiro um domínio de certificado",
     "detectPublicIp": "Detectar IP público",
     "detectPublicIpTitle": "Preencha o primeiro IPv4 sem loopback deste host",
-    "pasvIpRequired": "Defina um IP público PASV antes de aplicar (NAT/nuvem). Detete ou escreva um endereço."
+    "pasvIpRequired": "Defina um IP público PASV antes de aplicar (NAT/nuvem). Detete ou escreva um endereço.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} filtros ativos",
     "noResults": "Nenhuma correspondência",
     "noResultsHint": "Experimente outra palavra-chave ou limpe os filtros.",
-    "searching": "Procurando…"
+    "searching": "Procurando…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "Banimento {{ip}} em Proteção"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "Pitão",
-      "runtimesGo": "Ir",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "Instale o nó de /runtimes/node",
       "runtimesPhpFix": "Instale o PHP em /runtimes/php",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "As contagens vêm da janela de amostras access + auth atual, não do ficheiro de registo completo.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "Não definido",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "Somente aplicativos iniciados com PM2 no usuário do painel. As implantações do systemd aparecem acima.",
       "startupTitle": "Comece na inicialização",
       "startupDesc": "Registre o PM2 para que os processos voltem após a reinicialização.",
-      "systemdActionsHint": "As ações do systemd precisam de root e YSK_EXECUTE."
+      "systemdActionsHint": "As ações do systemd precisam de root e YSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "Gravado {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} ativado no arranque",
     "bootDisabledWarn": "{{label}} está a correr mas não arranca no boot. Ative para persistir após reinício.",
     "bootDisabledShort": "Não no arranque",
-    "mariadbNotInstalled": "MariaDB não está instalado"
+    "mariadbNotInstalled": "MariaDB não está instalado",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "Programas",
@@ -13327,7 +13350,7 @@
     "tab": {
       "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "Meias Sombrias",
+      "outline": "Shadowsocks",
       "client": "Cliente local",
       "software": "Programas",
       "monitor": "Monitor",

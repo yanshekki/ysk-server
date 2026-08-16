@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "পাইথন",
-    "runtimesGo": "যাও",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "/runtimes/node থেকে নোড ইনস্টল করুন",
     "runtimesPhpFix": "/runtimes/php থেকে PHP ইনস্টল করুন",

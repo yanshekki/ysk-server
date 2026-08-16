@@ -2061,6 +2061,7 @@
     "noData": "데이터 없음",
     "input": "입력",
     "pleaseEnter": "{{value}} 입력",
+    "required": "필수",
     "about": "설명",
     "operation": "행위",
     "delete": "삭제",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "먼저 인증서 도메인을 선택하세요.",
     "detectPublicIp": "공개 IP 감지",
     "detectPublicIpTitle": "이 호스트에서 첫 번째 비루프백 IPv4를 채웁니다.",
-    "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다."
+    "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} 필터 활성화됨",
     "noResults": "일치하는 항목 없음",
     "noResultsHint": "다른 키워드를 사용하거나 필터를 삭제해 보세요.",
-    "searching": "수색…"
+    "searching": "수색…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "보호에서 {{ip}} 금지"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "파이썬",
-      "runtimesGo": "가다",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "/runtimes/node에서 노드 설치",
       "runtimesPhpFix": "/runtimes/php에서 PHP 설치",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "횟수는 전체 로그가 아니라 현재 access + auth 샘플 창에서 나옵니다.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "설정되지 않음",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "패널 사용자 아래에서 PM2로 시작된 앱만 해당됩니다. systemd 배포가 위에 나타납니다.",
       "startupTitle": "부팅 시 시작",
       "startupDesc": "PM2를 등록하면 재부팅 후 프로세스가 다시 시작됩니다.",
-      "systemdActionsHint": "systemd 작업에는 루트와 YSK_EXECUTE가 필요합니다."
+      "systemdActionsHint": "systemd 작업에는 루트와 YSK_EXECUTE가 필요합니다.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "녹화됨 {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} 부팅 시 사용으로 설정됨",
     "bootDisabledWarn": "{{label}}이(가) 실행 중이지만 부팅 시 시작되지 않습니다. 재부팅 후에도 유지하려면 사용으로 설정하세요.",
     "bootDisabledShort": "부팅 시 아님",
-    "mariadbNotInstalled": "MariaDB가 설치되지 않음"
+    "mariadbNotInstalled": "MariaDB가 설치되지 않음",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "소프트웨어",
@@ -11902,7 +11925,7 @@
     "helpTitle": "문제가 있나요?",
     "helpBody": "OS, 설치 로그 경로, 기대한 동작과 실제 결과를 이메일로 보내 주세요. 모든 메시지를 읽습니다.",
     "docsHint": "전체 문서는 저장소에 있습니다:",
-    "donateLinktree": "링크트리",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "암호화폐 / Web3 핸들",
     "cryptoHint": "해당 네트워크에서만 보내세요. 보내기 전에 주소를 다시 확인하세요.",
     "cryptoNetwork": "네트워크",
@@ -13325,9 +13348,9 @@
     "pageDesc": "VPN 서버 및 클라이언트",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "와이어가드",
-      "openvpn": "오픈VPN",
-      "outline": "섀도우삭스",
+      "wireguard": "WireGuard",
+      "openvpn": "OpenVPN",
+      "outline": "Shadowsocks",
       "client": "로컬 클라이언트",
       "software": "소프트웨어",
       "monitor": "감시 장치",

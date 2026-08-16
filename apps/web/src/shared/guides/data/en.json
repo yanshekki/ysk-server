@@ -1762,7 +1762,7 @@
       "Mutations need root and YSK_EXECUTE=1"
     ],
     "notes": [
-      "Beta: install and start need Docker Engine, root, and YSK_EXECUTE=1",
+      "Beta: install and start when Docker Engine, root, and YSK_EXECUTE=1 are available",
       "Mainnet needs hundreds of GB free (ETH) — the create flow will refuse if space is short",
       "RPC binds to localhost by default"
     ],

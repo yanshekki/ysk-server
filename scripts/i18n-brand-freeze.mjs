@@ -73,7 +73,41 @@ const FORBIDDEN = [
   /パワーDNS/,
   /fail\s+2\s+ban/i,
   /顆粒物/,
+  /颗粒物/,
+  /線衛/,
+  /线卫/,
+  /影襪/,
+  /影袜/,
+  /上證所/,
+  /上证所/,
+  /連結樹/,
+  /链接树/,
 ];
+
+const LEAF_EXACT = {
+  'vpn.json': {
+    'tab.wireguard': 'WireGuard',
+    'tab.openvpn': 'OpenVPN',
+    'tab.outline': 'Shadowsocks',
+  },
+  'projects.json': {
+    deployProcessManagerPm2: 'PM2',
+  },
+  'notes.json': {
+    'readiness.pm2': 'PM2',
+    'readiness.runtimesGo': 'Go',
+  },
+  'logs.json': {
+    sseLabel: 'SSE',
+  },
+  'support.json': {
+    donateLinktree: 'Linktree',
+  },
+};
+
+function getPath(obj, path) {
+  return path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+}
 
 function locales() {
   return readdirSync(localesDir)
@@ -170,10 +204,35 @@ for (const loc of locales()) {
       fails.push(`${loc}/validators.json ${path}: expected "${want}" got "${got}"`);
     }
   }
-  const blob = JSON.stringify({ nav, cat, sup });
-  for (const re of FORBIDDEN) {
-    if (re.test(blob)) {
-      fails.push(`${loc}: forbidden brand/MT pattern ${re}`);
+  for (const [file, pairs] of Object.entries(LEAF_EXACT)) {
+    let doc;
+    try {
+      doc = load(loc, file);
+    } catch {
+      continue;
+    }
+    for (const [path, want] of Object.entries(pairs)) {
+      const got = getPath(doc, path);
+      if (got != null && got !== want) {
+        fails.push(`${loc}/${file} ${path}: expected "${want}" got "${got}"`);
+      }
+    }
+  }
+
+  const dir = join(localesDir, loc);
+  for (const file of readdirSync(dir)) {
+    if (!file.endsWith('.json') || file === 'translation.json') continue;
+    let doc;
+    try {
+      doc = load(loc, file);
+    } catch {
+      continue;
+    }
+    const blob = JSON.stringify(doc);
+    for (const re of FORBIDDEN) {
+      if (re.test(blob)) {
+        fails.push(`${loc}/${file}: forbidden brand/MT pattern ${re}`);
+      }
     }
   }
 }

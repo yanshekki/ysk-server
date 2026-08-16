@@ -2,9 +2,9 @@
   "pageDesc": "VPN 伺服器／客戶端",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "線衛",
-    "openvpn": "開放VPN",
-    "outline": "影襪",
+    "wireguard": "WireGuard",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "本機連出",
     "software": "軟件",
     "monitor": "監控",

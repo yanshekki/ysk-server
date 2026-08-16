@@ -238,7 +238,7 @@
     "runtimesNode": "Noeud.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "Python",
-    "runtimesGo": "Aller",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "Installer Node à partir de /runtimes/node",
     "runtimesPhpFix": "Installer PHP depuis /runtimes/php",

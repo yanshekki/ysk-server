@@ -236,7 +236,9 @@ export function FtpPage() {
       ) : null}
       {serviceStatus?.active === 'failed' ? (
         <Alert variant="error">
-          {t('ftp.vsftpdFailedHint')}{' '}
+          {serviceStatus.listenConflict
+            ? t('ftp.listenConflictNeedFix')
+            : t('ftp.vsftpdFailedGeneric')}{' '}
           <Link to="/ftp?tab=service">{t('ftp.tabService')}</Link>
         </Alert>
       ) : null}

@@ -2061,6 +2061,7 @@
     "noData": "कोई डेटा नहीं",
     "input": "इनपुट",
     "pleaseEnter": "{{value}} दर्ज करें",
+    "required": "आवश्यक",
     "about": "के बारे में",
     "operation": "कार्रवाई",
     "delete": "मिटाना",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "पहले एक प्रमाणपत्र डोमेन चुनें",
     "detectPublicIp": "सार्वजनिक आईपी का पता लगाएं",
     "detectPublicIpTitle": "इस होस्ट से पहला गैर-लूपबैक IPv4 भरें",
-    "pasvIpRequired": "लागू करने से पहले PASV सार्वजनिक IP भरें (NAT/क्लाउड)। पता लगाएँ या लिखें।"
+    "pasvIpRequired": "लागू करने से पहले PASV सार्वजनिक IP भरें (NAT/क्लाउड)। पता लगाएँ या लिखें।",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} फ़िल्टर सक्रिय",
     "noResults": "कोई मेल नहीं",
     "noResultsHint": "कोई अन्य कीवर्ड आज़माएँ या फ़िल्टर साफ़ करें।",
-    "searching": "खोज रहे हैं..."
+    "searching": "खोज रहे हैं...",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "सुरक्षा में प्रतिबंध {{ip}}"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "नोड.जे.एस",
       "runtimesPhp": "PHP",
       "runtimesPython": "अजगर",
-      "runtimesGo": "जाना",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "/रनटाइम्स/नोड से नोड स्थापित करें",
       "runtimesPhpFix": "/runtimes/php से PHP इंस्टॉल करें",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "गिनती वर्तमान access + auth नमूना विंडो से है, पूरी लॉग फ़ाइल से नहीं।",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "सेट नहीं",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "पैनल उपयोगकर्ता के अंतर्गत केवल ऐप्स PM2 के साथ प्रारंभ हुए। systemd परिनियोजन ऊपर दिखाई देते हैं।",
       "startupTitle": "बूट पर प्रारंभ करें",
       "startupDesc": "PM2 पंजीकृत करें ताकि रीबूट के बाद प्रक्रियाएं वापस आ जाएं।",
-      "systemdActionsHint": "systemd क्रियाओं के लिए रूट और YSK_EXECUTE की आवश्यकता होती है।"
+      "systemdActionsHint": "systemd क्रियाओं के लिए रूट और YSK_EXECUTE की आवश्यकता होती है।",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "रिकॉर्ड किया गया {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} बूट पर सक्षम",
     "bootDisabledWarn": "{{label}} चल रहा है पर बूट पर नहीं चलेगा। रीबूट के बाद बनाए रखने के लिए सक्षम करें।",
     "bootDisabledShort": "बूट पर नहीं",
-    "mariadbNotInstalled": "MariaDB स्थापित नहीं"
+    "mariadbNotInstalled": "MariaDB स्थापित नहीं",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "सॉफ़्टवेयर",
@@ -11902,7 +11925,7 @@
     "helpTitle": "कोई समस्या है?",
     "helpBody": "अपना OS, इंस्टॉल लॉग पथ, और अपेक्षित बनाम वास्तविक परिणाम ईमेल करें। हम हर संदेश पढ़ते हैं।",
     "docsHint": "पूरी दस्तावेज़ीकरण रिपॉज़िटरी में है:",
-    "donateLinktree": "लिंकट्री",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "क्रिप्टो / Web3 हैंडल",
     "cryptoHint": "केवल मेल खाते नेटवर्क पर भेजें। भेजने से पहले पता दोबारा जाँचें।",
     "cryptoNetwork": "नेटवर्क",
@@ -13325,9 +13348,9 @@
     "pageDesc": "वीपीएन सर्वर और क्लाइंट",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "वायरगार्ड",
-      "openvpn": "ओपनवीपीएन",
-      "outline": "शैडोसॉक्स",
+      "wireguard": "WireGuard",
+      "openvpn": "OpenVPN",
+      "outline": "Shadowsocks",
       "client": "स्थानीय ग्राहक",
       "software": "सॉफ़्टवेयर",
       "monitor": "निगरानी करना",

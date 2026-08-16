@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} diaktifkan saat boot",
   "bootDisabledWarn": "{{label}} sedang berjalan tetapi tidak akan mulai saat boot. Aktifkan agar tetap ada.",
   "bootDisabledShort": "Tidak saat boot",
-  "mariadbNotInstalled": "MariaDB belum terpasang"
+  "mariadbNotInstalled": "MariaDB belum terpasang",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

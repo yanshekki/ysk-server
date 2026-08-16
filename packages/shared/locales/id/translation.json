@@ -2061,6 +2061,7 @@
     "noData": "Tidak ada data",
     "input": "Masukan",
     "pleaseEnter": "Masukkan {{value}}",
+    "required": "Wajib",
     "about": "Tentang",
     "operation": "Tindakan",
     "delete": "Menghapus",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "Pilih domain sertifikat terlebih dahulu",
     "detectPublicIp": "Deteksi IP publik",
     "detectPublicIpTitle": "Isi IPv4 non-loopback pertama dari host ini",
-    "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat."
+    "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} filter aktif",
     "noResults": "Tidak ada kecocokan",
     "noResultsHint": "Coba kata kunci lain atau hapus filter.",
-    "searching": "Mencari…"
+    "searching": "Mencari…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "Larangan {{ip}} dalam Perlindungan"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "ular piton",
-      "runtimesGo": "Pergi",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "Instal Node dari /runtimes/node",
       "runtimesPhpFix": "Instal PHP dari /runtimes/php",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "Hitungan dari jendela sampel access + auth saat ini, bukan file log penuh.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "Tidak disetel",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas.",
       "startupTitle": "Mulai saat boot",
       "startupDesc": "Daftarkan PM2 sehingga proses kembali setelah reboot.",
-      "systemdActionsHint": "tindakan systemd memerlukan root dan YSK_EXECUTE."
+      "systemdActionsHint": "tindakan systemd memerlukan root dan YSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "Direkam {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} diaktifkan saat boot",
     "bootDisabledWarn": "{{label}} sedang berjalan tetapi tidak akan mulai saat boot. Aktifkan agar tetap ada.",
     "bootDisabledShort": "Tidak saat boot",
-    "mariadbNotInstalled": "MariaDB belum terpasang"
+    "mariadbNotInstalled": "MariaDB belum terpasang",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "Perangkat lunak",
@@ -11902,7 +11925,7 @@
     "helpTitle": "Ada masalah?",
     "helpBody": "Kirim email berisi OS, jalur log pemasangan, dan apa yang Anda harapkan vs yang terjadi. Kami membaca setiap pesan.",
     "docsHint": "Dokumentasi lengkap ada di repositori pada",
-    "donateLinktree": "pohon tautan",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "Kripto / handle Web3",
     "cryptoHint": "Kirim hanya di jaringan yang sesuai. Periksa ulang alamat sebelum mengirim.",
     "cryptoNetwork": "Jaringan",
@@ -13325,9 +13348,9 @@
     "pageDesc": "Server & klien VPN",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "Penjaga Kawat",
+      "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "kaus kaki bayangan",
+      "outline": "Shadowsocks",
       "client": "Klien lokal",
       "software": "Perangkat lunak",
       "monitor": "Memantau",

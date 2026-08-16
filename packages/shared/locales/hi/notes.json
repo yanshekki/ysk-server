@@ -238,7 +238,7 @@
     "runtimesNode": "नोड.जे.एस",
     "runtimesPhp": "PHP",
     "runtimesPython": "अजगर",
-    "runtimesGo": "जाना",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "/रनटाइम्स/नोड से नोड स्थापित करें",
     "runtimesPhpFix": "/runtimes/php से PHP इंस्टॉल करें",

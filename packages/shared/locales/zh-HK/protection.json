@@ -237,6 +237,8 @@
   "sectionAutoBan": "② 自動封禁",
   "unban": "解封",
   "ban": "封禁",
+  "banConfirmTitle": "封禁 {{ip}}？",
+  "banConfirmDesc": "此 IP 會在主機上被封鎖。請確認不是目前面板或工作階段來源。",
   "save": "儲存",
   "yes": "是",
   "no": "否",

@@ -144,5 +144,6 @@
   "ftpsNeedCert": "প্রথমে একটি শংসাপত্র ডোমেন চয়ন করুন",
   "detectPublicIp": "পাবলিক আইপি সনাক্ত করুন",
   "detectPublicIpTitle": "এই হোস্ট থেকে প্রথম নন-লুপব্যাক IPv4 পূরণ করুন",
-  "pasvIpRequired": "প্রয়োগের আগে PASV পাবলিক IP দিন (NAT/ক্লাউড)। শনাক্ত করুন বা ঠিকানা লিখুন।"
+  "pasvIpRequired": "প্রয়োগের আগে PASV পাবলিক IP দিন (NAT/ক্লাউড)। শনাক্ত করুন বা ঠিকানা লিখুন।",
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
 }

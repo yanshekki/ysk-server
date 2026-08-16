@@ -144,5 +144,6 @@
   "ftpsNeedCert": "首先选择一个证书域",
   "detectPublicIp": "检测公网IP",
   "detectPublicIpTitle": "填写来自该主机的第一个非环回 IPv4",
-  "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。"
+  "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。",
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
 }

@@ -379,5 +379,7 @@
   "sampleWindowHint": "As contagens vêm da janela de amostras access + auth atual, não do ficheiro de registo completo.",
   "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
   "suspectActionableCount": "Actionable IPs {{count}}",
-  "uaNeedZones": "Set a Cloudflare zone first"
+  "uaNeedZones": "Set a Cloudflare zone first",
+  "banConfirmTitle": "Ban {{ip}}?",
+  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
 }

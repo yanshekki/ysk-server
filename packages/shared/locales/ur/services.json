@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} بوٹ پر فعال",
   "bootDisabledWarn": "{{label}} چل رہا ہے مگر بوٹ پر شروع نہیں ہوگا۔ ری بوٹ کے بعد برقرار رکھنے کے لیے فعال کریں۔",
   "bootDisabledShort": "بوٹ پر نہیں",
-  "mariadbNotInstalled": "MariaDB انسٹال نہیں"
+  "mariadbNotInstalled": "MariaDB انسٹال نہیں",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

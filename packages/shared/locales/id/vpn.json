@@ -2,9 +2,9 @@
   "pageDesc": "Server & klien VPN",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "Penjaga Kawat",
+    "wireguard": "WireGuard",
     "openvpn": "OpenVPN",
-    "outline": "kaus kaki bayangan",
+    "outline": "Shadowsocks",
     "client": "Klien lokal",
     "software": "Perangkat lunak",
     "monitor": "Memantau",

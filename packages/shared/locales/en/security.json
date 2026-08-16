@@ -411,7 +411,7 @@
   "passwordMismatch": "New passwords do not match.",
   "changePassword": "Change password",
   "passwordChanged": "Password updated.",
-  "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+  "strictNeedsEnrolled": "Enable 2FA on this admin account before turning on Strict.",
   "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
   "policyNoTotpHint": "This account has no 2FA yet. Turn on 2FA above before requiring it for admins or all users — otherwise you can lock everyone out.",
   "policyNeedSelf2fa": "Enable 2FA on this account first, then confirm with a TOTP code",

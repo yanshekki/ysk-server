@@ -122,7 +122,7 @@
   "scProtLine": "攻擊應變、自動 封鎖（點 IP）",
   "journalVacuumTitle": "清理 journald 磁碟",
   "journalSection": "journal",
-  "sseLabel": "上證所",
+  "sseLabel": "SSE",
   "logrotateLabel": "對數旋轉",
   "srcNginx": "nginx",
   "srcSsh": "ssh",

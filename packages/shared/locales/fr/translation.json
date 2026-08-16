@@ -2061,6 +2061,7 @@
     "noData": "Aucune donnée",
     "input": "Entrée",
     "pleaseEnter": "Saisir {{value}}",
+    "required": "Obligatoire",
     "about": "À propos",
     "operation": "Actes",
     "delete": "Supprimer",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "Choisissez d'abord un domaine de certificat",
     "detectPublicIp": "Détecter l'adresse IP publique",
     "detectPublicIpTitle": "Remplissez le premier IPv4 sans bouclage de cet hôte",
-    "pasvIpRequired": "Indiquez une IP publique PASV avant d’appliquer (NAT/cloud). Détectez ou saisissez une adresse."
+    "pasvIpRequired": "Indiquez une IP publique PASV avant d’appliquer (NAT/cloud). Détectez ou saisissez une adresse.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} filtres actifs",
     "noResults": "Aucune correspondance",
     "noResultsHint": "Essayez un autre mot-clé ou effacez les filtres.",
-    "searching": "Recherche…"
+    "searching": "Recherche…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "Bannir {{ip}} dans Protection"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Noeud.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "Python",
-      "runtimesGo": "Aller",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "Installer Node à partir de /runtimes/node",
       "runtimesPhpFix": "Installer PHP depuis /runtimes/php",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "Les comptes viennent de la fenêtre d’échantillons access + auth actuelle, pas du fichier journal complet.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "Non défini",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "Uniquement les applications démarrées avec PM2 sous l’utilisateur du panneau. Les déploiements systemd apparaissent ci-dessus.",
       "startupTitle": "Démarrer au démarrage",
       "startupDesc": "Enregistrez PM2 pour que les processus reviennent après le redémarrage.",
-      "systemdActionsHint": "Les actions systemd nécessitent root et YSK_EXECUTE."
+      "systemdActionsHint": "Les actions systemd nécessitent root et YSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "Enregistré {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} activé au démarrage",
     "bootDisabledWarn": "{{label}} tourne mais ne démarrera pas au boot. Activez-le pour le conserver.",
     "bootDisabledShort": "Pas au boot",
-    "mariadbNotInstalled": "MariaDB n’est pas installé"
+    "mariadbNotInstalled": "MariaDB n’est pas installé",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "Logiciels",
@@ -11902,7 +11925,7 @@
     "helpTitle": "Un problème ?",
     "helpBody": "Écrivez-nous avec votre OS, le chemin du journal d’installation, et ce que vous attendiez vs ce qui s’est passé. Nous lisons chaque message.",
     "docsHint": "La documentation complète se trouve dans le dépôt sous",
-    "donateLinktree": "Arbre de liens",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "Crypto / identifiants Web3",
     "cryptoHint": "N’envoyez que sur le réseau correspondant. Vérifiez l’adresse avant d’envoyer.",
     "cryptoNetwork": "Réseau",
@@ -13327,7 +13350,7 @@
     "tab": {
       "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "Chaussettes d'ombre",
+      "outline": "Shadowsocks",
       "client": "Client local",
       "software": "Logiciels",
       "monitor": "Moniteur",

@@ -38,6 +38,7 @@
   "noData": "No data",
   "input": "Input",
   "pleaseEnter": "Enter {{value}}",
+  "required": "Required",
   "about": "About",
   "more": "More",
   "operation": "Actions",

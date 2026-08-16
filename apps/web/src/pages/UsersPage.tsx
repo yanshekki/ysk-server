@@ -578,12 +578,14 @@ export function UsersPage() {
   }
 
   const facets = usersList.meta?.facets;
+  const usersReady = !usersList.loading;
   const userTotal = usersList.meta?.total ?? users.length;
   const admins = facets?.role?.admin ?? users.filter((u) => u.roles.includes('admin')).length;
   const suspended =
     facets?.status?.suspended ?? users.filter((u) => u.suspended).length;
   const with2fa = facets?.totp?.['1'] ?? users.filter((u) => u.totpEnabled).length;
   const pkgTotal = packagesList.meta?.total ?? packages.length;
+  const countOrDash = (n: number) => (usersReady ? n : '—');
 
   const effectivePreview = useMemo(() => {
     if (!detailUser) return [] as CapabilityId[];
@@ -639,16 +641,18 @@ export function UsersPage() {
       title={t('nav.users')}
       showCapability={false}
       status={{
-        pill: { label: t('users.userCount', { count: userTotal }), tone: 'ok' },
+        pill: usersReady
+          ? { label: t('users.userCount', { count: userTotal }), tone: 'ok' }
+          : undefined,
         items: [
-          { label: t('users.users'), value: userTotal },
-          { label: 'Admin', value: admins },
+          { label: t('users.users'), value: countOrDash(userTotal) },
+          { label: 'Admin', value: countOrDash(admins) },
           {
             label: t('users.suspended'),
-            value: suspended,
-            tone: suspended ? 'warn' : 'ok' },
-          { label: t('users.packages'), value: pkgOptions.length || pkgTotal },
-          { label: '2FA', value: with2fa },
+            value: countOrDash(suspended),
+            tone: usersReady && suspended ? 'warn' : 'ok' },
+          { label: t('users.packages'), value: countOrDash(pkgOptions.length || pkgTotal) },
+          { label: '2FA', value: countOrDash(with2fa) },
         ] }}
       actions={
         <ActionBar align="end">
@@ -668,7 +672,7 @@ export function UsersPage() {
         </ActionBar>
       }
     >
-      {admins <= 1 && with2fa === 0 ? (
+      {usersReady && admins <= 1 && with2fa === 0 ? (
         <Alert variant="warn">
           {t('users.singleAdminNo2fa')}{' '}
           <Link to="/security">{t('users.securityCenter')}</Link>

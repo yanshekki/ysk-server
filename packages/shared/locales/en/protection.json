@@ -238,6 +238,8 @@
   "sectionAutoBan": "② Auto-ban",
   "unban": "Unban",
   "ban": "Ban",
+  "banConfirmTitle": "Ban {{ip}}?",
+  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
   "save": "Save",
   "yes": "Yes",
   "no": "No",

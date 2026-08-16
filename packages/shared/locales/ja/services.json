@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} を起動時有効にしました",
   "bootDisabledWarn": "{{label}} は稼働中ですが起動時には始まりません。再起動後も動かすには有効化してください。",
   "bootDisabledShort": "起動時無効",
-  "mariadbNotInstalled": "MariaDB は未インストール"
+  "mariadbNotInstalled": "MariaDB は未インストール",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

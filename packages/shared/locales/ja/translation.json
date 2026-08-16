@@ -2061,6 +2061,7 @@
     "noData": "データがありません",
     "input": "入力",
     "pleaseEnter": "{{value}}と入力してください",
+    "required": "必須",
     "about": "説明",
     "operation": "行動",
     "delete": "削除",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "最初に証明書ドメインを選択します",
     "detectPublicIp": "パブリックIPの検出",
     "detectPublicIpTitle": "このホストから最初の非ループバック IPv4 を入力します",
-    "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。"
+    "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} フィルターが有効です",
     "noResults": "該当するものがありません",
     "noResultsHint": "別のキーワードを試すか、フィルターをクリアしてください。",
-    "searching": "検索中…"
+    "searching": "検索中…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "保護における{{ip}}の禁止"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "パイソン",
-      "runtimesGo": "行く",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "/runtimes/node からノードをインストールする",
       "runtimesPhpFix": "/runtimes/php から PHP をインストールします",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "件数は現在の access + auth サンプル窓であり、ログ全体ではありません。",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "パネル ユーザーの下で PM2 で起動されたアプリのみ。 systemd のデプロイは上に表示されます。",
       "startupTitle": "ブート時に開始",
       "startupDesc": "再起動後にプロセスが戻るように PM2 を登録します。",
-      "systemdActionsHint": "systemd アクションには root と YSK_EXECUTE が必要です。"
+      "systemdActionsHint": "systemd アクションには root と YSK_EXECUTE が必要です。",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "記録しました {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} を起動時有効にしました",
     "bootDisabledWarn": "{{label}} は稼働中ですが起動時には始まりません。再起動後も動かすには有効化してください。",
     "bootDisabledShort": "起動時無効",
-    "mariadbNotInstalled": "MariaDB は未インストール"
+    "mariadbNotInstalled": "MariaDB は未インストール",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "ソフトウェア",
@@ -11902,7 +11925,7 @@
     "helpTitle": "問題がありますか？",
     "helpBody": "OS、インストールログの場所、期待した動作と実際の結果をメールで送ってください。すべて読みます。",
     "docsHint": "完全な文書はリポジトリ内にあります：",
-    "donateLinktree": "リンクツリー",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "暗号資産 / Web3 ハンドル",
     "cryptoHint": "対応ネットワークでのみ送金してください。送金前にアドレスを再確認してください。",
     "cryptoNetwork": "ネットワーク",
@@ -13325,9 +13348,9 @@
     "pageDesc": "VPNサーバーとクライアント",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "ワイヤーガード",
+      "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "シャドーソックス",
+      "outline": "Shadowsocks",
       "client": "ローカルクライアント",
       "software": "ソフトウェア",
       "monitor": "監視",

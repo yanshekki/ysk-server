@@ -39,7 +39,7 @@
   "panelSsl": "Panel SSL",
   "panelTls": {
     "title": "Panel HTTPS",
-    "sub": "Control plane (ysk-server) serves TLS on listenPort; WebAuthn/Passkeys need HTTPS",
+    "sub": "Control plane (ysk-server) serves TLS on the configured port; WebAuthn/Passkeys need HTTPS",
     "domain": "Panel domain",
     "domainHint": "Used for certificate issue/bind, e.g. demo.ysk.hk",
     "email": "Let’s Encrypt email",

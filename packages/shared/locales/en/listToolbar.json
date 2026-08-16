@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} filters active",
   "noResults": "No matches",
   "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searching": "Searching…",
+  "emptyChip": "No items in this filter"
 }

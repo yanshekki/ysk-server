@@ -2061,6 +2061,7 @@
     "noData": "لا توجد بيانات",
     "input": "مدخل",
     "pleaseEnter": "أدخل {{value}}",
+    "required": "مطلوب",
     "about": "عن",
     "operation": "الإجراءات",
     "delete": "يمسح",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "اختر مجال الشهادة أولاً",
     "detectPublicIp": "كشف IP العام",
     "detectPublicIpTitle": "املأ أول IPv4 غير الاسترجاعي من هذا المضيف",
-    "pasvIpRequired": "عيّن IP عام لـ PASV قبل التطبيق (NAT/سحابة). اكتشف أو اكتب عنواناً."
+    "pasvIpRequired": "عيّن IP عام لـ PASV قبل التطبيق (NAT/سحابة). اكتشف أو اكتب عنواناً.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} المرشحات نشطة",
     "noResults": "لا توجد مباريات",
     "noResultsHint": "جرّب كلمة رئيسية أخرى أو امسح عوامل التصفية.",
-    "searching": "البحث…"
+    "searching": "البحث…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "حظر {{ip}} في الحماية"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "بايثون",
-      "runtimesGo": "يذهب",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "تثبيت العقدة من /runtimes/node",
       "runtimesPhpFix": "قم بتثبيت PHP من /runtimes/php",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "الأعداد من نافذة عينات access + auth الحالية، وليست من ملف السجل الكامل.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "بدأت التطبيقات فقط مع PM2 ضمن مستخدم اللوحة. تظهر عمليات نشر systemd أعلاه.",
       "startupTitle": "البدء في التمهيد",
       "startupDesc": "قم بتسجيل PM2 حتى تعود العمليات بعد إعادة التشغيل.",
-      "systemdActionsHint": "تحتاج إجراءات systemd إلى الجذر وYSK_EXECUTE."
+      "systemdActionsHint": "تحتاج إجراءات systemd إلى الجذر وYSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "تم التسجيل {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "تم تمكين {{label}} عند الإقلاع",
     "bootDisabledWarn": "{{label}} يعمل لكنه لن يبدأ عند الإقلاع. مكّنه ليثبت بعد إعادة التشغيل.",
     "bootDisabledShort": "ليس عند الإقلاع",
-    "mariadbNotInstalled": "MariaDB غير مثبّت"
+    "mariadbNotInstalled": "MariaDB غير مثبّت",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "برمجة",
@@ -11902,7 +11925,7 @@
     "helpTitle": "هل تواجه مشكلة؟",
     "helpBody": "راسلنا بنظام التشغيل ومسار سجل التثبيت وما توقعته مقابل ما حدث. نقرأ كل رسالة.",
     "docsHint": "التوثيق الكامل موجود في المستودع تحت",
-    "donateLinktree": "لينكتري",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "العملات المشفّرة / معرّفات Web3",
     "cryptoHint": "أرسل على الشبكة المطابقة فقط. راجع العنوان قبل الإرسال.",
     "cryptoNetwork": "الشبكة",
@@ -13326,8 +13349,8 @@
     "eyebrow": "VPN",
     "tab": {
       "wireguard": "WireGuard",
-      "openvpn": "المسنجر",
-      "outline": "شادوسوكس",
+      "openvpn": "OpenVPN",
+      "outline": "Shadowsocks",
       "client": "العميل المحلي",
       "software": "برمجة",
       "monitor": "شاشة",

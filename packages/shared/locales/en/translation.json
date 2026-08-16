@@ -2064,6 +2064,7 @@
     "noData": "No data",
     "input": "Input",
     "pleaseEnter": "Enter {{value}}",
+    "required": "Required",
     "about": "About",
     "more": "More",
     "operation": "Actions",
@@ -4514,6 +4515,7 @@
     "filterProject": "Showing FTP accounts for this project",
     "clearProjectFilter": "Show all accounts",
     "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
     "tabService": "Service"
   },
   "geo": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} filters active",
     "noResults": "No matches",
     "noResultsHint": "Try another keyword or clear filters.",
-    "searching": "Searching…"
+    "searching": "Searching…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "Ban {{ip}} in Protection"
@@ -9789,6 +9792,8 @@
     "sectionAutoBan": "② Auto-ban",
     "unban": "Unban",
     "ban": "Ban",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
     "save": "Save",
     "yes": "Yes",
     "no": "No",
@@ -10772,7 +10777,22 @@
       "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above.",
       "startupTitle": "Start on boot",
       "startupDesc": "Register PM2 so processes come back after reboot.",
-      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "Recorded {{v}}",
     "remoteSourceSuffix": " ({{source}})",
@@ -11284,7 +11304,7 @@
     "passwordMismatch": "New passwords do not match.",
     "changePassword": "Change password",
     "passwordChanged": "Password updated.",
-    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "strictNeedsEnrolled": "Enable 2FA on this admin account before turning on Strict.",
     "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
     "policyNoTotpHint": "This account has no 2FA yet. Turn on 2FA above before requiring it for admins or all users — otherwise you can lock everyone out.",
     "policyNeedSelf2fa": "Enable 2FA on this account first, then confirm with a TOTP code",
@@ -11368,6 +11388,7 @@
     "bootDisabledWarn": "{{label}} is running but will not start at boot. Enable it to persist across reboot.",
     "bootDisabledShort": "Not on boot",
     "mariadbNotInstalled": "MariaDB is not installed",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "lifecycleTitle": "{{label}} service control",
     "startedOk": "{{label}} started",
     "stoppedOk": "{{label}} stopped",
@@ -11385,6 +11406,8 @@
     "stopConfirmSshdConsequence": "New SSH sessions will fail until sshd is started from the host console.",
     "stopConfirmPanelTitle": "Stop YSK Server?",
     "stopConfirmPanelDesc": "The panel and API will go offline until the unit is started on the host.",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
     "stopConfirmPanelToken": "stop ysk-server",
     "stopConfirmPanelConsequence": "This browser session will disconnect. Start the unit from SSH or the host console.",
     "stopConfirmFail2banTitle": "Stop fail2ban?",
@@ -11961,7 +11984,7 @@
     "panelSsl": "Panel SSL",
     "panelTls": {
       "title": "Panel HTTPS",
-      "sub": "Control plane (ysk-server) serves TLS on listenPort; WebAuthn/Passkeys need HTTPS",
+      "sub": "Control plane (ysk-server) serves TLS on the configured port; WebAuthn/Passkeys need HTTPS",
       "domain": "Panel domain",
       "domainHint": "Used for certificate issue/bind, e.g. demo.ysk.hk",
       "email": "Let’s Encrypt email",

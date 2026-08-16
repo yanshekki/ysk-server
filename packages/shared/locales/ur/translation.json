@@ -2061,6 +2061,7 @@
     "noData": "کوئی ڈیٹا نہیں۔",
     "input": "ان پٹ",
     "pleaseEnter": "{{value}} درج کریں",
+    "required": "ضروری",
     "about": "کے بارے میں",
     "operation": "اعمال",
     "delete": "حذف کریں۔",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "پہلے ایک سرٹیفکیٹ ڈومین منتخب کریں۔",
     "detectPublicIp": "عوامی IP کا پتہ لگائیں۔",
     "detectPublicIpTitle": "اس میزبان سے پہلا نان لوپ بیک IPv4 پُر کریں۔",
-    "pasvIpRequired": "لاگو کرنے سے پہلے PASV پبلک IP سیٹ کریں (NAT/کلاؤڈ)۔ پتہ لگائیں یا پتہ لکھیں۔"
+    "pasvIpRequired": "لاگو کرنے سے پہلے PASV پبلک IP سیٹ کریں (NAT/کلاؤڈ)۔ پتہ لگائیں یا پتہ لکھیں۔",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} فلٹرز فعال ہیں۔",
     "noResults": "کوئی میچ نہیں",
     "noResultsHint": "کوئی دوسرا کلیدی لفظ آزمائیں یا فلٹرز صاف کریں۔",
-    "searching": "تلاش کر رہا ہے…"
+    "searching": "تلاش کر رہا ہے…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "پروٹیکشن میں {{ip}} پابندی لگائیں۔"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "ازگر",
-      "runtimesGo": "جاؤ",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "/رن ٹائمز/نوڈ سے نوڈ انسٹال کریں۔",
       "runtimesPhpFix": "/runtimes/php سے پی ایچ پی انسٹال کریں۔",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "شمار موجودہ access + auth نمونے کی کھڑکی سے ہیں، پوری لاگ فائل سے نہیں۔",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "سیٹ نہیں ہے۔",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "پینل صارف کے تحت صرف ایپس PM2 کے ساتھ شروع ہوئیں۔ systemd تعیناتیاں اوپر ظاہر ہوتی ہیں۔",
       "startupTitle": "بوٹ پر شروع کریں۔",
       "startupDesc": "PM2 کو رجسٹر کریں تاکہ عمل دوبارہ شروع ہونے کے بعد واپس آجائے۔",
-      "systemdActionsHint": "سسٹمڈ ایکشنز کو روٹ اور YSK_EXECUTE کی ضرورت ہے۔"
+      "systemdActionsHint": "سسٹمڈ ایکشنز کو روٹ اور YSK_EXECUTE کی ضرورت ہے۔",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "ریکارڈ شدہ {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} بوٹ پر فعال",
     "bootDisabledWarn": "{{label}} چل رہا ہے مگر بوٹ پر شروع نہیں ہوگا۔ ری بوٹ کے بعد برقرار رکھنے کے لیے فعال کریں۔",
     "bootDisabledShort": "بوٹ پر نہیں",
-    "mariadbNotInstalled": "MariaDB انسٹال نہیں"
+    "mariadbNotInstalled": "MariaDB انسٹال نہیں",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "سافٹ ویئر",
@@ -11902,7 +11925,7 @@
     "helpTitle": "کوئی مسئلہ ہے؟",
     "helpBody": "اپنا OS، انسٹال لاگ کا راستہ، اور توقع بمقابلہ جو ہوا ای میل کریں۔ ہم ہر پیغام پڑھتے ہیں۔",
     "docsHint": "مکمل دستاویزات مخزن میں ہیں:",
-    "donateLinktree": "لنک ٹری",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "کرپٹو / Web3 ہینڈلز",
     "cryptoHint": "صرف مماثل نیٹ ورک پر بھیجیں۔ بھیجنے سے پہلے پتہ دوبارہ چیک کریں۔",
     "cryptoNetwork": "نیٹ ورک",
@@ -13325,9 +13348,9 @@
     "pageDesc": "VPN سرور اور کلائنٹ",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "وائر گارڈ",
-      "openvpn": "اوپن وی پی این",
-      "outline": "شیڈو ساکس",
+      "wireguard": "WireGuard",
+      "openvpn": "OpenVPN",
+      "outline": "Shadowsocks",
       "client": "مقامی کلائنٹ",
       "software": "سافٹ ویئر",
       "monitor": "مانیٹر",

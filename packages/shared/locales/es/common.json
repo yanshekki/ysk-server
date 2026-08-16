@@ -35,6 +35,7 @@
   "noData": "Sin datos",
   "input": "Aporte",
   "pleaseEnter": "Ingrese {{value}}",
+  "required": "Obligatorio",
   "about": "Acerca de",
   "operation": "Comportamiento",
   "delete": "Borrar",

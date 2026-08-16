@@ -152,12 +152,16 @@ export function ListToolbar({
                   {group.allLabel}
                 </button>
               ) : null}
-              {group.chips.map((c) => (
+              {group.chips.map((c) => {
+                const empty = c.count === 0 && group.value !== c.id;
+                return (
                 <button
                   key={c.id}
                   type="button"
                   className={chipClass(group.value === c.id, c.tone)}
                   aria-pressed={group.value === c.id}
+                  disabled={empty}
+                  title={empty ? t('listToolbar.emptyChip') : undefined}
                   onClick={bindToggleValue(group.onChange, group.value, c.id)}
                 >
                   <span>{c.label}</span>
@@ -165,7 +169,8 @@ export function ListToolbar({
                     <span className="list-toolbar__chip-count">{c.count}</span>
                   ) : null}
                 </button>
-              ))}
+                );
+              })}
             </div>
           ))
         : null}

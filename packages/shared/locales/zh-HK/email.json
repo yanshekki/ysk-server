@@ -223,7 +223,7 @@
   "sieveTitle": "Sieve 過濾",
   "sieveDesc": "寫入 dataDir/email/sieve；寫入 ≠ Dovecot 已載入",
   "sieveTemplateHint": "預設過濾範本",
-  "writeDefaultSieve": "寫入预设 Sieve",
+  "writeDefaultSieve": "寫入預設 Sieve",
   "listWrittenFiles": "列出已寫入檔案",
   "result": "結果",
   "domainSslTitle": "此域名 SSL",

@@ -2,9 +2,9 @@
   "pageDesc": "ভিপিএন সার্ভার এবং ক্লায়েন্ট",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "ওয়্যারগার্ড",
+    "wireguard": "WireGuard",
     "openvpn": "OpenVPN",
-    "outline": "শ্যাডোসক্স",
+    "outline": "Shadowsocks",
     "client": "স্থানীয় ক্লায়েন্ট",
     "software": "সফটওয়্যার",
     "monitor": "মনিটর",

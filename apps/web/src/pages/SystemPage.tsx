@@ -359,12 +359,19 @@ export function SystemPage() {
                       : undefined },
                 {
                   label: t('system.executeLabel'),
-                  value: host?.caps.executeEnabled ? t('common.on') : t('common.off'),
-                  tone: host?.caps.executeEnabled ? 'ok' : 'warn' },
+                  value:
+                    host == null
+                      ? '—'
+                      : host.caps.executeEnabled
+                        ? t('common.on')
+                        : t('common.off'),
+                  tone:
+                    host == null ? undefined : host.caps.executeEnabled ? 'ok' : 'warn' },
                 {
                   label: t('system.rootLabel'),
-                  value: host?.caps.isRoot ? t('common.yes') : t('common.no'),
-                  tone: host?.caps.isRoot ? 'ok' : 'warn' },
+                  value:
+                    host == null ? '—' : host.caps.isRoot ? t('common.yes') : t('common.no'),
+                  tone: host == null ? undefined : host.caps.isRoot ? 'ok' : 'warn' },
               ] }
           : {
               pill: { label: t('system.exportRebuild'), tone: 'ok' },

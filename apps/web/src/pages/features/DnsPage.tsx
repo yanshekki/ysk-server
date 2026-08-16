@@ -508,15 +508,25 @@ export function DnsPage() {
         items: [
           {
             label: t('dns.healthService'),
-            value: health?.unitActive ? health.unit : t('dns.healthServiceDown'),
-            tone: health?.unitActive ? 'ok' : 'danger',
+            value:
+              health == null
+                ? '—'
+                : health.unitActive
+                  ? health.unit
+                  : t('dns.healthServiceDown'),
+            tone: health == null ? undefined : health.unitActive ? 'ok' : 'danger',
           },
           {
             label: t('dns.healthListen'),
             value: health
               ? `UDP${health.listenUdp53 ? '✓' : '×'} TCP${health.listenTcp53 ? '✓' : '×'}`
               : '—',
-            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger',
+            tone:
+              health == null
+                ? undefined
+                : health.listenUdp53 || health.listenTcp53
+                  ? 'ok'
+                  : 'danger',
           },
           {
             label: t('dns.tabs.zones'),

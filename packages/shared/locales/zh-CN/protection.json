@@ -379,5 +379,7 @@
   "sampleWindowHint": "计数来自当前 access 与 auth 样本窗口，不是完整日志文件。",
   "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
   "suspectActionableCount": "Actionable IPs {{count}}",
-  "uaNeedZones": "Set a Cloudflare zone first"
+  "uaNeedZones": "Set a Cloudflare zone first",
+  "banConfirmTitle": "Ban {{ip}}?",
+  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
 }

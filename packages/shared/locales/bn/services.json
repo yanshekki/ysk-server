@@ -71,5 +71,8 @@
   "enabledOk": "{{label}} বুটে সক্ষম",
   "bootDisabledWarn": "{{label}} চলছে কিন্তু বুটে শুরু হবে না। রিবুট টিকাতে সক্ষম করুন।",
   "bootDisabledShort": "বুটে নয়",
-  "mariadbNotInstalled": "MariaDB ইনস্টল নেই"
+  "mariadbNotInstalled": "MariaDB ইনস্টল নেই",
+  "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+  "restartConfirmPanelTitle": "Restart YSK Server?",
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
 }

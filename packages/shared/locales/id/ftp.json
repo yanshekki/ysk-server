@@ -144,5 +144,6 @@
   "ftpsNeedCert": "Pilih domain sertifikat terlebih dahulu",
   "detectPublicIp": "Deteksi IP publik",
   "detectPublicIpTitle": "Isi IPv4 non-loopback pertama dari host ini",
-  "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat."
+  "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat.",
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
 }

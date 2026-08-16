@@ -264,7 +264,8 @@ export function ValidatorsPage() {
     }
   };
 
-  const diskTone = disk?.tone === 'danger' ? 'danger' : disk?.tone === 'warn' ? 'warn' : 'ok';
+  const diskTone =
+    disk == null ? undefined : disk.tone === 'danger' ? 'danger' : disk.tone === 'warn' ? 'warn' : 'ok';
 
   return (
     <FeaturePageLayout

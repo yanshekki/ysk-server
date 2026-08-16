@@ -258,8 +258,17 @@ export function ServicesPage() {
               {t('services.mariadbCluster')}
             </Link>
           ) : (
-            <span className="muted" title={t('services.mariadbNotInstalled')}>
-              {t('services.mariadbNotInstalled')}
+            <span
+              className="muted"
+              title={
+                items.some((i) => i.id === 'mysql' && i.installed)
+                  ? t('services.mariadbNotInstalledMysqlOk')
+                  : t('services.mariadbNotInstalled')
+              }
+            >
+              {items.some((i) => i.id === 'mysql' && i.installed)
+                ? t('services.mariadbNotInstalledMysqlOk')
+                : t('services.mariadbNotInstalled')}
             </span>
           )}{' '}
           {items.some((i) => i.id === 'mysql' && i.installed) ? (
@@ -328,9 +337,7 @@ export function ServicesPage() {
                         onClick={bindSet(setCatFilter, 'all')}
                       >
                         {t('services.all')}
-                        <span className="ops-chip__n">
-                          {items.filter((i) => i.installed).length}
-                        </span>
+                        <span className="ops-chip__n">{items.length}</span>
                       </button>
                       {categories.map((c) => {
                         const n = items.filter((i) => i.category === c && i.installed).length;

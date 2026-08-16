@@ -8,5 +8,6 @@
   "activeFilters": "{{count}} filtros activos",
   "noResults": "No hay coincidencias",
   "noResultsHint": "Pruebe con otra palabra clave o borre los filtros.",
-  "searching": "Búsqueda…"
+  "searching": "Búsqueda…",
+  "emptyChip": "No items in this filter"
 }

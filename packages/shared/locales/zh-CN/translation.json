@@ -2061,6 +2061,7 @@
     "noData": "没有数据",
     "input": "输入",
     "pleaseEnter": "请输入 {{value}}",
+    "required": "必填",
     "about": "说明",
     "operation": "操作",
     "delete": "删除",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "首先选择一个证书域",
     "detectPublicIp": "检测公网IP",
     "detectPublicIpTitle": "填写来自该主机的第一个非环回 IPv4",
-    "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。"
+    "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "已应用 {{count}} 个筛选",
     "noResults": "无匹配结果",
     "noResultsHint": "试试其他关键词，或清除筛选。",
-    "searching": "搜索中…"
+    "searching": "搜索中…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "到防护中心 ban {{ip}}"
@@ -4966,7 +4969,7 @@
     "scProtLine": "攻击应变、自动 ban（点 IP）",
     "journalVacuumTitle": "清理 journald 磁盘",
     "journalSection": "杂志",
-    "sseLabel": "上证所",
+    "sseLabel": "SSE",
     "logrotateLabel": "对数旋转",
     "srcNginx": "nginx",
     "srcSsh": "ssh",
@@ -5837,8 +5840,8 @@
       "runtimesNode": "Node.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "Python",
-      "runtimesGo": "去",
-      "pm2": "颗粒物",
+      "runtimesGo": "Go",
+      "pm2": "PM2",
       "runtimesNodeFix": "从 /runtimes/node 安装 Node",
       "runtimesPhpFix": "从 /runtimes/php 安装 PHP",
       "runtimesPythonFix": "从 /runtimes/python 安装 Python",
@@ -9402,7 +9405,7 @@
     "railBun": "Bun 进程",
     "deployProcessManager": "进程管理",
     "deployProcessManagerSystemd": "systemd（推荐）",
-    "deployProcessManagerPm2": "颗粒物",
+    "deployProcessManagerPm2": "PM2",
     "proc_restart": "重启",
     "proc_stop": "停止",
     "proc_reload": "重新加载",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "计数来自当前 access 与 auth 样本窗口，不是完整日志文件。",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。",
       "startupTitle": "开机启动",
       "startupDesc": "注册 PM2，以便进程在重新启动后恢复。",
-      "systemdActionsHint": "systemd 操作需要 root 和 YSK_EXECUTE。"
+      "systemdActionsHint": "systemd 操作需要 root 和 YSK_EXECUTE。",
+      "startupOk": "已登记开机启动。{{notes}}",
+      "startupFail": "无法登记开机启动。{{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "无法 {{action}} {{name}}。{{notes}}",
+      "startupReady": "就绪",
+      "startupReadyYes": "是",
+      "startupReadyNo": "否",
+      "startupUnit": "单元",
+      "startupDump": "转储",
+      "startupInstall": "安装开机启动",
+      "startupSave": "保存进程列表",
+      "actRestart": "重启",
+      "actStop": "停止",
+      "actReload": "重新加载",
+      "pm2ActionsHint": "PM2 操作只作用于面板用户的进程列表。"
     },
     "recordedInstalled": "记录已装 {{v}}",
     "remoteSourceSuffix": "（{{source}}）",
@@ -11427,7 +11447,10 @@
     "enabledOk": "已设置 {{label}} 开机启动",
     "bootDisabledWarn": "{{label}} 正在运行，但重启后不会自动启动。请启用开机启动。",
     "bootDisabledShort": "未开机启动",
-    "mariadbNotInstalled": "尚未安装 MariaDB"
+    "mariadbNotInstalled": "尚未安装 MariaDB",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "软件中心",
@@ -11902,7 +11925,7 @@
     "helpTitle": "遇到问题？",
     "helpBody": "请来信说明操作系统、安装 log 路径、预期与实际结果。每封信都会看。",
     "docsHint": "完整文档在仓库",
-    "donateLinktree": "链接树",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "加密货币／Web3 地址",
     "cryptoHint": "请只在对应网络转账，转账前请再次核对地址。",
     "cryptoNetwork": "网络",
@@ -13325,9 +13348,9 @@
     "pageDesc": "VPN 服务器／客户端",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "线卫",
-      "openvpn": "开放VPN",
-      "outline": "影袜",
+      "wireguard": "WireGuard",
+      "openvpn": "OpenVPN",
+      "outline": "Shadowsocks",
       "client": "本机连出",
       "software": "软件",
       "monitor": "监控",

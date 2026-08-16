@@ -144,5 +144,6 @@
   "filterProject": "只顯示此專案的 FTP 帳戶",
   "clearProjectFilter": "顯示全部帳戶",
   "vsftpdFailedHint": "vsftpd 服務失敗。請到服務分頁查看設定與日誌（listen 與 listen_ipv6 不可同時為 YES）。",
+  "vsftpdFailedGeneric": "vsftpd 服務失敗。請到服務分頁查看現行設定與日誌。",
   "tabService": "服務"
 }

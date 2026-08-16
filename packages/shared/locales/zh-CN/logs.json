@@ -119,7 +119,7 @@
   "scProtLine": "攻击应变、自动 ban（点 IP）",
   "journalVacuumTitle": "清理 journald 磁盘",
   "journalSection": "杂志",
-  "sseLabel": "上证所",
+  "sseLabel": "SSE",
   "logrotateLabel": "对数旋转",
   "srcNginx": "nginx",
   "srcSsh": "ssh",

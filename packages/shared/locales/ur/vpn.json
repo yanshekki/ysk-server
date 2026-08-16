@@ -2,9 +2,9 @@
   "pageDesc": "VPN سرور اور کلائنٹ",
   "eyebrow": "VPN",
   "tab": {
-    "wireguard": "وائر گارڈ",
-    "openvpn": "اوپن وی پی این",
-    "outline": "شیڈو ساکس",
+    "wireguard": "WireGuard",
+    "openvpn": "OpenVPN",
+    "outline": "Shadowsocks",
     "client": "مقامی کلائنٹ",
     "software": "سافٹ ویئر",
     "monitor": "مانیٹر",

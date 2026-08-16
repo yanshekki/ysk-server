@@ -379,5 +379,7 @@
   "sampleWindowHint": "Los recuentos son de la ventana de muestras access + auth actual, no del archivo de registro completo.",
   "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
   "suspectActionableCount": "Actionable IPs {{count}}",
-  "uaNeedZones": "Set a Cloudflare zone first"
+  "uaNeedZones": "Set a Cloudflare zone first",
+  "banConfirmTitle": "Ban {{ip}}?",
+  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
 }

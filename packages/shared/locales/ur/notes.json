@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "ازگر",
-    "runtimesGo": "جاؤ",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "/رن ٹائمز/نوڈ سے نوڈ انسٹال کریں۔",
     "runtimesPhpFix": "/runtimes/php سے پی ایچ پی انسٹال کریں۔",

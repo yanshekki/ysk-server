@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "パイソン",
-    "runtimesGo": "行く",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "/runtimes/node からノードをインストールする",
     "runtimesPhpFix": "/runtimes/php から PHP をインストールします",

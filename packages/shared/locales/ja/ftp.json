@@ -144,5 +144,6 @@
   "ftpsNeedCert": "最初に証明書ドメインを選択します",
   "detectPublicIp": "パブリックIPの検出",
   "detectPublicIpTitle": "このホストから最初の非ループバック IPv4 を入力します",
-  "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。"
+  "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。",
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
 }

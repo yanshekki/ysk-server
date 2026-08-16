@@ -2061,6 +2061,7 @@
     "noData": "Sin datos",
     "input": "Aporte",
     "pleaseEnter": "Ingrese {{value}}",
+    "required": "Obligatorio",
     "about": "Acerca de",
     "operation": "Comportamiento",
     "delete": "Borrar",
@@ -4514,7 +4515,8 @@
     "ftpsNeedCert": "Elija primero un dominio de certificado",
     "detectPublicIp": "Detectar IP pública",
     "detectPublicIpTitle": "Complete el primer IPv4 sin bucle invertido de este host",
-    "pasvIpRequired": "Defina una IP pública PASV antes de aplicar (NAT/nube). Detecte o escriba una dirección."
+    "pasvIpRequired": "Defina una IP pública PASV antes de aplicar (NAT/nube). Detecte o escriba una dirección.",
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
   },
   "geo": {
     "continents": {
@@ -4821,7 +4823,8 @@
     "activeFilters": "{{count}} filtros activos",
     "noResults": "No hay coincidencias",
     "noResultsHint": "Pruebe con otra palabra clave o borre los filtros.",
-    "searching": "Búsqueda…"
+    "searching": "Búsqueda…",
+    "emptyChip": "No items in this filter"
   },
   "logViewer": {
     "banIpTitle": "Prohibición {{ip}} en Protección"
@@ -5837,7 +5840,7 @@
       "runtimesNode": "Nodo.js",
       "runtimesPhp": "PHP",
       "runtimesPython": "Pitón",
-      "runtimesGo": "Ir",
+      "runtimesGo": "Go",
       "pm2": "PM2",
       "runtimesNodeFix": "Instalar Node desde /runtimes/node",
       "runtimesPhpFix": "Instalar PHP desde /runtimes/php",
@@ -9930,7 +9933,9 @@
     "sampleWindowHint": "Los recuentos son de la ventana de muestras access + auth actual, no del archivo de registro completo.",
     "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
     "suspectActionableCount": "Actionable IPs {{count}}",
-    "uaNeedZones": "Set a Cloudflare zone first"
+    "uaNeedZones": "Set a Cloudflare zone first",
+    "banConfirmTitle": "Ban {{ip}}?",
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
   },
   "publicFiles": {
     "notSet": "No establecido",
@@ -10767,7 +10772,22 @@
       "pm2OnlyDesc": "Solo las aplicaciones iniciadas con PM2 bajo el usuario del panel. Las implementaciones de systemd aparecen arriba.",
       "startupTitle": "Comenzar al arrancar",
       "startupDesc": "Registre PM2 para que los procesos regresen después del reinicio.",
-      "systemdActionsHint": "Las acciones de systemd necesitan root y YSK_EXECUTE."
+      "systemdActionsHint": "Las acciones de systemd necesitan root y YSK_EXECUTE.",
+      "startupOk": "Startup registered. {{notes}}",
+      "startupFail": "Could not register startup. {{notes}}",
+      "actionOk": "{{action}} {{name}} — {{notes}}",
+      "actionFail": "Could not {{action}} {{name}}. {{notes}}",
+      "startupReady": "Ready",
+      "startupReadyYes": "Yes",
+      "startupReadyNo": "No",
+      "startupUnit": "Unit",
+      "startupDump": "Dump",
+      "startupInstall": "Install startup",
+      "startupSave": "Save process list",
+      "actRestart": "Restart",
+      "actStop": "Stop",
+      "actReload": "Reload",
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
     },
     "recordedInstalled": "Grabado {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11427,7 +11447,10 @@
     "enabledOk": "{{label}} habilitado al arranque",
     "bootDisabledWarn": "{{label}} está en ejecución pero no arrancará al iniciar. Habilítelo para persistir.",
     "bootDisabledShort": "No al arranque",
-    "mariadbNotInstalled": "MariaDB no está instalado"
+    "mariadbNotInstalled": "MariaDB no está instalado",
+    "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
+    "restartConfirmPanelTitle": "Restart YSK Server?",
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
   },
   "software": {
     "title": "Software",
@@ -11902,7 +11925,7 @@
     "helpTitle": "¿Tiene un problema?",
     "helpBody": "Escríbanos con su SO, la ruta del registro de instalación y lo que esperaba frente a lo que ocurrió. Leemos todos los mensajes.",
     "docsHint": "La documentación completa está en el repositorio en",
-    "donateLinktree": "Árbol de enlaces",
+    "donateLinktree": "Linktree",
     "cryptoTitle": "Cripto / identificadores Web3",
     "cryptoHint": "Envíe solo en la red correspondiente. Compruebe la dirección antes de enviar.",
     "cryptoNetwork": "Red",
@@ -13325,9 +13348,9 @@
     "pageDesc": "Servidor y cliente VPN",
     "eyebrow": "VPN",
     "tab": {
-      "wireguard": "AlambreGuardia",
+      "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "calcetines de sombra",
+      "outline": "Shadowsocks",
       "client": "Cliente local",
       "software": "Software",
       "monitor": "Monitor",

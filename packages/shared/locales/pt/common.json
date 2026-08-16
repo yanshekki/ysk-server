@@ -35,6 +35,7 @@
   "noData": "Sem dados",
   "input": "Entrada",
   "pleaseEnter": "Digite {{value}}",
+  "required": "Obrigatório",
   "about": "Sobre",
   "operation": "Ações",
   "delete": "Excluir",

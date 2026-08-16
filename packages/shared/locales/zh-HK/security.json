@@ -411,7 +411,7 @@
   "passwordMismatch": "兩次新密碼不一致。",
   "changePassword": "變更密碼",
   "passwordChanged": "已更新密碼。",
-  "strictNeedsEnrolled": "至少一名管理員已開 2FA，先可開啟 Strict。",
+  "strictNeedsEnrolled": "請先為此管理員帳號啟用 2FA，才可開啟 Strict。",
   "policyTotpNeedSelf": "請先在本帳號啟用 2FA，否則確認碼無法填寫。",
   "fail2banSnippetTitle": "fail2ban 片段",
   "fail2banSnippetEmpty": "沒有寫入片段。",

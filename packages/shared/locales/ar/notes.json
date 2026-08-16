@@ -238,7 +238,7 @@
     "runtimesNode": "Node.js",
     "runtimesPhp": "PHP",
     "runtimesPython": "بايثون",
-    "runtimesGo": "يذهب",
+    "runtimesGo": "Go",
     "pm2": "PM2",
     "runtimesNodeFix": "تثبيت العقدة من /runtimes/node",
     "runtimesPhpFix": "قم بتثبيت PHP من /runtimes/php",
