@@ -1777,17 +1777,17 @@
   "docker": {
     "id": "docker",
     "title": "Docker",
-    "summary": "在這部主機安裝同控制 Docker 引擎：容器、映像、Compose（包括驗證者堆疊）、volume、網絡同清理。",
+    "summary": "在這部主機安裝與控制 Docker 引擎：容器、映像、Compose（包括驗證者堆疊）、volume、網絡與清理。",
     "canDo": [
       "由面板安裝 docker.io + docker-compose-v2",
-      "啟動同停止 docker.service",
+      "啟動與停止 docker.service",
       "受限執行映像、拉取、清理、查看 Compose 專案",
       "CLI：ysk-server docker status|ps|images|compose --json"
     ],
     "workflow": [
       "若橫幅顯示未安裝 Docker，先在這頁安裝",
-      "RPC 同發佈埠預設留在 127.0.0.1",
-      "變更主機需要 root 同 YSK_EXECUTE=1"
+      "RPC 與發佈埠預設留在 127.0.0.1",
+      "變更主機需要 root 及 YSK_EXECUTE=1"
     ],
     "notes": [
       "本頁管理單機 Docker；叢集編排請用外部 Kubernetes。不提供特權執行或任意上載 Compose。",

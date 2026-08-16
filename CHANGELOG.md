@@ -6,6 +6,7 @@
 
 ### Improve
 - Docker page redesigned: install-first overview, status cards, and selection-first pull / run / prune / settings (no more typing `PRUNE` in the panel)
+- Docker last tab matches System: 說明 / About via the shared page guide (not a prose 關於 dump)
 
 ### Fix
 - Validator wizard / table show English chain and network names (Ethereum, NEAR, Sui, Hoodi…) from a catalog SSOT — they are never machine-translated

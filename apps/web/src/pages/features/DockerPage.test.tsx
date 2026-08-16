@@ -87,7 +87,7 @@ describe('DockerPage', () => {
     expect(screen.getByText(/what this page does/i)).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /about/i }));
     await waitFor(() => {
-      expect(screen.getByText(/first-class host service/i)).toBeInTheDocument();
+      expect(screen.getByText(/install and control docker engine/i)).toBeInTheDocument();
     });
   });
 

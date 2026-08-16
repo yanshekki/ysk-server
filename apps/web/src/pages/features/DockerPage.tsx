@@ -27,6 +27,7 @@ import {
   LoadingBlock,
   Modal,
   OpsResultPanel,
+  PageGuide,
   PageTabs,
   SegRadio,
   SoftwareInstallBanner,
@@ -405,7 +406,7 @@ export function DockerPage() {
       <PageTabs
         tabs={visibleTabs.map((id) => ({
           id,
-          label: t(`docker.tab.${id}`),
+          label: id === 'about' ? t('common.about') : t(`docker.tab.${id}`),
           badge:
             engineInstalled && id === 'containers'
               ? containers.length || undefined
@@ -997,19 +998,7 @@ export function DockerPage() {
           </Card>
         ) : null}
 
-        {tab === 'about' ? (
-          <div className="dock-stack">
-            <Card>
-              <CardHeader title={t('docker.title')} description={t('docker.about.body')} />
-              <p className="muted">{t('docker.about.honesty')}</p>
-              <ActionBar>
-                <Link className={buttonClassName({ variant: 'secondary', size: 'sm' })} to="/validators">
-                  {t('docker.about.validators')}
-                </Link>
-              </ActionBar>
-            </Card>
-          </div>
-        ) : null}
+        {tab === 'about' ? <PageGuide guideId="docker" /> : null}
       </PageTabs>
 
       <Modal
