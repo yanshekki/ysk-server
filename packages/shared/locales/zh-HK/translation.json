@@ -12594,7 +12594,7 @@
     "appliedUpdate": "已套用更新",
     "panelRestarting": "面板正在重啟以載入新版本…",
     "panelRestarted": "面板已恢復 · {{version}}",
-    "panelRestartWait": "已套用更新。若此頁未刷新，請數秒後重新載入。",
+    "panelRestartWait": "已套用更新。若此頁未重新整理，請數秒後重新載入。",
     "aptCandidate": "套件管理 Candidate（候選版本）",
     "advice": {
       "update": "建議更新",
