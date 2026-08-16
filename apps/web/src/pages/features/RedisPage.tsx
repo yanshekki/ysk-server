@@ -454,11 +454,11 @@ export function RedisPage() {
             <Button type="submit" variant="secondary" size="md" loading={loadingKeys}>
               {t('common.search')}
             </Button>
-            <p className="muted u-text-sm u-mt-2" style={{ flexBasis: '100%' }}>
-              {t('redis.scanHint', { n: 200 })}
-              {keys.length >= 200 ? ` ${t('redis.scanCapped', { n: 200 })}` : ''}
-            </p>
           </form>
+          <p className="muted u-text-sm u-mt-2">
+            {t('redis.scanHint', { n: 200 })}
+            {keys.length >= 200 ? ` ${t('redis.scanCapped', { n: 200 })}` : ''}
+          </p>
 
           <SplitPanel
             minHeight="26rem"
