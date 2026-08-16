@@ -376,7 +376,15 @@
     "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。",
     "privCloseWithoutAck": "閉店しました。秘密キーは再度表示されません。保存しなかった場合は、新しいものを生成します。",
     "loginNoProjects": "プロジェクトはありません。以下の既存の Linux ユーザー (root / tester) を認可します。 /root/.ssh を書き込むには YSK_EXECUTE=1 が必要です。",
-    "loginLinuxHint": "プロジェクトがない場合に使用されます。例: ルートまたはテスター。"
+    "loginLinuxHint": "プロジェクトがない場合に使用されます。例: ルートまたはテスター。",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "アクティブなセッション",
   "sessionsOther": "その他のデバイス",

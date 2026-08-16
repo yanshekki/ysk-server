@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "Perlu konfirmasi — ketik DEFAULT (dapat memutus panel ini)",
   "deleteRouteNeedConfirm": "Perlu konfirmasi",
   "nmUnavailable": "NetworkManager tidak berjalan — hanya rute langsung yang dapat ditambahkan",
-  "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus."
+  "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus.",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

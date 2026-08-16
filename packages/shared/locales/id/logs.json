@@ -154,5 +154,8 @@
   "logrotateLast": "Terakhir diputar",
   "logrotateExpand": "Tampilkan {{n}} selengkapnya",
   "logrotateCollapse": "Tampilkan lebih sedikit",
-  "logrotateVersion": "Versi status {{v}}"
+  "logrotateVersion": "Versi status {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

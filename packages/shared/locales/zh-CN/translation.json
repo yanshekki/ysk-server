@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "移除所有与项目或独立站 ServerName 冲突的磁盘 conf。项目行会保留。",
     "artifactRemovedOk": "已移除残留 conf",
     "sslTerminatedUpstream": "TLS 在 Nginx 前面结束",
-    "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。"
+    "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "草稿",
@@ -630,7 +632,18 @@
     "stopTitle": "停止跟踪器 - 播种和下载将中断",
     "stopDesc": "正在运行的种子停止通知。对等点会断开连接，直到您再次启动跟踪器。",
     "fillPublicHost": "使用{{主机}}",
-    "fillPublicHostTitle": "填写当前面板主机名作为公告主机"
+    "fillPublicHostTitle": "填写当前面板主机名作为公告主机",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "线上 {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · 其他 {{other}} · 合计 {{total}}",
     "hostYskYes": "已有面板行",
     "hostYskNo": "尚无面板行",
-    "emptyHostCrontab": "用户 {{user}} 尚未有 crontab。"
+    "emptyHostCrontab": "用户 {{user}} 尚未有 crontab。",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "控制台",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "只在控制面登记名称，不改主机数据",
     "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户",
     "remoteDeleteTitle": "仅移除登记",
-    "remoteDeleteConfirm": "移除登记 {{name}}？远程服务器不会被改动。"
+    "remoteDeleteConfirm": "移除登记 {{name}}？远程服务器不会被改动。",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "确认",
@@ -4813,7 +4845,9 @@
     "envColVar": "变量",
     "envColHost": "主机进程",
     "envColPanel": "面板设置",
-    "envColEffective": "生效值"
+    "envColEffective": "生效值",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "上次旋转",
     "logrotateExpand": "显示另外 {{n}} 个",
     "logrotateCollapse": "显示更少",
-    "logrotateVersion": "状态版本 {{v}}"
+    "logrotateVersion": "状态版本 {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "dnsCutover": "DNS cutover（需人工）",
     "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。",
     "orphanRemovePhrase": "请输入 DELETE 确认。",
-    "orphanRemoveNeedConfirm": "需确认"
+    "orphanRemoveNeedConfirm": "需确认",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "自定义代码",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "需确认 — 请输入 DEFAULT（可能中断本面板）",
     "deleteRouteNeedConfirm": "需确认",
     "nmUnavailable": "NetworkManager 未运行 — 只能添加实时路由",
-    "defaultRouteDownNeedName": "这是默认路由出口。输入接口名称进行确认 - 面板可能会断开连接。"
+    "defaultRouteDownNeedName": "这是默认路由出口。输入接口名称进行确认 - 面板可能会断开连接。",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "空保存字符串会关闭 RDB 快照。如果 AOF 也关闭，则崩溃可能会丢失所有数据。",
     "dirMoveWarn": "更改目录不会移动 dump.rdb / AOF。下次启动将按原样使用新路径。",
     "passwordUnset": "未在服务上设置",
-    "passwordSetHidden": "设置（未显示）"
+    "passwordSetHidden": "设置（未显示）",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "已创建",
@@ -10796,7 +10845,10 @@
       "actRestart": "重启",
       "actStop": "停止",
       "actReload": "重新加载",
-      "pm2ActionsHint": "PM2 操作只作用于面板用户的进程列表。"
+      "pm2ActionsHint": "PM2 操作只作用于面板用户的进程列表。",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "记录已装 {{v}}",
     "remoteSourceSuffix": "（{{source}}）",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} 个版本未在本机",
     "applyPhpVhostTitle": "需要确认 - 写入池/虚拟主机文件",
     "applyPhpVhostDesc": "将写入 {{pool}} 池和 {{domain}} 虚拟主机。重新加载服务：{{reload}}。",
-    "binaryPath": "二进制路径"
+    "binaryPath": "二进制路径",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "搜索页面与资源…",
@@ -11278,7 +11335,15 @@
       "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
       "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。",
       "loginNoProjects": "没有项目。在下面授权现有的 Linux 用户（root / tester）。写入/root/.ssh需要YSK_EXECUTE=1。",
-      "loginLinuxHint": "没有项目时使用。示例：root 或 tester。"
+      "loginLinuxHint": "没有项目时使用。示例：root 或 tester。",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "使用中",
     "sessionsOther": "其他设备",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。",
     "deleteNeedDomain": "删除此证书 — 输入域名进行确认",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",

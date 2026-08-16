@@ -18,6 +18,8 @@
   "sourceProject": "專案",
   "sourceStandalone": "獨立",
   "sourceArtifact": "磁碟",
+  "sourceOrphan": "殘留",
+  "orphanSite": "來源專案已不存在",
   "openProject": "開啟專案",
   "kindLabel": "類型",
   "kindProxy": "反代",

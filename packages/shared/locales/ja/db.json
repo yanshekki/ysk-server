@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "制御面に名前を登録するだけです。ホストのデータは変えません。",
   "cleanupExpiredTempUsersTitle": "期限切れのパネル一時ユーザーを削除します",
   "remoteDeleteTitle": "この登録だけを削除",
-  "remoteDeleteConfirm": "登録 {{name}} を削除しますか？遠隔サーバーは変更しません。"
+  "remoteDeleteConfirm": "登録 {{name}} を削除しますか？遠隔サーバーは変更しません。",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

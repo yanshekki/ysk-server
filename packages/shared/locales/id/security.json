@@ -375,7 +375,15 @@
     "errorNoDetail": "Uji gagal (tanpa rincian)",
     "privCloseWithoutAck": "Tertutup. Kunci pribadi tidak akan ditampilkan lagi; buat yang baru jika Anda tidak menyimpannya.",
     "loginNoProjects": "Tidak ada proyek. Otorisasi pengguna Linux yang ada (root/tester) di bawah. Menulis /root/.ssh membutuhkan YSK_EXECUTE=1.",
-    "loginLinuxHint": "Digunakan ketika tidak ada proyek. Contoh: root atau tester."
+    "loginLinuxHint": "Digunakan ketika tidak ada proyek. Contoh: root atau tester.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "Sesi aktif",
   "sessionsOther": "Perangkat lain",

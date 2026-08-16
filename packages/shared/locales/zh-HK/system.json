@@ -41,7 +41,7 @@
     "title": "面板 HTTPS",
     "sub": "控制面（ysk-server）以 TLS 監聽設定的埠；WebAuthn／Passkey 需 HTTPS",
     "domain": "面板網域",
-    "domainHint": "用來申請／綁定憑證，例如 demo.ysk.hk",
+    "domainHint": "用來申請／綁定憑證，例如 {{host}}",
     "email": "Let’s Encrypt 電郵",
     "status": "狀態",
     "enabled": "設定已開 TLS",

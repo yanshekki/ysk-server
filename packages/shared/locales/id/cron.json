@@ -147,5 +147,18 @@
   "hostCountsVal": "{{ysk}} · lainnya {{other}} · jumlah {{total}}",
   "hostYskYes": "garis panel hadir",
   "hostYskNo": "tidak ada garis panel",
-  "emptyHostCrontab": "Tidak ada crontab untuk {{user}}."
+  "emptyHostCrontab": "Tidak ada crontab untuk {{user}}.",
+  "writtenOnHost": "Written",
+  "registeredJobsChip": "Registered",
+  "registeredVsWritten": "Registered in the panel vs written to host crontab",
+  "installPreviewTitle": "Preview before installing to system crontab",
+  "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+  "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+  "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+  "editJobTitle": "Edit job",
+  "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+  "saveJob": "Save (management only)",
+  "panelLines": "Panel lines",
+  "otherLines": "Other lines",
+  "totalLines": "Total"
 }

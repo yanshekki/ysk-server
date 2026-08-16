@@ -183,5 +183,16 @@
   "stopTitle": "추적기를 중지합니다. 시드 및 다운로드가 중단됩니다.",
   "stopDesc": "실행 중인 토렌트가 발표를 중지합니다. 추적기를 다시 시작할 때까지 피어의 연결이 끊어집니다.",
   "fillPublicHost": "{{host}} 사용",
-  "fillPublicHostTitle": "현재 패널 호스트 이름을 공개 발표 호스트로 입력하세요."
+  "fillPublicHostTitle": "현재 패널 호스트 이름을 공개 발표 호스트로 입력하세요.",
+  "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+  "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+  "bindLoopback": "127.0.0.1 only",
+  "bindAll": "0.0.0.0 (all)",
+  "seederPortMin": "Peer port start",
+  "seederPortMax": "Peer port end",
+  "statsLibrary": "Library",
+  "statsLibraryHint": "Torrents in the panel library / file shares",
+  "statsTrackerLeftover": "Tracker leftover",
+  "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+  "statsAnnouncesHint": "Announce requests seen by the tracker process"
 }

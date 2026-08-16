@@ -55,5 +55,7 @@
   "cleanupConflictsDesc": "Remova todos os artefatos no disco que entrem em conflito com um projeto ou ServerName independente. As linhas do projeto são mantidas.",
   "artifactRemovedOk": "Configuração residual removida",
   "sslTerminatedUpstream": "TLS termina na frente do Nginx",
-  "removeArtifactHint": "Apaga só este conf residual em disco. Não elimina o projeto."
+  "removeArtifactHint": "Apaga só este conf residual em disco. Não elimina o projeto.",
+  "sourceOrphan": "Leftover",
+  "orphanSite": "Project gone"
 }

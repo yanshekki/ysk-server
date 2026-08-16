@@ -375,7 +375,15 @@
     "errorNoDetail": "परीक्षण विफल (विवरण नहीं)",
     "privCloseWithoutAck": "बंद किया हुआ। निजी कुंजी दोबारा नहीं दिखाई जाएगी; यदि आपने इसे सहेजा नहीं है तो एक नया बनाएं।",
     "loginNoProjects": "कोई प्रोजेक्ट नहीं. नीचे मौजूदा लिनक्स उपयोगकर्ता (रूट/टेस्टर) को अधिकृत करें। /root/.ssh लिखने के लिए YSK_EXECUTE=1 की आवश्यकता है।",
-    "loginLinuxHint": "जब कोई प्रोजेक्ट न हो तो उपयोग किया जाता है। उदाहरण: रूट या परीक्षक."
+    "loginLinuxHint": "जब कोई प्रोजेक्ट न हो तो उपयोग किया जाता है। उदाहरण: रूट या परीक्षक.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "सक्रिय सत्र",
   "sessionsOther": "अन्य उपकरण",

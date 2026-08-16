@@ -183,5 +183,16 @@
   "stopTitle": "Pare o rastreador – a propagação e os downloads serão interrompidos",
   "stopDesc": "A execução de torrents para de anunciar. Os peers se desconectam até você iniciar o rastreador novamente.",
   "fillPublicHost": "Usar {{host}}",
-  "fillPublicHostTitle": "Preencha o nome do host do painel atual como o host do anúncio público"
+  "fillPublicHostTitle": "Preencha o nome do host do painel atual como o host do anúncio público",
+  "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+  "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+  "bindLoopback": "127.0.0.1 only",
+  "bindAll": "0.0.0.0 (all)",
+  "seederPortMin": "Peer port start",
+  "seederPortMax": "Peer port end",
+  "statsLibrary": "Library",
+  "statsLibraryHint": "Torrents in the panel library / file shares",
+  "statsTrackerLeftover": "Tracker leftover",
+  "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+  "statsAnnouncesHint": "Announce requests seen by the tracker process"
 }

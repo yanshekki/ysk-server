@@ -151,5 +151,8 @@
   },
   "linkUp": "Up",
   "linkDown": "Down",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
   "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

@@ -375,7 +375,15 @@
     "errorNoDetail": "테스트 실패(상세 없음)",
     "privCloseWithoutAck": "닫은. 개인 키는 다시 표시되지 않습니다. 저장하지 않은 경우 새 것을 생성하십시오.",
     "loginNoProjects": "프로젝트가 없습니다. 아래에서 기존 Linux 사용자(루트/테스터)에게 권한을 부여하세요. /root/.ssh를 작성하려면 YSK_EXECUTE=1이 필요합니다.",
-    "loginLinuxHint": "프로젝트가 없을 때 사용됩니다. 예: 루트 또는 테스터."
+    "loginLinuxHint": "프로젝트가 없을 때 사용됩니다. 예: 루트 또는 테스터.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "활성 세션",
   "sessionsOther": "기타 장치",

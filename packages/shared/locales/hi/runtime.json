@@ -469,7 +469,10 @@
     "actRestart": "Restart",
     "actStop": "Stop",
     "actReload": "Reload",
-    "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+    "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+    "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+    "notePanelUserOnly": "PM2 list is for the panel process user only.",
+    "noteProjectUnits": "{{n}} YSK project unit(s) listed"
   },
   "recordedInstalled": "रिकॉर्ड किया गया {{v}}",
   "remoteSourceSuffix": "({{source}})",
@@ -543,5 +546,10 @@
   "uninstalledCountHint": "{{n}} संस्करण इस होस्ट पर नहीं",
   "applyPhpVhostTitle": "पुष्टि की आवश्यकता है - पूल/वीहोस्ट फ़ाइलें लिखता है",
   "applyPhpVhostDesc": "{{pool}} पूल और {{domain}} vhost लिखेंगे। पुनः लोड सेवाएँ: {{reload}}.",
-  "binaryPath": "बाइनरी पथ"
+  "binaryPath": "बाइनरी पथ",
+  "installedLabel": "Installed",
+  "installedHint": "Host probe result — not the control-plane record",
+  "targetHint": "Version this page will install or pin",
+  "rebuildFromHost": "Rebuild record from host",
+  "rebuiltFromHost": "Record refreshed from host probe"
 }

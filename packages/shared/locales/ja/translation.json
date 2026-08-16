@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "プロジェクトまたはスタンドアロン ServerName と競合するすべてのディスク上のアーティファクト conf を削除します。プロジェクト行は保持されます。",
     "artifactRemovedOk": "残ったconfが削除されました",
     "sslTerminatedUpstream": "TLS はフロント Nginx で終了します",
-    "removeArtifactHint": "この残留ディスク conf だけ削除します。プロジェクトは消しません。"
+    "removeArtifactHint": "この残留ディスク conf だけ削除します。プロジェクトは消しません。",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "下書き",
@@ -630,7 +632,18 @@
     "stopTitle": "トラッカーを停止します - シードとダウンロードが中断されます",
     "stopDesc": "実行中のトレントのアナウンスが停止します。トラッカーを再度起動するまで、ピアは切断されます。",
     "fillPublicHost": "{{host}}を使用してください",
-    "fillPublicHostTitle": "現在のパネルのホスト名をパブリックアナウンスホストとして入力します。"
+    "fillPublicHostTitle": "現在のパネルのホスト名をパブリックアナウンスホストとして入力します。",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}}・その他{{other}}・合計{{total}}",
     "hostYskYes": "パネルラインあり",
     "hostYskNo": "パネルラインが無い",
-    "emptyHostCrontab": "{{user}} には crontab がありません。"
+    "emptyHostCrontab": "{{user}} には crontab がありません。",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "制御面に名前を登録するだけです。ホストのデータは変えません。",
     "cleanupExpiredTempUsersTitle": "期限切れのパネル一時ユーザーを削除します",
     "remoteDeleteTitle": "この登録だけを削除",
-    "remoteDeleteConfirm": "登録 {{name}} を削除しますか？遠隔サーバーは変更しません。"
+    "remoteDeleteConfirm": "登録 {{name}} を削除しますか？遠隔サーバーは変更しません。",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -4813,7 +4845,9 @@
     "envColVar": "変数",
     "envColHost": "ホストプロセス",
     "envColPanel": "パネル設定",
-    "envColEffective": "有効値"
+    "envColEffective": "有効値",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "最後に回転した",
     "logrotateExpand": "{{n}} もっと見る",
     "logrotateCollapse": "表示数を減らす",
-    "logrotateVersion": "ステータスバージョン {{v}}"
+    "logrotateVersion": "ステータスバージョン {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "残ったプロジェクトホームを削除しますか?",
     "orphanRemoveDesc": "{{path}} をディスクから完全に削除します。これは店舗プロジェクトではありません。 YSK_EXECUTE=1 が必要です。",
     "orphanRemovePhrase": "確認のため DELETE と入力してください。",
-    "orphanRemoveNeedConfirm": "確認が必要です"
+    "orphanRemoveNeedConfirm": "確認が必要です",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "カスタムコード",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "確認が必要です — DEFAULT と入力（このパネルが切断される場合があります）",
     "deleteRouteNeedConfirm": "確認が必要です",
     "nmUnavailable": "NetworkManager は実行されていません - 追加できるのはライブ ルートのみです",
-    "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。"
+    "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} サイト",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "保存文字列を空にすると、RDB スナップショットがオフになります。 AOF もオフになっている場合、クラッシュによりすべてのデータが失われる可能性があります。",
     "dirMoveWarn": "ディレクトリを変更しても、dump.rdb / AOF は移動しません。次回の起動では、新しいパスがそのまま使用されます。",
     "passwordUnset": "サービスに設定されていません",
-    "passwordSetHidden": "セット（図示せず）"
+    "passwordSetHidden": "セット（図示せず）",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "作成済み",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "記録しました {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} 版はこのホストにありません",
     "applyPhpVhostTitle": "確認が必要 — プール/vhost ファイルを書き込みます",
     "applyPhpVhostDesc": "{{pool}} プールと {{domain}} vhost を書き込みます。サービスをリロードします: {{reload}}。",
-    "binaryPath": "バイナリパス"
+    "binaryPath": "バイナリパス",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "ページとリソースを検索…",
@@ -11278,7 +11335,15 @@
       "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。",
       "privCloseWithoutAck": "閉店しました。秘密キーは再度表示されません。保存しなかった場合は、新しいものを生成します。",
       "loginNoProjects": "プロジェクトはありません。以下の既存の Linux ユーザー (root / tester) を認可します。 /root/.ssh を書き込むには YSK_EXECUTE=1 が必要です。",
-      "loginLinuxHint": "プロジェクトがない場合に使用されます。例: ルートまたはテスター。"
+      "loginLinuxHint": "プロジェクトがない場合に使用されます。例: ルートまたはテスター。",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "アクティブなセッション",
     "sessionsOther": "その他のデバイス",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "既知のプロジェクト / DNS / メールドメインから選ぶか、手入力できます。",
     "deleteNeedDomain": "この証明書を削除します — 確認するためにドメイン名を入力します",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "パージを確認しますか?登録されたデータパス（データベース/メール）は完全に削除されます。",

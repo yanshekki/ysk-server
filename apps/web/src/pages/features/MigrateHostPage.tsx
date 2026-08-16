@@ -275,7 +275,12 @@ export function MigrateHostPage() {
                         {
                           label: t('migrate.needSoftware'),
                           value: softwareNeeded.length
-                            ? softwareNeeded.slice(0, 6).join(', ') +
+                            ? softwareNeeded
+                                .slice(0, 6)
+                                .map((s) =>
+                                  s.toLowerCase() === 'pm2' ? 'PM2' : s,
+                                )
+                                .join(', ') +
                               (softwareNeeded.length > 6 ? '…' : '')
                             : '—' },
                       ]}
@@ -381,7 +386,13 @@ export function MigrateHostPage() {
                     </select>
                   </Field>
                   {authMode === 'password' ? (
-                    <Field label={t('migrate.rootPassword')} htmlFor="mig-pw" required fullWidth>
+                    <Field
+                      label={t('migrate.rootPassword')}
+                      htmlFor="mig-pw"
+                      required
+                      fullWidth
+                      hint={t('migrate.passwordNotStored')}
+                    >
                       <input
                         id="mig-pw"
                         type="password"
@@ -420,20 +431,23 @@ export function MigrateHostPage() {
                       </span>
                     </span>
                   </label>
-                  <label className="mig-check">
+                  <label className="mig-check mig-check--danger">
                     <input
                       type="checkbox"
                       checked={forceWipe}
                       onChange={bindCheck(setForceWipe)}
                     />
                     <span>
-                      <strong>{t('migrate.allowOverwrite')}</strong>
+                      <strong className="u-text-danger">{t('migrate.allowOverwrite')}</strong>
                       <span className="muted u-text-sm">
                         {' '}
                         {t('migrate.allowOverwriteDesc')}
                       </span>
                     </span>
                   </label>
+                  {forceWipe ? (
+                    <Alert variant="error">{t('migrate.overwriteDanger')}</Alert>
+                  ) : null}
                   <label className="mig-check">
                     <input
                       type="checkbox"
@@ -649,7 +663,11 @@ export function MigrateHostPage() {
         onClose={() => !busy && setConfirmOpen(false)}
         onConfirm={bindVoid(runMigrate)}
         title={t('migrate.confirmTitle')}
-        description={t('migrate.confirmDesc', { target: target.trim() || t('migrate.unfilledTarget') })}
+        description={
+          t('migrate.confirmDesc', {
+            target: target.trim() || t('migrate.unfilledTarget'),
+          }) + (forceWipe ? ` ${t('migrate.overwriteDanger')}` : '')
+        }
         confirmLabel={t('migrate.confirmStart')}
         cancelLabel={t('common.cancel')}
         danger

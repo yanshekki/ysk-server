@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "قم بإزالة كل conf Artifact الموجود على القرص والذي يتعارض مع مشروع أو ServerName مستقل. يتم الاحتفاظ بصفوف المشروع.",
     "artifactRemovedOk": "تمت إزالة الكونفرت المتبقي",
     "sslTerminatedUpstream": "ينتهي TLS عند Nginx الأمامي",
-    "removeArtifactHint": "يحذف إعداد القرص المتبقي هذا فقط. لا يحذف المشروع."
+    "removeArtifactHint": "يحذف إعداد القرص المتبقي هذا فقط. لا يحذف المشروع.",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "مسودة",
@@ -630,7 +632,18 @@
     "stopTitle": "أوقف أداة التعقب - ستتم مقاطعة عملية البذر والتنزيلات",
     "stopDesc": "تشغيل السيول توقف عن الإعلان. يتم قطع اتصال الأقران حتى تقوم بتشغيل جهاز التعقب مرة أخرى.",
     "fillPublicHost": "استخدم {{host}}",
-    "fillPublicHostTitle": "املأ اسم مضيف اللوحة الحالي كمضيف الإعلان العام"
+    "fillPublicHostTitle": "املأ اسم مضيف اللوحة الحالي كمضيف الإعلان العام",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "أمر غير معروف: {{command}}\nتشغيل `{{cli}} مساعدة`",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · أخرى {{other}} · الإجمالي {{total}}",
     "hostYskYes": "خطوط اللوحة موجودة",
     "hostYskNo": "لا خطوط لوحة",
-    "emptyHostCrontab": "لا يوجد crontab لـ {{user}}."
+    "emptyHostCrontab": "لا يوجد crontab لـ {{user}}.",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "لوحة القيادة",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "يسجّل الاسم في مستوى التحكم فقط ولا يغيّر بيانات المضيف.",
     "cleanupExpiredTempUsersTitle": "يحذف مستخدمي اللوحة المؤقتين المنتهية صلاحيتهم",
     "remoteDeleteTitle": "إزالة هذا التسجيل فقط",
-    "remoteDeleteConfirm": "إزالة التسجيل {{name}}؟ لن يُغيَّر الخادم البعيد."
+    "remoteDeleteConfirm": "إزالة التسجيل {{name}}؟ لن يُغيَّر الخادم البعيد.",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "يتأكد",
@@ -4813,7 +4845,9 @@
     "envColVar": "المتغير",
     "envColHost": "عملية المضيف",
     "envColPanel": "إعداد اللوحة",
-    "envColEffective": "الفعّال"
+    "envColEffective": "الفعّال",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "يبحث…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "تم تدويره أخيرًا",
     "logrotateExpand": "عرض {{n}} المزيد",
     "logrotateCollapse": "عرض أقل",
-    "logrotateVersion": "نسخة الحالة {{v}}"
+    "logrotateVersion": "نسخة الحالة {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "هل تريد حذف المشروع المتبقي في المنزل؟",
     "orphanRemoveDesc": "حذف {{path}} نهائيًا من القرص. هذا ليس مشروع متجر. يحتاج YSK_EXECUTE=1.",
     "orphanRemovePhrase": "اكتب DELETE للتأكيد.",
-    "orphanRemoveNeedConfirm": "يلزم التأكيد"
+    "orphanRemoveNeedConfirm": "يلزم التأكيد",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "رمز مخصص",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "يلزم التأكيد — اكتب DEFAULT (قد يقطع هذا اللوحة)",
     "deleteRouteNeedConfirm": "يلزم التأكيد",
     "nmUnavailable": "NetworkManager ليس قيد التشغيل — يمكن إضافة مسار مباشر فقط",
-    "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة."
+    "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة.",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} موقع (مواقع)",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "تؤدي سلسلة الحفظ الفارغة إلى إيقاف تشغيل لقطات RDB. يمكن أن يؤدي العطل إلى فقدان جميع البيانات إذا تم إيقاف تشغيل AOF أيضًا.",
     "dirMoveWarn": "تغيير دير لا ينقل dump.rdb / AOF. تستخدم البداية التالية المسار الجديد كما هو.",
     "passwordUnset": "لم يتم تعيينه على الخدمة",
-    "passwordSetHidden": "مجموعة (غير معروضة)"
+    "passwordSetHidden": "مجموعة (غير معروضة)",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "مخلوق",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "تم التسجيل {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} إصدارًا ليس على هذا المضيف",
     "applyPhpVhostTitle": "يحتاج إلى تأكيد - يكتب ملفات التجمع/vhost",
     "applyPhpVhostDesc": "سوف يكتب {{pool}} تجمع و {{domain}} vhost. تحديث الخدمات: {{reload}}.",
-    "binaryPath": "مسار البرنامج"
+    "binaryPath": "مسار البرنامج",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "صفحات البحث والموارد...",
@@ -11277,7 +11334,15 @@
       "errorNoDetail": "فشل الاختبار (بدون تفاصيل)",
       "privCloseWithoutAck": "مغلق. لن يتم عرض المفتاح الخاص مرة أخرى؛ قم بإنشاء واحدة جديدة إذا لم تقم بحفظها.",
       "loginNoProjects": "لا مشاريع. قم بتفويض مستخدم Linux الحالي (الجذر/المختبر) أدناه. تحتاج كتابة /root/.ssh إلى YSK_EXECUTE=1.",
-      "loginLinuxHint": "تستخدم عندما لا يوجد مشروع. على سبيل المثال: الجذر أو اختبار."
+      "loginLinuxHint": "تستخدم عندما لا يوجد مشروع. على سبيل المثال: الجذر أو اختبار.",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "جلسات نشطة",
     "sessionsOther": "أجهزة أخرى",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه.",
     "deleteNeedDomain": "احذف هذه الشهادة — اكتب اسم المجال للتأكيد",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "تأكيد التطهير؟ سيتم حذف مسارات البيانات المسجلة (قواعد البيانات/البريد) نهائيًا.",

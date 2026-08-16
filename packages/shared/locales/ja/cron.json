@@ -147,5 +147,18 @@
   "hostCountsVal": "{{ysk}}・その他{{other}}・合計{{total}}",
   "hostYskYes": "パネルラインあり",
   "hostYskNo": "パネルラインが無い",
-  "emptyHostCrontab": "{{user}} には crontab がありません。"
+  "emptyHostCrontab": "{{user}} には crontab がありません。",
+  "writtenOnHost": "Written",
+  "registeredJobsChip": "Registered",
+  "registeredVsWritten": "Registered in the panel vs written to host crontab",
+  "installPreviewTitle": "Preview before installing to system crontab",
+  "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+  "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+  "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+  "editJobTitle": "Edit job",
+  "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+  "saveJob": "Save (management only)",
+  "panelLines": "Panel lines",
+  "otherLines": "Other lines",
+  "totalLines": "Total"
 }

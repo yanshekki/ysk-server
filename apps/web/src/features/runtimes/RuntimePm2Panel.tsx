@@ -50,6 +50,17 @@ function statusTone(status: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   return 'neutral';
 }
 
+export function localizePm2Note(
+  note: string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (/could not be parsed/i.test(note)) return t('runtime.pm2.noteUnparsed');
+  if (/panel process user/i.test(note)) return t('runtime.pm2.notePanelUserOnly');
+  const units = note.match(/(\d+)\s+YSK project unit/i);
+  if (units) return t('runtime.pm2.noteProjectUnits', { n: units[1] });
+  return note;
+}
+
 export function filterPm2Rows(
   apps: Pm2AppRow[],
   opts: { yskOnly: boolean; q: string },
@@ -273,7 +284,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
           {(fleet?.notes ?? snap?.notes)?.length ? (
             <ul className="muted u-text-sm u-mt-2">
               {(fleet?.notes ?? snap?.notes ?? []).slice(0, 6).map((n) => (
-                <li key={n}>{n}</li>
+                <li key={n}>{localizePm2Note(n, t)}</li>
               ))}
             </ul>
           ) : null}

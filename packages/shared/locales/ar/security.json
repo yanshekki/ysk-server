@@ -375,7 +375,15 @@
     "errorNoDetail": "فشل الاختبار (بدون تفاصيل)",
     "privCloseWithoutAck": "مغلق. لن يتم عرض المفتاح الخاص مرة أخرى؛ قم بإنشاء واحدة جديدة إذا لم تقم بحفظها.",
     "loginNoProjects": "لا مشاريع. قم بتفويض مستخدم Linux الحالي (الجذر/المختبر) أدناه. تحتاج كتابة /root/.ssh إلى YSK_EXECUTE=1.",
-    "loginLinuxHint": "تستخدم عندما لا يوجد مشروع. على سبيل المثال: الجذر أو اختبار."
+    "loginLinuxHint": "تستخدم عندما لا يوجد مشروع. على سبيل المثال: الجذر أو اختبار.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "جلسات نشطة",
   "sessionsOther": "أجهزة أخرى",

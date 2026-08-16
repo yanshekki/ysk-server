@@ -948,10 +948,21 @@ export function BackupsPage() {
                     value: lastRun.at
                       ? formatDateTime(String(lastRun.at), { locale: i18n.language })
                       : '—' },
-                  ...(Array.isArray(lastRun.notes)
-                    ? (lastRun.notes as string[]).slice(0, 4).map((n, i) => ({
-                        label: i === 0 ? t('common.notes') : t('backups.noteN', { n: i + 1 }),
-                        value: localizeBackupNote(n, t) }))
+                  ...(Array.isArray(lastRun.notes) && lastRun.notes.length
+                    ? [
+                        {
+                          label: t('common.notes'),
+                          value: (
+                            <ul className="list-plain list-spaced">
+                              {(lastRun.notes as string[])
+                                .slice(0, 6)
+                                .map((n) => (
+                                  <li key={n}>{localizeBackupNote(n, t)}</li>
+                                ))}
+                            </ul>
+                          ),
+                        },
+                      ]
                     : []),
                 ]}
               />

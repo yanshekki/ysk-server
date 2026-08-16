@@ -28,6 +28,8 @@
   "keysCountSuffix": " · {{n}} key(s)",
   "searchPlaceholder": "Search keys, e.g. user:* or *",
   "searchKeys": "Search keys",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches.",
   "rows": "{{n}} row(s)",
   "content": "Content",
   "noMatchingKeys": "No matching keys",

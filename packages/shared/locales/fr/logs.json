@@ -154,5 +154,8 @@
   "logrotateLast": "Dernière rotation",
   "logrotateExpand": "Afficher {{n}} plus",
   "logrotateCollapse": "Afficher moins",
-  "logrotateVersion": "Version d'état {{v}}"
+  "logrotateVersion": "Version d'état {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

@@ -108,5 +108,7 @@
   "domainKnownHint": "Escolha um domínio de projeto, DNS ou correio, ou escreva um.",
   "deleteNeedDomain": "Exclua este certificado – digite o nome de domínio para confirmar",
   "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-  "openPanelTls": "Open panel HTTPS"
+  "openPanelTls": "Open panel HTTPS",
+  "deleteDomain": "Delete {{domain}}",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
 }

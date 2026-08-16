@@ -329,6 +329,14 @@
     "ssh2faStep3": "Write home file",
     "ssh2faStep4": "Install PAM module and merge snippets (below)",
     "pkgLabel": "Package {{name}}",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    },
     "enrollForUser": "Enroll SSH 2FA for user",
     "ssh2faEmpty": "No Linux user has SSH 2FA yet",
     "ssh2faEmptyHint": "Prefer key login first;",

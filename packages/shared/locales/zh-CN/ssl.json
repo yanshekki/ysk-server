@@ -108,5 +108,7 @@
   "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。",
   "deleteNeedDomain": "删除此证书 — 输入域名进行确认",
   "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-  "openPanelTls": "Open panel HTTPS"
+  "openPanelTls": "Open panel HTTPS",
+  "deleteDomain": "Delete {{domain}}",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
 }

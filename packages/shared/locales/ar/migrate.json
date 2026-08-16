@@ -84,5 +84,7 @@
   "orphanRemoveTitle": "هل تريد حذف المشروع المتبقي في المنزل؟",
   "orphanRemoveDesc": "حذف {{path}} نهائيًا من القرص. هذا ليس مشروع متجر. يحتاج YSK_EXECUTE=1.",
   "orphanRemovePhrase": "اكتب DELETE للتأكيد.",
-  "orphanRemoveNeedConfirm": "يلزم التأكيد"
+  "orphanRemoveNeedConfirm": "يلزم التأكيد",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

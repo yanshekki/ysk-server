@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "Confirmation requise — saisissez DEFAULT (peut couper ce panneau)",
   "deleteRouteNeedConfirm": "Confirmation requise",
   "nmUnavailable": "NetworkManager n'est pas en cours d'exécution — seule une route en direct peut être ajoutée",
-  "defaultRouteDownNeedName": "Il s'agit de la sortie de route par défaut. Tapez le nom de l’interface pour confirmer – le panneau peut se déconnecter."
+  "defaultRouteDownNeedName": "Il s'agit de la sortie de route par défaut. Tapez le nom de l’interface pour confirmer – le panneau peut se déconnecter.",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

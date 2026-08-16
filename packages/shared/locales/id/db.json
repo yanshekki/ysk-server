@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "Hanya mendaftarkan nama di control plane; tidak mengubah data host.",
   "cleanupExpiredTempUsersTitle": "Menghapus pengguna sementara panel yang sudah kedaluwarsa",
   "remoteDeleteTitle": "Hapus pendaftaran ini saja",
-  "remoteDeleteConfirm": "Hapus pendaftaran {{name}}? Server jarak jauh tidak diubah."
+  "remoteDeleteConfirm": "Hapus pendaftaran {{name}}? Server jarak jauh tidak diubah.",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

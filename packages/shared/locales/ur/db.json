@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "صرف کنٹرول प्लेन میں نام رجسٹر کرتا ہے؛ ہوسٹ ڈیٹا نہیں بدلتا۔",
   "cleanupExpiredTempUsersTitle": "پینل کے میعاد ختم عارضی صارفین ہٹاتا ہے",
   "remoteDeleteTitle": "صرف یہ رجسٹریشن ہٹائیں",
-  "remoteDeleteConfirm": "رجسٹریشن {{name}} ہٹائیں؟ ریموٹ سرور تبدیل نہیں ہوگا۔"
+  "remoteDeleteConfirm": "رجسٹریشن {{name}} ہٹائیں؟ ریموٹ سرور تبدیل نہیں ہوگا۔",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

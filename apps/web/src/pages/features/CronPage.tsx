@@ -23,6 +23,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { bindSet, bindInput } from '../bind-handlers';
+import { formatDateTime } from '../../shared/lib/datetime';
 import {
   buildCronExpr,
   CronScheduleBuilder,
@@ -204,11 +205,30 @@ export function CronPage() {
   const [projects, setProjects] = useState<CronProjectOpt[]>([]);
   const [needsInstallHint, setNeedsInstallHint] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [installOpen, setInstallOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [delCron, setDelCron] = useState<{ id: string; label: string } | null>(null);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   function openCreate() {
     setError(null);
+    setEditingId(null);
+    setCreateOpen(true);
+  }
+
+  function openEdit(job: CronJob) {
+    setError(null);
+    setEditingId(job.id);
+    setSchedState(parseCronToState(String(job.schedule || '')));
+    setCommand(String(job.command || ''));
+    setCommandTouched(true);
+    const pid = String(job.projectId || job.project_id || '');
+    if (pid) {
+      setProjectId(pid);
+    } else {
+      setProjectId('');
+      setSystemUser(String(job.user || 'ysk'));
+    }
     setCreateOpen(true);
   }
 
@@ -364,6 +384,25 @@ export function CronPage() {
       return;
     }
     await run(async () => {
+      if (editingId) {
+        await api.requestRaw(`/api/v1/cron/${editingId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            schedule,
+            command,
+            user: runAsUser,
+            projectId: projectId || undefined,
+          }),
+        });
+        setNeedsInstallHint(true);
+        setCreateOpen(false);
+        setEditingId(null);
+        await refresh();
+        return {
+          ok: true,
+          notes: [t('cron.updatedManage'), t('cron.needInstall')],
+        };
+      }
       const r = await api.createCron({
         schedule,
         command,
@@ -382,7 +421,7 @@ export function CronPage() {
           t('cron.needInstall'),
         ],
         ...r } as unknown as OpsResultLike;
-    }, t('cron.createdManageOnly'));
+    }, editingId ? t('cron.updatedManageShort') : t('cron.createdManageOnly'));
   }
 
   async function onInstall() {
@@ -416,8 +455,14 @@ export function CronPage() {
           tone: heroTone },
         items: [
           {
-            label: t('cron.hostJobs'),
+            label: t('cron.writtenOnHost'),
             value: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
+            hint: t('cron.registeredVsWritten'),
+          },
+          {
+            label: t('cron.registeredJobsChip'),
+            value: items.length,
+            hint: t('cron.registeredVsWritten'),
           },
           {
             label: t('cron.usersScanned'),
@@ -447,7 +492,8 @@ export function CronPage() {
             variant="primary"
             size="sm"
             loading={busy}
-            onClick={onInstall}
+            title={t('cron.installPreviewTitle')}
+            onClick={() => setInstallOpen(true)}
           >
             {t('security.ssh.installToSystem')}
           </Button>
@@ -659,6 +705,14 @@ export function CronPage() {
                       </div>
                       <div className="ops-svc__actions">
                         <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => openEdit(job)}
+                        >
+                          {t('common.edit')}
+                        </Button>
+                        <Button
                           variant="danger"
                           size="sm"
                           loading={busy}
@@ -703,18 +757,33 @@ export function CronPage() {
                   <div>
                     <dt>{t('cron.hostCounts')}</dt>
                     <dd>
-                      {t('cron.hostCountsVal', {
-                        ysk: status?.hostHasYskEntries ? t('cron.hostYskYes') : t('cron.hostYskNo'),
-                        other: status?.hostOtherLines ?? 0,
-                        total: status?.hostTotalLines ?? 0,
-                      })}
+                      <table className="u-text-sm">
+                        <tbody>
+                          <tr>
+                            <th scope="row">{t('cron.panelLines')}</th>
+                            <td>
+                              {status?.hostHasYskEntries
+                                ? t('cron.hostYskYes')
+                                : t('cron.hostYskNo')}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th scope="row">{t('cron.otherLines')}</th>
+                            <td>{status?.hostOtherLines ?? 0}</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">{t('cron.totalLines')}</th>
+                            <td>{status?.hostTotalLines ?? 0}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </dd>
                   </div>
                   <div>
                     <dt>{t('cron.lastInstall')}</dt>
                     <dd>
                       {status?.lastInstallAt
-                        ? `${status.lastInstallOk ? t('common.success') : t('common.failed')} · ${new Date(status.lastInstallAt).toLocaleString('zh-HK')}`
+                        ? `${status.lastInstallOk ? t('common.success') : t('common.failed')} · ${formatDateTime(status.lastInstallAt)}`
                         : t('backups.notYet')}
                     </dd>
                   </div>
@@ -764,8 +833,8 @@ export function CronPage() {
       <Modal
         open={createOpen}
         onClose={bindSet(setCreateOpen, false)}
-        title={t('cron.addJobTitle')}
-        description={t('cron.addJobDesc')}
+        title={editingId ? t('cron.editJobTitle') : t('cron.addJobTitle')}
+        description={editingId ? t('cron.editJobDesc') : t('cron.addJobDesc')}
         size="lg"
         footer={
           <>
@@ -793,7 +862,7 @@ export function CronPage() {
                       : undefined
               }
             >
-              {t('cron.createManageOnlyParen')}
+              {editingId ? t('cron.saveJob') : t('cron.createManageOnlyParen')}
             </Button>
           </>
         }
@@ -964,6 +1033,53 @@ export function CronPage() {
               .join(' · ')}
           </p>
         </form>
+      </Modal>
+
+      <Modal
+        open={installOpen}
+        onClose={() => !busy && setInstallOpen(false)}
+        title={t('cron.installPreviewTitle')}
+        description={t('cron.installPreviewDesc')}
+        size="lg"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={busy}
+              onClick={() => setInstallOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                setInstallOpen(false);
+                void onInstall();
+              }}
+            >
+              {t('security.ssh.installToSystem')}
+            </Button>
+          </>
+        }
+      >
+        <Alert variant="warn">{t('cron.installPreviewMerge')}</Alert>
+        {pendingManaged.length > 0 ? (
+          <ul className="list-plain list-spaced u-mt-3">
+            {pendingManaged.map((job) => (
+              <li key={job.id}>
+                <code>{job.schedule}</code> · {job.user} · {job.command}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted u-mt-3">{t('cron.installPreviewEmpty')}</p>
+        )}
+        {status?.hostCrontabPreview ? (
+          <pre className="ops-pre u-mt-3">{status.hostCrontabPreview}</pre>
+        ) : null}
       </Modal>
 
       <ConfirmDialog

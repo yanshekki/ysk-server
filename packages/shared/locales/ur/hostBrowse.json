@@ -140,5 +140,7 @@
   "envColVar": "متغیر",
   "envColHost": "ہوسٹ عمل",
   "envColPanel": "پینل سیٹنگ",
-  "envColEffective": "مؤثر"
+  "envColEffective": "مؤثر",
+  "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
 }

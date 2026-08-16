@@ -84,5 +84,7 @@
   "orphanRemoveTitle": "Hapus sisa proyek rumah?",
   "orphanRemoveDesc": "Hapus {{path}} dari disk secara permanen. Ini bukan proyek toko. Membutuhkan YSK_EXECUTE=1.",
   "orphanRemovePhrase": "Ketik DELETE untuk mengonfirmasi.",
-  "orphanRemoveNeedConfirm": "Perlu konfirmasi"
+  "orphanRemoveNeedConfirm": "Perlu konfirmasi",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

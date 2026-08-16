@@ -46,6 +46,17 @@ function kindLabel(kind: string, t: (k: string, o?: Record<string, unknown>) => 
 }
 
 /** Match project rows locally when the search API returns no resource hits. */
+/** Short queries match token prefixes only so "ai" does not hit "email" / "mail". */
+export function searchTextMatches(hay: string, q: string): boolean {
+  const query = q.trim().toLowerCase();
+  if (!query) return false;
+  const text = hay.toLowerCase();
+  const tokens = text.split(/[\s./:_-]+/).filter(Boolean);
+  if (tokens.some((tok) => tok.startsWith(query))) return true;
+  if (query.length <= 2) return false;
+  return text.includes(query);
+}
+
 export function projectHitsFromRows(
   query: string,
   projects: Array<{ id?: string; name?: string; domain?: string }>,
@@ -58,10 +69,7 @@ export function projectHitsFromRows(
     const domain = String(p.domain ?? '');
     const id = String(p.id ?? '');
     const hay = [name, domain, id].join('\n').toLowerCase();
-    if (
-      hay.includes(q) ||
-      hay.split(/[\s./:_-]+/).some((tok) => tok.startsWith(q))
-    ) {
+    if (searchTextMatches(hay, q)) {
       hits.push({
         kind: 'project',
         id,
@@ -91,7 +99,7 @@ export function localPageHits(
       const hay = [item.key, item.to, title, sectionLabel, section.sectionKey, aliasBlob]
         .map((s) => String(s).toLowerCase())
         .join('\n');
-      if (hay.includes(q) || hay.split(/[\s./:_-]+/).some((tok) => tok.startsWith(q))) {
+      if (searchTextMatches(hay, q)) {
         hits.push({
           kind: 'page',
           id: item.key,
@@ -282,12 +290,12 @@ export function GlobalSearch() {
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       e.preventDefault();
+      setQ('');
+      setHits([]);
       if (open) {
         close();
         return;
       }
-      setQ('');
-      setHits([]);
       inputRef.current?.blur();
       return;
     }

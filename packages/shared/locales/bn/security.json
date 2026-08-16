@@ -375,7 +375,15 @@
     "errorNoDetail": "পরীক্ষা ব্যর্থ (বিস্তারিত নেই)",
     "privCloseWithoutAck": "বন্ধ। ব্যক্তিগত কী আবার দেখানো হবে না; আপনি যদি এটি সংরক্ষণ না করেন তবে একটি নতুন তৈরি করুন।",
     "loginNoProjects": "কোনো প্রকল্প নেই। নীচে একটি বিদ্যমান লিনাক্স ব্যবহারকারী (রুট / পরীক্ষক) অনুমোদন করুন৷ /root/.ssh লেখার জন্য YSK_EXECUTE=1 প্রয়োজন।",
-    "loginLinuxHint": "কোন প্রজেক্ট না থাকলে ব্যবহার করা হয়। উদাহরণ: রুট বা পরীক্ষক।"
+    "loginLinuxHint": "কোন প্রজেক্ট না থাকলে ব্যবহার করা হয়। উদাহরণ: রুট বা পরীক্ষক।",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "সক্রিয় সেশন",
   "sessionsOther": "অন্যান্য ডিভাইস",

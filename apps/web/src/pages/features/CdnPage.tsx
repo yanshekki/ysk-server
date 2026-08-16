@@ -825,9 +825,9 @@ export function CdnPage() {
       showCapability={false}
       status={{
         pill: {
-          label: t('cdn.pillNodesSites', {
-            n: nodes.length,
-            s: sites.length,
+          label: t('cdn.statOnlineOf', {
+            n: online,
+            total: nodes.length,
           }),
           tone: online > 0 ? 'ok' : nodes.length ? 'warn' : 'neutral' },
         items: [
@@ -959,7 +959,7 @@ export function CdnPage() {
                   ) },
                 {
                   key: 'region',
-                  header: 'Region',
+                  header: t('cdn.colRegion'),
                   render: (n) => n.region },
                 {
                   key: 'roles',

@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "শুধু কন্ট্রোল প্লেনে নাম নিবন্ধন করে; হোস্ট ডেটা বদলায় না।",
   "cleanupExpiredTempUsersTitle": "প্যানেলের মেয়াদোত্তীর্ণ অস্থায়ী ব্যবহারকারী মুছে",
   "remoteDeleteTitle": "শুধু এই নিবন্ধন সরান",
-  "remoteDeleteConfirm": "{{name}} নিবন্ধন সরবেন? দূরের সার্ভার বদলাবে না।"
+  "remoteDeleteConfirm": "{{name}} নিবন্ধন সরবেন? দূরের সার্ভার বদলাবে না।",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

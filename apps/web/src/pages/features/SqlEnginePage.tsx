@@ -162,6 +162,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
   const refreshExtras = useCallback(async () => {
     try {
+      await api
+        .requestRaw('/api/v1/db/temp-users/expire', {
+          method: 'POST',
+          body: JSON.stringify({ dropSystem: true }),
+        })
+        .catch(() => undefined);
       const [t, r] = await Promise.all([
         api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/db/temp-users'),
         api.requestRaw<{ items: Array<Record<string, unknown>> }>('/api/v1/db/remote-hosts'),
@@ -285,14 +291,20 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             value: svc?.executeEnabled ? t('common.on') : t('common.off'),
             tone: svc?.executeEnabled ? 'ok' : 'warn' },
           {
-            label: t('common.database'),
-            value:
-              hostOnlyDatabases.length > 0
-                ? `${dbs.items.length} / ${hostDatabases.length}`
-                : dbs.items.length,
+            label: t('db.registeredCount'),
+            value: dbs.items.length,
             hint: t('db.registeredVsHostHint'),
           },
-          { label: t('common.user'), value: users.items.length },
+          {
+            label: t('db.hostCount'),
+            value: hostDatabases.length || '—',
+            hint: t('db.hostInventoryHint'),
+          },
+          {
+            label: t('db.registeredUsers'),
+            value: users.items.length,
+            hint: t('db.registeredUsersHint'),
+          },
           {
             label: t('roles.admin'),
             value: svc?.isRoot ? t('common.yes') : t('common.no'),
@@ -837,8 +849,20 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <li key={String(u.id)} className="">
                     <span>
                       <strong>{String(u.username)}</strong> @ {String(u.database)} ·{' '}
-                      <Badge>{String(u.apply_status)}</Badge> · {t('db.expiresLabel')}{' '}
-                      {u.expiresAt ? new Date(String(u.expiresAt)).toLocaleString() : '—'}
+                      <Badge
+                        tone={
+                          String(u.apply_status) === 'expired' ? 'danger' : 'neutral'
+                        }
+                      >
+                        {String(u.apply_status)}
+                      </Badge>
+                      {String(u.apply_status) === 'expired' ? (
+                        <Badge tone="danger">{t('db.hostStillExists')}</Badge>
+                      ) : null}{' '}
+                      · {t('db.expiresLabel')}{' '}
+                      {u.expiresAt
+                        ? formatDateTime(String(u.expiresAt))
+                        : '—'}
                     </span>
                     <Button
                       variant="danger"

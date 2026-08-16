@@ -376,7 +376,15 @@
     "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
     "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。",
     "loginNoProjects": "没有项目。在下面授权现有的 Linux 用户（root / tester）。写入/root/.ssh需要YSK_EXECUTE=1。",
-    "loginLinuxHint": "没有项目时使用。示例：root 或 tester。"
+    "loginLinuxHint": "没有项目时使用。示例：root 或 tester。",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "使用中",
   "sessionsOther": "其他设备",

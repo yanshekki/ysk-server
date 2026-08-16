@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "只在控制面登记名称，不改主机数据",
   "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户",
   "remoteDeleteTitle": "仅移除登记",
-  "remoteDeleteConfirm": "移除登记 {{name}}？远程服务器不会被改动。"
+  "remoteDeleteConfirm": "移除登记 {{name}}？远程服务器不会被改动。",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

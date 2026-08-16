@@ -434,12 +434,23 @@ export function ValidatorsPage() {
               <div>
                 <dt>{t('validators.disk.root')}</dt>
                 <dd>
-                  <code>{disk?.rootPath ?? '—'}</code>
+                  <code>
+                    {disk?.rootPath ||
+                      disk?.instances[0]?.dataPath ||
+                      '—'}
+                  </code>
                 </dd>
               </div>
               <div>
                 <dt>{t('validators.disk.used')}</dt>
-                <dd>{formatBytes(disk?.usedBytes)}</dd>
+                <dd>
+                  {formatBytes(
+                    disk?.usedBytes ??
+                      (disk?.totalBytes != null && disk.availBytes != null
+                        ? disk.totalBytes - disk.availBytes
+                        : null),
+                  )}
+                </dd>
               </div>
               <div>
                 <dt>{t('validators.disk.free')}</dt>

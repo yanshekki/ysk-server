@@ -77,5 +77,7 @@
   "saveOffWarn": "保存文字列を空にすると、RDB スナップショットがオフになります。 AOF もオフになっている場合、クラッシュによりすべてのデータが失われる可能性があります。",
   "dirMoveWarn": "ディレクトリを変更しても、dump.rdb / AOF は移動しません。次回の起動では、新しいパスがそのまま使用されます。",
   "passwordUnset": "サービスに設定されていません",
-  "passwordSetHidden": "セット（図示せず）"
+  "passwordSetHidden": "セット（図示せず）",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "يلزم التأكيد — اكتب DEFAULT (قد يقطع هذا اللوحة)",
   "deleteRouteNeedConfirm": "يلزم التأكيد",
   "nmUnavailable": "NetworkManager ليس قيد التشغيل — يمكن إضافة مسار مباشر فقط",
-  "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة."
+  "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة.",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

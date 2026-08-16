@@ -77,5 +77,7 @@
   "saveOffWarn": "空保存字符串会关闭 RDB 快照。如果 AOF 也关闭，则崩溃可能会丢失所有数据。",
   "dirMoveWarn": "更改目录不会移动 dump.rdb / AOF。下次启动将按原样使用新路径。",
   "passwordUnset": "未在服务上设置",
-  "passwordSetHidden": "设置（未显示）"
+  "passwordSetHidden": "设置（未显示）",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "केवल कंट्रोल प्लेन में नाम पंजीकृत करता है; होस्ट डेटा नहीं बदलता।",
   "cleanupExpiredTempUsersTitle": "पैनल के समाप्त अस्थायी उपयोगकर्ता हटाता है",
   "remoteDeleteTitle": "केवल यह पंजीकरण हटाएँ",
-  "remoteDeleteConfirm": "पंजीकरण {{name}} हटाएँ? दूरस्थ सर्वर नहीं बदलेगा।"
+  "remoteDeleteConfirm": "पंजीकरण {{name}} हटाएँ? दूरस्थ सर्वर नहीं बदलेगा।",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

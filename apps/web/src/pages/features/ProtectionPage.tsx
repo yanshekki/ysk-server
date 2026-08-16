@@ -1267,7 +1267,7 @@ export function ProtectionPage() {
                     name="ab-mode2"
                     aria-label={t('protection.autoBanMode')}
                     value={(automation?.autoBan.mode ?? 'soft') as string}
-                    disabled={busy}
+                    disabled={busy || !automation?.autoBan.enabled}
                     onChange={bindSaveString(saveAutomation, 'autoBan', 'mode', { enabled: true })}
                     options={[
                       { value: 'soft', label: t('protection.soft') },
@@ -1282,14 +1282,23 @@ export function ProtectionPage() {
                     name="ab-meth2"
                     aria-label={t('protection.banMethod')}
                     value={(automation?.autoBan.method ?? 'fail2ban') as string}
-                    disabled={busy}
+                    disabled={busy || !automation?.autoBan.enabled}
                     onChange={bindSaveString(saveAutomation, 'autoBan', 'method')}
                     options={[
                       { value: 'fail2ban', label: 'fail2ban' },
-                      { value: 'ufw', label: 'UFW' },
+                      {
+                        value: 'ufw',
+                        label:
+                          status?.firewall?.active === 'active'
+                            ? 'UFW'
+                            : t('protection.ufwOff'),
+                      },
                       { value: 'both', label: t('protection.both') },
                     ]}
                   />
+                  {status?.firewall?.active !== 'active' ? (
+                    <p className="muted u-text-sm u-mt-1">{t('protection.ufwOffHint')}</p>
+                  ) : null}
                 </Field>
                 <Field label={t('protection.scoreGte')} htmlFor="ab-sc" flush>
                   <PresetChips
@@ -2064,7 +2073,13 @@ export function ProtectionPage() {
                     <Badge tone="neutral">{ab?.whitelist?.length ?? 0}</Badge>
                   </h3>
                   <p className="def-section-head__desc">
-                    {t('protection.autoBanWhitelistDesc')}
+                    {t('protection.autoBanWhitelistDesc')}{' '}
+                    {t('protection.whitelistSyncHint', {
+                      n: ab?.whitelist?.length ?? 0,
+                      sync: automation?.autoBan.syncFail2banIgnoreip
+                        ? t('protection.whitelistSyncOn')
+                        : t('protection.whitelistSyncOff'),
+                    })}
                   </p>
                 </div>
                 <ActionBar>

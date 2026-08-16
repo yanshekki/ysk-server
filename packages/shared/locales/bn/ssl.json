@@ -108,5 +108,7 @@
   "domainKnownHint": "পরিচিত প্রকল্প / DNS / মেইল ডোমেইন বেছে নিন, অথবা নিজে লিখুন।",
   "deleteNeedDomain": "এই শংসাপত্র মুছুন — নিশ্চিত করতে ডোমেন নাম টাইপ করুন",
   "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-  "openPanelTls": "Open panel HTTPS"
+  "openPanelTls": "Open panel HTTPS",
+  "deleteDomain": "Delete {{domain}}",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
 }

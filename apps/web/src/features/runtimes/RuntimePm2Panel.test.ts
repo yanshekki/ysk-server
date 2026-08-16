@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterPm2Rows } from './RuntimePm2Panel';
+import { filterPm2Rows, localizePm2Note } from './RuntimePm2Panel';
 import type { Pm2AppRow } from '../pm2/api';
 import { runtimeTabsForKind } from '../../pages/features/GenericRuntimePage';
 
@@ -39,5 +39,14 @@ describe('RuntimePm2Panel helpers', () => {
     expect(runtimeTabsForKind('bun')).toContain('processes');
     expect(runtimeTabsForKind('python')).not.toContain('processes');
     expect(runtimeTabsForKind('php')).not.toContain('processes');
+  });
+
+  it('localizePm2Note maps English diagnostics', () => {
+    const t = (k: string, o?: Record<string, unknown>) =>
+      k === 'runtime.pm2.noteProjectUnits' ? `${o?.n} units` : k;
+    expect(localizePm2Note('PM2 list could not be parsed: []', t)).toBe(
+      'runtime.pm2.noteUnparsed',
+    );
+    expect(localizePm2Note('1 YSK project unit(s) listed', t)).toBe('1 units');
   });
 });

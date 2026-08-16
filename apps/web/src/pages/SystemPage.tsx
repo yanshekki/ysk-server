@@ -658,14 +658,23 @@ export function SystemPage() {
                           label={t('system.panelTls.domain')}
                           htmlFor="panel-tls-domain"
                           flush
-                          hint={t('system.panelTls.domainHint')}
+                          hint={t('system.panelTls.domainHint', {
+                            host:
+                              window.location.hostname.includes('.')
+                                ? window.location.hostname
+                                : 'hermes.ysk.hk',
+                          })}
                         >
                           <input
                             id="panel-tls-domain"
                             value={hostname}
                             onChange={bindInput(setHostname)}
                             spellCheck={false}
-                            placeholder="panel.example.com"
+                            placeholder={
+                              window.location.hostname.includes('.')
+                                ? window.location.hostname
+                                : 'panel.example.com'
+                            }
                           />
                         </Field>
                         <Field

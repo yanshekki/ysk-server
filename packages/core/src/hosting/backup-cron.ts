@@ -1034,6 +1034,39 @@ export class CronJobService {
     return { ...row };
   }
 
+  update(
+    id: string,
+    patch: {
+      schedule?: string;
+      command?: string;
+      user?: string;
+      projectId?: string;
+      enabled?: boolean;
+    },
+  ): CronJobRecord | undefined {
+    const row = cronRows(this.db).find((j) => j.id === id);
+    if (!row) return undefined;
+    if (typeof patch.schedule === 'string' && patch.schedule.trim()) {
+      row.schedule = patch.schedule.trim();
+    }
+    if (typeof patch.command === 'string' && patch.command.trim()) {
+      row.command = patch.command.trim();
+    }
+    if (typeof patch.user === 'string' && patch.user.trim()) {
+      row.user = patch.user.trim();
+    }
+    if (patch.projectId !== undefined) {
+      row.project_id = patch.projectId || undefined;
+    }
+    if (typeof patch.enabled === 'boolean') {
+      row.enabled = patch.enabled;
+    }
+    row.updated_at = new Date().toISOString();
+    this.db.persist();
+    this.writeManagedCrontab();
+    return { ...row };
+  }
+
   /**
    * Run job command once (test). Requires EXECUTE; fail-closed.
    */

@@ -77,5 +77,7 @@
   "saveOffWarn": "Une chaîne de sauvegarde vide désactive les instantanés RDB. Un crash peut perdre toutes les données si AOF est également désactivé.",
   "dirMoveWarn": "Changer de répertoire ne déplace pas dump.rdb / AOF. Le prochain démarrage utilise le nouveau chemin tel quel.",
   "passwordUnset": "Non défini sur le service",
-  "passwordSetHidden": "Ensemble (non illustré)"
+  "passwordSetHidden": "Ensemble (non illustré)",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

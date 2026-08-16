@@ -250,14 +250,18 @@ export function Ssh2faPanel({ onFlash }: Props) {
           {lights ? (
             <ActionBar className="u-mb-3 u-flex-wrap">
               <Badge tone={lights.package === 'green' ? 'ok' : 'danger'}>
-                {t('security.ssh.pkgLabel', { name: lights.package })}
+                {t('security.ssh.pkgStatus', {
+                  status: t(`security.ssh.light.${lights.package}`),
+                })}
               </Badge>
               <Badge
                 tone={
                   lights.pam === 'green' ? 'ok' : lights.pam === 'yellow' ? 'warn' : 'danger'
                 }
               >
-                PAM {lights.pam}
+                {t('security.ssh.pamStatus', {
+                  status: t(`security.ssh.light.${lights.pam}`),
+                })}
               </Badge>
               <Badge
                 tone={
@@ -268,7 +272,9 @@ export function Ssh2faPanel({ onFlash }: Props) {
                       : 'danger'
                 }
               >
-                sshd kbd {lights.kbdInteractive}
+                {t('security.ssh.kbdStatus', {
+                  status: t(`security.ssh.light.${lights.kbdInteractive}`),
+                })}
               </Badge>
             </ActionBar>
           ) : null}

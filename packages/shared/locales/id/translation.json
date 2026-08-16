@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "Hapus setiap konfigurasi artefak pada disk yang bertentangan dengan proyek atau Nama Server mandiri. Baris proyek disimpan.",
     "artifactRemovedOk": "Konfigurasi sisa dihapus",
     "sslTerminatedUpstream": "TLS berakhir di depan Nginx",
-    "removeArtifactHint": "Hanya menghapus conf sisa di disk ini. Tidak menghapus proyek."
+    "removeArtifactHint": "Hanya menghapus conf sisa di disk ini. Tidak menghapus proyek.",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "Draf",
@@ -630,7 +632,18 @@
     "stopTitle": "Hentikan pelacak — penyemaian dan pengunduhan akan terhenti",
     "stopDesc": "Menjalankan torrent berhenti diumumkan. Rekan terputus hingga Anda memulai pelacak lagi.",
     "fillPublicHost": "Gunakan {{host}}",
-    "fillPublicHostTitle": "Isikan nama host panel saat ini sebagai host pengumuman publik"
+    "fillPublicHostTitle": "Isikan nama host panel saat ini sebagai host pengumuman publik",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "Perintah tidak diketahui: {{command}}\nJalankan `{{cli}} bantuan`",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · lainnya {{other}} · jumlah {{total}}",
     "hostYskYes": "garis panel hadir",
     "hostYskNo": "tidak ada garis panel",
-    "emptyHostCrontab": "Tidak ada crontab untuk {{user}}."
+    "emptyHostCrontab": "Tidak ada crontab untuk {{user}}.",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "Dasbor",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "Hanya mendaftarkan nama di control plane; tidak mengubah data host.",
     "cleanupExpiredTempUsersTitle": "Menghapus pengguna sementara panel yang sudah kedaluwarsa",
     "remoteDeleteTitle": "Hapus pendaftaran ini saja",
-    "remoteDeleteConfirm": "Hapus pendaftaran {{name}}? Server jarak jauh tidak diubah."
+    "remoteDeleteConfirm": "Hapus pendaftaran {{name}}? Server jarak jauh tidak diubah.",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "Mengonfirmasi",
@@ -4813,7 +4845,9 @@
     "envColVar": "Variabel",
     "envColHost": "Proses host",
     "envColPanel": "Pengaturan panel",
-    "envColEffective": "Berlaku"
+    "envColEffective": "Berlaku",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "Mencari…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "Terakhir diputar",
     "logrotateExpand": "Tampilkan {{n}} selengkapnya",
     "logrotateCollapse": "Tampilkan lebih sedikit",
-    "logrotateVersion": "Versi status {{v}}"
+    "logrotateVersion": "Versi status {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "Hapus sisa proyek rumah?",
     "orphanRemoveDesc": "Hapus {{path}} dari disk secara permanen. Ini bukan proyek toko. Membutuhkan YSK_EXECUTE=1.",
     "orphanRemovePhrase": "Ketik DELETE untuk mengonfirmasi.",
-    "orphanRemoveNeedConfirm": "Perlu konfirmasi"
+    "orphanRemoveNeedConfirm": "Perlu konfirmasi",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "Kode khusus",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "Perlu konfirmasi — ketik DEFAULT (dapat memutus panel ini)",
     "deleteRouteNeedConfirm": "Perlu konfirmasi",
     "nmUnavailable": "NetworkManager tidak berjalan — hanya rute langsung yang dapat ditambahkan",
-    "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus."
+    "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus.",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} situs",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "Tidak disetel",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "String penyimpanan kosong mematikan snapshot RDB. Crash dapat kehilangan semua data jika AOF juga nonaktif.",
     "dirMoveWarn": "Mengubah dir tidak memindahkan dump.rdb/AOF. Permulaan berikutnya menggunakan jalur baru apa adanya.",
     "passwordUnset": "Tidak disetel pada layanan",
-    "passwordSetHidden": "Tetapkan (tidak ditampilkan)"
+    "passwordSetHidden": "Tetapkan (tidak ditampilkan)",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "Dibuat",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "Direkam {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} versi tidak ada di host ini",
     "applyPhpVhostTitle": "Perlu konfirmasi — menulis file pool/vhost",
     "applyPhpVhostDesc": "Akan menulis kumpulan {{pool}} dan {{domain}} vhost. Muat ulang layanan: {{reload}}.",
-    "binaryPath": "Jalur biner"
+    "binaryPath": "Jalur biner",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "Telusuri halaman & sumber daya…",
@@ -11277,7 +11334,15 @@
       "errorNoDetail": "Uji gagal (tanpa rincian)",
       "privCloseWithoutAck": "Tertutup. Kunci pribadi tidak akan ditampilkan lagi; buat yang baru jika Anda tidak menyimpannya.",
       "loginNoProjects": "Tidak ada proyek. Otorisasi pengguna Linux yang ada (root/tester) di bawah. Menulis /root/.ssh membutuhkan YSK_EXECUTE=1.",
-      "loginLinuxHint": "Digunakan ketika tidak ada proyek. Contoh: root atau tester."
+      "loginLinuxHint": "Digunakan ketika tidak ada proyek. Contoh: root atau tester.",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "Sesi aktif",
     "sessionsOther": "Perangkat lain",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "Pilih domain proyek, DNS, atau surel yang dikenal, atau ketik sendiri.",
     "deleteNeedDomain": "Hapus sertifikat ini — ketikkan nama domain untuk mengonfirmasi",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "Konfirmasikan pembersihan? Jalur data yang terdaftar (database/mail) akan dihapus secara permanen.",

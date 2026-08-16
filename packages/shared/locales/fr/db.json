@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "N’enregistre que le nom dans le plan de contrôle ; n’altère pas les données hôte.",
   "cleanupExpiredTempUsersTitle": "Supprime les utilisateurs temporaires du panneau déjà expirés",
   "remoteDeleteTitle": "Retirer uniquement cet enregistrement",
-  "remoteDeleteConfirm": "Retirer l’enregistrement {{name}} ? Le serveur distant n’est pas modifié."
+  "remoteDeleteConfirm": "Retirer l’enregistrement {{name}} ? Le serveur distant n’est pas modifié.",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

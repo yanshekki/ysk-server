@@ -154,5 +154,8 @@
   "logrotateLast": "आखिरी बार घुमाया गया",
   "logrotateExpand": "{{n}} और दिखाएँ",
   "logrotateCollapse": "कम दिखाओ",
-  "logrotateVersion": "स्थिति संस्करण {{v}}"
+  "logrotateVersion": "स्थिति संस्करण {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

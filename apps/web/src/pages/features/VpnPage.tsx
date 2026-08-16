@@ -668,6 +668,9 @@ export function VpnPage() {
             serviceInstalled={
               status ? Boolean(engineStatus(status, engine)?.installed) : undefined
             }
+            serviceRunning={
+              status ? Boolean(engineStatus(status, engine)?.serverActive) : undefined
+            }
           />
         </div>
       </section>

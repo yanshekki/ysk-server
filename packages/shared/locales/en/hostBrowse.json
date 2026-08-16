@@ -37,6 +37,8 @@
   "engineBrowser": "Real browser",
   "engineSwitchHint": "Switching engine opens a new session.",
   "needChrome": "Real browser needs system Chrome/Chromium (or set YSK_HOST_BROWSE_CHROME). Using proxy otherwise.",
+  "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
   "needChromeFallback": "Chrome unavailable — switched to proxy engine.",
   "liveError": "Live stream failed",
   "liveWaiting": "Connecting host browser…",

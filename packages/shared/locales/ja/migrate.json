@@ -84,5 +84,7 @@
   "orphanRemoveTitle": "残ったプロジェクトホームを削除しますか?",
   "orphanRemoveDesc": "{{path}} をディスクから完全に削除します。これは店舗プロジェクトではありません。 YSK_EXECUTE=1 が必要です。",
   "orphanRemovePhrase": "確認のため DELETE と入力してください。",
-  "orphanRemoveNeedConfirm": "確認が必要です"
+  "orphanRemoveNeedConfirm": "確認が必要です",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

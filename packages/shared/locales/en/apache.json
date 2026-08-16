@@ -18,6 +18,8 @@
   "sourceProject": "Project",
   "sourceStandalone": "Standalone",
   "sourceArtifact": "On disk",
+  "sourceOrphan": "Leftover",
+  "orphanSite": "Project gone",
   "openProject": "Open project",
   "kindLabel": "Type",
   "kindProxy": "Proxy",

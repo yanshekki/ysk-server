@@ -41,13 +41,19 @@ function isStandalone(s: ApacheSite): boolean {
   return !s.source || s.source === 'standalone';
 }
 
+export function isOrphanSite(s: ApacheSite): boolean {
+  if (s.source === 'artifact') return true;
+  if (s.source === 'project' && !s.projectId) return true;
+  return false;
+}
+
 export function ApachePage() {
   const { t } = useTranslation();
   const [sites, setSites] = useState<ApacheSite[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState('');
-  const [source, setSource] = useState<'all' | ApacheSiteSource>('all');
+  const [source, setSource] = useState<'all' | ApacheSiteSource | 'orphan'>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [edit, setEdit] = useState<ApacheSite | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
@@ -84,9 +90,10 @@ export function ApachePage() {
     try {
       const r = await apacheApi.listSites({
         q: q.trim() || undefined,
-        source: source === 'all' ? undefined : source,
+        source: source === 'all' || source === 'orphan' ? undefined : source,
       });
-      setSites(r.items ?? []);
+      const items = r.items ?? [];
+      setSites(source === 'orphan' ? items.filter(isOrphanSite) : items);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -407,6 +414,7 @@ export function ApachePage() {
               { value: 'project', label: t('apache.sourceProject') },
               { value: 'standalone', label: t('apache.sourceStandalone') },
               { value: 'artifact', label: t('apache.sourceArtifact') },
+              { value: 'orphan', label: t('apache.sourceOrphan') },
             ]}
           />
         </div>
@@ -421,6 +429,9 @@ export function ApachePage() {
               render: (r) => (
                 <span className="u-flex u-items-center u-gap-2 u-flex-wrap">
                   <code className="inline">{r.serverName}</code>
+                  {isOrphanSite(r) ? (
+                    <Badge tone="danger">{t('apache.orphanSite')}</Badge>
+                  ) : null}
                   {r.conflict ? (
                     <span title={t('apache.conflictHint')}>
                       <Badge tone="danger">{t('apache.conflict')}</Badge>

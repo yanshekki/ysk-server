@@ -147,5 +147,18 @@
   "hostCountsVal": "{{ysk}} · 其他 {{other}} · 合共 {{total}}",
   "hostYskYes": "已有面板行",
   "hostYskNo": "尚無面板行",
-  "emptyHostCrontab": "用戶 {{user}} 尚未有 crontab。"
+  "emptyHostCrontab": "用戶 {{user}} 尚未有 crontab。",
+  "writtenOnHost": "已寫入",
+  "registeredJobsChip": "已登記",
+  "registeredVsWritten": "已在面板登記 vs 已寫入主機 crontab",
+  "installPreviewTitle": "安裝到系統前預覽",
+  "installPreviewDesc": "會把 YSK 區塊合併入主機 crontab，不會覆寫非 YSK 行。",
+  "installPreviewMerge": "安裝會寫入 YSK Server crontab merge 區塊，不會整份取代 host crontab。",
+  "installPreviewEmpty": "沒有待安裝工作 — 仍會重新整理 YSK 區塊。",
+  "editJobTitle": "編輯工作",
+  "editJobDesc": "變更只寫入控制面，須再安裝到系統 crontab 才生效。",
+  "saveJob": "儲存（僅管理）",
+  "panelLines": "面板行",
+  "otherLines": "非面板行",
+  "totalLines": "合計"
 }

@@ -108,5 +108,7 @@
   "domainKnownHint": "既知のプロジェクト / DNS / メールドメインから選ぶか、手入力できます。",
   "deleteNeedDomain": "この証明書を削除します — 確認するためにドメイン名を入力します",
   "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-  "openPanelTls": "Open panel HTTPS"
+  "openPanelTls": "Open panel HTTPS",
+  "deleteDomain": "Delete {{domain}}",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
 }

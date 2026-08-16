@@ -381,5 +381,10 @@
   "suspectActionableCount": "Actionable IPs {{count}}",
   "uaNeedZones": "Set a Cloudflare zone first",
   "banConfirmTitle": "Ban {{ip}}?",
-  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+  "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+  "ufwOff": "UFW (off)",
+  "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+  "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+  "whitelistSyncOn": "on",
+  "whitelistSyncOff": "off (lists may differ)"
 }

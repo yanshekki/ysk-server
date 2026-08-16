@@ -118,8 +118,20 @@ export async function handleCronRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4] ?? '';
         const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { enabled?: boolean };
-        if (typeof data.enabled !== 'boolean') {
+        const data = JSON.parse(raw || '{}') as {
+          enabled?: boolean;
+          schedule?: string;
+          command?: string;
+          user?: string;
+          projectId?: string;
+        };
+        const hasEnabled = typeof data.enabled === 'boolean';
+        const hasEdit =
+          typeof data.schedule === 'string' ||
+          typeof data.command === 'string' ||
+          typeof data.user === 'string' ||
+          data.projectId !== undefined;
+        if (!hasEnabled && !hasEdit) {
           const { tl } = await import('ysk-server-shared');
           sendJson(res, 400, {
             ok: false,
@@ -128,7 +140,9 @@ export async function handleCronRoutes(
           });
           return true;
         }
-        const job = ctx.cron.setEnabled(id, data.enabled);
+        const job = hasEdit
+          ? ctx.cron.update(id, data)
+          : ctx.cron.setEnabled(id, data.enabled!);
         if (!job) {
           const { tl } = await import('ysk-server-shared');
           sendJson(res, 404, {

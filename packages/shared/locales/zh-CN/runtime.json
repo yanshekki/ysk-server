@@ -469,7 +469,10 @@
     "actRestart": "重启",
     "actStop": "停止",
     "actReload": "重新加载",
-    "pm2ActionsHint": "PM2 操作只作用于面板用户的进程列表。"
+    "pm2ActionsHint": "PM2 操作只作用于面板用户的进程列表。",
+    "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+    "notePanelUserOnly": "PM2 list is for the panel process user only.",
+    "noteProjectUnits": "{{n}} YSK project unit(s) listed"
   },
   "recordedInstalled": "记录已装 {{v}}",
   "remoteSourceSuffix": "（{{source}}）",
@@ -543,5 +546,10 @@
   "uninstalledCountHint": "{{n}} 个版本未在本机",
   "applyPhpVhostTitle": "需要确认 - 写入池/虚拟主机文件",
   "applyPhpVhostDesc": "将写入 {{pool}} 池和 {{domain}} 虚拟主机。重新加载服务：{{reload}}。",
-  "binaryPath": "二进制路径"
+  "binaryPath": "二进制路径",
+  "installedLabel": "Installed",
+  "installedHint": "Host probe result — not the control-plane record",
+  "targetHint": "Version this page will install or pin",
+  "rebuildFromHost": "Rebuild record from host",
+  "rebuiltFromHost": "Record refreshed from host probe"
 }

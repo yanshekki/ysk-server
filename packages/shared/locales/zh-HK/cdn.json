@@ -45,6 +45,7 @@
   "pillNodesSites": "節點 {{n}} · 站點 {{s}}",
   "statOnline": "線上",
   "statOnlineOf": "線上 {{n}}/{{total}}",
+  "colRegion": "區域",
   "statDraining": "排空中 {{n}}",
   "statHit": "命中率",
   "localTest": "本機／測試",

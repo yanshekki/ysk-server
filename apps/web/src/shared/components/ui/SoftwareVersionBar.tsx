@@ -349,7 +349,7 @@ export function SoftwareVersionBar({
                   v: selected || st.latestVersion })}
           </Button>
         ) : null}
-        {allowUninstall && st.installed ? (
+        {allowUninstall && st.installed && softwareId !== 'certbot' ? (
           <Button
             variant="danger"
             size="sm"
@@ -367,6 +367,20 @@ export function SoftwareVersionBar({
           </Button>
         ) : null}
       </div>
+      {allowUninstall && st.installed && softwareId === 'certbot' ? (
+        <div className="software-version-bar__danger u-mt-2">
+          <p className="muted u-text-sm u-mb-2">{t('ssl.uninstallCertbotWarn')}</p>
+          <Button
+            variant="danger"
+            size="sm"
+            disabled={busy || stream?.isBusy}
+            title={t('ssl.uninstallCertbotWarn')}
+            onClick={() => setUninstallOpen(true)}
+          >
+            {t('ssl.uninstallCertbot')}
+          </Button>
+        </div>
+      ) : null}
 
       <ConfirmDialog
         open={confirmOpen}

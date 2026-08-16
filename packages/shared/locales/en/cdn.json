@@ -172,6 +172,7 @@
   "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply",
   "statOnline": "Online",
   "statOnlineOf": "Online {{n}}/{{total}}",
+  "colRegion": "Region",
   "statDraining": "Draining {{n}}",
   "statOffline": "Offline {{n}}",
   "pillNodesSites": "{{n}} nodes · {{s}} sites",

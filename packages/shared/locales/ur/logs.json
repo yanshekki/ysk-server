@@ -154,5 +154,8 @@
   "logrotateLast": "آخری بار گھمایا گیا۔",
   "logrotateExpand": "{{n}} مزید دکھائیں۔",
   "logrotateCollapse": "کم دکھائیں۔",
-  "logrotateVersion": "اسٹیٹس ورژن {{v}}"
+  "logrotateVersion": "اسٹیٹس ورژن {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

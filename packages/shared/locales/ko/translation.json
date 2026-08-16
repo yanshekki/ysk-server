@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "프로젝트 또는 독립 실행형 ServerName과 충돌하는 모든 디스크상의 아티팩트 구성을 제거하십시오. 프로젝트 행은 유지됩니다.",
     "artifactRemovedOk": "잔여 conf가 제거되었습니다.",
     "sslTerminatedUpstream": "TLS는 전면 Nginx에서 끝납니다.",
-    "removeArtifactHint": "이 잔여 디스크 conf만 삭제하며 프로젝트는 지우지 않습니다."
+    "removeArtifactHint": "이 잔여 디스크 conf만 삭제하며 프로젝트는 지우지 않습니다.",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "초안",
@@ -630,7 +632,18 @@
     "stopTitle": "추적기를 중지합니다. 시드 및 다운로드가 중단됩니다.",
     "stopDesc": "실행 중인 토렌트가 발표를 중지합니다. 추적기를 다시 시작할 때까지 피어의 연결이 끊어집니다.",
     "fillPublicHost": "{{host}} 사용",
-    "fillPublicHostTitle": "현재 패널 호스트 이름을 공개 발표 호스트로 입력하세요."
+    "fillPublicHostTitle": "현재 패널 호스트 이름을 공개 발표 호스트로 입력하세요.",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} 도움말`을 실행하세요.",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · 기타 {{other}} · 합계 {{total}}",
     "hostYskYes": "패널라인 존재",
     "hostYskNo": "패널라인이 없다",
-    "emptyHostCrontab": "{{user}}에는 crontab이 없습니다."
+    "emptyHostCrontab": "{{user}}에는 crontab이 없습니다.",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "대시보드",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "제어면에 이름만 등록하며 호스트 데이터는 바꾸지 않습니다.",
     "cleanupExpiredTempUsersTitle": "만료된 패널 임시 사용자를 삭제합니다",
     "remoteDeleteTitle": "이 등록만 제거",
-    "remoteDeleteConfirm": "등록 {{name}}을(를) 제거할까요? 원격 서버는 변경되지 않습니다."
+    "remoteDeleteConfirm": "등록 {{name}}을(를) 제거할까요? 원격 서버는 변경되지 않습니다.",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "확인하다",
@@ -4813,7 +4845,9 @@
     "envColVar": "변수",
     "envColHost": "호스트 프로세스",
     "envColPanel": "패널 설정",
-    "envColEffective": "적용값"
+    "envColEffective": "적용값",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "찾다…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "마지막 회전",
     "logrotateExpand": "{{n}} 더보기",
     "logrotateCollapse": "간략히 표시",
-    "logrotateVersion": "상태 버전 {{v}}"
+    "logrotateVersion": "상태 버전 {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "남은 프로젝트 홈을 삭제하시겠습니까?",
     "orphanRemoveDesc": "디스크에서 {{path}}를 영구적으로 삭제합니다. 이것은 상점 프로젝트가 아닙니다. YSK_EXECUTE=1이 필요합니다.",
     "orphanRemovePhrase": "확인하려면 DELETE를 입력하세요.",
-    "orphanRemoveNeedConfirm": "확인이 필요합니다"
+    "orphanRemoveNeedConfirm": "확인이 필요합니다",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "확인 필요 — DEFAULT 입력(이 패널 연결이 끊길 수 있음)",
     "deleteRouteNeedConfirm": "확인이 필요합니다",
     "nmUnavailable": "NetworkManager가 실행되고 있지 않습니다. 실시간 경로만 추가할 수 있습니다.",
-    "defaultRouteDownNeedName": "이는 기본 경로 송신입니다. 확인하려면 인터페이스 이름을 입력하세요. 패널 연결이 끊어질 수 있습니다."
+    "defaultRouteDownNeedName": "이는 기본 경로 송신입니다. 확인하려면 인터페이스 이름을 입력하세요. 패널 연결이 끊어질 수 있습니다.",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} 사이트",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "설정되지 않음",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "빈 저장 문자열은 RDB 스냅샷을 끕니다. AOF도 꺼져 있으면 충돌로 인해 모든 데이터가 손실될 수 있습니다.",
     "dirMoveWarn": "dir을 변경해도 dump.rdb / AOF는 이동되지 않습니다. 다음 시작에서는 새 경로를 그대로 사용합니다.",
     "passwordUnset": "서비스에 설정되지 않음",
-    "passwordSetHidden": "설정(표시되지 않음)"
+    "passwordSetHidden": "설정(표시되지 않음)",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "생성됨",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "녹화됨 {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}}개 버전이 이 호스트에 없습니다",
     "applyPhpVhostTitle": "확인 필요 - 풀/가상 호스트 파일 쓰기",
     "applyPhpVhostDesc": "{{pool}} 풀과 {{domain}} 가상 호스트를 작성합니다. 서비스 새로고침: {{reload}}.",
-    "binaryPath": "바이너리 경로"
+    "binaryPath": "바이너리 경로",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "페이지 및 리소스 검색…",
@@ -11277,7 +11334,15 @@
       "errorNoDetail": "테스트 실패(상세 없음)",
       "privCloseWithoutAck": "닫은. 개인 키는 다시 표시되지 않습니다. 저장하지 않은 경우 새 것을 생성하십시오.",
       "loginNoProjects": "프로젝트가 없습니다. 아래에서 기존 Linux 사용자(루트/테스터)에게 권한을 부여하세요. /root/.ssh를 작성하려면 YSK_EXECUTE=1이 필요합니다.",
-      "loginLinuxHint": "프로젝트가 없을 때 사용됩니다. 예: 루트 또는 테스터."
+      "loginLinuxHint": "프로젝트가 없을 때 사용됩니다. 예: 루트 또는 테스터.",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "활성 세션",
     "sessionsOther": "기타 장치",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요.",
     "deleteNeedDomain": "이 인증서 삭제 - 도메인 이름을 입력하여 확인하세요.",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "퍼지를 확인하시겠습니까? 등록된 데이터 경로(데이터베이스/메일)가 영구적으로 삭제됩니다.",

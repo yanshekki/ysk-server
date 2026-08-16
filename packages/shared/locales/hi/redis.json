@@ -77,5 +77,7 @@
   "saveOffWarn": "खाली सेव स्ट्रिंग आरडीबी स्नैपशॉट को बंद कर देती है। यदि एओएफ भी बंद है तो क्रैश से सारा डेटा नष्ट हो सकता है।",
   "dirMoveWarn": "डीआईआर बदलने से डंप.आरडीबी/एओएफ स्थानांतरित नहीं होता है। अगली शुरुआत यथावत नए पथ का उपयोग करती है।",
   "passwordUnset": "सेवा पर सेट नहीं है",
-  "passwordSetHidden": "सेट (दिखाया नहीं गया)"
+  "passwordSetHidden": "सेट (दिखाया नहीं गया)",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

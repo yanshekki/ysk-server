@@ -9,6 +9,7 @@
 - Docker last tab matches System: 說明 / About via the shared page guide (not a prose 關於 dump)
 - E2E-1111-02/03/04: brand names stay English (PM2, WireGuard, SSE, Linktree); no raw `runtime.pm2.*` / `common.required`; vsftpd failed banner matches live listen flags; users/DNS/validators/system no longer flash false 0/down/off; `/cluster` announces redirect; panel restart and suspect-IP ban confirm; orphan-home delete labels include the path
 - Isolation deep-links, Node LTS-first chips, LE buttons include hostname, WebDAV disable gated, updates header stats stay stable, backup verdict unified, MySQL version parsed, `/ssl` shows panel LE, MySQL `?tab=cluster` works, health keys localized
+- Remaining UX111-087–200: one BT stop + listen/port labels; DB registered vs host; Redis SCAN hint; SSL buttons name the domain; certbot uninstall danger; network lo/default-route titles; cron install preview + edit; logs auto-query; protection auto-ban gates; browse Chrome/egress honesty; search short-query threshold; Java rebuild-from-host; Apache leftover filter; notification dedupe; SSH step cards; VPN open-but-stopped; PM2 notes localized
 
 ### Fix
 - Validator wizard / table show English chain and network names (Ethereum, NEAR, Sui, Hoodi…) from a catalog SSOT — they are never machine-translated

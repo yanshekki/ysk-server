@@ -154,5 +154,8 @@
   "logrotateLast": "上次旋转",
   "logrotateExpand": "显示另外 {{n}} 个",
   "logrotateCollapse": "显示更少",
-  "logrotateVersion": "状态版本 {{v}}"
+  "logrotateVersion": "状态版本 {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

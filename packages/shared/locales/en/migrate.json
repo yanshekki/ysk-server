@@ -38,6 +38,8 @@
   "authMethod": "Auth method",
   "rootPassword": "Root password",
   "notPersisted": "Not persisted",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
   "outboundIdentity": "Outbound identity in vault",
   "dryRun": "Dry-run precheck",
   "startMigrate": "Start full-host migration",

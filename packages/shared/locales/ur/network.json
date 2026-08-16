@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "تصدیق درکار — DEFAULT لکھیں (یہ پینل منقطع ہو سکتا ہے)",
   "deleteRouteNeedConfirm": "تصدیق درکار",
   "nmUnavailable": "نیٹ ورک مینجر نہیں چل رہا ہے — صرف ایک لائیو روٹ شامل کیا جا سکتا ہے۔",
-  "defaultRouteDownNeedName": "یہ پہلے سے طے شدہ راستہ ہے. تصدیق کرنے کے لیے انٹرفیس کا نام ٹائپ کریں - پینل منقطع ہو سکتا ہے۔"
+  "defaultRouteDownNeedName": "یہ پہلے سے طے شدہ راستہ ہے. تصدیق کرنے کے لیے انٹرفیس کا نام ٹائپ کریں - پینل منقطع ہو سکتا ہے۔",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

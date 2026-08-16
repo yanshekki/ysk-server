@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "पुष्टि आवश्यक — DEFAULT लिखें (यह पैनल कट सकता है)",
   "deleteRouteNeedConfirm": "पुष्टि आवश्यक",
   "nmUnavailable": "नेटवर्कमैनेजर नहीं चल रहा है - केवल एक लाइव रूट जोड़ा जा सकता है",
-  "defaultRouteDownNeedName": "यह निकास का डिफ़ॉल्ट मार्ग है. पुष्टि करने के लिए इंटरफ़ेस नाम टाइप करें - पैनल डिस्कनेक्ट हो सकता है।"
+  "defaultRouteDownNeedName": "यह निकास का डिफ़ॉल्ट मार्ग है. पुष्टि करने के लिए इंटरफ़ेस नाम टाइप करें - पैनल डिस्कनेक्ट हो सकता है।",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

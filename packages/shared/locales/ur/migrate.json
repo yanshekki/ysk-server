@@ -84,5 +84,7 @@
   "orphanRemoveTitle": "بچا ہوا پروجیکٹ ہوم حذف کریں؟",
   "orphanRemoveDesc": "ڈسک سے {{path}} کو مستقل طور پر حذف کریں۔ یہ ایک اسٹور پروجیکٹ نہیں ہے۔ YSK_EXECUTE=1 کی ضرورت ہے۔",
   "orphanRemovePhrase": "تصدیق کے لیے DELETE لکھیں۔",
-  "orphanRemoveNeedConfirm": "تصدیق درکار"
+  "orphanRemoveNeedConfirm": "تصدیق درکار",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

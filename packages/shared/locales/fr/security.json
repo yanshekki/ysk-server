@@ -375,7 +375,15 @@
     "errorNoDetail": "Échec du test (aucun détail)",
     "privCloseWithoutAck": "Fermé. La clé privée ne sera plus affichée ; générez-en un nouveau si vous ne l’avez pas enregistré.",
     "loginNoProjects": "Aucun projet. Autorisez un utilisateur Linux existant (root / testeur) ci-dessous. L'écriture de /root/.ssh nécessite YSK_EXECUTE=1.",
-    "loginLinuxHint": "Utilisé lorsqu'il n'y a pas de projet. Exemple : root ou testeur."
+    "loginLinuxHint": "Utilisé lorsqu'il n'y a pas de projet. Exemple : root ou testeur.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "Sessions actives",
   "sessionsOther": "Autres appareils",

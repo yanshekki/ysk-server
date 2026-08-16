@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "확인 필요 — DEFAULT 입력(이 패널 연결이 끊길 수 있음)",
   "deleteRouteNeedConfirm": "확인이 필요합니다",
   "nmUnavailable": "NetworkManager가 실행되고 있지 않습니다. 실시간 경로만 추가할 수 있습니다.",
-  "defaultRouteDownNeedName": "이는 기본 경로 송신입니다. 확인하려면 인터페이스 이름을 입력하세요. 패널 연결이 끊어질 수 있습니다."
+  "defaultRouteDownNeedName": "이는 기본 경로 송신입니다. 확인하려면 인터페이스 이름을 입력하세요. 패널 연결이 끊어질 수 있습니다.",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

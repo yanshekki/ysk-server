@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "يسجّل الاسم في مستوى التحكم فقط ولا يغيّر بيانات المضيف.",
   "cleanupExpiredTempUsersTitle": "يحذف مستخدمي اللوحة المؤقتين المنتهية صلاحيتهم",
   "remoteDeleteTitle": "إزالة هذا التسجيل فقط",
-  "remoteDeleteConfirm": "إزالة التسجيل {{name}}؟ لن يُغيَّر الخادم البعيد."
+  "remoteDeleteConfirm": "إزالة التسجيل {{name}}؟ لن يُغيَّر الخادم البعيد.",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

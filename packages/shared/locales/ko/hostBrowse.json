@@ -140,5 +140,7 @@
   "envColVar": "변수",
   "envColHost": "호스트 프로세스",
   "envColPanel": "패널 설정",
-  "envColEffective": "적용값"
+  "envColEffective": "적용값",
+  "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
 }

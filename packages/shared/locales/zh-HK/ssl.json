@@ -74,7 +74,8 @@
   "filesNo": "無",
   "colExpires": "到期",
   "renew": "續期",
-  "renewFor": "為 {{domain}} 續期 Let’s Encrypt",
+  "renewFor": "續期 {{domain}}",
+  "deleteDomain": "刪除 {{domain}}",
   "colStatus": "狀態",
   "emptyTitle": "尚未有憑證",
   "emptyDesc": "用右上角「上傳憑證」或「申請 Let’s Encrypt」",
@@ -106,6 +107,7 @@
   "applyFailed": "申請失敗",
   "deletedCert": "已刪除 {{domain}}",
   "uninstallCertbotWarn": "解除安裝 certbot 會令現有 Let's Encrypt 憑證無法自動續期。",
+  "uninstallCertbot": "解除安裝 certbot（會失去自動續期）",
   "domainRequired": "請填寫域名。",
   "domainInvalid": "域名格式不正確。",
   "domainKnownHint": "可從已知專案、DNS 或郵件域名選擇，或自行輸入。"

@@ -77,5 +77,7 @@
   "saveOffWarn": "La cadena de guardado vacía desactiva las instantáneas RDB. En caso de fallo, se pueden perder todos los datos si AOF también está desactivado.",
   "dirMoveWarn": "Cambiar el directorio no mueve dump.rdb/AOF. El siguiente inicio utiliza la nueva ruta tal como está.",
   "passwordUnset": "No configurado en el servicio",
-  "passwordSetHidden": "Conjunto (no mostrado)"
+  "passwordSetHidden": "Conjunto (no mostrado)",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

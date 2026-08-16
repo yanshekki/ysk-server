@@ -85,6 +85,11 @@ function announceProto(url: string): 'http' | 'ws' | 'udp' | 'other' {
   return 'other';
 }
 
+export function isListenAll(host: string | undefined): boolean {
+  const h = String(host ?? '').trim();
+  return !h || h === '0.0.0.0' || h === '::' || h === '*';
+}
+
 export function BtTrackerPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'overview', {
@@ -223,9 +228,16 @@ export function BtTrackerPage() {
         },
         items: [
           {
-            label: t('btTracker.statsTorrents'),
+            label: t('btTracker.statsLibrary'),
             value: String(torrentCount),
             tone: torrentCount > 0 ? 'ok' : 'neutral',
+            hint: t('btTracker.statsLibraryHint'),
+          },
+          {
+            label: t('btTracker.statsTrackerLeftover'),
+            value: String(leftoverSwarm),
+            tone: leftoverSwarm > 0 ? 'warn' : 'neutral',
+            hint: t('btTracker.statsTrackerLeftoverHint'),
           },
           {
             label: t('btTracker.statsPeers'),
@@ -235,6 +247,7 @@ export function BtTrackerPage() {
           {
             label: t('btTracker.statsAnnounces'),
             value: String(status?.stats?.announces ?? 0),
+            hint: t('btTracker.statsAnnouncesHint'),
           },
           {
             label: t('btTracker.statsJobs'),
@@ -334,21 +347,6 @@ export function BtTrackerPage() {
                   </span>
                 </div>
                 <div className="bt-strip__actions">
-                  {!running ? (
-                    <Button variant="primary" size="sm" loading={busy} onClick={onStart}>
-                      {t('btTracker.start')}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      loading={busy}
-                      title={t('btTracker.stopTitle')}
-                      onClick={() => setStopOpen(true)}
-                    >
-                      {t('btTracker.stop')}
-                    </Button>
-                  )}
                   <Button
                     variant="secondary"
                     size="sm"
@@ -605,13 +603,33 @@ export function BtTrackerPage() {
                       />
                     </div>
                   </Field>
-                  <Field label={t('btTracker.listenHost')} htmlFor="bt-host" flush>
+                  <Field
+                    label={t('btTracker.listenHost')}
+                    htmlFor="bt-host"
+                    hint={t('btTracker.listenHostHint')}
+                    flush
+                  >
                     <input
                       id="bt-host"
                       className="input"
                       value={draft.listenHost ?? '0.0.0.0'}
                       onChange={bindInput((v) => patchDraft('listenHost', v))}
                     />
+                    <div className="u-mt-2">
+                      <PresetChips
+                        options={[
+                          { value: '127.0.0.1', label: t('btTracker.bindLoopback') },
+                          { value: '0.0.0.0', label: t('btTracker.bindAll') },
+                        ]}
+                        value={String(draft.listenHost ?? '0.0.0.0')}
+                        onChange={(v) => patchDraft('listenHost', v)}
+                      />
+                    </div>
+                    {isListenAll(draft.listenHost) ? (
+                      <Alert variant="warn" className="u-mt-2">
+                        {t('btTracker.listenAllWarn')}
+                      </Alert>
+                    ) : null}
                   </Field>
                   <Field label={t('btTracker.publicAnnounceHost')} htmlFor="bt-pub" flush>
                     <input
@@ -664,32 +682,38 @@ export function BtTrackerPage() {
                       onChange={(e) => patchDraft('maxSeeds', Number(e.target.value))}
                     />
                   </Field>
-                  <Field label={t('btTracker.seederPorts')} htmlFor="bt-smin" flush>
-                    <div className="u-flex u-gap-sm u-items-center">
-                      <input
-                        id="bt-smin"
-                        type="number"
-                        min={1}
-                        max={65535}
-                        className="input"
-                        value={draft.seederPortMin ?? 6881}
-                        onChange={(e) =>
-                          patchDraft('seederPortMin', Number(e.target.value))
-                        }
-                      />
-                      <span className="muted">–</span>
-                      <input
-                        id="bt-smax"
-                        type="number"
-                        min={1}
-                        max={65535}
-                        className="input"
-                        value={draft.seederPortMax ?? 6889}
-                        onChange={(e) =>
-                          patchDraft('seederPortMax', Number(e.target.value))
-                        }
-                      />
-                    </div>
+                  <Field
+                    label={t('btTracker.seederPortMin')}
+                    htmlFor="bt-smin"
+                    hint={t('btTracker.seederPortsHint')}
+                    flush
+                  >
+                    <input
+                      id="bt-smin"
+                      type="number"
+                      min={1}
+                      max={65535}
+                      className="input"
+                      value={draft.seederPortMin ?? 6881}
+                      onChange={(e) =>
+                        patchDraft('seederPortMin', Number(e.target.value))
+                      }
+                      aria-label={t('btTracker.seederPortMin')}
+                    />
+                  </Field>
+                  <Field label={t('btTracker.seederPortMax')} htmlFor="bt-smax" flush>
+                    <input
+                      id="bt-smax"
+                      type="number"
+                      min={1}
+                      max={65535}
+                      className="input"
+                      value={draft.seederPortMax ?? 6889}
+                      onChange={(e) =>
+                        patchDraft('seederPortMax', Number(e.target.value))
+                      }
+                      aria-label={t('btTracker.seederPortMax')}
+                    />
                   </Field>
                 </FormLayout>
               </div>

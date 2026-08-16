@@ -154,5 +154,8 @@
   "logrotateLast": "最後に回転した",
   "logrotateExpand": "{{n}} もっと見る",
   "logrotateCollapse": "表示数を減らす",
-  "logrotateVersion": "ステータスバージョン {{v}}"
+  "logrotateVersion": "ステータスバージョン {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

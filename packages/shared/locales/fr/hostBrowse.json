@@ -140,5 +140,7 @@
   "envColVar": "Variable",
   "envColHost": "Processus hôte",
   "envColPanel": "Réglage du panneau",
-  "envColEffective": "Effectif"
+  "envColEffective": "Effectif",
+  "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
 }

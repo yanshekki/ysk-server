@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { localPageHits, projectHitsFromRows, searchEmptyState } from './GlobalSearch';
+import {
+  localPageHits,
+  projectHitsFromRows,
+  searchEmptyState,
+  searchTextMatches,
+} from './GlobalSearch';
 
 describe('localPageHits', () => {
   const t = (k: string) => {
@@ -30,6 +35,13 @@ describe('localPageHits', () => {
     ]);
     expect(hits.some((h) => h.kind === 'project' && h.title === 'hello')).toBe(true);
     expect(hits[0]?.href).toBe('/projects/p-hello');
+  });
+});
+
+describe('searchTextMatches', () => {
+  it('does not match short query inside a longer word', () => {
+    expect(searchTextMatches('email docker mail', 'ai')).toBe(false);
+    expect(searchTextMatches('AI 代理', 'ai')).toBe(true);
   });
 });
 

@@ -552,16 +552,23 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               ]
             : []),
           {
-            label: t('common.probe'),
-            value: probe ? t('runtime.readShort') : '—',
-            tone: probe ? 'ok' : 'neutral' },
+            label: t('runtime.installedLabel'),
+            value: probe
+              ? probeData.available.length
+                ? probeData.available[0]
+                : t('runtime.notDetected')
+              : '—',
+            hint: t('runtime.installedHint'),
+          },
           {
-            label: t('common.available'),
-            value: probeData.available.length },
-          { label: t('common.target'), value: version || panelDefault || '—' },
+            label: t('common.target'),
+            value: version || '—',
+            hint: t('runtime.targetHint'),
+          },
           {
             label: t('runtime.panelDefaultLabel'),
             value: panelDefault || t('runtime.panelDefaultNone'),
+            hint: t('runtime.panelDefaultHint'),
           },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
           { label: t('common.host'), value: hostDisplay || '—' },
@@ -622,6 +629,39 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             onClick={() => setTab('software')}
           >
             {t('runtime.installRecordedCta', { v: recordedPin })}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="u-ml-2"
+            loading={busy}
+            onClick={() => {
+              void run(async () => {
+                const r = await systemApi.softwareVersions({
+                  id: kind,
+                  refresh: true,
+                });
+                setVersionStatus({
+                  latestVersion: r.latestVersion,
+                  currentVersion: r.currentVersion,
+                  upgradable: r.upgradable,
+                  candidates: (r.candidates ?? []).map((c) => ({
+                    version: c.version,
+                    label: c.label,
+                  })),
+                  source: r.source,
+                  notes: r.notes,
+                });
+                const pr = (await systemApi.runtimes()) as Record<string, unknown>;
+                setProbe(pr);
+                return {
+                  ok: true,
+                  notes: [t('runtime.rebuiltFromHost')],
+                };
+              }, t('runtime.rebuiltFromHost'));
+            }}
+          >
+            {t('runtime.rebuildFromHost')}
           </Button>
         </Alert>
       ) : null}

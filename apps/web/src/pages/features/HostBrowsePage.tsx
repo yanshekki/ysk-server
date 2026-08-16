@@ -875,6 +875,7 @@ export function HostBrowsePage() {
             label: t('hostBrowse.viaHost'),
             value: t('hostBrowse.privacyOn'),
             tone: 'ok',
+            hint: t('hostBrowse.egressHint', { host: window.location.hostname }),
           },
           {
             label: t('hostBrowse.engineLabel'),
@@ -936,6 +937,9 @@ export function HostBrowsePage() {
                 </button>
               </Alert>
             ) : null}
+            <Alert variant="info">
+              {t('hostBrowse.egressHint', { host: window.location.hostname })}
+            </Alert>
 
             <div className="hb-chrome">
               <div className="hb-toolbar">
@@ -957,14 +961,27 @@ export function HostBrowsePage() {
                   <SegRadio
                     name="hb-engine"
                     size="sm"
-                    aria-label={t('hostBrowse.engineLabel')}
+                    aria-label={
+                      caps && !caps.chromeAvailable
+                        ? t('hostBrowse.needChrome')
+                        : t('hostBrowse.engineLabel')
+                    }
                     value={engine}
                     onChange={(v) => onEngineChange(v as HostBrowseEngine)}
                     options={[
                       { value: 'proxy', label: t('hostBrowse.engineProxy') },
-                      { value: 'browser', label: t('hostBrowse.engineBrowser') },
+                      {
+                        value: 'browser',
+                        label:
+                          caps && !caps.chromeAvailable
+                            ? t('hostBrowse.engineBrowserNeedChrome')
+                            : t('hostBrowse.engineBrowser'),
+                      },
                     ]}
-                    disabled={busy}
+                    disabled={
+                      busy ||
+                      (engine !== 'browser' && Boolean(caps && !caps.chromeAvailable))
+                    }
                   />
                 </div>
 
@@ -1163,7 +1180,14 @@ export function HostBrowsePage() {
                       disabled={busy}
                     />
                   </label>
-                  <Button size="sm" onClick={onGo} disabled={busy || !urlDraft.trim()}>
+                  <Button
+                    size="sm"
+                    onClick={onGo}
+                    disabled={busy || !urlDraft.trim()}
+                    title={
+                      !urlDraft.trim() ? t('hostBrowse.needUrl') : t('hostBrowse.go')
+                    }
+                  >
                     {t('hostBrowse.go')}
                   </Button>
                 </div>

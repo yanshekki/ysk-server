@@ -174,5 +174,6 @@
   },
   "statOnlineOf": "Online {{n}}/{{total}}",
   "statDraining": "Draining {{n}}",
-  "localTest": "local / test"
+  "localTest": "local / test",
+  "colRegion": "Region"
 }

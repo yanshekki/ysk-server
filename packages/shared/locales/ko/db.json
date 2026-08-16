@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "제어면에 이름만 등록하며 호스트 데이터는 바꾸지 않습니다.",
   "cleanupExpiredTempUsersTitle": "만료된 패널 임시 사용자를 삭제합니다",
   "remoteDeleteTitle": "이 등록만 제거",
-  "remoteDeleteConfirm": "등록 {{name}}을(를) 제거할까요? 원격 서버는 변경되지 않습니다."
+  "remoteDeleteConfirm": "등록 {{name}}을(를) 제거할까요? 원격 서버는 변경되지 않습니다.",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

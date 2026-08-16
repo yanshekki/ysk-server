@@ -183,5 +183,16 @@
   "stopTitle": "ट्रैकर बंद करें - सीडिंग और डाउनलोड बाधित होंगे",
   "stopDesc": "चल रहे टोरेंट घोषणा करना बंद कर देते हैं। जब तक आप ट्रैकर को दोबारा शुरू नहीं करते तब तक साथी डिस्कनेक्ट हो जाते हैं।",
   "fillPublicHost": "{{host}} का प्रयोग करें",
-  "fillPublicHostTitle": "वर्तमान पैनल होस्टनाम को सार्वजनिक घोषणा होस्ट के रूप में भरें"
+  "fillPublicHostTitle": "वर्तमान पैनल होस्टनाम को सार्वजनिक घोषणा होस्ट के रूप में भरें",
+  "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+  "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+  "bindLoopback": "127.0.0.1 only",
+  "bindAll": "0.0.0.0 (all)",
+  "seederPortMin": "Peer port start",
+  "seederPortMax": "Peer port end",
+  "statsLibrary": "Library",
+  "statsLibraryHint": "Torrents in the panel library / file shares",
+  "statsTrackerLeftover": "Tracker leftover",
+  "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+  "statsAnnouncesHint": "Announce requests seen by the tracker process"
 }

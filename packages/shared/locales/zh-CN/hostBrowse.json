@@ -140,5 +140,7 @@
   "envColVar": "变量",
   "envColHost": "主机进程",
   "envColPanel": "面板设置",
-  "envColEffective": "生效值"
+  "envColEffective": "生效值",
+  "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
 }

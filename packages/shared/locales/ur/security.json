@@ -375,7 +375,15 @@
     "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)",
     "privCloseWithoutAck": "بند نجی کلید دوبارہ نہیں دکھائی جائے گی۔ اگر آپ نے اسے محفوظ نہیں کیا تو ایک نیا بنائیں۔",
     "loginNoProjects": "کوئی پروجیکٹ نہیں۔ ذیل میں ایک موجودہ لینکس صارف (روٹ/ٹیسٹر) کو اختیار دیں۔ /root/.ssh لکھنے کے لیے YSK_EXECUTE=1 کی ضرورت ہے۔",
-    "loginLinuxHint": "استعمال کیا جاتا ہے جب کوئی پروجیکٹ نہیں ہے۔ مثال: جڑ یا ٹیسٹر۔"
+    "loginLinuxHint": "استعمال کیا جاتا ہے جب کوئی پروجیکٹ نہیں ہے۔ مثال: جڑ یا ٹیسٹر۔",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "فعال سیشنز",
   "sessionsOther": "دیگر آلات",

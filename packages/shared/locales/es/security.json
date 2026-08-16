@@ -375,7 +375,15 @@
     "errorNoDetail": "Prueba fallida (sin detalles)",
     "privCloseWithoutAck": "Cerrado. La clave privada no se volverá a mostrar; generar uno nuevo si no lo guardaste.",
     "loginNoProjects": "Sin proyectos. Autorice a un usuario de Linux existente (root/tester) a continuación. Escribir /root/.ssh necesita YSK_EXECUTE=1.",
-    "loginLinuxHint": "Se utiliza cuando no hay proyecto. Ejemplo: root o tester."
+    "loginLinuxHint": "Se utiliza cuando no hay proyecto. Ejemplo: root o tester.",
+    "pkgStatus": "Package {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "ok",
+      "yellow": "check",
+      "red": "missing"
+    }
   },
   "sessionsActive": "Sesiones activas",
   "sessionsOther": "Otros dispositivos",

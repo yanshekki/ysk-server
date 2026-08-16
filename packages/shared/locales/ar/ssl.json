@@ -108,5 +108,7 @@
   "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه.",
   "deleteNeedDomain": "احذف هذه الشهادة — اكتب اسم المجال للتأكيد",
   "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-  "openPanelTls": "Open panel HTTPS"
+  "openPanelTls": "Open panel HTTPS",
+  "deleteDomain": "Delete {{domain}}",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
 }

@@ -405,7 +405,16 @@ export function NetworkPage() {
                       header: t('network.colStatus'),
                       nowrap: true,
                       render: (r) => (
-                        <Badge tone={operTone(r.operstate)}>{r.operstate}</Badge>
+                        <Badge
+                          tone={operTone(r.operstate)}
+                          title={
+                            String(r.operstate).toUpperCase() === 'UNKNOWN'
+                              ? t('network.operUnknownHint')
+                              : r.operstate
+                          }
+                        >
+                          {r.operstate}
+                        </Badge>
                       ),
                     },
                     {
@@ -442,6 +451,11 @@ export function NetworkPage() {
                         variant="secondary"
                         size="sm"
                         disabled={busy || r.isLoopback}
+                        title={
+                          r.isLoopback
+                            ? t('network.loopbackImmutable')
+                            : t('network.addIp')
+                        }
                         onClick={bindCall1(openAdd, r)}
                       >
                         {t('network.addIp')}
@@ -452,21 +466,30 @@ export function NetworkPage() {
                           size="sm"
                           disabled={busy || r.isLoopback}
                           title={
-                            r.isDefaultEgress
-                              ? t('network.defaultRouteDownNeedName')
-                              : t('network.linkDownNeedConfirm', {
-                                  defaultValue: t('network.confirmDown'),
-                                })
+                            r.isLoopback
+                              ? t('network.loopbackImmutable')
+                              : r.isDefaultEgress
+                                ? t('network.defaultRouteDownNeedName')
+                                : t('network.linkDownNeedConfirm', {
+                                    defaultValue: t('network.confirmDown'),
+                                  })
                           }
                           onClick={bindSet2(setDownConfirm, '', setDownDlg, r)}
                         >
-                          {t('network.linkDown')}
+                          {r.isDefaultEgress
+                            ? t('network.linkDownDefault')
+                            : t('network.linkDown')}
                         </Button>
                       ) : (
                         <Button
                           variant="primary"
                           size="sm"
                           disabled={busy || r.isLoopback}
+                          title={
+                            r.isLoopback
+                              ? t('network.loopbackImmutable')
+                              : t('network.linkUp')
+                          }
                           onClick={() =>
                             void run(() =>
                               networkApi.setLink(r.name, { action: 'up' }),

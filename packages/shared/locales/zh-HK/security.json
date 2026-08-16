@@ -329,6 +329,14 @@
     "ssh2faStep3": "寫入 主目錄",
     "ssh2faStep4": "系統安裝 PAM 模組並合併片段（下方）",
     "pkgLabel": "套件 {{name}}",
+    "pkgStatus": "套件 {{status}}",
+    "pamStatus": "PAM {{status}}",
+    "kbdStatus": "sshd keyboard-interactive {{status}}",
+    "light": {
+      "green": "正常",
+      "yellow": "需檢查",
+      "red": "未就緒"
+    },
     "enrollForUser": "為用戶登記 遠端登入 雙重驗證",
     "ssh2faEmpty": "尚未為任何 Linux 用戶開啟 遠端登入 雙重驗證",
     "ssh2faEmptyHint": "建議先用金鑰登入；雙重驗證 作第二道門。專案 SFTP-only 用戶通常不需要 keyboard-interactive。",

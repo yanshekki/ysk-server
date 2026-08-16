@@ -368,6 +368,8 @@ export function LogsPage() {
   const [customPathInput, setCustomPathInput] = useState('');
   const [settingsDraft, setSettingsDraft] = useState<Partial<LogSettings>>({});
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   const followSec = settings?.followIntervalSec ?? 3;
   const journalWarn = settings?.journalWarnMb ?? 1024;
@@ -410,7 +412,9 @@ export function LogsPage() {
         setSettings(st.value);
         setSettingsDraft(st.value);
         if (st.value.vacuumDefaultDays) setVacuumDays(`${st.value.vacuumDefaultDays}d`);
-        if (st.value.maxLines && !searchParams.get('lines')) setLines(st.value.maxLines);
+        if (st.value.maxLines && !searchParamsRef.current.get('lines')) {
+          setLines(st.value.maxLines);
+        }
       } else {
         fails.push(st.reason instanceof Error ? st.reason.message : 'settings');
       }
@@ -425,7 +429,7 @@ export function LogsPage() {
     } finally {
       setMetaLoading(false);
     }
-  }, [searchParams, t]);
+  }, [t]);
 
   useEffect(() => {
     void refreshMeta();
@@ -453,6 +457,9 @@ export function LogsPage() {
         deepLinkQueryKey.current = deepSrc;
         void runQuery(deepSrc);
       }
+    } else if (!deepLinkQueryKey.current) {
+      deepLinkQueryKey.current = activeSource;
+      void runQuery(activeSource);
     }
     if (projectId) {
       setProjectsOnly(true);
@@ -889,7 +896,9 @@ export function LogsPage() {
           {
             label: t('projects.healthDetail.error'),
             value: overview?.recentErrors ?? '—',
-            tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok' },
+            tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok',
+            hint: t('logs.errorsWindowHint'),
+          },
           {
             label: t('logs.projectLog'),
             value:
@@ -1010,7 +1019,12 @@ export function LogsPage() {
               <aside className="lc-rail" aria-label={t('logs.sources')}>
                 <div className="lc-rail__head">
                   <strong>{t('system.source')}</strong>
-                  <span className="muted u-text-sm">{railFiltered.length}</span>
+                  <span className="muted u-text-sm">
+                    {t('logs.sourceCount', {
+                      shown: railFiltered.length,
+                      total: railItems.length,
+                    })}
+                  </span>
                 </div>
                 <label className="lc-toggle lc-toggle--block u-mb-2">
                   <input
@@ -1081,7 +1095,12 @@ export function LogsPage() {
                                     ]
                                       .filter(Boolean)
                                       .join(' ')}
-                                    disabled={!item.available && item.kind === 'file'}
+                                    disabled={!item.available}
+                                    title={
+                                      !item.available
+                                        ? t('logs.sourceUnavailable')
+                                        : item.source
+                                    }
                                     onClick={bindCall1(selectSource, item.source)}
                                   >
                                     <span className="lc-rail__item-label">{item.label}</span>
@@ -1366,6 +1385,7 @@ export function LogsPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
+                      disabled={vacuumSizeNoop}
                       title={
                         vacuumSizeNoop
                           ? t('logs.vacuumSizeAlreadyBelow')

@@ -77,5 +77,7 @@
   "saveOffWarn": "تؤدي سلسلة الحفظ الفارغة إلى إيقاف تشغيل لقطات RDB. يمكن أن يؤدي العطل إلى فقدان جميع البيانات إذا تم إيقاف تشغيل AOF أيضًا.",
   "dirMoveWarn": "تغيير دير لا ينقل dump.rdb / AOF. تستخدم البداية التالية المسار الجديد كما هو.",
   "passwordUnset": "لم يتم تعيينه على الخدمة",
-  "passwordSetHidden": "مجموعة (غير معروضة)"
+  "passwordSetHidden": "مجموعة (غير معروضة)",
+  "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+  "scanCapped": "Showing the first {{n}} matches."
 }

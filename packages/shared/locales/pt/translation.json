@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "Remova todos os artefatos no disco que entrem em conflito com um projeto ou ServerName independente. As linhas do projeto são mantidas.",
     "artifactRemovedOk": "Configuração residual removida",
     "sslTerminatedUpstream": "TLS termina na frente do Nginx",
-    "removeArtifactHint": "Apaga só este conf residual em disco. Não elimina o projeto."
+    "removeArtifactHint": "Apaga só este conf residual em disco. Não elimina o projeto.",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "Rascunho",
@@ -630,7 +632,18 @@
     "stopTitle": "Pare o rastreador – a propagação e os downloads serão interrompidos",
     "stopDesc": "A execução de torrents para de anunciar. Os peers se desconectam até você iniciar o rastreador novamente.",
     "fillPublicHost": "Usar {{host}}",
-    "fillPublicHostTitle": "Preencha o nome do host do painel atual como o host do anúncio público"
+    "fillPublicHostTitle": "Preencha o nome do host do painel atual como o host do anúncio público",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "Comando desconhecido: {{command}}\nExecute `{{cli}} ajuda`",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · outro {{other}} · total {{total}}",
     "hostYskYes": "linhas do painel presentes",
     "hostYskNo": "sem linhas de painel",
-    "emptyHostCrontab": "Não há crontab para {{user}}."
+    "emptyHostCrontab": "Não há crontab para {{user}}.",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "Painel",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "Só regista o nome no plano de controlo; não altera dados do anfitrião.",
     "cleanupExpiredTempUsersTitle": "Remove utilizadores temporários do painel já expirados",
     "remoteDeleteTitle": "Remover apenas este registo",
-    "remoteDeleteConfirm": "Remover o registo {{name}}? O servidor remoto não é alterado."
+    "remoteDeleteConfirm": "Remover o registo {{name}}? O servidor remoto não é alterado.",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "Confirmar",
@@ -4813,7 +4845,9 @@
     "envColVar": "Variável",
     "envColHost": "Processo do anfitrião",
     "envColPanel": "Definição do painel",
-    "envColEffective": "Efetivo"
+    "envColEffective": "Efetivo",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "Procurar…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "Última rotação",
     "logrotateExpand": "Mostrar {{n}} mais",
     "logrotateCollapse": "Mostrar menos",
-    "logrotateVersion": "Versão de status {{v}}"
+    "logrotateVersion": "Versão de status {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "Excluir as sobras da página inicial do projeto?",
     "orphanRemoveDesc": "Exclua permanentemente {{path}} do disco. Este não é um projeto de loja. Precisa de YSK_EXECUTE=1.",
     "orphanRemovePhrase": "Escreva DELETE para confirmar.",
-    "orphanRemoveNeedConfirm": "Requer confirmação"
+    "orphanRemoveNeedConfirm": "Requer confirmação",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "Código personalizado",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "Requer confirmação — escreva DEFAULT (pode interromper este painel)",
     "deleteRouteNeedConfirm": "Requer confirmação",
     "nmUnavailable": "O NetworkManager não está em execução — apenas uma rota ativa pode ser adicionada",
-    "defaultRouteDownNeedName": "Esta é a saída da rota padrão. Digite o nome da interface para confirmar — o painel pode se desconectar."
+    "defaultRouteDownNeedName": "Esta é a saída da rota padrão. Digite o nome da interface para confirmar — o painel pode se desconectar.",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} sites",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "Não definido",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "A string de salvamento vazia desativa os instantâneos RDB. Uma falha pode perder todos os dados se o AOF também estiver desativado.",
     "dirMoveWarn": "Alterar o diretório não move dump.rdb/AOF. A próxima inicialização usa o novo caminho como está.",
     "passwordUnset": "Não definido no serviço",
-    "passwordSetHidden": "Conjunto (não mostrado)"
+    "passwordSetHidden": "Conjunto (não mostrado)",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "Criado",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "Gravado {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} versão(ões) não estão neste anfitrião",
     "applyPhpVhostTitle": "Precisa de confirmação – grava arquivos pool/vhost",
     "applyPhpVhostDesc": "Escreverá o pool {{pool}} e o {{domain}} vhost. Serviços de recarga: {{reload}}.",
-    "binaryPath": "Caminho do binário"
+    "binaryPath": "Caminho do binário",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "Pesquisar páginas e recursos…",
@@ -11277,7 +11334,15 @@
       "errorNoDetail": "Teste falhou (sem detalhes)",
       "privCloseWithoutAck": "Fechado. A chave privada não será mostrada novamente; gere um novo se você não o salvou.",
       "loginNoProjects": "Sem projetos. Autorize um usuário Linux existente (root/testador) abaixo. Escrever /root/.ssh precisa de YSK_EXECUTE=1.",
-      "loginLinuxHint": "Usado quando não há projeto. Exemplo: root ou testador."
+      "loginLinuxHint": "Usado quando não há projeto. Exemplo: root ou testador.",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "Sessões ativas",
     "sessionsOther": "Outros dispositivos",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "Escolha um domínio de projeto, DNS ou correio, ou escreva um.",
     "deleteNeedDomain": "Exclua este certificado – digite o nome de domínio para confirmar",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "Confirmar a purga? Os caminhos de dados registrados (bancos de dados/correio) serão excluídos permanentemente.",

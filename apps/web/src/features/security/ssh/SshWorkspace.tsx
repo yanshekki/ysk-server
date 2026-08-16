@@ -117,7 +117,8 @@ export function SshWorkspace(props: {
             <strong>{t('security.ssh.jobOutboundTitle')}</strong>
             <span className="muted u-text-sm">{t('security.ssh.jobOutboundDesc')}</span>
           </span>
-          <Badge tone={identitiesN ? 'ok' : 'neutral'}>{identitiesN || '—'}</Badge>
+          <span className="ssh-job__step">1</span>
+          <Badge tone={identitiesN ? 'ok' : 'neutral'}>{identitiesN}</Badge>
         </button>
         <button
           type="button"
@@ -131,7 +132,8 @@ export function SshWorkspace(props: {
             <strong>{t('security.ssh.jobLoginTitle')}</strong>
             <span className="muted u-text-sm">{t('security.ssh.jobLoginDesc')}</span>
           </span>
-          <Badge tone={loginN ? 'info' : 'neutral'}>{loginN || '—'}</Badge>
+          <span className="ssh-job__step">2</span>
+          <Badge tone={loginN ? 'info' : 'neutral'}>{loginN}</Badge>
         </button>
         <button
           type="button"
@@ -145,6 +147,7 @@ export function SshWorkspace(props: {
             <strong>{t('security.ssh.job2faTitle')}</strong>
             <span className="muted u-text-sm">{t('security.ssh.job2faDesc')}</span>
           </span>
+          <span className="ssh-job__step">3</span>
         </button>
         <button
           type="button"
@@ -158,6 +161,7 @@ export function SshWorkspace(props: {
             <strong>{t('security.ssh.jobSshdTitle')}</strong>
             <span className="muted u-text-sm">{t('security.ssh.jobSshdDesc')}</span>
           </span>
+          <span className="ssh-job__step">4</span>
         </button>
       </div>
     ),

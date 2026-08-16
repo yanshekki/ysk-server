@@ -87,6 +87,19 @@ function wizardPinOnHost(pin: string, installed: string[], host?: string): boole
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
 
+export function dedupeNotifications<
+  T extends { id: string; title?: string; body?: string; source?: string },
+>(items: T[]): Array<T & { count: number }> {
+  const map = new Map<string, T & { count: number }>();
+  for (const n of items) {
+    const key = `${n.source ?? ''}\n${n.title ?? ''}\n${n.body ?? ''}`;
+    const cur = map.get(key);
+    if (cur) cur.count += 1;
+    else map.set(key, { ...n, count: 1 });
+  }
+  return [...map.values()];
+}
+
 /** Map nav key → software feature id (for install probe) */
 const KEY_TO_FEATURE: Record<string, string> = {
   nginx: 'nginx',
@@ -333,12 +346,14 @@ export function DashboardPage() {
   const visibleNotifs = useMemo(() => {
     const dismissed = new Set(dismissedNotifs);
     const q = notifQ.trim().toLowerCase();
-    return notifications.filter((n) => {
-      if (dismissed.has(n.id)) return false;
-      if (notifLevel !== 'all' && n.level !== notifLevel) return false;
-      if (!q) return true;
-      return [n.title, n.body, n.source].join('\n').toLowerCase().includes(q);
-    });
+    return dedupeNotifications(
+      notifications.filter((n) => {
+        if (dismissed.has(n.id)) return false;
+        if (notifLevel !== 'all' && n.level !== notifLevel) return false;
+        if (!q) return true;
+        return [n.title, n.body, n.source].join('\n').toLowerCase().includes(q);
+      }),
+    );
   }, [notifications, dismissedNotifs, notifQ, notifLevel]);
   const dismissNotif = useCallback((id: string) => {
     setDismissedNotifs((prev) => {
@@ -573,10 +588,11 @@ export function DashboardPage() {
                 </div>
                 {notifications.length > 0 ? (
                   <ul className="list-plain list-spaced u-mb-3">
-                    {notifications
-                      .filter(
+                    {dedupeNotifications(
+                      notifications.filter(
                         (n) => n.level === 'critical' || n.level === 'warn',
-                      )
+                      ),
+                    )
                       .slice(0, 5)
                       .map((n) => (
                         <li key={n.id}>
@@ -587,7 +603,10 @@ export function DashboardPage() {
                               ? t('dashboard.levelCritical')
                               : t('dashboard.levelWarn')}
                           </Badge>{' '}
-                          <strong>{n.title}</strong>
+                          <strong>
+                            {n.title}
+                            {n.count > 1 ? ` ×${n.count}` : ''}
+                          </strong>
                           <span className="muted u-text-sm"> — {n.body}</span>
                           {n.href ? (
                             <>
@@ -1118,7 +1137,14 @@ export function DashboardPage() {
                 {
                   key: 'title',
                   header: t('dashboard.colTitle'),
-                  render: (n) => <strong>{n.title}</strong>,
+                  render: (n) => (
+                    <strong>
+                      {n.title}
+                      {n.count > 1 ? (
+                        <span className="muted"> ×{n.count}</span>
+                      ) : null}
+                    </strong>
+                  ),
                 },
                 {
                   key: 'body',

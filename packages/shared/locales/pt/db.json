@@ -329,5 +329,10 @@
   "adoptHostDbTitle": "Só regista o nome no plano de controlo; não altera dados do anfitrião.",
   "cleanupExpiredTempUsersTitle": "Remove utilizadores temporários do painel já expirados",
   "remoteDeleteTitle": "Remover apenas este registo",
-  "remoteDeleteConfirm": "Remover o registo {{name}}? O servidor remoto não é alterado."
+  "remoteDeleteConfirm": "Remover o registo {{name}}? O servidor remoto não é alterado.",
+  "registeredCount": "Registered",
+  "hostCount": "On host",
+  "registeredUsers": "Registered users",
+  "registeredUsersHint": "Panel registrations only — not every MySQL account",
+  "hostStillExists": "Still on host"
 }

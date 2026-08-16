@@ -84,5 +84,7 @@
   "orphanRemoveTitle": "অবশিষ্ট প্রকল্প বাড়ি মুছে ফেলবেন?",
   "orphanRemoveDesc": "স্থায়ীভাবে ডিস্ক থেকে {{path}} মুছে দিন। এটি একটি দোকান প্রকল্প নয়. প্রয়োজন YSK_EXECUTE=1।",
   "orphanRemovePhrase": "নিশ্চিত করতে DELETE লিখুন।",
-  "orphanRemoveNeedConfirm": "নিশ্চিতকরণ প্রয়োজন"
+  "orphanRemoveNeedConfirm": "নিশ্চিতকরণ প্রয়োজন",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

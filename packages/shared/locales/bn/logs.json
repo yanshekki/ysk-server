@@ -154,5 +154,8 @@
   "logrotateLast": "সর্বশেষ ঘোরানো হয়েছে",
   "logrotateExpand": "আরও {{n}} দেখান৷",
   "logrotateCollapse": "কম দেখান",
-  "logrotateVersion": "স্থিতি সংস্করণ {{v}}"
+  "logrotateVersion": "স্থিতি সংস্করণ {{v}}",
+  "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+  "sourceCount": "{{shown}} shown",
+  "sourceUnavailable": "This source has not produced a log yet"
 }

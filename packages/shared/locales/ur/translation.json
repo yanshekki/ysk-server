@@ -258,7 +258,9 @@
     "cleanupConflictsDesc": "ہر آن ڈسک آرٹفیکٹ conf کو ہٹا دیں جو کسی پروجیکٹ یا اسٹینڈ ایلون ServerName سے متصادم ہو۔ پروجیکٹ کی قطاریں رکھی جاتی ہیں۔",
     "artifactRemovedOk": "بقایا conf کو ہٹا دیا گیا۔",
     "sslTerminatedUpstream": "TLS سامنے Nginx پر ختم ہوتا ہے۔",
-    "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔"
+    "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔",
+    "sourceOrphan": "Leftover",
+    "orphanSite": "Project gone"
   },
   "applyStatus": {
     "draft": "مسودہ",
@@ -630,7 +632,18 @@
     "stopTitle": "ٹریکر کو روکیں - سیڈنگ اور ڈاؤن لوڈ میں خلل پڑے گا۔",
     "stopDesc": "چلنے والے ٹورینٹ اعلان کرنا بند کر دیتے ہیں۔ جب تک آپ ٹریکر کو دوبارہ شروع نہیں کرتے ہیں ساتھی منقطع ہوجاتے ہیں۔",
     "fillPublicHost": "{{host}} استعمال کریں",
-    "fillPublicHostTitle": "موجودہ پینل کے میزبان نام کو پُر کریں جیسا کہ عوام میزبان کا اعلان کرتے ہیں۔"
+    "fillPublicHostTitle": "موجودہ پینل کے میزبان نام کو پُر کریں جیسا کہ عوام میزبان کا اعلان کرتے ہیں۔",
+    "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+    "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+    "bindLoopback": "127.0.0.1 only",
+    "bindAll": "0.0.0.0 (all)",
+    "seederPortMin": "Peer port start",
+    "seederPortMax": "Peer port end",
+    "statsLibrary": "Library",
+    "statsLibraryHint": "Torrents in the panel library / file shares",
+    "statsTrackerLeftover": "Tracker leftover",
+    "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+    "statsAnnouncesHint": "Announce requests seen by the tracker process"
   },
   "catalog": {
     "sw": {
@@ -840,7 +853,8 @@
     },
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
-    "localTest": "local / test"
+    "localTest": "local / test",
+    "colRegion": "Region"
   },
   "cli": {
     "unknownCommand": "نامعلوم کمانڈ: {{command}}\n`{{cli}} مدد` چلائیں۔",
@@ -2304,7 +2318,20 @@
     "hostCountsVal": "{{ysk}} · دیگر {{other}} · کل {{total}}",
     "hostYskYes": "پینل لائنیں موجود ہیں",
     "hostYskNo": "کوئی پینل لائنیں نہیں ہیں۔",
-    "emptyHostCrontab": "{{user}} کے لیے کوئی کرونٹاب نہیں ہے۔"
+    "emptyHostCrontab": "{{user}} کے لیے کوئی کرونٹاب نہیں ہے۔",
+    "writtenOnHost": "Written",
+    "registeredJobsChip": "Registered",
+    "registeredVsWritten": "Registered in the panel vs written to host crontab",
+    "installPreviewTitle": "Preview before installing to system crontab",
+    "installPreviewDesc": "This merges the YSK block into the host crontab. Existing non-YSK lines stay.",
+    "installPreviewMerge": "Install writes a YSK Server crontab merge block. It does not replace the whole crontab.",
+    "installPreviewEmpty": "No pending managed jobs — install still refreshes the YSK block.",
+    "editJobTitle": "Edit job",
+    "editJobDesc": "Changes stay in the panel until you install to the system crontab.",
+    "saveJob": "Save (management only)",
+    "panelLines": "Panel lines",
+    "otherLines": "Other lines",
+    "totalLines": "Total"
   },
   "dashboard": {
     "title": "ڈیش بورڈ",
@@ -2764,7 +2791,12 @@
     "adoptHostDbTitle": "صرف کنٹرول प्लेन میں نام رجسٹر کرتا ہے؛ ہوسٹ ڈیٹا نہیں بدلتا۔",
     "cleanupExpiredTempUsersTitle": "پینل کے میعاد ختم عارضی صارفین ہٹاتا ہے",
     "remoteDeleteTitle": "صرف یہ رجسٹریشن ہٹائیں",
-    "remoteDeleteConfirm": "رجسٹریشن {{name}} ہٹائیں؟ ریموٹ سرور تبدیل نہیں ہوگا۔"
+    "remoteDeleteConfirm": "رجسٹریشن {{name}} ہٹائیں؟ ریموٹ سرور تبدیل نہیں ہوگا۔",
+    "registeredCount": "Registered",
+    "hostCount": "On host",
+    "registeredUsers": "Registered users",
+    "registeredUsersHint": "Panel registrations only — not every MySQL account",
+    "hostStillExists": "Still on host"
   },
   "dialogs": {
     "confirmDefault": "تصدیق کریں۔",
@@ -4813,7 +4845,9 @@
     "envColVar": "متغیر",
     "envColHost": "ہوسٹ عمل",
     "envColPanel": "پینل سیٹنگ",
-    "envColEffective": "مؤثر"
+    "envColEffective": "مؤثر",
+    "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
   },
   "listToolbar": {
     "searchPlaceholder": "تلاش کریں…",
@@ -5006,7 +5040,10 @@
     "logrotateLast": "آخری بار گھمایا گیا۔",
     "logrotateExpand": "{{n}} مزید دکھائیں۔",
     "logrotateCollapse": "کم دکھائیں۔",
-    "logrotateVersion": "اسٹیٹس ورژن {{v}}"
+    "logrotateVersion": "اسٹیٹس ورژن {{v}}",
+    "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
+    "sourceCount": "{{shown}} shown",
+    "sourceUnavailable": "This source has not produced a log yet"
   },
   "metrics": {
     "alert": {
@@ -5251,7 +5288,9 @@
     "orphanRemoveTitle": "بچا ہوا پروجیکٹ ہوم حذف کریں؟",
     "orphanRemoveDesc": "ڈسک سے {{path}} کو مستقل طور پر حذف کریں۔ یہ ایک اسٹور پروجیکٹ نہیں ہے۔ YSK_EXECUTE=1 کی ضرورت ہے۔",
     "orphanRemovePhrase": "تصدیق کے لیے DELETE لکھیں۔",
-    "orphanRemoveNeedConfirm": "تصدیق درکار"
+    "orphanRemoveNeedConfirm": "تصدیق درکار",
+    "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
   },
   "multiCheck": {
     "customPlaceholder": "حسب ضرورت کوڈ",
@@ -5510,7 +5549,10 @@
     "deleteDefaultNeedConfirm": "تصدیق درکار — DEFAULT لکھیں (یہ پینل منقطع ہو سکتا ہے)",
     "deleteRouteNeedConfirm": "تصدیق درکار",
     "nmUnavailable": "نیٹ ورک مینجر نہیں چل رہا ہے — صرف ایک لائیو روٹ شامل کیا جا سکتا ہے۔",
-    "defaultRouteDownNeedName": "یہ پہلے سے طے شدہ راستہ ہے. تصدیق کرنے کے لیے انٹرفیس کا نام ٹائپ کریں - پینل منقطع ہو سکتا ہے۔"
+    "defaultRouteDownNeedName": "یہ پہلے سے طے شدہ راستہ ہے. تصدیق کرنے کے لیے انٹرفیس کا نام ٹائپ کریں - پینل منقطع ہو سکتا ہے۔",
+    "linkDownDefault": "Down default route",
+    "loopbackImmutable": "Loopback cannot be changed",
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
   },
   "nginx": {
     "pillSites": "{{count}} سائٹ (سائٹس)",
@@ -9944,7 +9986,12 @@
     "suspectActionableCount": "Actionable IPs {{count}}",
     "uaNeedZones": "Set a Cloudflare zone first",
     "banConfirmTitle": "Ban {{ip}}?",
-    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address."
+    "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
+    "ufwOff": "UFW (off)",
+    "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
+    "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
+    "whitelistSyncOn": "on",
+    "whitelistSyncOff": "off (lists may differ)"
   },
   "publicFiles": {
     "notSet": "سیٹ نہیں ہے۔",
@@ -10310,7 +10357,9 @@
     "saveOffWarn": "خالی سیو سٹرنگ RDB سنیپ شاٹس کو آف کر دیتی ہے۔ AOF بھی آف ہونے پر کریش تمام ڈیٹا کو کھو سکتا ہے۔",
     "dirMoveWarn": "dir کو تبدیل کرنے سے dump.rdb/AOF منتقل نہیں ہوتا ہے۔ اگلی شروعات نئے راستے کا استعمال کرتی ہے۔",
     "passwordUnset": "سروس پر سیٹ نہیں ہے۔",
-    "passwordSetHidden": "سیٹ کریں (نہیں دکھایا گیا)"
+    "passwordSetHidden": "سیٹ کریں (نہیں دکھایا گیا)",
+    "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
+    "scanCapped": "Showing the first {{n}} matches."
   },
   "resources": {
     "created": "بنایا",
@@ -10796,7 +10845,10 @@
       "actRestart": "Restart",
       "actStop": "Stop",
       "actReload": "Reload",
-      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only."
+      "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
+      "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
+      "notePanelUserOnly": "PM2 list is for the panel process user only.",
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
     },
     "recordedInstalled": "ریکارڈ شدہ {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10870,7 +10922,12 @@
     "uninstalledCountHint": "{{n}} ورژن اس ہوسٹ پر نہیں",
     "applyPhpVhostTitle": "تصدیق کی ضرورت ہے - پول / vhost فائلیں لکھتا ہے۔",
     "applyPhpVhostDesc": "{{pool}} پول اور {{domain}} vhost لکھیں گے۔ خدمات کو دوبارہ لوڈ کریں: {{reload}}۔",
-    "binaryPath": "بائنری راستہ"
+    "binaryPath": "بائنری راستہ",
+    "installedLabel": "Installed",
+    "installedHint": "Host probe result — not the control-plane record",
+    "targetHint": "Version this page will install or pin",
+    "rebuildFromHost": "Rebuild record from host",
+    "rebuiltFromHost": "Record refreshed from host probe"
   },
   "search": {
     "placeholder": "صفحات اور وسائل تلاش کریں…",
@@ -11277,7 +11334,15 @@
       "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)",
       "privCloseWithoutAck": "بند نجی کلید دوبارہ نہیں دکھائی جائے گی۔ اگر آپ نے اسے محفوظ نہیں کیا تو ایک نیا بنائیں۔",
       "loginNoProjects": "کوئی پروجیکٹ نہیں۔ ذیل میں ایک موجودہ لینکس صارف (روٹ/ٹیسٹر) کو اختیار دیں۔ /root/.ssh لکھنے کے لیے YSK_EXECUTE=1 کی ضرورت ہے۔",
-      "loginLinuxHint": "استعمال کیا جاتا ہے جب کوئی پروجیکٹ نہیں ہے۔ مثال: جڑ یا ٹیسٹر۔"
+      "loginLinuxHint": "استعمال کیا جاتا ہے جب کوئی پروجیکٹ نہیں ہے۔ مثال: جڑ یا ٹیسٹر۔",
+      "pkgStatus": "Package {{status}}",
+      "pamStatus": "PAM {{status}}",
+      "kbdStatus": "sshd keyboard-interactive {{status}}",
+      "light": {
+        "green": "ok",
+        "yellow": "check",
+        "red": "missing"
+      }
     },
     "sessionsActive": "فعال سیشنز",
     "sessionsOther": "دیگر آلات",
@@ -11896,7 +11961,9 @@
     "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔",
     "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔",
     "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
-    "openPanelTls": "Open panel HTTPS"
+    "openPanelTls": "Open panel HTTPS",
+    "deleteDomain": "Delete {{domain}}",
+    "uninstallCertbot": "Uninstall certbot (loses auto-renew)"
   },
   "stackWizard": {
     "purgeConfirm": "صاف کرنے کی تصدیق کریں؟ رجسٹرڈ ڈیٹا پاتھ (ڈیٹا بیس/میل) کو مستقل طور پر حذف کر دیا جائے گا۔",

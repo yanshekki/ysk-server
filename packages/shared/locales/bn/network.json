@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "নিশ্চিতকরণ প্রয়োজন — DEFAULT লিখুন (এই প্যানেল বিচ্ছিন্ন হতে পারে)",
   "deleteRouteNeedConfirm": "নিশ্চিতকরণ প্রয়োজন",
   "nmUnavailable": "নেটওয়ার্ক ম্যানেজার চলছে না — শুধুমাত্র একটি লাইভ রুট যোগ করা যেতে পারে",
-  "defaultRouteDownNeedName": "এটি ডিফল্ট রুট প্রস্থান. নিশ্চিত করতে ইন্টারফেসের নাম টাইপ করুন — প্যানেল সংযোগ বিচ্ছিন্ন হতে পারে।"
+  "defaultRouteDownNeedName": "এটি ডিফল্ট রুট প্রস্থান. নিশ্চিত করতে ইন্টারফেসের নাম টাইপ করুন — প্যানেল সংযোগ বিচ্ছিন্ন হতে পারে।",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

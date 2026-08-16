@@ -183,5 +183,16 @@
   "stopTitle": "停止跟踪器 - 播种和下载将中断",
   "stopDesc": "正在运行的种子停止通知。对等点会断开连接，直到您再次启动跟踪器。",
   "fillPublicHost": "使用{{主机}}",
-  "fillPublicHostTitle": "填写当前面板主机名作为公告主机"
+  "fillPublicHostTitle": "填写当前面板主机名作为公告主机",
+  "listenHostHint": "0.0.0.0 listens on every address. Prefer 127.0.0.1 unless peers must reach this host.",
+  "listenAllWarn": "Tracker is bound to all addresses. With the firewall off this is public. Bind 127.0.0.1 for local-only, or restrict the port in the firewall.",
+  "bindLoopback": "127.0.0.1 only",
+  "bindAll": "0.0.0.0 (all)",
+  "seederPortMin": "Peer port start",
+  "seederPortMax": "Peer port end",
+  "statsLibrary": "Library",
+  "statsLibraryHint": "Torrents in the panel library / file shares",
+  "statsTrackerLeftover": "Tracker leftover",
+  "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
+  "statsAnnouncesHint": "Announce requests seen by the tracker process"
 }

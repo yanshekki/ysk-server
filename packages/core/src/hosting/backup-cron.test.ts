@@ -150,6 +150,8 @@ describe('backup + cron', () => {
     expect(install.ok).toBe(false);
     expect(install.requiresExecute).toBe(true);
 
+    const edited = cron.update(job.id, { command: 'echo edited' });
+    expect(edited?.command).toBe('echo edited');
     const disabled = cron.setEnabled(job.id, false);
     expect(disabled?.enabled).toBe(false);
     const body = (await import('node:fs')).readFileSync(path, 'utf8');

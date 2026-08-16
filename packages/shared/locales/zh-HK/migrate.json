@@ -38,6 +38,8 @@
   "authMethod": "認證方式",
   "rootPassword": "管理員 密碼",
   "notPersisted": "不會持久化",
+  "passwordNotStored": "密碼只用於今次 SSH，不會寫入磁碟。",
+  "overwriteDanger": "覆寫會取代目標機現有 YSK 資料，面板無法復原。",
   "outboundIdentity": "vault 內 外連 identity",
   "dryRun": "執行預檢（預覽試行）",
   "startMigrate": "開始整機遷移",

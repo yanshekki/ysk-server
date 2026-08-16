@@ -151,5 +151,8 @@
   "deleteDefaultNeedConfirm": "確認が必要です — DEFAULT と入力（このパネルが切断される場合があります）",
   "deleteRouteNeedConfirm": "確認が必要です",
   "nmUnavailable": "NetworkManager は実行されていません - 追加できるのはライブ ルートのみです",
-  "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。"
+  "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。",
+  "linkDownDefault": "Down default route",
+  "loopbackImmutable": "Loopback cannot be changed",
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
 }

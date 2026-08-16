@@ -74,6 +74,18 @@ export function stepStatusLabel(
   return t('ssl.step.skipped');
 }
 
+export function sslDaysLeft(expiresAt?: string | null): number | null {
+  if (!expiresAt) return null;
+  const d = new Date(expiresAt);
+  if (Number.isNaN(d.getTime())) return null;
+  return Math.ceil((d.getTime() - Date.now()) / (24 * 3600 * 1000));
+}
+
+export function sslRenewSoon(expiresAt?: string | null, withinDays = 30): boolean {
+  const days = sslDaysLeft(expiresAt);
+  return days != null && days >= 0 && days <= withinDays;
+}
+
 export function formatStepLine(
   s: { name: string; status: string; detail?: string },
   t: (key: string) => string,
@@ -320,6 +332,9 @@ export function SslPage() {
         stackContent={
           <>
             <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} showReadyActions={false} />
+            <Alert variant="warn" className="u-mb-2">
+              {t('ssl.uninstallCertbotWarn')}
+            </Alert>
             <SoftwareVersionBar softwareId="certbot" />
           </>
         }
@@ -468,17 +483,17 @@ export function SslPage() {
                       onClick={() => void onRetryDomain(r)}
                       title={t('ssl.retryRequestFor', { domain: r.domain })}
                     >
-                      {t('ssl.retryRequest')}
+                      {t('ssl.retryRequestFor', { domain: r.domain })}
                     </Button>
                   ) : r.provider === 'letsencrypt' ? (
                     <Button
-                      variant="secondary"
+                      variant={sslRenewSoon(r.expires_at) ? 'secondary' : 'ghost'}
                       size="sm"
                       loading={busy}
                       onClick={() => void onRetryDomain(r)}
                       title={t('ssl.renewFor', { domain: r.domain })}
                     >
-                      {t('ssl.renew')}
+                      {t('ssl.renewFor', { domain: r.domain })}
                     </Button>
                   ) : null}
                   <Button
@@ -488,7 +503,7 @@ export function SslPage() {
                     title={t('ssl.deleteNeedDomain')}
                     onClick={bindSet(setDel, r)}
                   >
-                    {t('common.delete')}
+                    {t('ssl.deleteDomain', { domain: r.domain })}
                   </Button>
                 </ActionBar>
               )}

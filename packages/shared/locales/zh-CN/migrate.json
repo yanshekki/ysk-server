@@ -84,5 +84,7 @@
   "dnsCutover": "DNS cutover（需人工）",
   "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。",
   "orphanRemovePhrase": "请输入 DELETE 确认。",
-  "orphanRemoveNeedConfirm": "需确认"
+  "orphanRemoveNeedConfirm": "需确认",
+  "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
 }

@@ -74,7 +74,8 @@
   "filesNo": "No",
   "colExpires": "Expires",
   "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "renewFor": "Renew {{domain}}",
+  "deleteDomain": "Delete {{domain}}",
   "colStatus": "Status",
   "emptyTitle": "No certificates yet",
   "emptyDesc": "Use “Upload certificate” or “Request Let’s Encrypt” above",
@@ -106,6 +107,7 @@
   "applyFailed": "Request failed",
   "deletedCert": "Deleted {{domain}}",
   "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "uninstallCertbot": "Uninstall certbot (loses auto-renew)",
   "domainRequired": "Please enter a domain.",
   "domainInvalid": "Domain format is not valid.",
   "domainKnownHint": "Pick a known project, DNS, or mail domain, or type a custom name."
