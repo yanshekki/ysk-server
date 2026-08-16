@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.1.1 — 2026-08-16
+
+### Improve
+- GitHub and npm product READMEs redesigned (hero, badges, screenshots, install path)
+
 ## 1.1.0 — 2026-08-16
 
 ### Feature
