@@ -33,5 +33,10 @@
   "filesInRoot": "項目數",
   "managedConf": "管理 conf",
   "systemConf": "系統 conf.d",
-  "autoindex": "目錄列表（autoindex）"
+  "autoindex": "目錄列表（autoindex）",
+  "liveSystemConf": "現行系統設定檔：{{path}}",
+  "publicRootNote": "公開根目錄：{{path}}",
+  "applyConfirmTitle": "套用公開檔案站點？",
+  "applyConfirmDesc": "寫入 Nginx server_name {{name}} 並重載 Nginx。",
+  "serverNameMismatch": "現行設定檔為 {{live}}；表單為 {{draft}}。套用後會覆蓋。"
 }

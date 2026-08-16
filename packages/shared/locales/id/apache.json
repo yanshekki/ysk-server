@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "Bersihkan semua sisa konflik?",
   "cleanupConflictsDesc": "Hapus setiap konfigurasi artefak pada disk yang bertentangan dengan proyek atau Nama Server mandiri. Baris proyek disimpan.",
   "artifactRemovedOk": "Konfigurasi sisa dihapus",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS berakhir di depan Nginx",
   "removeArtifactHint": "Hanya menghapus conf sisa di disk ini. Tidak menghapus proyek."
 }

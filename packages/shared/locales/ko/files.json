@@ -345,11 +345,11 @@
     "skipped": "건너뜀",
     "cancelled": "취소됨"
   },
-  "emptyTrashTitle": "Empty trash?",
-  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
-  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "emptyTrashTitle": "휴지통을 비우시겠습니까?",
+  "emptyTrashDesc": "휴지통에 있는 모든 파일은 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.",
+  "purgeForeverDesc": "이 파일은 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.",
+  "webdavReissueUnchanged": "재발행 후에도 토큰 ID가 변경되지 않았습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
+  "webdavDisableFailed": "WebDAV는 비활성화 후에도 여전히 활성화되어 있습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
   "dirNamedLikeFile": "(폴더 잔여물; 이름이 파일처럼 보임)",
   "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다."
 }

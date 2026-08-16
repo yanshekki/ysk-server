@@ -101,9 +101,10 @@
   "applyFailed": "申请失败",
   "deletedCert": "已删除 {{domain}}",
   "uninstallCertbotWarn": "解除安装 certbot 会使现有 Let's Encrypt 证书无法自动续期。",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "renew": "更新",
+  "renewFor": "为 {{domain}} 续订 Let's Encrypt",
   "domainRequired": "请填写域名。",
   "domainInvalid": "域名格式无效。",
-  "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。"
+  "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。",
+  "deleteNeedDomain": "删除此证书 — 输入域名进行确认"
 }

@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "सभी संघर्ष अवशेषों को साफ़ करें?",
   "cleanupConflictsDesc": "प्रत्येक ऑन-डिस्क आर्टिफैक्ट कॉन्फ को हटा दें जो किसी प्रोजेक्ट या स्टैंडअलोन सर्वरनाम के साथ टकराव करता है। प्रोजेक्ट पंक्तियाँ रखी गई हैं.",
   "artifactRemovedOk": "अवशिष्ट आत्मविश्वास हटा दिया गया",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS सामने Nginx पर समाप्त होता है",
   "removeArtifactHint": "केवल यह अवशेष डिस्क conf हटाता है। प्रोजेक्ट नहीं मिटता।"
 }

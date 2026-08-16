@@ -30,8 +30,13 @@
   "managedConf": "प्रबंधित कॉन्फ़",
   "systemConf": "सिस्टम गोपनीय",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "अभी तक कोई प्रबंधित Nginx conf नहीं - लागू करें पर क्लिक करें",
+    "notSynced": "प्रबंधित कॉन्फ़ मौजूद है लेकिन /etc/nginx/conf.d के अंतर्गत नहीं है - YSK_EXECUTE के साथ रूट के रूप में फिर से लागू करें"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "निर्देशिका सूची (ऑटोइंडेक्स)",
+  "liveSystemConf": "लाइव सिस्टम कॉन्फ़: {{path}}",
+  "publicRootNote": "सार्वजनिक रूट: {{path}}",
+  "applyConfirmTitle": "सार्वजनिक फ़ाइल साइट लागू करें?",
+  "applyConfirmDesc": "Nginx server_name {{name}} लिखें और Nginx रीलोड करें।",
+  "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।"
 }

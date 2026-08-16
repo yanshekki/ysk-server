@@ -79,10 +79,10 @@
   "executeNote": "El host necesita YSK_EXECUTE=1 y API raíz. Después de migrar, actualice DNS A/AAAA y verifique el firewall en la nube + PTR de correo.",
   "dnsCutover": "Transferencia de DNS (manual)",
   "dnsCutoverDesc": "Punto A/AAAA para estos nombres a la nueva IP pública;",
-  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
-  "orphanRemove": "Remove leftover home",
-  "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanHomesHint": "Viviendas sobrantes del proyecto (no en la tienda). Elimínelos solo después de confirmar que no se usaron.",
+  "orphanRemove": "Quitar los restos de casa",
+  "orphanRemoveTitle": "¿Eliminar el proyecto sobrante en casa?",
+  "orphanRemoveDesc": "Elimina permanentemente {{path}} del disco. Este no es un proyecto de tienda. Necesita YSK_EXECUTE=1.",
   "orphanRemovePhrase": "Escriba DELETE para confirmar.",
   "orphanRemoveNeedConfirm": "Requiere confirmación"
 }

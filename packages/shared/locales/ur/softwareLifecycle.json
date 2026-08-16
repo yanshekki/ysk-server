@@ -60,12 +60,12 @@
   "dockCancelled": "منسوخ ہو گیا · {{title}}",
   "cancelHint": "منسوخ کرنے کی درخواست کی گئی۔ موکل نے سننا چھوڑ دیا۔ میزبان موجودہ apt/step کو ختم کر سکتا ہے۔ ایک لمحے کے بعد صورتحال کی دوبارہ جانچ کریں۔",
   "cancelledToast": "آپریشن منسوخ کر دیا گیا (کلائنٹ نے سلسلہ بند کر دیا)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "لگائیں",
+  "kindScan": "اسکین کریں۔",
+  "kindDeploy": "تعینات کریں۔",
+  "kindRuntime": "رن ٹائم",
+  "jobDone": "ختم ہوا · {{title}}",
+  "jobFailed": "ناکام · {{title}}",
   "uninstallUfwWarn": "UFW ہٹانے سے اس ہوسٹ پر پینل کا پورٹ فائر وال ختم ہو جائے گا۔",
   "uninstallFail2banWarn": "fail2ban ہٹانے سے jail رک جائیں گے اور پابندیاں اٹھ جائیں گی۔ رکھنا ہو تو پہلے لاگ اِن IP کو ignoreip میں ڈالیں۔"
 }

@@ -373,9 +373,9 @@
     "strictBlocked": "O pacote ou o PAM não está pronto; a aplicação Strict está desativada.",
     "strictDryRun": "Pré-visualização do modo estrito",
     "errorNoDetail": "Teste falhou (sem detalhes)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "privCloseWithoutAck": "Fechado. A chave privada não será mostrada novamente; gere um novo se você não o salvou.",
+    "loginNoProjects": "Sem projetos. Autorize um usuário Linux existente (root/testador) abaixo. Escrever /root/.ssh precisa de YSK_EXECUTE=1.",
+    "loginLinuxHint": "Usado quando não há projeto. Exemplo: root ou testador."
   },
   "sessionsActive": "Sessões ativas",
   "sessionsOther": "Outros dispositivos",
@@ -431,9 +431,13 @@
     "critical": "Crítico"
   },
   "totpStatusLoadFailed": "Não foi possível carregar o estado 2FA",
-  "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "confirmDeleteApiKey": "Excluir esta chave de API?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” irá parar de autenticar. Isto não pode ser desfeito.",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "Sessões de API",
+  "revokeOtherTitle": "Sair de {{n}} outras sessões",
+  "policyNeedSelf2fa": "Habilite 2FA nesta conta primeiro e depois confirme com um código TOTP",
+  "revokeAllDevicesTitle": "Revogue todos os dispositivos lembrados – você e outros administradores devem verificar o 2FA novamente"
 }

@@ -100,10 +100,11 @@
   "requestFailed": "प्रमाणपत्र अनुरोध सफल नहीं हुआ",
   "applyFailed": "अनुरोध विफल रहा",
   "deletedCert": "हटा दिया गया {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "सर्टिफिकेटबॉट को हटाने से मौजूदा लेट्स एनक्रिप्ट प्रमाणपत्रों का स्वचालित नवीनीकरण बंद हो जाता है।",
+  "renew": "नवीकरण",
+  "renewFor": "नवीनीकृत करें आइए {{domain}} के लिए एन्क्रिप्ट करें",
   "domainRequired": "डोमेन दर्ज करें।",
   "domainInvalid": "डोमेन प्रारूप मान्य नहीं।",
-  "domainKnownHint": "ज्ञात प्रोजेक्ट / DNS / मेल डोमेन चुनें, या स्वयं लिखें।"
+  "domainKnownHint": "ज्ञात प्रोजेक्ट / DNS / मेल डोमेन चुनें, या स्वयं लिखें।",
+  "deleteNeedDomain": "इस प्रमाणपत्र को हटाएं - पुष्टि करने के लिए डोमेन नाम टाइप करें"
 }

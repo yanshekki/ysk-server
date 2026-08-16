@@ -17,7 +17,6 @@ import {
   FormLayout,
   OpsResultPanel,
   PresetChips,
-  SegRadio,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -31,6 +30,7 @@ import {
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { softwareApi } from '../../features/software';
+import { api } from '../../shared/services/api';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
@@ -70,6 +70,11 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
 
   const openPorts = useMemo(() => ftpsOpenPortList(settings), [settings]);
   const needPasvPublicIp = !String(settings.pasvAddress ?? '').trim();
+  const listenConflict = Boolean(status?.listenConflict);
+  const sslReady = Boolean(String(settings.sslDomain || '').trim());
+  const running = status?.active === 'active';
+  const installed = Boolean(status?.installed);
+  const failed = status?.active === 'failed';
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -132,13 +137,24 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
   );
 
   const st = statusLabel(status, t);
-  const installed = Boolean(status?.installed);
-  const running = status?.active === 'active';
 
   return (
     <div className="tab-panel ftp-service-panel">
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
+      {listenConflict ? (
+        <Alert variant="error">
+          {t('ftp.listenConflictLive', {
+            v4: status?.liveListen === true ? 'YES' : status?.liveListen === false ? 'NO' : '—',
+            v6:
+              status?.liveListenIpv6 === true
+                ? 'YES'
+                : status?.liveListenIpv6 === false
+                  ? 'NO'
+                  : '—',
+          })}
+        </Alert>
+      ) : null}
 
       <Card>
         <CardSection title={t('publicFiles.overview')}>
@@ -197,6 +213,16 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 variant={running ? 'secondary' : 'primary'}
                 size="md"
                 loading={busy}
+                disabled={!running && (listenConflict || failed)}
+                title={
+                  listenConflict
+                    ? t('ftp.listenConflictNeedFix')
+                    : failed
+                      ? t('ftp.startBlockedFailed')
+                      : running
+                        ? t('ftp.applyRestart')
+                        : t('fail2ban.startService')
+                }
                 onClick={() => void onApplySettings()}
               >
                 {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
@@ -231,6 +257,8 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               serviceId="vsftpd"
               ports={ftpsBindings}
               serviceInstalled={status?.installed !== false}
+              serviceRunning={running}
+              tenantCount={status?.accountCount ?? 0}
             />
           </div>
         </CardSection>
@@ -257,23 +285,70 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   customPlaceholder={t('ftp.customPort')}
                 />
               </Field>
-              <Field label={t('ftp.ipStack')} htmlFor="listenStack" flush>
-                <SegRadio
-                  name="listenStack"
-                  aria-label={t('ftp.ipStack')}
-                  value={settings.listenIpv6 ? 'ipv6' : 'ipv4'}
-                  onChange={(v) => {
-                    setSettings((prev) =>
-                      v === 'ipv6'
-                        ? { ...prev, listenIpv6: true, listen: false }
-                        : { ...prev, listenIpv6: false, listen: true },
-                    );
-                  }}
-                  options={[
-                    { value: 'ipv4', label: 'IPv4' },
-                    { value: 'ipv6', label: 'IPv6' },
-                  ]}
+              <Field
+                label={t('ftp.ipStack')}
+                htmlFor="listenStack"
+                flush
+                hint={
+                  listenConflict
+                    ? t('ftp.listenConflictNeedFix')
+                    : t('ftp.ipStackHint')
+                }
+              >
+                <CheckboxField
+                  id="ftp-listen-v4"
+                  label={`listen=${settings.listen ? 'YES' : 'NO'}`}
+                  description={
+                    status?.liveListen != null
+                      ? t('ftp.liveFileValue', {
+                          value: status.liveListen ? 'YES' : 'NO',
+                        })
+                      : undefined
+                  }
+                  checked={settings.listen}
+                  onChange={(c) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      listen: c,
+                      listenIpv6: c ? false : prev.listenIpv6,
+                    }))
+                  }
                 />
+                <CheckboxField
+                  id="ftp-listen-v6"
+                  label={`listen_ipv6=${settings.listenIpv6 ? 'YES' : 'NO'}`}
+                  description={
+                    status?.liveListenIpv6 != null
+                      ? t('ftp.liveFileValue', {
+                          value: status.liveListenIpv6 ? 'YES' : 'NO',
+                        })
+                      : undefined
+                  }
+                  checked={Boolean(settings.listenIpv6)}
+                  onChange={(c) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      listenIpv6: c,
+                      listen: c ? false : prev.listen,
+                    }))
+                  }
+                />
+                {listenConflict ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    onClick={() =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        listen: true,
+                        listenIpv6: false,
+                      }))
+                    }
+                  >
+                    {t('ftp.fixListenIpv4')}
+                  </Button>
+                ) : null}
               </Field>
               <Field label={t('ftp.pasvStart')} htmlFor="pasvMin" flush>
                 <input
@@ -305,6 +380,25 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   placeholder="x.x.x.x"
                   spellCheck={false}
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  title={t('ftp.detectPublicIpTitle')}
+                  onClick={() => {
+                    void api
+                      .requestRaw<{ items?: string[] }>('/api/v1/system/ips')
+                      .then((r) => {
+                        const ip = (r.items ?? [])
+                          .map((s) => s.replace(/\/\d+$/, '').trim())
+                          .find((s) => /^\d{1,3}(\.\d{1,3}){3}$/.test(s) && !s.startsWith('127.'));
+                        if (ip) patch('pasvAddress', ip);
+                      })
+                      .catch(() => undefined);
+                  }}
+                >
+                  {t('ftp.detectPublicIp')}
+                </Button>
               </Field>
               <Field label={t('ftp.loginBanner')} htmlFor="banner" flush>
                 <input
@@ -315,7 +409,14 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               </Field>
             </FormLayout>
             <FormActions>
-              <Button type="submit" variant="secondary" size="md" loading={busy}>
+              <Button
+                type="submit"
+                variant="secondary"
+                size="md"
+                loading={busy}
+                disabled={needPasvPublicIp}
+                title={needPasvPublicIp ? t('ftp.pasvIpRequired') : t('common.save')}
+              >
                 {t('common.save')}
               </Button>
               {installed ? (
@@ -324,6 +425,8 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   variant="primary"
                   size="md"
                   loading={busy}
+                  disabled={needPasvPublicIp}
+                  title={needPasvPublicIp ? t('ftp.pasvIpRequired') : t('ftp.applyRestart')}
                   onClick={() => void onApplySettings()}
                 >
                   {t('ftp.applyRestart')}
@@ -361,14 +464,22 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               <CheckboxField
                 id="sslEnable"
                 label={t('ftp.enableFtps')}
+                description={!sslReady ? t('ftp.ftpsNeedCert') : t('ftp.enableFtpsDesc')}
                 checked={settings.sslEnable}
-                onChange={(v) => patch('sslEnable', v)}
+                onChange={(v) => {
+                  if (v && !sslReady) return;
+                  patch('sslEnable', v);
+                }}
               />
               <CheckboxField
                 id="forceSsl"
                 label={t('ftp.forceTlsLogin')}
+                description={!sslReady ? t('ftp.ftpsNeedCert') : undefined}
                 checked={settings.forceSsl}
-                onChange={(v) => patch('forceSsl', v)}
+                onChange={(v) => {
+                  if (v && !sslReady) return;
+                  patch('forceSsl', v);
+                }}
               />
               <CheckboxField
                 id="writeEnable"

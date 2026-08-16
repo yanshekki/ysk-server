@@ -100,10 +100,11 @@
   "requestFailed": "Permintaan sertifikat tidak berhasil",
   "applyFailed": "Permintaan gagal",
   "deletedCert": "Dihapus {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "Menghapus certbot akan menghentikan pembaruan otomatis sertifikat Let's Encrypt yang ada.",
+  "renew": "Memperbarui",
+  "renewFor": "Perpanjang Mari Enkripsi untuk {{domain}}",
   "domainRequired": "Masukkan domain.",
   "domainInvalid": "Format domain tidak valid.",
-  "domainKnownHint": "Pilih domain proyek, DNS, atau surel yang dikenal, atau ketik sendiri."
+  "domainKnownHint": "Pilih domain proyek, DNS, atau surel yang dikenal, atau ketik sendiri.",
+  "deleteNeedDomain": "Hapus sertifikat ini — ketikkan nama domain untuk mengonfirmasi"
 }

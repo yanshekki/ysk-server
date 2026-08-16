@@ -79,10 +79,10 @@
   "executeNote": "होस्ट को YSK_EXECUTE=1 और रूट API की आवश्यकता है। माइग्रेट करने के बाद, DNS A/AAAA अपडेट करें और क्लाउड फ़ायरवॉल + मेल PTR जांचें।",
   "dnsCutover": "डीएनएस कटओवर (मैनुअल)",
   "dnsCutoverDesc": "नए सार्वजनिक आईपी में इन नामों के लिए प्वाइंट ए/एएएए;",
-  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
-  "orphanRemove": "Remove leftover home",
-  "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanHomesHint": "बचे हुए प्रोजेक्ट घर (स्टोर में नहीं)। यह पुष्टि करने के बाद ही हटाएँ कि वे अप्रयुक्त हैं।",
+  "orphanRemove": "बचे हुए घर को हटा दें",
+  "orphanRemoveTitle": "बचे हुए प्रोजेक्ट होम को हटाएं?",
+  "orphanRemoveDesc": "डिस्क से {{path}} को स्थायी रूप से हटा दें। यह कोई स्टोर प्रोजेक्ट नहीं है. YSK_EXECUTE=1 की आवश्यकता है।",
   "orphanRemovePhrase": "पुष्टि के लिए DELETE लिखें।",
   "orphanRemoveNeedConfirm": "पुष्टि आवश्यक"
 }

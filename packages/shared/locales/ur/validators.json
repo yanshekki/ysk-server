@@ -1,7 +1,7 @@
 {
   "title": "ویلیڈیٹرز (Beta)",
   "subtitle": "اس میزبان پر L1 نوڈ نصب اور منظم کریں۔ غیر تولیتی — کنجیاں آپ کے پاس رہیں۔",
-  "beta": "Beta",
+  "beta": "بیٹا",
   "tab": {
     "nodes": "نوڈز",
     "disk": "ڈسک",
@@ -23,26 +23,26 @@
     "autoClear": "ڈسک سنگین ہونے پر سب سے بڑا رکا ہوا انسٹنس خود صاف کریں (طے شدہ بند)"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "ایتھریم",
+    "avax": "برفانی تودہ",
     "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
+    "ada": "کارڈانو",
+    "btc": "بٹ کوائن",
     "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "sui": "سوئی",
+    "aptos": "اپٹوس",
+    "dot": "پولکاڈوٹ",
+    "sol": "سولانہ"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "ہودی",
+    "sepolia": "سیپولیا",
     "mainnet": "مین نیٹ",
-    "fuji": "Fuji",
+    "fuji": "فوجی",
     "testnet": "ٹیسٹ نیٹ",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "پیش نظارہ",
+    "preprod": "پری پروڈ",
+    "westend": "ویسٹ اینڈ"
   },
   "networkKind": {
     "testnet": "ٹیسٹ نیٹ",

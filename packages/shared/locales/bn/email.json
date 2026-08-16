@@ -317,7 +317,7 @@
     "ptrBad": "PTR বিপরীত DNS অনুপস্থিত বা ভুল — VPS প্রদানকারীর কাছে অনুরোধ",
     "port25Blocked": "আউটবাউন্ড পোর্ট 25 অবরুদ্ধ দেখাচ্ছে — আনব্লক করার অনুরোধ করুন বা SMTP রিলে ব্যবহার করুন",
     "port25Unknown": "পোর্ট 25 স্ট্যাটাস অজানা — কানেক্টিভিটি চেক চালান",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "ডিএমএআরসি প্যানেলে তৈরি করা হয়েছে কিন্তু এখনও পাবলিক ডিএনএস-এ প্রকাশিত হয়নি"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP-এর জন্য Let's Encrypt-এর মাধ্যমে TLS শংসাপত্র",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "পোস্টফিক্স পুনরায় লোড ব্যর্থ হয়েছে: {{detail}}",
     "dovecotApplied": "Dovecot TLS স্নিপেট লিখেছেন এবং পুনরায় লোড করার চেষ্টা করেছেন৷",
     "dovecotSkipped": "এড়িয়ে যাওয়া Dovecot (ইনস্টল করা নেই বা doveconf অনুপলব্ধ)।",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "মেল শংসাপত্র অনুপস্থিত; লিখেছে ssl=no তাই Dovecot LE ফাইল ছাড়াই শুরু করতে পারে।"
   },
   "policyApplySystemHint": "Postfix/Rspamd মানচিত্র লিখতে এবং পুনরায় লোড করতে \"সিস্টেমে আবেদন করুন\" চেক করুন;",
   "rateLimitAppliedNote": "প্রতি ঘণ্টায় আউটবাউন্ড রেট এবং অ্যান্টিস্প্যাম ফ্ল্যাগ প্রয়োগ করা হয়েছে (যখন সিস্টেম প্রয়োগ করা হয়)।",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "এই সারির মেইল মুছবেন?",
   "deleteQueueDesc": "স্থানীয় MTA সারি থেকে {{id}} সরান। YSK_EXECUTE লাগে।",
   "openQueuePage": "মেইল সারি খুলুন",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "এখনো চেক করা হয়নি",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "এই হোস্টে নিবন্ধিত মেল ডোমেইন",
   "healthChecklist": "চেকলিস্ট {{score}}/100",
   "healthChecklistHint": "চেকলিস্ট স্কোর — DNS / PTR / পোর্ট 25 এখনও পরীক্ষা হয়নি",
-  "healthLiveHint": "লাইভ প্রোব স্কোর"
+  "healthLiveHint": "লাইভ প্রোব স্কোর",
+  "installWebmailTitle": "ভাগ করা ওয়েবমেইল প্রকল্প তৈরি করুন (প্রথম ইনস্টল)",
+  "reinstallWebmailTitle": "বিদ্যমান ওয়েবমেইল প্রকল্প পুনর্নির্মাণ/আপগ্রেড করুন",
+  "reinstallNeedInstall": "প্রথমে ওয়েবমেইল ইনস্টল করুন",
+  "dovecotFailedStatus": "ডোভকোট হল {{status}}। ইউনিট সারাংশের জন্য সফ্টওয়্যার ট্যাব খুলুন।",
+  "mailCertMissing": "{{hosts}} এর জন্য কোনো শংসাপত্র নেই। SSL পৃষ্ঠায় এটি ইস্যু করুন।",
+  "mailCertPresent": "একটি মেল শংসাপত্র ইতিমধ্যে জারি করা হয়েছে — এটি একটি অনুপস্থিত-শংসাপত্র সমস্যা নয়৷",
+  "webmailNeedCert": "{{host}} এর জন্য কোনো শংসাপত্র নেই — HTTPS বাধ্য করার আগে এটি SSL-এ ইস্যু করুন।",
+  "flushQueueEmpty": "সারি খালি",
+  "flushQueueNeedExecute": "সারি ফ্লাশ করার জন্য YSK_EXECUTE (হোস্ট এক্সিকিউট পারমিশন) প্রয়োজন",
+  "healthUncheckedHint": "এখনও DNS / PTR / পোর্ট ২৫ যাচাই হয়নি।",
+  "deliverabilityScore": "ডেলিভারেবিলিটি প্যাক",
+  "opendkimNoReload": "OpenDKIM রিলোড সমর্থন করে না — কী বা টেবিল বদলের পর রিস্টার্ট ব্যবহার করুন।",
+  "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়"
 }

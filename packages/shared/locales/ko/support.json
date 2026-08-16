@@ -25,14 +25,14 @@
   "cryptoAddress": "주소",
   "copy": "복사",
   "copied": "복사됨",
-  "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "docsLink": "선적 서류 비치",
+  "diagTitle": "진단 요약",
+  "diagBody": "버전을 복사하고, 실행하고, 팩트를 호스트하여 이메일에 붙여넣습니다. 이것은 전체 로그 번들이 아닙니다.",
+  "diagCopy": "진단 요약 복사",
+  "diagCopied": "진단 요약이 복사되었습니다.",
   "copyTitle": "{{address}} 복사",
   "diagCopyTitle": "버전, EXECUTE, 호스트 정보 복사",
   "diagPreview": "복사될 내용 미리보기",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "진단 로드 중…",
+  "diagLoadFailed": "진단을 로드할 수 없습니다."
 }

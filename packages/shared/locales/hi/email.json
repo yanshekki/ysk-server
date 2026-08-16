@@ -317,7 +317,7 @@
     "ptrBad": "पीटीआर रिवर्स डीएनएस गायब या गलत - वीपीएस प्रदाता से अनुरोध करें",
     "port25Blocked": "आउटबाउंड पोर्ट 25 अवरुद्ध प्रतीत होता है - अनब्लॉक का अनुरोध करें या एसएमटीपी रिले का उपयोग करें",
     "port25Unknown": "पोर्ट 25 स्थिति अज्ञात - कनेक्टिविटी जांच चलाएँ",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC पैनल में उत्पन्न हुआ है लेकिन अभी तक सार्वजनिक DNS में प्रकाशित नहीं हुआ है"
   },
   "stack": {
     "tlsNote": "एसएमटीपी/आईएमएपी के लिए लेट्स एनक्रिप्ट के माध्यम से टीएलएस प्रमाणपत्र",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "पोस्टफ़िक्स पुनः लोड विफल: {{detail}}",
     "dovecotApplied": "डवकॉट टीएलएस स्निपेट लिखा और पुनः लोड करने का प्रयास किया।",
     "dovecotSkipped": "Dovecot को छोड़ दिया गया (इंस्टॉल नहीं किया गया या doveconf अनुपलब्ध है)।",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "मेल प्रमाणपत्र गुम है; ssl=no लिखा ताकि Dovecot LE फ़ाइलों के बिना प्रारंभ कर सके।"
   },
   "policyApplySystemHint": "पोस्टफ़िक्स/Rspamd मानचित्र लिखने और पुनः लोड करने के लिए \"सिस्टम पर लागू करें\" को चेक करें;",
   "rateLimitAppliedNote": "प्रति घंटा आउटबाउंड दर और एंटीस्पैम फ़्लैग लागू (जब सिस्टम लागू होता है)।",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "यह कतार संदेश हटाएँ?",
   "deleteQueueDesc": "स्थानीय MTA कतार से {{id}} हटाएँ। YSK_EXECUTE चाहिए।",
   "openQueuePage": "मेल कतार खोलें",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "अभी तक जाँच नहीं हुई",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "मेल डोमेन इस होस्ट पर पंजीकृत हैं",
   "healthChecklist": "जाँच सूची {{score}}/100",
   "healthChecklistHint": "जाँच सूची अंक — DNS / PTR / पोर्ट 25 अभी जाँचा नहीं",
-  "healthLiveHint": "लाइव जाँच अंक"
+  "healthLiveHint": "लाइव जाँच अंक",
+  "installWebmailTitle": "साझा वेबमेल प्रोजेक्ट बनाएं (पहली बार इंस्टॉल करें)",
+  "reinstallWebmailTitle": "मौजूदा वेबमेल प्रोजेक्ट का पुनर्निर्माण/उन्नयन करें",
+  "reinstallNeedInstall": "पहले वेबमेल इंस्टॉल करें",
+  "dovecotFailedStatus": "डवकोट {{status}} है. इकाई सारांश के लिए सॉफ़्टवेयर टैब खोलें।",
+  "mailCertMissing": "{{hosts}} के लिए कोई प्रमाणपत्र नहीं. इसे एसएसएल पेज पर जारी करें।",
+  "mailCertPresent": "एक मेल प्रमाणपत्र पहले ही जारी किया जा चुका है - यह कोई गुम प्रमाणपत्र समस्या नहीं है।",
+  "webmailNeedCert": "{{host}} के लिए कोई प्रमाणपत्र नहीं - HTTPS को बाध्य करने से पहले इसे SSL पर जारी करें।",
+  "flushQueueEmpty": "कतार खाली है",
+  "flushQueueNeedExecute": "कतार को फ्लश करने के लिए YSK_EXECUTE (होस्ट निष्पादन अनुमति) की आवश्यकता है",
+  "healthUncheckedHint": "DNS / PTR / पोर्ट 25 अभी जाँचे नहीं गए।",
+  "deliverabilityScore": "डिलिवरेबिलिटी पैक",
+  "opendkimNoReload": "OpenDKIM रीलोड नहीं करता — कुंजी या तालिका बदलने के बाद रीस्टार्ट करें।",
+  "opendkimNoReloadTitle": "इस स्टैक पर systemctl reload opendkim समर्थित नहीं"
 }

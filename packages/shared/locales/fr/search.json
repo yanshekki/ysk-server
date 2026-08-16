@@ -22,7 +22,7 @@
     "other": "Autre"
   },
   "alias": {
-    "ssl": "cert certificate certs",
-    "projects": "project sites"
+    "ssl": "certificat certificat certificats",
+    "projects": "chantiers"
   }
 }

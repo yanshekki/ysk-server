@@ -170,19 +170,60 @@
   "notInstalled": "انسٹال نہیں ہے۔",
   "goToPage": "صفحہ کھولیں۔",
   "hubHint": "اس میزبان پر کیٹلاگ سافٹ ویئر اور رن ٹائمز۔ ریفریش کرنے کے لیے اسکین کریں۔",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "ہر روز",
+  "intervalDays": "ہر {{n}} دن میں",
+  "intervalHour": "ہر گھنٹے",
+  "intervalHours": "ہر {{n}} گھنٹے",
+  "intervalMinutes": "ہر {{n}} منٹ",
+  "intervalSeconds": "ہر {{n}} سیکنڈ",
+  "availableHint": "پیکیج مینیجر سے نئے امیدوار کے ساتھ پیکجز۔",
+  "servicesHint": "اس میزبان پر کیٹلاگ خدمات۔ انسٹال کرنے کے لیے سروس پیج کھولیں۔",
+  "runtimeHint": "اس میزبان پر رن ​​ٹائمز۔ ورژن اپ گریڈ ہر رن ٹائم صفحہ پر کیے جاتے ہیں۔",
+  "needsReboot": "ریبوٹ کی ضرورت ہے۔",
+  "kernelRebootWarn": "نئے دانا کو انسٹال کرنے کے لیے عام طور پر اسے استعمال کرنے سے پہلے ریبوٹ کی ضرورت ہوتی ہے۔",
+  "neverRun": "ابھی تک نہیں چلا؟",
+  "scanOsvN": "اسکین + OSV (پہلا {{n}})",
+  "rebootNeeded": "دوبارہ شروع کریں",
+  "kernelRebootHint": "درخواست کے بعد کرنل پیکجوں کو دوبارہ شروع کرنے کی ضرورت ہے۔",
+  "needApprovalHint": "دستیاب کھولیں اور ان پیکجوں کو فلٹر کریں جن کی منظوری کی ضرورت ہے۔",
+  "applyNeedConfirm": "درخواست دینے سے پہلے ایک تصدیقی ڈائیلاگ کھولتا ہے۔",
+  "probeFailed": "تحقیقات ناکام ہوگئی",
+  "notViaApt": "apt کے ذریعہ انتظام نہیں کیا گیا - کوئی امیدوار نہیں۔",
+  "noCandidate": "کوئی امیدوار ورژن نہیں۔",
+  "jobOpenGeo": "جیو آئی پی صفحہ",
+  "job": {
+    "protection_probe": {
+      "name": "تحفظ کی تحقیقات",
+      "hint": "متواتر دفاعی سگنل"
+    },
+    "updates_scan": {
+      "name": "اپ ڈیٹس اسکین",
+      "hint": "پیکیج انوینٹری کو تازہ کریں۔"
+    },
+    "daily_backup": {
+      "name": "روزانہ بیک اپ",
+      "hint": "شیڈول کردہ تمام بیک اپ"
+    },
+    "db_temp_expire": {
+      "name": "temp DB صارفین کی میعاد ختم",
+      "hint": "میعاد ختم ہونے والے عارضی ڈیٹا بیس کے صارفین کو چھوڑ دیں۔"
+    },
+    "defense_auto_ban": {
+      "name": "دفاعی آٹو پابندی",
+      "hint": "آٹو پابندی ٹک لگائیں۔"
+    },
+    "defense_geoip_update": {
+      "name": "جیو آئی پی اپ ڈیٹ",
+      "hint": "GeoIP ڈیٹا بیس ڈاؤن لوڈ کریں۔"
+    },
+    "log_auto_vacuum": {
+      "name": "لاگ ویکیوم",
+      "hint": "جرنل کی برقراری"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL کو ای میل کریں۔",
+      "hint": "میل DNSBL چیک کریں۔"
+    }
+  },
+  "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن"
 }

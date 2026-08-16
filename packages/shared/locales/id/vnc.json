@@ -243,7 +243,7 @@
   "editClientTitle": "Edit klien jarak jauh",
   "editClientDesc": "Perbarui jalur, host, dan kata sandi opsional yang disimpan.",
   "clientUpdated": "Profil klien diperbarui",
-  "rememberNeedPassword": "Enter a password first.",
-  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
-  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
+  "rememberNeedPassword": "Masukkan kata sandi terlebih dahulu.",
+  "settingsNeedStack": "Default ini berlaku ketika TigerVNC (dan XFCE jika dipilih) diinstal. Instal terlebih dahulu di tab Instal.",
+  "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini."
 }

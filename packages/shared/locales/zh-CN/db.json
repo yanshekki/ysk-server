@@ -228,8 +228,31 @@
     "probe": "探测",
     "name": "名称",
     "type": "类型",
-    "status": "状态",
-    "engineNotInstalled": "{{engine}} is not installed on this host — install it first, or open the engine that is actually running."
+    "status": {
+      "healthy": "健康",
+      "planned": "计划",
+      "partial": "部分的",
+      "failed": "失败的",
+      "draft": "草稿",
+      "degraded": "降级",
+      "applied": "应用"
+    },
+    "engineNotInstalled": "此主机上未安装 {{engine}} - 请先安装它，或打开实际运行的引擎。",
+    "fleetSessionNone": "无 — 使用 SSH",
+    "fleetSessionOpenAgents": "打开 /agents 注册会话",
+    "createWizardTitle": "打开计划向导。需要本地 IP 和 ≥1 个对等点。仅写入面板工件（试运行）。在您申请之前不要重新启动发动机。",
+    "bootstrap": "引导程序",
+    "fleetApply": "车队申请",
+    "planTitle": "重新生成集群计划（不更改主机）",
+    "writeFileTitle": "在面板数据目录下写入管理文件（试运行）",
+    "probeLocalTitle": "仅探测该主机",
+    "probeAllTitle": "探查每一位注册会员",
+    "bootstrapTitle": "安装本地插件并引导第一个节点",
+    "remoteInstallPlanTitle": "预览远程安装（不执行）",
+    "downloadBundleTitle": "下载对等配置包 (.tar.gz)",
+    "pushPlanTitle": "预览推送到对等点（无 scp）",
+    "fleetSyncPlanTitle": "预览队列同步（不执行）",
+    "fleetApplyTitle": "队列适用于车队成员吗？"
   },
   "console": {
     "dataBrowse": "资料浏览",
@@ -269,7 +292,8 @@
     "reloadConfig": "重载设置",
     "disableBoot": "取消自启",
     "needRights": "需要系统变更权限与管理员身分。失败会显示原因，不会假装成功。",
-    "noneFetched": "— 未取得 —"
+    "noneFetched": "— 未取得 —",
+    "disableBootConfirm": "重新启动后引擎将不会启动，直到您再次启用它。"
   },
   "expiresLabel": "到期",
   "importEntry": "入口: {{url}}",
@@ -303,5 +327,7 @@
   "importNeedRegistered": "请先在面板登记数据库",
   "importLatestNeedConfirm": "需确认 — 会导入到已登记数据库",
   "adoptHostDbTitle": "只在控制面登记名称，不改主机数据",
-  "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户"
+  "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户",
+  "remoteDeleteTitle": "仅移除登记",
+  "remoteDeleteConfirm": "移除登记 {{name}}？远程服务器不会被改动。"
 }

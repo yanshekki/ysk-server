@@ -33,5 +33,10 @@
   "filesInRoot": "Entries",
   "managedConf": "Managed conf",
   "systemConf": "System conf.d",
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "Directory listing (autoindex)",
+  "liveSystemConf": "Live system conf: {{path}}",
+  "publicRootNote": "Public root: {{path}}",
+  "applyConfirmTitle": "Apply public-files site?",
+  "applyConfirmDesc": "Write Nginx server_name {{name}} and reload Nginx.",
+  "serverNameMismatch": "Live conf uses {{live}}; the form has {{draft}}. Apply to replace."
 }

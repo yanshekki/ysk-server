@@ -373,9 +373,9 @@
     "strictBlocked": "الحزمة أو PAM غير جاهزة؛ لا يمكن تطبيق Strict.",
     "strictDryRun": "معاينة الوضع الصارم",
     "errorNoDetail": "فشل الاختبار (بدون تفاصيل)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "privCloseWithoutAck": "مغلق. لن يتم عرض المفتاح الخاص مرة أخرى؛ قم بإنشاء واحدة جديدة إذا لم تقم بحفظها.",
+    "loginNoProjects": "لا مشاريع. قم بتفويض مستخدم Linux الحالي (الجذر/المختبر) أدناه. تحتاج كتابة /root/.ssh إلى YSK_EXECUTE=1.",
+    "loginLinuxHint": "تستخدم عندما لا يوجد مشروع. على سبيل المثال: الجذر أو اختبار."
   },
   "sessionsActive": "جلسات نشطة",
   "sessionsOther": "أجهزة أخرى",
@@ -431,9 +431,13 @@
     "critical": "حرج"
   },
   "totpStatusLoadFailed": "تعذّر تحميل حالة التحقق بخطوتين",
-  "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "confirmDeleteApiKey": "هل تريد حذف مفتاح واجهة برمجة التطبيقات هذا؟",
+  "confirmDeleteApiKeyDesc": "\"{{name}}\" سيتوقف عن المصادقة. لا يمكن التراجع عن هذا.",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "جلسات API",
+  "revokeOtherTitle": "تسجيل الخروج {{n}} جلسة (جلسات) أخرى",
+  "policyNeedSelf2fa": "قم بتمكين المصادقة الثنائية على هذا الحساب أولاً، ثم قم بالتأكيد باستخدام رمز TOTP",
+  "revokeAllDevicesTitle": "قم بإبطال كل جهاز تم تذكره — يجب عليك وعلى المسؤولين الآخرين التحقق من المصادقة الثنائية مرة أخرى"
 }

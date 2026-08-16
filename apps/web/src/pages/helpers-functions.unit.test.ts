@@ -183,7 +183,7 @@ describe('Services helpers', () => {
     expect(enabledLabel('indirect', t as never)).toBe('indirect');
     expect(enabledLabel('', t as never)).toMatch(/noneSelected|common/);
 
-    for (const a of ['start', 'stop', 'restart', 'reload'] as const) {
+    for (const a of ['start', 'stop', 'restart', 'reload', 'enable'] as const) {
       expect(actionLabel(a, t as never)).toContain(a);
     }
 
@@ -486,12 +486,16 @@ describe('Protection / Readiness / SqlEngine helpers', () => {
       }).level,
     ).toBe('degraded');
     expect(leftoverKindFromNote('Apache 000-default is still enabled')).toBe('apache');
-    expect(leftoverHrefForKind('vsftpd')).toBe('/ftp');
+    expect(leftoverHrefForKind('vsftpd')).toBe('/ftp?tab=service');
     expect(splitLeftoverDetail('one · two')).toEqual(['one', 'two']);
     expect(
       localizeReadinessCopy('systemctl is-active: active', t).display,
     ).toBe('readiness.systemctlActive');
     expect(localizeReadinessCopy('php 在 PATH', t).display).toContain('readiness.binInPath');
+    expect(localizeReadinessCopy('not yet os_provisioned', t).display).toContain(
+      'readiness.notOsProvisioned',
+    );
+    expect(localizeReadinessCopy('遷移到 /主目錄/app', t).display).toContain('/home/');
     expect(classifyManagedNginxName('public-files-qa35web-example-com.conf')).toBe(
       'leftover',
     );

@@ -170,19 +170,60 @@
   "notInstalled": "غير مثبت",
   "goToPage": "افتح الصفحة",
   "hubHint": "برنامج الكتالوج وأوقات التشغيل على هذا المضيف. المسح للتحديث.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "كل يوم",
+  "intervalDays": "كل {{n}} يوم",
+  "intervalHour": "كل ساعة",
+  "intervalHours": "كل {{n}} ساعة",
+  "intervalMinutes": "كل {{n}} دقيقة",
+  "intervalSeconds": "كل {{n}} ثانية",
+  "availableHint": "الحزم مع مرشح أحدث من مدير الحزم.",
+  "servicesHint": "خدمات الكتالوج على هذا المضيف. افتح صفحة الخدمة للتثبيت.",
+  "runtimeHint": "أوقات التشغيل على هذا المضيف. تتم ترقيات الإصدار في كل صفحة وقت التشغيل.",
+  "needsReboot": "هناك حاجة إلى إعادة التشغيل",
+  "kernelRebootWarn": "عادةً ما يحتاج تثبيت نواة جديدة إلى إعادة التشغيل قبل استخدامها.",
+  "neverRun": "لم يتم تشغيله بعد",
+  "scanOsvN": "مسح + OSV (الأول {{n}})",
+  "rebootNeeded": "إعادة التشغيل",
+  "kernelRebootHint": "تحتاج حزم Kernel إلى إعادة التشغيل بعد التطبيق",
+  "needApprovalHint": "افتح متاح وقم بالتصفية حسب الحزم التي تحتاج إلى موافقة",
+  "applyNeedConfirm": "يفتح مربع حوار التأكيد قبل التقديم",
+  "probeFailed": "فشل التحقيق",
+  "notViaApt": "لا تتم إدارته بواسطة apt - لا يوجد مرشح",
+  "noCandidate": "لا توجد نسخة مرشحة",
+  "jobOpenGeo": "صفحة GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "مسبار الحماية",
+      "hint": "إشارات الدفاع الدورية"
+    },
+    "updates_scan": {
+      "name": "فحص التحديثات",
+      "hint": "تحديث مخزون الحزمة"
+    },
+    "daily_backup": {
+      "name": "النسخ الاحتياطي اليومي",
+      "hint": "النسخ الاحتياطي المقرر كافة"
+    },
+    "db_temp_expire": {
+      "name": "انتهاء صلاحية مستخدمي قاعدة البيانات المؤقتة",
+      "hint": "إسقاط مستخدمي قاعدة البيانات المؤقتة منتهية الصلاحية"
+    },
+    "defense_auto_ban": {
+      "name": "الحظر التلقائي للدفاع",
+      "hint": "تطبيق علامة الحظر التلقائي"
+    },
+    "defense_geoip_update": {
+      "name": "تحديث GeoIP",
+      "hint": "تحميل قواعد بيانات GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "سجل الفراغ",
+      "hint": "الاحتفاظ بالمجلة"
+    },
+    "email_dnsbl": {
+      "name": "البريد الإلكتروني DNSBL",
+      "hint": "التحقق من البريد DNSBL"
+    }
+  },
+  "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة"
 }

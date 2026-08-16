@@ -13,7 +13,7 @@
     "overview": "概览",
     "containers": "容器",
     "images": "映像",
-    "compose": "Compose",
+    "compose": "撰写",
     "volumes": "Volume",
     "networks": "网络",
     "prune": "清理",

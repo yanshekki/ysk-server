@@ -136,18 +136,20 @@
       "gcore": "जीकोर सीडीएन",
       "custom": "कस्टम प्रॉक्सी"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list.",
-    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
+    "needProvider": "इसकी आईपी सूची लाने से पहले एक सीडीएन प्रदाता चुनें।",
+    "spoofWarn": "गलत सीआईडीआर पर भरोसा करने से ग्राहक अपने आईपी के रूप में एक्स-फॉरवर्डेड-फॉर/सीडीएन हेडर को धोखा दे सकते हैं।"
   },
   "linkUp": "ऊपर",
   "linkDown": "नीचे",
-  "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
-  "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "linkDownTitle": "{{name}} ऑफ़लाइन लें",
+  "linkDownNeedConfirm": "पुष्टि करने के लिए इंटरफ़ेस नाम टाइप करें",
+  "persistNmHint": "पर्सिस्टेबल का मतलब है कि परिवर्तन नेटवर्कमैनेजर के माध्यम से रीबूट से बचे रह सकते हैं।",
+  "hideRaw": "कच्चा आउटपुट छुपाएं",
+  "rawLoadedAt": "लोड किया गया {{time}}",
+  "deleteDefaultPanelWarn": "डिफ़ॉल्ट रूट को हटाने से यह पैनल सत्र समाप्त हो सकता है। पुष्टि करने के लिए Default टाइप करें।",
+  "typeDefaultToConfirm": "पुष्टि करने के लिए Default टाइप करें",
   "deleteDefaultNeedConfirm": "पुष्टि आवश्यक — DEFAULT लिखें (यह पैनल कट सकता है)",
-  "deleteRouteNeedConfirm": "पुष्टि आवश्यक"
+  "deleteRouteNeedConfirm": "पुष्टि आवश्यक",
+  "nmUnavailable": "नेटवर्कमैनेजर नहीं चल रहा है - केवल एक लाइव रूट जोड़ा जा सकता है",
+  "defaultRouteDownNeedName": "यह निकास का डिफ़ॉल्ट मार्ग है. पुष्टि करने के लिए इंटरफ़ेस नाम टाइप करें - पैनल डिस्कनेक्ट हो सकता है।"
 }

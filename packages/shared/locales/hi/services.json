@@ -4,7 +4,9 @@
     "start": "शुरू",
     "stop": "रुकना",
     "restart": "पुनः आरंभ करें",
-    "reload": "पुनः लोड करें"
+    "reload": "पुनः लोड करें",
+    "enable": "बूट पर सक्षम करें",
+    "disable": "बूट पर अक्षम करें"
   },
   "lifecycleTitle": "{{label}} सेवा नियंत्रण",
   "startedOk": "{{label}} चालू हो गया",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}} बंद रहने पर यह होस्ट HTTP/HTTPS नहीं देगा।",
   "stopConfirmSshdTitle": "sshd बंद करें?",
   "stopConfirmSshdDesc": "sshd बंद करने से दूरस्थ SSH कट जाएगा। कंसोल या दूसरा लॉगिन सुनिश्चित करें।",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "एसएसएचडी बंद करो",
   "stopConfirmSshdConsequence": "होस्ट कंसोल से sshd चालू होने तक नई SSH सत्र विफल रहेंगी।",
   "stopConfirmPanelTitle": "YSK Server बंद करें?",
   "stopConfirmPanelDesc": "होस्ट पर यूनिट चालू होने तक पैनल और API ऑफ़लाइन रहेंगे।",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "Ysk-सर्वर बंद करो",
   "stopConfirmPanelConsequence": "यह ब्राउज़र सत्र कट जाएगा। SSH या होस्ट कंसोल से यूनिट चालू करें।",
   "actionDone": "{{action}} हो गया",
   "runningOf": "{{running}}/{{total}} चल रहा है",
@@ -54,16 +56,20 @@
   "probeDone": "जांच पूरी",
   "runProtection": "सुरक्षा जांच चलाएँ",
   "notProbedYet": "अभी तक जांच नहीं हुई",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "फेल2बैन बंद करो?",
+  "stopConfirmFail2banDesc": "फेल2बैन को रोकने से स्वचालित आईपी प्रतिबंध बंद हो जाता है। वेबसाइटें और SSH चलते रहते हैं।",
+  "stopConfirmFail2banConsequence": "नए हमलावरों पर तब तक प्रतिबंध नहीं लगाया जाता जब तक कि फेल2बैन फिर से शुरू न हो जाए।",
+  "installOrOpen": "इंस्टॉल/खोलें",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "सभी राज्य",
+    "running": "दौड़ना",
+    "failed": "असफल",
+    "missing": "स्थापित नहीं हे"
   },
   "stopNeedConfirm": "पुष्टि आवश्यक",
-  "stopNeedConfirmPhrase": "पुष्टि वाक्यांश लिखना आवश्यक"
+  "stopNeedConfirmPhrase": "पुष्टि वाक्यांश लिखना आवश्यक",
+  "enabledOk": "{{label}} बूट पर सक्षम",
+  "bootDisabledWarn": "{{label}} चल रहा है पर बूट पर नहीं चलेगा। रीबूट के बाद बनाए रखने के लिए सक्षम करें।",
+  "bootDisabledShort": "बूट पर नहीं",
+  "mariadbNotInstalled": "MariaDB स्थापित नहीं"
 }

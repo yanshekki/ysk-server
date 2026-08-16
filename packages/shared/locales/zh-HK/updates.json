@@ -84,6 +84,7 @@
   "selfCurrentShort": "目前",
   "selfLatestShort": "最新",
   "applyPanelUpdate": "套用面板更新",
+  "applyPanelAlreadyLatest": "已是最新面板版本",
   "recheck": "重新檢查",
   "aboutScope": "範圍",
   "aboutScopeV": "ysk-server 控制面 + catalog 服務 + runtime + 其餘 apt 套件",
@@ -99,7 +100,47 @@
   "scanPolicy": "掃描",
   "scanPolicyV": "掃描 ≠ 已升級；套用才會改系統",
   "highRiskPolicy": "高風險",
-  "highRiskPolicyV": "需審批：二次確認後才送出",
+  "highRiskPolicyV": "需審批：按「套用」後會再開確認框才送出",
+  "needApprovalHint": "前往「可升級」並篩選需審批套件",
+  "applyNeedConfirm": "套用前會先開確認框",
+  "probeFailed": "探測失敗",
+  "notViaApt": "不經套件管理 — 無 candidate",
+  "noCandidate": "無 candidate 版本",
+  "jobOpenGeo": "GeoIP 頁",
+  "job": {
+    "protection_probe": {
+      "name": "防護探測",
+      "hint": "定期收集防護訊號"
+    },
+    "updates_scan": {
+      "name": "更新掃描",
+      "hint": "重新整理套件清單"
+    },
+    "daily_backup": {
+      "name": "每日備份",
+      "hint": "排程 backup all"
+    },
+    "db_temp_expire": {
+      "name": "過期臨時庫用戶",
+      "hint": "清除過期臨時資料庫用戶"
+    },
+    "defense_auto_ban": {
+      "name": "防護自動封鎖",
+      "hint": "執行自動封鎖回合"
+    },
+    "defense_geoip_update": {
+      "name": "GeoIP 更新",
+      "hint": "下載 GeoIP 資料庫"
+    },
+    "log_auto_vacuum": {
+      "name": "日誌清理",
+      "hint": "journald 保留"
+    },
+    "email_dnsbl": {
+      "name": "電郵 DNSBL",
+      "hint": "郵件 DNSBL 檢查"
+    }
+  },
   "permPolicy": "權限",
   "permPolicyV": "無 執行／管理員 → 已封鎖，不假成功",
   "osvPolicyV": "需外網，只補強前 12 項建議",

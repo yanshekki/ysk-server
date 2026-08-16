@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "Estibador",
   "subtitle": "Instala y controla el motor Docker, contenedores, imágenes, proyectos Compose y disco en este host.",
   "refresh": "Actualizar",
   "notInstalled": "Docker Engine no está instalado. Instala docker.io y docker-compose-v2 desde esta página.",
@@ -13,8 +13,8 @@
     "overview": "Resumen",
     "containers": "Contenedores",
     "images": "Imágenes",
-    "compose": "Compose",
-    "volumes": "Volumes",
+    "compose": "Componer",
+    "volumes": "Volúmenes",
     "networks": "Redes",
     "prune": "Limpiar",
     "settings": "Ajustes",

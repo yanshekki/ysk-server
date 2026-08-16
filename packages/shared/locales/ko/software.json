@@ -88,7 +88,7 @@
     "noTarget": "업데이트 대상 없음",
     "needRuntimePage": "런타임 페이지에 이 버전을 설치하세요.",
     "noAptCandidate": "적절한 후보 버전 없음",
-    "sourceLabel": "Source"
+    "sourceLabel": "원천"
   },
   "install": {
     "progress": "설치 중: {{list}}…",

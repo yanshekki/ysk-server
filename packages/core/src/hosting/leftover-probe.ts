@@ -24,7 +24,7 @@ export type ManagedNginxRole = 'managed' | 'leftover' | 'unused';
 
 export function leftoverHrefForKind(kind: LeftoverKind): string | undefined {
   if (kind === 'apache') return '/apache';
-  if (kind === 'vsftpd') return '/ftp';
+  if (kind === 'vsftpd') return '/ftp?tab=service';
   if (kind === 'nginx') return '/nginx';
   if (kind === 'dovecot') return '/email';
   // stale CLI / rm -f: leftover apply after overlay (no dedicated leftover page)

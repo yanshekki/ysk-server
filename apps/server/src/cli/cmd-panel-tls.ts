@@ -9,7 +9,10 @@ import {
   disablePanelTls,
   issueAndEnablePanelTls,
   tryRestartPanelService,
+  probeListenHosts,
+  isBootstrapPanelCert,
 } from 'ysk-server-core';
+import { tl } from 'ysk-server-shared';
 import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
@@ -27,17 +30,31 @@ export async function runPanelTlsCommand(
   else if (tokens[0] === 'panel-tls') action = tokens[1] ?? 'status';
 
   if (action === 'status' || action === 'get' || action === 'info') {
+    const port = ctx.config?.listenPort ?? 9287;
+    let listenHostsActual: string[] = [];
+    try {
+      listenHostsActual = await probeListenHosts(ctx.host, port);
+    } catch {
+      listenHostsActual = [];
+    }
     const st = getPanelTlsStatus({
       config: ctx.config,
       servingHttps: false,
+      listenHostsActual,
     });
+    const notes = [
+      ...st.notes,
+      tl('system.panelTls.cliNoSocket'),
+    ];
+    if (isBootstrapPanelCert(st.certPath)) {
+      notes.push(tl('system.panelTls.bootstrapCert'));
+    }
     h.printJson({
       ...st,
       ok: true,
+      listenHostsActual,
       configPath: ctx.configPath ?? null,
-      notes: [
-        'servingHttps is false in CLI (no live HTTP socket); check tlsEnabled + cert paths.',
-      ],
+      notes,
     });
     return 0;
   }

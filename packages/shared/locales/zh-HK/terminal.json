@@ -16,6 +16,8 @@
   "exitCode": "結束碼 {{code}}",
   "needRootExecute": "需要 root 與 YSK_EXECUTE=1 才能開啟系統 shell。",
   "unavailable": "不可用",
+  "copyAll": "複製全部",
+  "copyAllNeedConn": "請先連線 — 未連線時終端是空的",
   "placeholder": "選擇身份後按「連線」",
   "aboutTitle": "終端機說明",
   "aboutSub": "瀏覽器互動 shell（本機 OS 用戶），非任意遠端 SSH 客戶端。",

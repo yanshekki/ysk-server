@@ -94,6 +94,7 @@
   "leDns01Hint": "萬用字元使用 dns-01：面板會啟動 certbot manual challenge，需於 DNS 提供商完成 TXT 驗證。執行完成 ≠ 憑證已上線。",
   "leHttp01Hint": "一般域名使用 http-01（nginx 外掛）。申請成功後請確認專案／郵件已綁定此域名。",
   "deleteTitle": "刪除憑證？",
+  "deleteNeedDomain": "刪除此憑證 — 需輸入域名確認",
   "deleteDesc": "將刪除 {{domain}} 的憑證檔與登記。",
   "savedCert": "已儲存 {{domain}} 的憑證",
   "uploadFailed": "上傳失敗",

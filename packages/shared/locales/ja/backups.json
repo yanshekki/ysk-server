@@ -133,10 +133,14 @@
   "testRemote": "送信先をテスト",
   "testRemoteDone": "リモート検査が完了",
   "testRemoteFailed": "リモート検査に失敗",
-  "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing.",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "resticRepoPh": "パネルデータディレクトリ / restic-repo",
+  "testDisabledHint": "テストする前にリモート プッシュをオンにします。",
+  "identityId": "アウトバウンド SSH ID",
+  "identityHint": "好ましい。 /security SSH と同じコンテナー。パスワードにはsshpassが必要です。",
+  "identityNone": "なし - パスワードまたはデフォルトのキー",
+  "remotePathHint": "リモート ユーザーのホーム (または SFTP chroot) を基準とした相対値。 「。」それは家ですか。",
+  "restoreFullTitle": "このアーカイブからプロジェクト ファイルとデータベースを上書きします — 確認するためにファイル名を入力します",
+  "restoreWebTitle": "このアーカイブからのみ Web サイト ファイルを復元します",
+  "previewTitle": "書き込みなしでプレビュー復元",
+  "partialSkipped": "部分的 — 一部のプロジェクトがスキップされました"
 }

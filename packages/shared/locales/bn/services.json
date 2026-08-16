@@ -4,7 +4,9 @@
     "start": "শুরু করুন",
     "stop": "থামো",
     "restart": "রিস্টার্ট করুন",
-    "reload": "পুনরায় লোড করুন"
+    "reload": "পুনরায় লোড করুন",
+    "enable": "বুটে সক্ষম",
+    "disable": "বুটে নিষ্ক্রিয়"
   },
   "lifecycleTitle": "{{label}} সেবা নিয়ন্ত্রণ",
   "startedOk": "{{label}} চালু হয়েছে",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}} বন্ধ থাকলে এই হোস্ট HTTP/HTTPS দেবে না।",
   "stopConfirmSshdTitle": "sshd বন্ধ করবেন?",
   "stopConfirmSshdDesc": "sshd বন্ধ করলে দূরবর্তী SSH কাটবে। কনসোল বা অন্য লগইন আছে কিনা নিশ্চিত করুন।",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "sshd বন্ধ করুন",
   "stopConfirmSshdConsequence": "হোস্ট কনসোল থেকে sshd চালু না হওয়া পর্যন্ত নতুন SSH ব্যর্থ হবে।",
   "stopConfirmPanelTitle": "YSK Server বন্ধ করবেন?",
   "stopConfirmPanelDesc": "হোস্টে ইউনিট চালু না হওয়া পর্যন্ত প্যানেল ও API অফলাইন থাকবে।",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "ysk-সার্ভার বন্ধ করুন",
   "stopConfirmPanelConsequence": "এই ব্রাউজার সেশন কেটে যাবে। SSH বা হোস্ট কনসোল থেকে চালু করুন।",
   "actionDone": "{{action}} হয়ে গেছে",
   "runningOf": "{{running}}/{{total}} চলছে",
@@ -54,16 +56,20 @@
   "probeDone": "তদন্ত সম্পূর্ণ",
   "runProtection": "সুরক্ষা প্রোব চালান",
   "notProbedYet": "এখনো তদন্ত করা হয়নি",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "Fail2ban বন্ধ করবেন?",
+  "stopConfirmFail2banDesc": "Fail2ban বন্ধ করা স্বয়ংক্রিয় আইপি নিষেধাজ্ঞা বন্ধ করে দেয়। ওয়েবসাইট এবং SSH চলতে থাকে।",
+  "stopConfirmFail2banConsequence": "fail2ban আবার শুরু না হওয়া পর্যন্ত নতুন আক্রমণকারীদের নিষিদ্ধ করা হয় না।",
+  "installOrOpen": "ইনস্টল / খুলুন",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "সব রাজ্য",
+    "running": "চলমান",
+    "failed": "ব্যর্থ হয়েছে",
+    "missing": "ইনস্টল করা হয়নি"
   },
   "stopNeedConfirm": "নিশ্চিতকরণ প্রয়োজন",
-  "stopNeedConfirmPhrase": "নিশ্চিতকরণ বাক্যাংশ লিখতে হবে"
+  "stopNeedConfirmPhrase": "নিশ্চিতকরণ বাক্যাংশ লিখতে হবে",
+  "enabledOk": "{{label}} বুটে সক্ষম",
+  "bootDisabledWarn": "{{label}} চলছে কিন্তু বুটে শুরু হবে না। রিবুট টিকাতে সক্ষম করুন।",
+  "bootDisabledShort": "বুটে নয়",
+  "mariadbNotInstalled": "MariaDB ইনস্টল নেই"
 }

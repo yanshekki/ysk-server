@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "Mesin VPN ini belum terpasang di host.",
   "serverNotListening": "Unit server tidak aktif. UDP/TCP {{port}} mungkin tertutup.",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "Instal mesin VPN terlebih dahulu",
+  "portHint": {
+    "51820": "Port mendengarkan WireGuard default",
+    "51821": "Port mendengarkan WireGuard alternatif",
+    "51822": "Port mendengarkan WireGuard alternatif kedua"
+  }
 }

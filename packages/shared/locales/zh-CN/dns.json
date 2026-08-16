@@ -215,7 +215,19 @@
   "aboutHealthBody": "在「工具」探测 PowerDNS、修复绑定、开放 53 端口。",
   "aboutStackTitle": "软件版本",
   "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。",
-  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
-  "createMailZoneNow": "已建立邮件区域 {{domain}}"
+  "invalidZone": "区域名称无效。使用真实域名（例如 example.com）。",
+  "invalidIpv4": "IPv4 无效。每个八位位组必须为 0–255。",
+  "createMailZoneNow": "已建立邮件区域 {{domain}}",
+  "healNeedInstall": "PowerDNS 未安装 - 首先将其安装在“软件”选项卡上",
+  "applyNeedService": "DNS 服务未运行 — 在应用之前启动或安装它",
+  "deleteZoneNeedName": "删除此区域 - 您将输入区域名称进行确认",
+  "toolsFirewallTitle": "防火墙（UFW）",
+  "toolsFirewallHint": "允许或拒绝 53 端口。不会启动或停止 PowerDNS。",
+  "toolsUnitTitle": "PowerDNS 服务单元",
+  "toolsUnitHint": "systemd 单元 pdns — 启动、停止、重启、重载。",
+  "installConfirmTitle": "安装 PowerDNS？",
+  "installConfirmDesc": "会安装 pdns-server 并写入受管权威配置。需要 root 与 YSK_EXECUTE=1。",
+  "installConfirmConsequence": "安装并启动后，PowerDNS 会绑定 53 端口。",
+  "installPort53Busy": "53 端口已有程序在监听。未停止或修复该监听前，PowerDNS 可能无法绑定。",
+  "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。"
 }

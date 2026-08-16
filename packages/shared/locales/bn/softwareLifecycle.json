@@ -60,12 +60,12 @@
   "dockCancelled": "বাতিল করা হয়েছে · {{title}}",
   "cancelHint": "বাতিল অনুরোধ করা হয়েছে. ক্লায়েন্ট শোনা বন্ধ; হোস্ট বর্তমান apt/পদক্ষেপ শেষ করতে পারে। একটি মুহূর্ত পরে স্থিতি পুনরায় তদন্ত.",
   "cancelledToast": "অপারেশন বাতিল করা হয়েছে (ক্লায়েন্ট স্ট্রিমিং বন্ধ করেছে)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "আবেদন করুন",
+  "kindScan": "স্ক্যান করুন",
+  "kindDeploy": "স্থাপন করুন",
+  "kindRuntime": "রানটাইম",
+  "jobDone": "সমাপ্ত · {{title}}",
+  "jobFailed": "ব্যর্থ · {{title}}",
   "uninstallUfwWarn": "UFW সরিয়ে দিলে প্যানেল-পরিচালিত পোর্ট ফায়ারওয়াল থাকবে না।",
   "uninstallFail2banWarn": "fail2ban সরালে jail থেমে যাবে এবং নিষেধ উঠবে। রাখতে চাইলে আগে লগইন IP ignoreip-এ যোগ করুন।"
 }

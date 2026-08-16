@@ -320,7 +320,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const [tab, setTab] = useState('lifecycle');
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | null>(null);
+  const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | 'disable' | null>(null);
   const [focusRequirepass, setFocusRequirepass] = useState(false);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const link = DATA_LINK[engine];
@@ -453,6 +453,9 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
 
   function enumOptionLabel(s: ConsoleSetting, option: string): string {
     if (engine === 'redis' && s.key === 'dir') return redisDirOptionLabel(option, t);
+    if (engine === 'redis' && s.key === 'save' && option === '') {
+      return t('redis.saveOff', { defaultValue: 'Disable snapshots (not recommended)' });
+    }
     return option;
   }
 
@@ -537,7 +540,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           autoComplete="new-password"
           value={val}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={s.liveValue == null ? t('db.console.notReadFromService') : undefined}
+          placeholder={
+            s.liveValue == null
+              ? t('db.console.notReadFromService')
+              : s.liveValue === ''
+                ? t('redis.passwordUnset')
+                : t('redis.passwordSetHidden')
+          }
           aria-label={s.label}
         />
       );
@@ -603,6 +612,16 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                 'AOF is off and RDB is on. A restart or crash can lose recent writes.',
             })}
           </Alert>
+        ) : null}
+        {engine === 'redis' &&
+        cat.id === 'persistence' &&
+        (draft.save === '' || findSetting(console?.categories, 'save')?.liveValue === '') ? (
+          <Alert variant="warn">{t('redis.saveOffWarn')}</Alert>
+        ) : null}
+        {engine === 'redis' &&
+        cat.id === 'persistence' &&
+        dirtyKeys.includes('dir') ? (
+          <Alert variant="warn">{t('redis.dirMoveWarn')}</Alert>
         ) : null}
         <FormHint>
           {t('db.console.applyHint')}
@@ -792,22 +811,22 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                 </p>
               ) : (
                 <div className="lifecycle-toolbar">
-                  <Button variant="primary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'start')}>
+                  <Button variant="primary" size="md" loading={busy} title={t('services.action.start')} onClick={bindCall1(doLifecycle, 'start')}>
                     {t('services.action.start')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => setPendingLc('stop')}>
+                  <Button variant="secondary" size="md" loading={busy} title={t('services.stopConfirmTitle', { label: console.title })} onClick={() => setPendingLc('stop')}>
                     {t('services.action.stop')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={() => setPendingLc('restart')}>
+                  <Button variant="secondary" size="md" loading={busy} title={t('db.console.needRestart')} onClick={() => setPendingLc('restart')}>
                     {t('services.action.restart')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'reload')}>
+                  <Button variant="secondary" size="md" loading={busy} title={t('db.console.reloadConfig')} onClick={bindCall1(doLifecycle, 'reload')}>
                     {t('db.console.reloadConfig')}
                   </Button>
-                  <Button variant="ghost" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'enable')}>
+                  <Button variant="ghost" size="md" loading={busy} title={t('systemd.bootEnabled')} onClick={bindCall1(doLifecycle, 'enable')}>
                     {t('systemd.bootEnabled')}
                   </Button>
-                  <Button variant="ghost" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'disable')}>
+                  <Button variant="ghost" size="md" loading={busy} title={t('db.console.disableBoot')} onClick={() => setPendingLc('disable')}>
                     {t('db.console.disableBoot')}
                   </Button>
                 </div>
@@ -830,15 +849,25 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             setPendingLc(null);
             if (action) void doLifecycle(action);
           }}
-          title={t('services.stopConfirmTitle', { label: console?.title ?? engine })}
+          title={
+            pendingLc === 'disable'
+              ? t('db.console.disableBoot')
+              : t('services.stopConfirmTitle', { label: console?.title ?? engine })
+          }
           description={
             pendingLc === 'restart'
               ? t('db.console.needRestart')
-              : t('services.stopConfirmDesc', { label: console?.title ?? engine })
+              : pendingLc === 'disable'
+                ? t('db.console.disableBootConfirm')
+                : t('services.stopConfirmDesc', { label: console?.title ?? engine })
           }
           severity="destructive"
           confirmLabel={
-            pendingLc === 'restart' ? t('services.action.restart') : t('services.action.stop')
+            pendingLc === 'restart'
+              ? t('services.action.restart')
+              : pendingLc === 'disable'
+                ? t('db.console.disableBoot')
+                : t('services.action.stop')
           }
           busy={busy}
         />

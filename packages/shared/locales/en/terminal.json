@@ -16,6 +16,8 @@
   "exitCode": "Exit code {{code}}",
   "needRootExecute": "Requires root + YSK_EXECUTE=1 for system shells.",
   "unavailable": "unavailable",
+  "copyAll": "Copy all",
+  "copyAllNeedConn": "Connect first — the buffer is empty while disconnected",
   "placeholder": "Pick an identity, then Connect",
   "aboutTitle": "About terminal",
   "aboutSub": "Interactive OS shell in the browser (local users). Not an arbitrary remote SSH client.",

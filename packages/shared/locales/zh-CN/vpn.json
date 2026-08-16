@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "此主机尚未安装此 VPN 引擎。",
   "serverNotListening": "服务器单元未在运行。UDP/TCP {{port}} 可能未监听。",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "首先安装VPN引擎",
+  "portHint": {
+    "51820": "默认 WireGuard 监听端口",
+    "51821": "备用 WireGuard 侦听端口",
+    "51822": "第二个备用 WireGuard 侦听端口"
+  }
 }

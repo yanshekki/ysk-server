@@ -404,19 +404,31 @@ export async function assessProductionReadiness(input: {
       host,
       currentVersion: input.version,
     });
-    push({
-      id: 'host-leftovers',
-      category: 'hosting',
-      title: tl('notes.leftover.readinessTitle'),
-      level: leftovers.ok ? 'ready' : 'degraded',
-      detail: leftovers.ok
-        ? tl('notes.leftover.readinessClean')
-        : leftovers.notes.slice(0, 4).join(' · '),
-      spec: '§4.1',
-      fixHint: leftovers.ok ? undefined : tl('notes.leftover.overlayDoesNotHeal'),
-      fixHref: leftovers.ok ? undefined : '/nginx',
-      severity: leftovers.ok ? 'optional' : 'recommended',
-    });
+    if (leftovers.ok || leftovers.findings.length === 0) {
+      push({
+        id: 'host-leftovers',
+        category: 'hosting',
+        title: tl('notes.leftover.readinessTitle'),
+        level: 'ready',
+        detail: tl('notes.leftover.readinessClean'),
+        spec: '§4.1',
+        severity: 'optional',
+      });
+    } else {
+      for (const f of leftovers.findings.filter((x) => !x.ok)) {
+        push({
+          id: `host-leftovers-${f.id}`,
+          category: 'hosting',
+          title: f.title || tl('notes.leftover.readinessTitle'),
+          level: 'degraded',
+          detail: f.detail,
+          spec: '§4.1',
+          fixHint: f.cta || tl('notes.leftover.overlayDoesNotHeal'),
+          fixHref: f.href || '/system/readiness',
+          severity: 'recommended',
+        });
+      }
+    }
   } catch {
     /* leftover scan optional */
   }

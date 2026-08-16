@@ -674,7 +674,7 @@ export function MigrateHostPage() {
         }}
         title={t('migrate.orphanRemoveTitle')}
         description={t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })}
-        confirmText="DELETE"
+        confirmText={orphanTarget?.split('/').filter(Boolean).pop() || 'DELETE'}
         severity="critical"
         confirmLabel={t('migrate.orphanRemove')}
         cancelLabel={t('common.cancel')}

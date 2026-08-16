@@ -100,10 +100,11 @@
   "requestFailed": "لم ينجح طلب الشهادة",
   "applyFailed": "فشل الطلب",
   "deletedCert": "محذوفة {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "تؤدي إزالة certbot إلى إيقاف التجديد التلقائي لشهادات Let's Encrypt الموجودة.",
+  "renew": "تجديد",
+  "renewFor": "قم بتجديد Let's Encrypt لـ {{domain}}",
   "domainRequired": "أدخل نطاقاً.",
   "domainInvalid": "صيغة النطاق غير صالحة.",
-  "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه."
+  "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه.",
+  "deleteNeedDomain": "احذف هذه الشهادة — اكتب اسم المجال للتأكيد"
 }

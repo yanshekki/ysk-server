@@ -133,10 +133,14 @@
   "testRemote": "Testar destino",
   "testRemoteDone": "Sonda remota concluída",
   "testRemoteFailed": "Sonda remota falhou",
-  "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing.",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "resticRepoPh": "Diretório de dados do painel / restic-repo",
+  "testDisabledHint": "Ative o envio remoto antes de testar.",
+  "identityId": "Identidade SSH de saída",
+  "identityHint": "Preferido. O mesmo cofre que /security SSH. A senha precisa de sshpass.",
+  "identityNone": "Nenhum – senha ou chave padrão",
+  "remotePathHint": "Relativo à casa do usuário remoto (ou chroot SFTP). “.” é aquela casa.",
+  "restoreFullTitle": "Substitua arquivos de projeto e bancos de dados deste arquivo — digite o nome do arquivo para confirmar",
+  "restoreWebTitle": "Restaure arquivos de sites apenas deste arquivo",
+  "previewTitle": "Visualizar restauração sem escrever",
+  "partialSkipped": "Parcial – alguns projetos ignorados"
 }

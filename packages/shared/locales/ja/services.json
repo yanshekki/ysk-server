@@ -4,7 +4,9 @@
     "start": "開始",
     "stop": "停止",
     "restart": "再始動",
-    "reload": "再読み込み"
+    "reload": "再読み込み",
+    "enable": "起動時に有効化",
+    "disable": "起動時無効化"
   },
   "lifecycleTitle": "{{label}} のサービス操作",
   "startedOk": "{{label}} を開始しました",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}} 停止中、このホストでは HTTP/HTTPS を提供しません。",
   "stopConfirmSshdTitle": "sshd を停止しますか？",
   "stopConfirmSshdDesc": "sshd を停止するとリモート SSH が切れます。コンソールなど別のログイン手段があることを確認してください。",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "sshdを停止します",
   "stopConfirmSshdConsequence": "sshd をホストコンソールから起動するまで、新しい SSH は失敗します。",
   "stopConfirmPanelTitle": "YSK Server を停止しますか？",
   "stopConfirmPanelDesc": "パネルと API は、ホストでユニットを起動するまでオフラインになります。",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "yskサーバーを停止します",
   "stopConfirmPanelConsequence": "このブラウザーセッションは切断されます。SSH またはホストコンソールから起動してください。",
   "actionDone": "{{action}}完了",
   "runningOf": "{{running}}/{{total}} 実行中",
@@ -54,16 +56,20 @@
   "probeDone": "プローブが完了しました",
   "runProtection": "保護プローブを実行する",
   "notProbedYet": "まだ調査されていません",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "フェイル2バンをやめますか？",
+  "stopConfirmFail2banDesc": "failed2ban を停止すると、自動 IP 禁止がオフになります。 Web サイトと SSH は動作し続けます。",
+  "stopConfirmFail2banConsequence": "新しい攻撃者は、fail2ban が再び開始されるまで禁止されません。",
+  "installOrOpen": "インストール/開く",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "すべての州",
+    "running": "ランニング",
+    "failed": "失敗した",
+    "missing": "未インストール"
   },
   "stopNeedConfirm": "確認が必要です",
-  "stopNeedConfirmPhrase": "確認フレーズの入力が必要です"
+  "stopNeedConfirmPhrase": "確認フレーズの入力が必要です",
+  "enabledOk": "{{label}} を起動時有効にしました",
+  "bootDisabledWarn": "{{label}} は稼働中ですが起動時には始まりません。再起動後も動かすには有効化してください。",
+  "bootDisabledShort": "起動時無効",
+  "mariadbNotInstalled": "MariaDB は未インストール"
 }

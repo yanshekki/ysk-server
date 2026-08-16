@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "एके + सीएलआई JSON",
   "labelStdoutBody": "सीएलआई स्टडआउट बॉडी",
-  "resultOuterHint": "बाहरी परिणाम CLI --json stdout है।"
+  "resultOuterHint": "बाहरी परिणाम CLI --json stdout है।",
+  "statusFlowTitle": "स्थिति प्रवाह",
+  "statusFlow": "केवल पंजीकृत → ऑनलाइन → पुराना (>60s) → ऑफ़लाइन (डिस्कनेक्ट)। फ़िल्टर \"ऑफ़लाइन\" डिस्कनेक्ट हो गया है।",
+  "colSession": "सत्र यूयूआईडी",
+  "copySession": "क्लस्टर/सीएलआई--सत्र के लिए सत्र यूयूआईडी की प्रतिलिपि बनाएँ",
+  "staleFor": "अनदेखी {{age}}",
+  "commandTitle": "इस सत्र के लिए एक आदेश कतारबद्ध करें",
+  "historyTitleShort": "कमांड इतिहास खोलें (केवल पढ़ने के लिए)",
+  "expEdge": "एक किनारे पर:"
 }

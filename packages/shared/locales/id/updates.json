@@ -170,19 +170,60 @@
   "notInstalled": "Tidak dipasang",
   "goToPage": "Buka halaman",
   "hubHint": "Katalog perangkat lunak dan runtime pada host ini. Pindai untuk menyegarkan.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "setiap hari",
+  "intervalDays": "setiap {{n}} hari",
+  "intervalHour": "setiap jam",
+  "intervalHours": "setiap {{n}} jam",
+  "intervalMinutes": "setiap {{n}} menit",
+  "intervalSeconds": "setiap {{n}} detik",
+  "availableHint": "Paket dengan kandidat baru dari pengelola paket.",
+  "servicesHint": "Layanan katalog di host ini. Buka halaman layanan untuk menginstal.",
+  "runtimeHint": "Runtime di host ini. Peningkatan versi dilakukan pada setiap halaman runtime.",
+  "needsReboot": "Diperlukan reboot",
+  "kernelRebootWarn": "Menginstal kernel baru biasanya memerlukan reboot sebelum digunakan.",
+  "neverRun": "belum berjalan",
+  "scanOsvN": "Pindai + OSV (pertama {{n}})",
+  "rebootNeeded": "menyalakan ulang",
+  "kernelRebootHint": "Paket kernel perlu di-boot ulang setelah diterapkan",
+  "needApprovalHint": "Buka Tersedia dan filter ke paket yang memerlukan persetujuan",
+  "applyNeedConfirm": "Membuka dialog konfirmasi sebelum menerapkan",
+  "probeFailed": "Penyelidikan gagal",
+  "notViaApt": "Tidak dikelola oleh apt — tidak ada kandidat",
+  "noCandidate": "Tidak ada versi kandidat",
+  "jobOpenGeo": "halaman GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Pemeriksaan perlindungan",
+      "hint": "Sinyal pertahanan berkala"
+    },
+    "updates_scan": {
+      "name": "Pemindaian pembaruan",
+      "hint": "Segarkan inventaris paket"
+    },
+    "daily_backup": {
+      "name": "Cadangan harian",
+      "hint": "Semua pencadangan terjadwal"
+    },
+    "db_temp_expire": {
+      "name": "Kedaluwarsa pengguna DB sementara",
+      "hint": "Hapus pengguna database sementara yang sudah kadaluarsa"
+    },
+    "defense_auto_ban": {
+      "name": "Larangan otomatis pertahanan",
+      "hint": "Terapkan centang larangan otomatis"
+    },
+    "defense_geoip_update": {
+      "name": "Pembaruan GeoIP",
+      "hint": "Unduh database GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "Log vakum",
+      "hint": "retensi jurnal"
+    },
+    "email_dnsbl": {
+      "name": "Surel DNSBL",
+      "hint": "Periksa DNSBL melalui email"
+    }
+  },
+  "applyPanelAlreadyLatest": "Sudah versi panel terbaru"
 }

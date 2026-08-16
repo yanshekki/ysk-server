@@ -84,7 +84,7 @@
   "whitelistPendingApply": "已写入面板名单。请按「套用策略」才会写入 jail.local。",
   "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
   "jailsTabHint": "显示作用中 Jail 状态。要开关 Jail 请到「策略」分页。",
-  "colJail": "Jail",
+  "colJail": "监狱",
   "colEnabled": "开启",
   "serviceStateLine": "单元 {{unit}} · {{state}} · 开机 {{boot}}",
   "jail": {
@@ -97,9 +97,9 @@
     "dovecot": "Dovecot 邮件登录",
     "recidive": "累犯"
   },
-  "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
-  "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-  "suggestIgnoreAdd": "Add {{ip}}",
+  "cannotBanSelf": "这是主机或您的登录 IP — 将其添加到ignoreip而不是禁止",
+  "suggestIgnoreHint": "建议的管理 IP（仅在您应用策略之前为面板文件）：",
+  "suggestIgnoreAdd": "添加 {{ip}}",
   "whitelistEmptyWarn": "白名单为空，jail 可能把你自己封锁。套用 ignoreip 前请先加入登录 IP。",
   "suggestIgnoreLogin": "你的登录 IP {{ip}}",
   "applyIgnoreEmptyWarn": "白名单为空时套用会清空 ignoreip",

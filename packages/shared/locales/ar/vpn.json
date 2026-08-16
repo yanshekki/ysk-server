@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "محرك VPN هذا غير مثبت على المضيف.",
   "serverNotListening": "وحدة الخادم غير نشطة. قد يكون UDP/TCP {{port}} مغلقاً.",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "قم بتثبيت محرك VPN أولاً",
+  "portHint": {
+    "51820": "منفذ الاستماع WireGuard الافتراضي",
+    "51821": "منفذ استماع بديل لـ WireGuard",
+    "51822": "منفذ الاستماع البديل الثاني WireGuard"
+  }
 }

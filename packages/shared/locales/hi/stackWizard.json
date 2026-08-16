@@ -16,7 +16,7 @@
   "keepData": "डेटा रखें",
   "purgeData": "डेटा शुद्ध करें",
   "uninstallNow": "अभी अनइंस्टॉल करें",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "कम से कम एक बंडल चुनें. खाली चयन का मतलब अब सभी को हटाना नहीं है।",
+  "uninstallConfirmTitle": "चयनित बंडल हटाएं?",
+  "uninstallConfirmDesc": "{{count}} बंडल हटा दिया जाएगा। पुष्टि करने के लिए REMOVE टाइप करें।"
 }

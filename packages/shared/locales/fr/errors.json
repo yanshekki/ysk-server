@@ -38,7 +38,8 @@
     "sessionIdle": "Délai d'inactivité dépassé ; reconnectez-vous",
     "totpNotEnabled": "La 2FA n'est pas activée",
     "totpSecretNoDataDir": "Le secret TOTP est chiffré mais dataDir n'est pas défini",
-    "mustChangePassword": "Vous devez définir un nouveau mot de passe avant de continuer"
+    "mustChangePassword": "Vous devez définir un nouveau mot de passe avant de continuer",
+    "policyNeedsOwn2fa": "Activez 2FA pour ce compte et confirmez avec un code TOTP avant d'exiger 2FA pour les autres"
   },
   "http": {
     "notFoundRoute": "Introuvable : {{method}} {{path}}",

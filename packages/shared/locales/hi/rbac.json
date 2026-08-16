@@ -103,10 +103,10 @@
   "enabledCount": "{{total}} में से {{enabled}} सक्षम",
   "bandAboveMax": "अधिकतम स्तर से ऊपर",
   "dirtyHint": "अनुकूलित (कारखाने से अलग)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "न सहेजा गया",
+  "unsavedHint": "इस भूमिका पर सहेजे न गए संपादन",
+  "nothingToSave": "बचाने के लिए कुछ भी नहीं",
+  "saveRole": "{{role}} पॉलिसी सहेजें",
+  "discardTitle": "सहेजी न गई नीति त्यागें?",
+  "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।"
 }

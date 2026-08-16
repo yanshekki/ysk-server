@@ -127,10 +127,12 @@
   "lockLastAdminHint": "Ini admin terakhir. Hapus, tangguhkan, dan penurunan diblokir.",
   "demoteAdminTitle": "Turunkan admin ini?",
   "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain.",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "Peran operator pabrik mencakup tulis berisiko tinggi. Menyempitkannya hanya memengaruhi akun baru; mengubah bawaan memengaruhi operator yang ada."
+  "searchPkgPh": "Nama paket",
+  "quotaNonNeg": "Jumlah dan kuota tidak boleh negatif.",
+  "diskQuotaHint": "Presetnya adalah GiB; kotak khusus adalah MiB.",
+  "bandwidthHint": "0 berarti tidak terbatas.",
+  "impersonateHint": "Membuka sesi sebagai pengguna ini. Gunakan menu akun untuk meninggalkan peniruan identitas.",
+  "operatorHighRiskHint": "Peran operator pabrik mencakup tulis berisiko tinggi. Menyempitkannya hanya memengaruhi akun baru; mengubah bawaan memengaruhi operator yang ada.",
+  "cannotImpersonateSelf": "Anda sudah masuk sebagai akun ini",
+  "singleAdminNo2fa": "Host ini memiliki satu admin dan 2FA tidak aktif — aktifkan 2FA dan tambahkan admin cadangan."
 }

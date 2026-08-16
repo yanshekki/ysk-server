@@ -243,7 +243,7 @@
   "editClientTitle": "원격 클라이언트 편집",
   "editClientDesc": "경로, 호스트 및 선택적으로 저장된 비밀번호를 업데이트합니다.",
   "clientUpdated": "클라이언트 프로필이 업데이트되었습니다.",
-  "rememberNeedPassword": "Enter a password first.",
-  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
-  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
+  "rememberNeedPassword": "먼저 비밀번호를 입력하세요.",
+  "settingsNeedStack": "이러한 기본값은 TigerVNC(선택한 경우 XFCE)가 설치된 경우 적용됩니다. 먼저 설치 탭에서 설치하세요.",
+  "clientNeedNovnc": "브라우저에서 열려면 noVNC가 필요합니다. 여기에서 열 것으로 예상되는 리모컨을 추가하기 전에 설치 탭에서 설치하세요."
 }

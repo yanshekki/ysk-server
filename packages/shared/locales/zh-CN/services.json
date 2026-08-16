@@ -4,7 +4,9 @@
     "start": "启动",
     "stop": "停止",
     "restart": "重启",
-    "reload": "重载"
+    "reload": "重载",
+    "enable": "开机启用",
+    "disable": "取消开机启用"
   },
   "lifecycleTitle": "{{label}} 服務控制",
   "startedOk": "已啟動 {{label}}",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}} 停止期間，本機不會提供 HTTP／HTTPS。",
   "stopConfirmSshdTitle": "停止 sshd？",
   "stopConfirmSshdDesc": "停止 sshd 會中斷遠端 SSH。請確認你仍有主機控制台或其他登入途徑。",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "停止 sshd",
   "stopConfirmSshdConsequence": "新的 SSH 連線會失敗，直至在主機控制台再啟動 sshd。",
   "stopConfirmPanelTitle": "停止 YSK Server？",
   "stopConfirmPanelDesc": "面板與 API 會離線，直至在主機上再啟動該服務單元。",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "停止 ysk 服务器",
   "stopConfirmPanelConsequence": "此瀏覽器工作階段會中斷。請從 SSH 或主機控制台啟動服務單元。",
   "stopConfirmFail2banTitle": "停止 fail2ban？",
   "stopConfirmFail2banDesc": "停止 fail2ban 後不會再自動封鎖 IP。網站與 SSH 會繼續運作。",
@@ -59,11 +61,15 @@
   "runProtection": "执行保护探测",
   "notProbedYet": "尚未探测",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "所有州",
+    "running": "跑步",
+    "failed": "失败的",
+    "missing": "未安装"
   },
   "stopNeedConfirm": "需确认",
-  "stopNeedConfirmPhrase": "需输入确认短语"
+  "stopNeedConfirmPhrase": "需输入确认短语",
+  "enabledOk": "已设置 {{label}} 开机启动",
+  "bootDisabledWarn": "{{label}} 正在运行，但重启后不会自动启动。请启用开机启动。",
+  "bootDisabledShort": "未开机启动",
+  "mariadbNotInstalled": "尚未安装 MariaDB"
 }

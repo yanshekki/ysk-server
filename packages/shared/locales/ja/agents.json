@@ -126,5 +126,13 @@
   "labelStderr": "標準エラー",
   "labelAckCli": "ack + CLI JSON",
   "labelStdoutBody": "CLIの標準出力本体",
-  "resultOuterHint": "外側の結果は CLI --json stdout です。"
+  "resultOuterHint": "外側の結果は CLI --json stdout です。",
+  "statusFlowTitle": "ステータスの流れ",
+  "statusFlow": "登録のみ → オンライン → 古い (60 秒以上) → オフライン (切断)。フィルター「オフライン」が切断されました。",
+  "colSession": "セッションUUID",
+  "copySession": "クラスターのセッション UUID をコピー / CLI --session",
+  "staleFor": "未見 {{age}}",
+  "commandTitle": "このセッションのコマンドをキューに入れる",
+  "historyTitleShort": "コマンド履歴を開く (読み取り専用)",
+  "expEdge": "端では："
 }

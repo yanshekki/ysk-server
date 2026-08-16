@@ -1,6 +1,6 @@
 {
-  "title": "Page not found",
-  "body": "No panel page at {{path}}.",
-  "hint": "Unknown URLs no longer send you to the dashboard.",
-  "home": "Dashboard"
+  "title": "Halaman tidak ditemukan",
+  "body": "Tidak ada halaman panel di {{path}}.",
+  "hint": "URL yang tidak dikenal tidak lagi mengirim Anda ke dasbor.",
+  "home": "Dasbor"
 }

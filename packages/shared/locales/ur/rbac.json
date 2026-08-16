@@ -103,10 +103,10 @@
   "enabledCount": "{{total}} میں سے {{enabled}} فعال",
   "bandAboveMax": "زیادہ سے زیادہ سطح سے اوپر",
   "dirtyHint": "اپنی مرضی کے مطابق (فیکٹری سے مختلف)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "غیر محفوظ شدہ",
+  "unsavedHint": "اس کردار پر غیر محفوظ شدہ ترامیم",
+  "nothingToSave": "بچانے کے لیے کچھ نہیں۔",
+  "saveRole": "{{role}} پالیسی محفوظ کریں۔",
+  "discardTitle": "غیر محفوظ شدہ پالیسی کو مسترد کریں؟",
+  "discardDesc": "کرداروں کو تبدیل کرنے سے غیر محفوظ شدہ قابلیت کی ترامیم گر جاتی ہیں۔"
 }

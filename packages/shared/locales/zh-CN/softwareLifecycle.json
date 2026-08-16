@@ -63,7 +63,7 @@
   "kindApply": "套用",
   "kindScan": "扫描",
   "kindDeploy": "部署",
-  "kindRuntime": "Runtime",
+  "kindRuntime": "运行时",
   "jobDone": "完成 · {{title}}",
   "jobFailed": "失败 · {{title}}",
   "uninstallUfwWarn": "卸载 UFW 后，主机将失去面板管理的端口防火墙。",

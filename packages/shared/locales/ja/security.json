@@ -374,9 +374,9 @@
     "strictDryRun": "厳格モードのプレビュー",
     "errorNoDetail": "テスト失敗（詳細なし）",
     "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "privCloseWithoutAck": "閉店しました。秘密キーは再度表示されません。保存しなかった場合は、新しいものを生成します。",
+    "loginNoProjects": "プロジェクトはありません。以下の既存の Linux ユーザー (root / tester) を認可します。 /root/.ssh を書き込むには YSK_EXECUTE=1 が必要です。",
+    "loginLinuxHint": "プロジェクトがない場合に使用されます。例: ルートまたはテスター。"
   },
   "sessionsActive": "アクティブなセッション",
   "sessionsOther": "その他のデバイス",
@@ -431,9 +431,13 @@
     "high": "高",
     "critical": "重大"
   },
-  "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "confirmDeleteApiKey": "この API キーを削除しますか?",
+  "confirmDeleteApiKeyDesc": "「{{name}}」で認証を停止します。これを元に戻すことはできません。",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "APIセッション",
+  "revokeOtherTitle": "サインアウト {{n}} 他のセッション",
+  "policyNeedSelf2fa": "まずこのアカウントで 2FA を有効にしてから、TOTP コードで確認します",
+  "revokeAllDevicesTitle": "記憶されているすべてのデバイスを取り消します - あなたと他の管理者は 2FA を再度確認する必要があります"
 }

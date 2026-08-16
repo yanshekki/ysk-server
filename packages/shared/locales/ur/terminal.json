@@ -30,8 +30,10 @@
   "stepUpTitle": "جڑ کے شیل کی تصدیق کریں۔",
   "stepUpDesc": "اپنا مستند کوڈ یا ریکوری کوڈ درج کریں۔",
   "totpLabel": "TOTP / ریکوری کوڈ",
-  "sessionStillOpen": "A live shell is still connected while you read this page.",
-  "rootConfirmTitle": "Open a root shell?",
-  "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
-  "rootConfirmBody": "Only continue if you intend to run privileged host commands."
+  "sessionStillOpen": "جب آپ اس صفحہ کو پڑھتے ہیں تو ایک لائیو شیل اب بھی منسلک ہے۔",
+  "rootConfirmTitle": "روٹ شیل کھولیں؟",
+  "rootConfirmDesc": "یہ سیشن میزبان پر ایک غیر محدود روٹ PTY ہے۔ احکامات کا آڈٹ کیا جاتا ہے۔",
+  "rootConfirmBody": "صرف اس صورت میں جاری رکھیں جب آپ مراعات یافتہ میزبان کمانڈز چلانے کا ارادہ رکھتے ہیں۔",
+  "copyAll": "سب کاپی کریں۔",
+  "copyAllNeedConn": "پہلے جڑیں — منقطع ہونے پر بفر خالی ہے۔"
 }

@@ -122,9 +122,9 @@
   "done": "완료",
   "next": "다음",
   "previous": "이전",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "전체",
+  "showPassword": "보여주다",
+  "hidePassword": "숨다",
+  "more": "더",
   "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})"
 }

@@ -82,7 +82,7 @@ describe('project model/status', () => {
     ] as ProjectDto[];
     const s = summarizeProjects(items);
     expect(s.total).toBe(3);
-    expect(s.running + s.stopped + s.unhealthy + s.degraded + s.pendingOs).toBe(3);
+    expect(s.running + s.stopped + s.ready + s.unhealthy + s.degraded + s.pendingOs).toBe(3);
   });
 
   it('buildProjectChecklist and formatHealthFacts', () => {
@@ -165,7 +165,7 @@ describe('project model/status', () => {
   });
 
   it('deriveProjectStatus remaining branches', () => {
-    expect(deriveProjectStatus({ ...base, status: 'active' }).bucket).toBe('stopped');
+    expect(deriveProjectStatus({ ...base, status: 'active' }).bucket).toBe('ready');
     expect(deriveProjectStatus({ ...base, status: '', processStatus: '' }).labelKey).toMatch(
       /ready/,
     );

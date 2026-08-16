@@ -95,6 +95,7 @@
   "leHttp01Hint": "Normal domains use http-01 (nginx plugin)",
   "deleteTitle": "Delete certificate?",
   "deleteDesc": "Removes cert files and registration for {{domain}}.",
+  "deleteNeedDomain": "Delete this certificate — type the domain name to confirm",
   "savedCert": "Saved certificate for {{domain}}",
   "uploadFailed": "Upload failed",
   "requestBlocked": "Cannot complete certificate request in the admin panel",

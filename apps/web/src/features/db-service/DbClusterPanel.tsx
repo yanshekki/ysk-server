@@ -3,6 +3,7 @@
  * MariaDB Galera + MySQL primary/replica. Mounted in ServiceConsole «叢集» tab.
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ActionBar,
   Alert,
   Badge,
@@ -32,6 +33,7 @@ import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindInput, bindVoid, bindCall1, bindCall2 } from '../../pages/bind-handlers';
+import { agentsApi, type FleetAgent } from '../agents/api';
 
 export function statusTone(
   s: string,
@@ -55,6 +57,16 @@ export function wizardTitle(kind: DbClusterKind): string {
   if (kind === 'postgres-replica') return i18n.t('db.cluster.kindPgReplica');
   if (kind === 'redis-sentinel') return 'Redis Sentinel';
   return i18n.t('db.cluster.kindRedisReplica');
+}
+
+export function clusterStatusLabel(
+  status: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const key = `db.cluster.status.${status}`;
+  const loc = t(key, { defaultValue: '' });
+  if (loc && loc !== key) return loc;
+  return t(`applyStatus.${status}`, { defaultValue: status });
 }
 
 export function ctaLabel(kind: DbClusterKind): string {
@@ -88,6 +100,7 @@ export function DbClusterPanel({
     id: string;
     bootstrap: boolean;
   } | null>(null);
+  const [fleetAgents, setFleetAgents] = useState<FleetAgent[]>([]);
   const [probeFacts, setProbeFacts] = useState<Record<string, string> | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<
     | { kind: 'remove'; id: string }
@@ -112,6 +125,13 @@ export function DbClusterPanel({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    void agentsApi
+      .listFleet()
+      .then((r) => setFleetAgents(r.items ?? []))
+      .catch(() => setFleetAgents([]));
+  }, []);
 
   const kind = defaultKind(engine);
   const wizardReady = engineInstalled;
@@ -345,7 +365,9 @@ export function DbClusterPanel({
               size="md"
               disabled={busy || !wizardReady}
               title={
-                wizardReady ? undefined : t('db.cluster.engineNotInstalled', { engine })
+                wizardReady
+                  ? t('db.cluster.createWizardTitle')
+                  : t('db.cluster.engineNotInstalled', { engine })
               }
               onClick={() => {
                 setError(null);
@@ -381,13 +403,27 @@ export function DbClusterPanel({
                 header: t('common.status'),
                 nowrap: true,
                 render: (c) => (
-                  <Badge tone={statusTone(c.status)}>{c.status}</Badge>
+                  <span title={c.notes?.[0]}>
+                    <Badge tone={statusTone(c.status)}>
+                      {clusterStatusLabel(c.status, t)}
+                    </Badge>
+                    {c.status === 'failed' && c.notes?.[0] ? (
+                      <span className="muted u-text-sm"> · {c.notes[0]}</span>
+                    ) : null}
+                  </span>
                 ) },
               {
                 key: 'members',
                 header: t('db.cluster.nodes'),
                 className: 'muted',
-                render: (c) => (c.members ?? []).map((m) => m.host).join(', ') },
+                render: (c) =>
+                  (c.members ?? [])
+                    .map((m) =>
+                      m.applyStatus && m.applyStatus !== 'applied'
+                        ? `${m.host} (${clusterStatusLabel(m.applyStatus, t)})`
+                        : m.host,
+                    )
+                    .join(', ') },
             ]}
             rows={items}
             rowKey={(c) => c.id}
@@ -397,6 +433,7 @@ export function DbClusterPanel({
                   variant="secondary"
                   size="sm"
                   loading={busy}
+                  title={t('db.cluster.planTitle')}
                   onClick={bindCall1(replan, c.id)}
                 >
                   {t('db.cluster.plan')}
@@ -405,139 +442,158 @@ export function DbClusterPanel({
                   variant="secondary"
                   size="sm"
                   loading={busy}
-                  onClick={bindCall1(applyDry, c.id)}
-                >
-                  {t('db.cluster.writeFile')}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
-                >
-                  {t('db.cluster.applyLocal')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => setApplyTarget({ id: c.id, bootstrap: true })}
-                >
-                  Bootstrap
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
+                  title={t('db.cluster.probeLocalTitle')}
                   onClick={bindCall2(doProbe, c.id, false)}
                 >
                   {t('common.probe')}
                 </Button>
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={bindCall2(doProbe, c.id, true)}
-                >
-                  {t('db.cluster.probeAll')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = await dbClusterApi.installPeers(c.id, {
-                        execute: false });
-                      return {
-                        ok: r.ok || r.dryRun,
-                        dryRun: r.dryRun,
-                        notes: r.notes } as OpsResultLike;
-                    }, t('db.cluster.remoteInstallPlan'))
-                  }
-                >
-                  {t('db.cluster.remoteInstallPlan')}
-                </Button>
-                <Button
                   variant="primary"
                   size="sm"
                   loading={busy}
-                  onClick={() =>
-                    setPendingConfirm({ kind: 'installPeers', id: c.id })
-                  }
+                  title={t('db.cluster.applyLocalTitle')}
+                  onClick={() => setApplyTarget({ id: c.id, bootstrap: false })}
                 >
-                  {t('db.cluster.remoteInstall')}
+                  {t('db.cluster.applyLocal')}
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={bindCall1(downloadBundle, c.id)}
-                >
-                  {t('db.cluster.downloadBundle')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={bindCall2(pushPeers, c.id, false)}
-                >
-                  {t('db.cluster.pushPlan')}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => setPendingConfirm({ kind: 'push', id: c.id })}
-                >
-                  {t('db.cluster.pushExecute')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() =>
-                    void run(async () => {
-                      const r = await dbClusterApi.fleet(c.id, {
-                        execute: false,
-                        op: 'sync' });
-                      return {
-                        ok: r.ok || r.dryRun,
-                        dryRun: r.dryRun,
-                        notes: r.notes } as OpsResultLike;
-                    }, t('db.cluster.fleetSyncPlan'))
-                  }
-                >
-                  {t('db.cluster.fleetSyncPlan')}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() =>
-                    setPendingConfirm({ kind: 'fleetSync', id: c.id })
-                  }
-                >
-                  {t('db.cluster.fleetSync')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() =>
-                    setPendingConfirm({ kind: 'fleetApply', id: c.id })
-                  }
-                >
-                  Fleet Apply
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => setPendingConfirm({ kind: 'remove', id: c.id })}
-                >
-                  {t('common.delete')}
-                </Button>
+                <details className="table-more">
+                  <summary>{t('common.more', { defaultValue: 'More' })}</summary>
+                  <div className="table-more__menu">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.writeFileTitle')}
+                      onClick={bindCall1(applyDry, c.id)}
+                    >
+                      {t('db.cluster.writeFile')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.bootstrapTitle')}
+                      onClick={() => setApplyTarget({ id: c.id, bootstrap: true })}
+                    >
+                      {t('db.cluster.bootstrap')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.probeAllTitle')}
+                      onClick={bindCall2(doProbe, c.id, true)}
+                    >
+                      {t('db.cluster.probeAll')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.remoteInstallPlanTitle')}
+                      onClick={() =>
+                        void run(async () => {
+                          const r = await dbClusterApi.installPeers(c.id, {
+                            execute: false });
+                          return {
+                            ok: r.ok || r.dryRun,
+                            dryRun: r.dryRun,
+                            notes: r.notes } as OpsResultLike;
+                        }, t('db.cluster.remoteInstallPlan'))
+                      }
+                    >
+                      {t('db.cluster.remoteInstallPlan')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.remoteInstallTitle')}
+                      onClick={() =>
+                        setPendingConfirm({ kind: 'installPeers', id: c.id })
+                      }
+                    >
+                      {t('db.cluster.remoteInstall')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.downloadBundleTitle')}
+                      onClick={bindCall1(downloadBundle, c.id)}
+                    >
+                      {t('db.cluster.downloadBundle')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.pushPlanTitle')}
+                      onClick={bindCall2(pushPeers, c.id, false)}
+                    >
+                      {t('db.cluster.pushPlan')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.pushTitle')}
+                      onClick={() => setPendingConfirm({ kind: 'push', id: c.id })}
+                    >
+                      {t('db.cluster.pushExecute')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.fleetSyncPlanTitle')}
+                      onClick={() =>
+                        void run(async () => {
+                          const r = await dbClusterApi.fleet(c.id, {
+                            execute: false,
+                            op: 'sync' });
+                          return {
+                            ok: r.ok || r.dryRun,
+                            dryRun: r.dryRun,
+                            notes: r.notes } as OpsResultLike;
+                        }, t('db.cluster.fleetSyncPlan'))
+                      }
+                    >
+                      {t('db.cluster.fleetSyncPlan')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.fleetSyncTitle')}
+                      onClick={() =>
+                        setPendingConfirm({ kind: 'fleetSync', id: c.id })
+                      }
+                    >
+                      {t('db.cluster.fleetSync')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.fleetApplyTitle')}
+                      onClick={() =>
+                        setPendingConfirm({ kind: 'fleetApply', id: c.id })
+                      }
+                    >
+                      {t('db.cluster.fleetApply')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={busy}
+                      title={t('db.cluster.deleteClusterTitle')}
+                      onClick={() => setPendingConfirm({ kind: 'remove', id: c.id })}
+                    >
+                      {t('common.delete')}
+                    </Button>
+                  </div>
+                </details>
               </ActionBar>
             )}
             empty={
@@ -712,14 +768,21 @@ export function DbClusterPanel({
               flush
               hint={t('db.cluster.fleetSessionHint')}
             >
-              <input
+              <select
                 id="dbc-fleet"
                 value={fleetAgentId}
-                onChange={bindInput(setFleetAgentId)}
-                placeholder={t('db.cluster.fleetSessionPh')}
-                spellCheck={false}
-                autoComplete="off"
-              />
+                onChange={(e) => setFleetAgentId(e.target.value)}
+              >
+                <option value="">{t('db.cluster.fleetSessionNone')}</option>
+                {fleetAgents.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.agent_id} · {a.id}
+                  </option>
+                ))}
+              </select>
+              <FormHint>
+                <Link to="/agents">{t('db.cluster.fleetSessionOpenAgents')}</Link>
+              </FormHint>
             </Field>
             {isGalera ? (
               <Field label={t('db.cluster.sstMethod')} htmlFor="dbc-sst" flush>
@@ -785,7 +848,7 @@ export function DbClusterPanel({
                 : pendingConfirm?.kind === 'fleetSync'
                   ? t('db.cluster.fleetSyncTitle')
                   : pendingConfirm?.kind === 'fleetApply'
-                    ? 'Fleet Apply？'
+                    ? t('db.cluster.fleetApplyTitle')
                     : t('db.cluster.confirmOp')
         }
         description={

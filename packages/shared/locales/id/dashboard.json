@@ -115,9 +115,9 @@
   "colTitle": "Peringatan",
   "colDetail": "Rincian",
   "colSource": "Sumber",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "Peringatan pencarian",
+  "notifAll": "Semua",
+  "notifDismiss": "Bersembunyi",
+  "goFix": "Memperbaiki",
   "needDomainFirst": "Isi domain dulu"
 }

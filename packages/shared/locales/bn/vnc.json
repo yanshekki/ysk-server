@@ -243,7 +243,7 @@
   "editClientTitle": "দূরবর্তী ক্লায়েন্ট সম্পাদনা করুন",
   "editClientDesc": "পাথ, হোস্ট এবং ঐচ্ছিক সংরক্ষিত পাসওয়ার্ড আপডেট করুন।",
   "clientUpdated": "ক্লায়েন্ট প্রোফাইল আপডেট করা হয়েছে",
-  "rememberNeedPassword": "Enter a password first.",
-  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
-  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
+  "rememberNeedPassword": "প্রথমে একটি পাসওয়ার্ড দিন।",
+  "settingsNeedStack": "TigerVNC (এবং XFCE নির্বাচিত হলে) ইনস্টল করা হলে এই ডিফল্টগুলি প্রযোজ্য হবে। প্রথমে ইন্সটল ট্যাবে এগুলি ইনস্টল করুন।",
+  "clientNeedNovnc": "ব্রাউজারে খুলুন noVNC প্রয়োজন। আপনি এখানে খুলতে চান এমন রিমোট যোগ করার আগে এটি ইনস্টল ট্যাবে ইনস্টল করুন।"
 }

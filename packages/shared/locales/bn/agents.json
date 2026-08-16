@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "ack + CLI JSON",
   "labelStdoutBody": "CLI stdout বডি",
-  "resultOuterHint": "বাইরের ফলাফল হল CLI --json stdout."
+  "resultOuterHint": "বাইরের ফলাফল হল CLI --json stdout.",
+  "statusFlowTitle": "স্থিতি প্রবাহ",
+  "statusFlow": "শুধুমাত্র নিবন্ধিত → অনলাইন → বাসি (>60s) → অফলাইন (সংযোগ বিচ্ছিন্ন)। ফিল্টার \"অফলাইন\" সংযোগ বিচ্ছিন্ন করা হয়েছে৷",
+  "colSession": "সেশন UUID",
+  "copySession": "ক্লাস্টার / CLI --session এর জন্য সেশন UUID কপি করুন",
+  "staleFor": "অদেখা {{age}}",
+  "commandTitle": "এই সেশনের জন্য একটি কমান্ড সারিবদ্ধ করুন",
+  "historyTitleShort": "কমান্ড ইতিহাস খুলুন (কেবল-পঠন)",
+  "expEdge": "একটি প্রান্তে:"
 }

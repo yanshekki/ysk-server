@@ -75,6 +75,19 @@ export function alertLabel(a: string, tr: (k: string) => string): string {
 }
 
 /** CPU % badge tone. */
+/** PID 1, kthreadd, and init/systemd must never be signalled from the panel. */
+export function isProtectedSignalTarget(r: {
+  pid: string;
+  command?: string;
+}): boolean {
+  const n = Number(String(r.pid ?? '').trim());
+  if (!Number.isFinite(n) || n <= 2) return true;
+  const c = String(r.command ?? '').toLowerCase();
+  if (/(^|\/)(init|systemd)(\s|$)/.test(c) && n < 500) return true;
+  if (/\/sbin\/init\b/.test(c)) return true;
+  return false;
+}
+
 export function cpuTone(pct: number): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (!Number.isFinite(pct)) return 'neutral';
   if (pct >= 90) return 'danger';
@@ -851,7 +864,7 @@ export function MetricsPage() {
                       checked={showRawTop}
                       onChange={bindCheck(setShowRawTop)}
                     />
-                    <span>raw top</span>
+                    <span>{t('metrics.rawTopLabel')}</span>
                   </label>
                   {processes?.at ? (
                     <span className="met-live-at muted u-text-sm">
@@ -907,24 +920,48 @@ export function MetricsPage() {
                   </span>
                   <div className="met-signal-actions">
                     <Button
-                      variant="primary"
+                      variant="secondary"
                       size="sm"
-                      disabled={!primarySelected || signalBusy}
+                      disabled={
+                        !primarySelected ||
+                        signalBusy ||
+                        isProtectedSignalTarget(primarySelected) ||
+                        isControlPlaneRow(primarySelected)
+                      }
+                      title={
+                        primarySelected &&
+                        (isProtectedSignalTarget(primarySelected) ||
+                          isControlPlaneRow(primarySelected))
+                          ? t('metrics.protectedPid')
+                          : t('metrics.sigTermTitle')
+                      }
                       onClick={() =>
                         primarySelected && openSignal(primarySelected.pid, 'TERM')
                       }
                     >
-                      TERM
+                      {t('metrics.batchTerm')}
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
-                      disabled={!primarySelected || signalBusy}
+                      disabled={
+                        !primarySelected ||
+                        signalBusy ||
+                        isProtectedSignalTarget(primarySelected) ||
+                        isControlPlaneRow(primarySelected)
+                      }
+                      title={
+                        primarySelected &&
+                        (isProtectedSignalTarget(primarySelected) ||
+                          isControlPlaneRow(primarySelected))
+                          ? t('metrics.protectedPid')
+                          : t('metrics.sigKillTitle')
+                      }
                       onClick={() =>
                         primarySelected && openSignal(primarySelected.pid, 'KILL')
                       }
                     >
-                      KILL
+                      {t('metrics.batchKill')}
                     </Button>
                   </div>
                 </div>
@@ -1086,6 +1123,13 @@ export function MetricsPage() {
                   }
                   rowActions={(r) => {
                     const cp = isControlPlaneRow(r);
+                    const prot = isProtectedSignalTarget(r);
+                    const blocked = cp || prot;
+                    const blockTitle = prot
+                      ? t('metrics.protectedPid')
+                      : cp
+                        ? t('metrics.controlPlane')
+                        : undefined;
                     return (
                       <div className="met-row-actions">
                         <button
@@ -1099,8 +1143,9 @@ export function MetricsPage() {
                         <button
                           type="button"
                           className="met-icon-btn"
-                          title="SIGTERM"
-                          disabled={cp}
+                          title={blockTitle ?? t('metrics.sigTermTitle')}
+                          aria-label={blockTitle ?? t('metrics.sigTermTitle')}
+                          disabled={blocked}
                           onClick={bindCall2(openSignal, r.pid, 'TERM')}
                         >
                           T
@@ -1108,8 +1153,9 @@ export function MetricsPage() {
                         <button
                           type="button"
                           className="met-icon-btn met-icon-btn--danger"
-                          title="SIGKILL"
-                          disabled={cp}
+                          title={blockTitle ?? t('metrics.sigKillTitle')}
+                          aria-label={blockTitle ?? t('metrics.sigKillTitle')}
+                          disabled={blocked}
                           onClick={bindCall2(openSignal, r.pid, 'KILL')}
                         >
                           K
@@ -1525,6 +1571,8 @@ export function MetricsPage() {
                   </header>
                   <p className="muted u-text-sm">
                     {t('metrics.alertsBuiltinOnly')}
+                    {' · '}
+                    <Link to="/?tab=notifications">{t('metrics.alertsGoNotifications')}</Link>
                     {metrics && 'at' in metrics && (metrics as { at?: string }).at
                       ? ` · ${t('metrics.lastEvaluated')} ${formatDateTimeLocale(
                           String((metrics as { at?: string }).at),

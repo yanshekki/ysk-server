@@ -60,12 +60,12 @@
   "dockCancelled": "रद्द किया गया · {{title}}",
   "cancelHint": "रद्द करने का अनुरोध किया गया. ग्राहक ने सुनना बंद कर दिया; होस्ट वर्तमान उपयुक्त/चरण को पूरा कर सकता है। एक क्षण बाद पुनः स्थिति की जाँच करें।",
   "cancelledToast": "ऑपरेशन रद्द कर दिया गया (क्लाइंट ने स्ट्रीमिंग बंद कर दी)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "आवेदन करना",
+  "kindScan": "स्कैन",
+  "kindDeploy": "तैनात करना",
+  "kindRuntime": "क्रम",
+  "jobDone": "ख़त्म · {{title}}",
+  "jobFailed": "विफल · {{title}}",
   "uninstallUfwWarn": "UFW हटाने पर पैनल-प्रबंधित पोर्ट फ़ायरवॉल नहीं रहेगा।",
   "uninstallFail2banWarn": "fail2ban हटाने से jail रुकेंगे और मौजूदा प्रतिबंध हटेंगे। रखने पर पहले लॉगिन IP को ignoreip में डालें।"
 }

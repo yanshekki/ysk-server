@@ -136,18 +136,20 @@
       "gcore": "جيكور CDN",
       "custom": "وكلاء مخصصون"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list.",
-    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
+    "needProvider": "اختر موفر CDN قبل جلب قائمة IP الخاصة به.",
+    "spoofWarn": "تتيح الثقة في CIDR الخاطئة للعملاء انتحال رؤوس X-Forwarded-For / CDN باعتبارها عنوان IP الخاص بهم."
   },
   "linkUp": "أعلى",
   "linkDown": "تحت",
-  "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
-  "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "linkDownTitle": "خذ {{name}} دون اتصال بالإنترنت",
+  "linkDownNeedConfirm": "اكتب اسم الواجهة للتأكيد",
+  "persistNmHint": "تعني كلمة \"استمرار\" أن التغييرات يمكن أن تستمر أثناء إعادة التشغيل عبر NetworkManager.",
+  "hideRaw": "إخفاء الإخراج الخام",
+  "rawLoadedAt": "تم التحميل {{time}}",
+  "deleteDefaultPanelWarn": "يمكن أن يؤدي حذف المسار الافتراضي إلى إسقاط جلسة اللوحة هذه. اكتب الافتراضي للتأكيد.",
+  "typeDefaultToConfirm": "اكتب الافتراضي للتأكيد",
   "deleteDefaultNeedConfirm": "يلزم التأكيد — اكتب DEFAULT (قد يقطع هذا اللوحة)",
-  "deleteRouteNeedConfirm": "يلزم التأكيد"
+  "deleteRouteNeedConfirm": "يلزم التأكيد",
+  "nmUnavailable": "NetworkManager ليس قيد التشغيل — يمكن إضافة مسار مباشر فقط",
+  "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة."
 }

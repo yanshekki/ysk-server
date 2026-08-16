@@ -243,7 +243,7 @@
   "editClientTitle": "Modifier le client distant",
   "editClientDesc": "Mettez à jour le chemin, les hôtes et le mot de passe stocké facultatif.",
   "clientUpdated": "Profil client mis à jour",
-  "rememberNeedPassword": "Enter a password first.",
-  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
-  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
+  "rememberNeedPassword": "Entrez d'abord un mot de passe.",
+  "settingsNeedStack": "Ces valeurs par défaut s'appliquent lorsque TigerVNC (et XFCE si sélectionné) sont installés. Installez-les d'abord dans l'onglet Installer.",
+  "clientNeedNovnc": "Ouvrir dans le navigateur nécessite noVNC. Installez-le dans l'onglet Installer avant d'ajouter les télécommandes que vous prévoyez d'ouvrir ici."
 }

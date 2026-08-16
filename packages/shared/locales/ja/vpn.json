@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "この VPN エンジンはホストにインストールされていません。",
   "serverNotListening": "サーバーユニットが稼働していません。UDP/TCP {{port}} は閉じている可能性があります。",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "最初に VPN エンジンをインストールします",
+  "portHint": {
+    "51820": "デフォルトの WireGuard リッスン ポート",
+    "51821": "代替 WireGuard リッスン ポート",
+    "51822": "2 番目の代替 WireGuard リッスン ポート"
+  }
 }

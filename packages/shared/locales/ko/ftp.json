@@ -134,6 +134,15 @@
   "sftpTechNote": "키는 관리 경로 아래에 기록됩니다.",
   "filterProject": "이 프로젝트의 FTP 계정만 표시",
   "clearProjectFilter": "모든 계정 보기",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd가 실패했습니다. 서비스 탭을 엽니다(listen과 ​​listening_ipv6이 둘 다 YES일 수는 없습니다).",
+  "tabService": "서비스",
+  "listenConflictLive": "Live vsftpd.conf에는 listening={{v4}} 및 listening_ipv6={{v6}}이 있습니다. 두 가지 모두 YES가 시작되지 않습니다.",
+  "listenConflictNeedFix": "먼저 Listen / Listen_ipv6을 수정한 다음(둘 다 YES일 수 없음) 적용하세요.",
+  "fixListenIpv4": "IPv4만 사용(listen=YES, listening_ipv6=NO)",
+  "liveFileValue": "지금 제출하세요: {{value}}",
+  "startBlockedFailed": "서비스가 실패했습니다. 시작하기 전에 유효한 구성을 적용하세요.",
+  "ftpsNeedCert": "먼저 인증서 도메인을 선택하세요.",
+  "detectPublicIp": "공개 IP 감지",
+  "detectPublicIpTitle": "이 호스트에서 첫 번째 비루프백 IPv4를 채웁니다.",
+  "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다."
 }

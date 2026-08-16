@@ -203,6 +203,7 @@ export function PhpRuntimePage() {
   const [version, setVersion] = useState('8.2');
   const [phpCandidates, setPhpCandidates] = useState<string[]>([]);
   const [enableSite, setEnableSite] = useState(false);
+  const [phpApplyOpen, setPhpApplyOpen] = useState(false);
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
   const [tools, setTools] = useState<ToolsProbe | null>(null);
   const [catalog, setCatalog] = useState<IniCatalogGroup[]>([]);
@@ -1437,19 +1438,8 @@ export function PhpRuntimePage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        try {
-                          return (await systemApi.phpApply({
-                            domain,
-                            poolName,
-                            enableSite })) as OpsResultLike;
-                        } catch (e) {
-                          const m = e instanceof Error ? e.message : t('common.applyFailed');
-                          return { ok: false, blocked: true, blockMessage: m, notes: [m] };
-                        }
-                      }, t('runtime.phpVhostApplied'))
-                    }
+                    title={t('runtime.applyPhpVhostTitle')}
+                    onClick={() => setPhpApplyOpen(true)}
                   >
                     {t('runtime.applyPhpVhost')}
                   </Button>
@@ -1528,6 +1518,34 @@ export function PhpRuntimePage() {
       </PageTabs>
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+
+      <ConfirmDialog
+        open={phpApplyOpen}
+        onClose={() => !busy && setPhpApplyOpen(false)}
+        title={t('runtime.applyPhpVhost')}
+        description={t('runtime.applyPhpVhostDesc', {
+          domain,
+          pool: poolName,
+          reload: enableSite ? t('common.yes') : t('common.no'),
+        })}
+        confirmLabel={t('common.apply')}
+        busy={busy}
+        onConfirm={() => {
+          setPhpApplyOpen(false);
+          void run(async () => {
+            try {
+              return (await systemApi.phpApply({
+                domain,
+                poolName,
+                enableSite,
+              })) as OpsResultLike;
+            } catch (e) {
+              const m = e instanceof Error ? e.message : t('common.applyFailed');
+              return { ok: false, blocked: true, blockMessage: m, notes: [m] };
+            }
+          }, t('runtime.phpVhostApplied'));
+        }}
+      />
 
       <ConfirmDialog
         open={pendingPhpLc != null}

@@ -88,7 +88,7 @@
   "whitelistPendingApply": "已寫入面板名單。請按「套用策略」才會寫入 jail.local。",
   "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
   "jailsTabHint": "顯示作用中 Jail 狀態。要開關 Jail 請到「策略」分頁。",
-  "colJail": "Jail",
+  "colJail": "監獄",
   "colEnabled": "開啟",
   "serviceStateLine": "單元 {{unit}} · {{state}} · 開機 {{boot}}",
   "jail": {

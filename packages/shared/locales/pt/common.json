@@ -122,9 +122,9 @@
   "done": "Feito",
   "next": "Próximo",
   "previous": "Anterior",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "Todos",
+  "showPassword": "Mostrar",
+  "hidePassword": "Esconder",
+  "more": "Mais",
   "redirectedTo": "Aberto {{to}} (antes {{from}})"
 }

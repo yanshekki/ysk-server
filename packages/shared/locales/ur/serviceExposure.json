@@ -28,11 +28,13 @@
   "privateStartTitle": "نیٹ ورک پر {{service}} کو بے نقاب کریں؟",
   "confirmAndStart": "تصدیق کریں اور شروع کریں۔",
   "cloudSgNote": "صرف میزبان فائر وال — کلاؤڈ سیکیورٹی گروپس (AWS/GCP/Azure) کو تبدیل نہیں کیا گیا ہے۔",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "سیٹ نہیں ہے۔",
+  "modeLoading": "لوڈ ہو رہا ہے۔",
+  "summaryUndecided": "رسائی موڈ کی تصدیق نہیں ہوئی (کیٹلاگ ڈیفالٹ: {{suggested}})۔",
+  "summaryNotEnforced": "فائر وال آف ہے - پینل ان بندرگاہوں کو نہیں کھول رہا ہے یا بلاک نہیں کر رہا ہے۔",
+  "roleSmtp": "SMTP جمع کروانا",
+  "roleImap": "IMAP/POP3 میل باکس",
+  "serviceNotInstalled": "یہ سروس انسٹال نہیں ہے، اس لیے فائر وال کے اصول لاگو نہیں ہوتے ہیں۔",
+  "openButStopped": "بندرگاہیں کھلی ہیں - سروس نہیں چل رہی ہے۔",
+  "openNoTenants": "عوامی بندرگاہیں بغیر کرایہ دار کے"
 }

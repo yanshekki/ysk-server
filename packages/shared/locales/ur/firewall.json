@@ -102,10 +102,10 @@
   "disableConfirmTitle": "UFW غیر فعال کریں؟",
   "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
   "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "fail2ban = عارضی لاگ پر مبنی پابندی",
+  "servicesUfwOff": "UFW بند ہے۔ یہ فہرست مطلوبہ نمائش ہے، نہ کہ وہ قواعد جو میزبان نافذ کر رہا ہے۔",
+  "desiredOnlyUfwOff": "مطلوبہ: {{mode}} · UFW آف (لاگو نہیں)",
+  "syncNotApplied": "UFW بند · لاگو نہیں ہوا۔",
+  "defaultNotApplied": "n/a (UFW آف)",
+  "ufwOffHint": "UFW آف ہونے پر ڈیفالٹ انکمنگ کا اطلاق نہیں ہوتا ہے۔"
 }

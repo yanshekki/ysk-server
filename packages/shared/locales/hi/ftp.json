@@ -134,6 +134,15 @@
   "sftpTechNote": "कुंजियाँ प्रबंधित पथ के अंतर्गत लिखी जाती हैं",
   "filterProject": "केवल इस प्रोजेक्ट के FTP खाते",
   "clearProjectFilter": "सभी खाते दिखाएँ",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd विफल. सेवा टैब खोलें (सुनें और सुनें_आईपीवी6 दोनों हाँ नहीं हो सकते)।",
+  "tabService": "सेवा",
+  "listenConflictLive": "लाइव vsftpd.conf में श्रवण={{v4}} और श्रवण_आईपीवी6={{v6}} है - दोनों हाँ प्रारंभ करने में विफल रहेंगे।",
+  "listenConflictNeedFix": "पहले सुनें/सुनें_आईपीवी6 ठीक करें (वे दोनों हाँ नहीं हो सकते), फिर लागू करें।",
+  "fixListenIpv4": "केवल IPv4 का उपयोग करें (सुनो=हाँ, सुनो_आईपीवी6=नहीं)",
+  "liveFileValue": "अभी फ़ाइल करें: {{value}}",
+  "startBlockedFailed": "सेवा विफल है - प्रारंभ से पहले एक वैध कॉन्फ़िगरेशन लागू करें",
+  "ftpsNeedCert": "पहले एक प्रमाणपत्र डोमेन चुनें",
+  "detectPublicIp": "सार्वजनिक आईपी का पता लगाएं",
+  "detectPublicIpTitle": "इस होस्ट से पहला गैर-लूपबैक IPv4 भरें",
+  "pasvIpRequired": "लागू करने से पहले PASV सार्वजनिक IP भरें (NAT/क्लाउड)। पता लगाएँ या लिखें।"
 }

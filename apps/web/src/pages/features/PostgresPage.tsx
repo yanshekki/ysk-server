@@ -99,6 +99,7 @@ export function PostgresPage() {
 
   const busy = dbs.busy || actBusy;
   const error = dbs.error || actError || loadError;
+  const probing = svc == null;
   const installed = Boolean(svc?.installed);
   const running = svc?.active === 'active';
 
@@ -107,9 +108,13 @@ export function PostgresPage() {
       title={t('nav.postgres', { defaultValue: 'PostgreSQL' })}
       status={{
         pill: {
-          label: svc?.activeLabel ?? (installed ? t('common.installed') : t('db.notInstalledShort')),
-          tone: running ? 'ok' : installed ? 'warn' : 'danger' },
-        items: [
+          label: probing
+            ? t('common.loading')
+            : svc?.activeLabel ?? (installed ? t('common.installed') : t('db.notInstalledShort')),
+          tone: probing ? 'neutral' : running ? 'ok' : installed ? 'warn' : 'danger' },
+        items: probing
+          ? [{ label: t('common.loading'), value: '…' }]
+          : [
           {
             label: t('common.status'),
             value: svc?.activeLabel ?? '—',
@@ -183,7 +188,9 @@ export function PostgresPage() {
             </p>
           ) : null}
           <div className="lifecycle-toolbar u-mt-3">
-            {!installed ? (
+            {probing ? (
+              <p className="muted u-text-sm u-mb-0">{t('common.loading')}</p>
+            ) : !installed ? (
               <p className="muted u-text-sm u-mb-0">
                 {t('db.installPgBanner')}
               </p>

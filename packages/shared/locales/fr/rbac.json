@@ -103,10 +103,10 @@
   "enabledCount": "{{enabled}} sur {{total}} activées",
   "bandAboveMax": "Au-dessus du niveau max",
   "dirtyHint": "Personnalisé (diffère de l'usine)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "Non enregistré",
+  "unsavedHint": "Modifications non enregistrées sur ce rôle",
+  "nothingToSave": "Rien à sauver",
+  "saveRole": "Enregistrer la politique {{role}}",
+  "discardTitle": "Supprimer la stratégie non enregistrée ?",
+  "discardDesc": "Le changement de rôle supprime les modifications de fonctionnalités non enregistrées."
 }

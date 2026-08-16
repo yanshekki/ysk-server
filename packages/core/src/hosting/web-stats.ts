@@ -99,7 +99,6 @@ export async function collectProjectWebStats(input: {
   ];
   const hostCandidates = [
     `/var/log/nginx/${input.linuxUser}.access.log`,
-    '/var/log/nginx/access.log',
   ];
   let logPath: string | undefined;
   let content = '';

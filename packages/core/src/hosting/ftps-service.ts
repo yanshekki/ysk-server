@@ -117,6 +117,26 @@ export interface FtpsStatus {
   accountCount: number;
   settings: FtpsSettings;
   lastAppliedAt?: string;
+  /** Values currently in /etc/vsftpd.conf (not panel draft) */
+  liveListen?: boolean | null;
+  liveListenIpv6?: boolean | null;
+  listenConflict?: boolean;
+}
+
+export function parseVsftpdListenFlags(conf: string): {
+  listen: boolean | null;
+  listenIpv6: boolean | null;
+  conflict: boolean;
+} {
+  const listen = /^\s*listen\s*=\s*(YES|NO)\b/im.exec(conf);
+  const v6 = /^\s*listen_ipv6\s*=\s*(YES|NO)\b/im.exec(conf);
+  const listenYes = listen ? listen[1].toUpperCase() === 'YES' : null;
+  const v6Yes = v6 ? v6[1].toUpperCase() === 'YES' : null;
+  return {
+    listen: listenYes,
+    listenIpv6: v6Yes,
+    conflict: listenYes === true && v6Yes === true,
+  };
 }
 
 /**
@@ -585,6 +605,20 @@ export async function probeFtpsStatus(input: {
     active = 'not_installed';
   }
   const meta = input.db.snapshot.settings?.['ftps_last_applied_at'];
+  let liveListen: boolean | null = null;
+  let liveListenIpv6: boolean | null = null;
+  let listenConflict = false;
+  try {
+    const { readFileSync } = await import('node:fs');
+    if (existsSync('/etc/vsftpd.conf')) {
+      const flags = parseVsftpdListenFlags(readFileSync('/etc/vsftpd.conf', 'utf8'));
+      liveListen = flags.listen;
+      liveListenIpv6 = flags.listenIpv6;
+      listenConflict = flags.conflict;
+    }
+  } catch {
+    /* optional */
+  }
   return {
     installed,
     active,
@@ -592,7 +626,11 @@ export async function probeFtpsStatus(input: {
     confSystemExists: existsSync('/etc/vsftpd.conf'),
     accountCount: listResources(input.db, 'ftp_accounts').length,
     settings,
-    lastAppliedAt: typeof meta === 'string' ? meta : undefined };
+    lastAppliedAt: typeof meta === 'string' ? meta : undefined,
+    liveListen,
+    liveListenIpv6,
+    listenConflict,
+  };
 }
 
 /**

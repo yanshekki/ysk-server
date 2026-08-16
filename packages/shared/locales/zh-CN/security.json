@@ -375,8 +375,8 @@
     "errorNoDetail": "测试失败（无详情）",
     "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
     "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "loginNoProjects": "没有项目。在下面授权现有的 Linux 用户（root / tester）。写入/root/.ssh需要YSK_EXECUTE=1。",
+    "loginLinuxHint": "没有项目时使用。示例：root 或 tester。"
   },
   "sessionsActive": "使用中",
   "sessionsOther": "其他设备",
@@ -435,5 +435,9 @@
   "confirmDeleteApiKeyDesc": "删除后「{{name}}」无法再验证。此操作无法复原。",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "API 会话",
+  "revokeOtherTitle": "退出 {{n}} 个其他会话",
+  "policyNeedSelf2fa": "首先在此帐户上启用 2FA，然后使用 TOTP 代码进行确认",
+  "revokeAllDevicesTitle": "撤销每个记住的设备 - 您和其他管理员必须再次验证 2FA"
 }

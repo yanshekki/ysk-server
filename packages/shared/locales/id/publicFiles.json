@@ -30,8 +30,13 @@
   "managedConf": "Konferensi terkelola",
   "systemConf": "Konferensi sistem.d",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "Belum ada konfigurasi Nginx yang dikelola — klik Terapkan",
+    "notSynced": "Conf yang dikelola ada tetapi tidak ada di /etc/nginx/conf.d — terapkan lagi sebagai root dengan YSK_EXECUTE"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "Daftar direktori (indeks otomatis)",
+  "liveSystemConf": "Konfigurasi sistem aktif: {{path}}",
+  "publicRootNote": "Akar publik: {{path}}",
+  "applyConfirmTitle": "Terapkan situs file publik?",
+  "applyConfirmDesc": "Tulis Nginx server_name {{name}} dan muat ulang Nginx.",
+  "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti."
 }

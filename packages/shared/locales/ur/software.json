@@ -88,7 +88,7 @@
     "noTarget": "اپ ڈیٹ کا کوئی ہدف نہیں۔",
     "needRuntimePage": "اس ورژن کو رن ٹائم پیج پر انسٹال کریں۔",
     "noAptCandidate": "کوئی موزوں امیدوار ورژن نہیں۔",
-    "sourceLabel": "Source"
+    "sourceLabel": "ماخذ"
   },
   "install": {
     "progress": "انسٹال ہو رہا ہے: {{list}}…",

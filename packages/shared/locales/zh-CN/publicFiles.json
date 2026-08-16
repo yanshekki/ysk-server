@@ -30,8 +30,13 @@
   "managedConf": "管理 conf",
   "systemConf": "系统 conf.d",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "尚无托管 Nginx 配置 — 单击“应用”",
+    "notSynced": "托管conf存在，但不在/etc/nginx/conf.d下——使用YSK_EXECUTE再次以root身份申请"
   },
-  "autoindex": "目录列表（autoindex）"
+  "autoindex": "目录列表（autoindex）",
+  "liveSystemConf": "现行系统配置：{{path}}",
+  "publicRootNote": "公开根目录：{{path}}",
+  "applyConfirmTitle": "套用公开文件站点？",
+  "applyConfirmDesc": "写入 Nginx server_name {{name}} 并重载 Nginx。",
+  "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。"
 }

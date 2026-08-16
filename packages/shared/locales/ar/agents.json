@@ -126,5 +126,13 @@
   "labelStderr": "com.stderr",
   "labelAckCli": "ACK + CLI JSON",
   "labelStdoutBody": "هيئة CLI stdout",
-  "resultOuterHint": "النتيجة الخارجية هي CLI --json stdout."
+  "resultOuterHint": "النتيجة الخارجية هي CLI --json stdout.",
+  "statusFlowTitle": "تدفق الحالة",
+  "statusFlow": "مسجل فقط → عبر الإنترنت → قديم (> 60 ثانية) → غير متصل (غير متصل). تم قطع اتصال عامل التصفية \"غير متصل\".",
+  "colSession": "UUID للجلسة",
+  "copySession": "انسخ UUID للجلسة للمجموعة / CLI --session",
+  "staleFor": "الغيب {{age}}",
+  "commandTitle": "قم بوضع أمر في قائمة الانتظار لهذه الجلسة",
+  "historyTitleShort": "فتح سجل الأوامر (للقراءة فقط)",
+  "expEdge": "على حافة:"
 }

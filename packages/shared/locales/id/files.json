@@ -345,11 +345,11 @@
     "skipped": "Dilewati",
     "cancelled": "Dibatalkan"
   },
-  "emptyTrashTitle": "Empty trash?",
-  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
-  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "emptyTrashTitle": "Sampah kosong?",
+  "emptyTrashDesc": "Setiap file di sampah akan dihapus secara permanen. Hal ini tidak dapat dibatalkan.",
+  "purgeForeverDesc": "File ini akan dihapus secara permanen. Hal ini tidak dapat dibatalkan.",
+  "webdavReissueUnchanged": "ID token tidak berubah setelah diterbitkan ulang — penulisan mungkin tidak berlanjut. Coba lagi.",
+  "webdavDisableFailed": "WebDAV masih aktif setelah dinonaktifkan — penulisan mungkin tidak berlanjut. Coba lagi.",
   "dirNamedLikeFile": "(sisa folder; nama terlihat seperti berkas)",
   "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan."
 }

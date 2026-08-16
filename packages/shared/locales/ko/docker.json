@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "도커",
   "subtitle": "이 서버에서 Docker 엔진, 컨테이너, 이미지, Compose 프로젝트, 디스크를 설치하고 제어합니다.",
   "refresh": "새로 고침",
   "notInstalled": "Docker Engine이 설치되어 있지 않습니다. 이 페이지에서 docker.io와 docker-compose-v2를 설치하세요.",
@@ -13,7 +13,7 @@
     "overview": "개요",
     "containers": "컨테이너",
     "images": "이미지",
-    "compose": "Compose",
+    "compose": "구성하다",
     "volumes": "Volume",
     "networks": "네트워크",
     "prune": "정리",

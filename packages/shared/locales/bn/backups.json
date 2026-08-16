@@ -133,10 +133,14 @@
   "testRemote": "গন্তব্য পরীক্ষা",
   "testRemoteDone": "রিমোট প্রোব শেষ",
   "testRemoteFailed": "রিমোট প্রোব ব্যর্থ",
-  "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing.",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "resticRepoPh": "প্যানেল ডেটা ডিরেক্টরি / রেস্টিক-রেপো",
+  "testDisabledHint": "পরীক্ষার আগে রিমোট পুশ চালু করুন।",
+  "identityId": "আউটবাউন্ড SSH পরিচয়",
+  "identityHint": "পছন্দের /নিরাপত্তা SSH হিসাবে একই ভল্ট। পাসওয়ার্ডের জন্য sshpass প্রয়োজন।",
+  "identityNone": "কোনটিই না — পাসওয়ার্ড বা ডিফল্ট কী",
+  "remotePathHint": "দূরবর্তী ব্যবহারকারীর বাড়ির (বা SFTP ক্রুট) সাথে সম্পর্কিত। \"।\" এটা কি বাড়ি।",
+  "restoreFullTitle": "এই সংরক্ষণাগার থেকে প্রকল্প ফাইল এবং ডাটাবেস ওভাররাইট করুন — নিশ্চিত করতে ফাইলের নাম টাইপ করুন",
+  "restoreWebTitle": "শুধুমাত্র এই সংরক্ষণাগার থেকে ওয়েবসাইট ফাইল পুনরুদ্ধার করুন",
+  "previewTitle": "লেখা ছাড়াই পুনরুদ্ধারের পূর্বরূপ",
+  "partialSkipped": "আংশিক — কিছু প্রকল্প এড়িয়ে গেছে"
 }

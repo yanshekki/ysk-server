@@ -115,9 +115,9 @@
   "colTitle": "Aviso",
   "colDetail": "Detalle",
   "colSource": "Origen",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "Alertas de búsqueda",
+  "notifAll": "Todo",
+  "notifDismiss": "Esconder",
+  "goFix": "Arreglar",
   "needDomainFirst": "Escriba primero un dominio"
 }

@@ -16,7 +16,7 @@
   "keepData": "احتفظ بالبيانات",
   "purgeData": "تطهير البيانات",
   "uninstallNow": "قم بإلغاء التثبيت الآن",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "حدد حزمة واحدة على الأقل. التحديد الفارغ لم يعد يعني إزالة الكل.",
+  "uninstallConfirmTitle": "هل تريد إزالة الحزم المحددة؟",
+  "uninstallConfirmDesc": "{{count}} سيتم إزالة الحزمة (الحزم). اكتب إزالة للتأكيد."
 }

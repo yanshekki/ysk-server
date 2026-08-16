@@ -18,6 +18,8 @@
   "summaryRestricted": "受限 · {{count}} 個來源",
   "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則不會生效。",
   "outOfSync": "未同步",
+  "openButStopped": "埠已開放 — 服務未運行",
+  "openNoTenants": "公網埠已開但沒有租戶",
   "firewallOff": "防火牆關閉",
   "ufwMissing": "未安裝 UFW",
   "ufwInactive": "已關閉",

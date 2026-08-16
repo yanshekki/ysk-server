@@ -11,6 +11,7 @@ import {
   Button,
   CheckboxField,
   ConfirmDialog,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -1746,13 +1747,37 @@ export function HostBrowsePage() {
             {Object.keys(envHints).length > 0 ? (
               <div className="stack u-mt-3">
                 <div className="muted u-text-sm">{t('hostBrowse.envHintsTitle')}</div>
-                <ul className="muted u-text-sm">
-                  {Object.entries(envHints).map(([k, v]) => {
-                    const panelVal =
+                <DataTable
+                  columns={[
+                    {
+                      key: 'k',
+                      header: t('hostBrowse.envColVar'),
+                      render: (row) => <code>{row.k}</code>,
+                    },
+                    {
+                      key: 'host',
+                      header: t('hostBrowse.envColHost'),
+                      render: (row) => <code>{row.host}</code>,
+                    },
+                    {
+                      key: 'panel',
+                      header: t('hostBrowse.envColPanel'),
+                      render: (row) => <code>{row.panel}</code>,
+                    },
+                    {
+                      key: 'effective',
+                      header: t('hostBrowse.envColEffective'),
+                      render: (row) => <code>{row.effective}</code>,
+                    },
+                  ]}
+                  rows={Object.entries(envHints).map(([k, v]) => {
+                    const unset = t('hostBrowse.envUnset');
+                    const hostVal = v ?? unset;
+                    const panelRaw =
                       k === 'YSK_HOST_BROWSE_ENGINE'
                         ? settingsDraft.engine
                         : k === 'YSK_HOST_BROWSE_CHROME'
-                          ? settingsDraft.chromePath || t('hostBrowse.envUnset')
+                          ? (settingsDraft.chromePath || '').trim()
                           : k === 'YSK_HOST_BROWSE_LOOPBACK'
                             ? settingsDraft.allowLoopback
                               ? '1'
@@ -1765,16 +1790,18 @@ export function HostBrowsePage() {
                                 ? settingsDraft.audioBridge
                                   ? '1'
                                   : '0'
-                                : t('hostBrowse.envUnset');
-                    return (
-                      <li key={k}>
-                        <code>{k}</code>={v ?? t('hostBrowse.envUnset')}
-                        {' · '}
-                        {t('hostBrowse.envPanelValue', { value: panelVal })}
-                      </li>
-                    );
+                                : '';
+                    const panelSet = Boolean(panelRaw);
+                    const panelVal = panelSet ? panelRaw : unset;
+                    return {
+                      k,
+                      host: hostVal,
+                      panel: panelVal,
+                      effective: panelSet ? panelVal : hostVal,
+                    };
                   })}
-                </ul>
+                  rowKey={(row) => row.k}
+                />
               </div>
             ) : null}
           </div>

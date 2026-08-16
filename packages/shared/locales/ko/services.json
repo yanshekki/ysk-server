@@ -4,7 +4,9 @@
     "start": "시작",
     "stop": "멈추다",
     "restart": "다시 시작",
-    "reload": "새로고침"
+    "reload": "새로고침",
+    "enable": "부팅 시 사용",
+    "disable": "부팅 시 사용 안 함"
   },
   "lifecycleTitle": "{{label}} 서비스 제어",
   "startedOk": "{{label}}을(를) 시작했습니다",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}}이(가) 중지된 동안 이 호스트는 HTTP/HTTPS를 제공하지 않습니다.",
   "stopConfirmSshdTitle": "sshd를 중지할까요?",
   "stopConfirmSshdDesc": "sshd를 중지하면 원격 SSH가 끊깁니다. 콘솔 등 다른 로그인 경로가 있는지 확인하세요.",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "SSHD 중지",
   "stopConfirmSshdConsequence": "호스트 콘솔에서 sshd를 시작할 때까지 새 SSH 세션은 실패합니다.",
   "stopConfirmPanelTitle": "YSK Server를 중지할까요?",
   "stopConfirmPanelDesc": "호스트에서 유닛을 시작할 때까지 패널과 API가 오프라인입니다.",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "ysk 서버 중지",
   "stopConfirmPanelConsequence": "이 브라우저 세션이 끊깁니다. SSH 또는 호스트 콘솔에서 시작하세요.",
   "actionDone": "{{action}} 완료",
   "runningOf": "{{running}}/{{total}} 달리기",
@@ -54,16 +56,20 @@
   "probeDone": "프로브 완료",
   "runProtection": "보호 프로브 실행",
   "notProbedYet": "아직 조사되지 않음",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "Fail2ban을 중지하시겠습니까?",
+  "stopConfirmFail2banDesc": "fall2ban을 중지하면 자동 IP 차단이 꺼집니다. 웹사이트와 SSH는 계속 실행됩니다.",
+  "stopConfirmFail2banConsequence": "새로운 공격자는 Fail2ban이 다시 시작될 때까지 금지되지 않습니다.",
+  "installOrOpen": "설치/열기",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "모든 주",
+    "running": "달리기",
+    "failed": "실패한",
+    "missing": "미설치"
   },
   "stopNeedConfirm": "확인이 필요합니다",
-  "stopNeedConfirmPhrase": "확인 문구를 입력해야 합니다"
+  "stopNeedConfirmPhrase": "확인 문구를 입력해야 합니다",
+  "enabledOk": "{{label}} 부팅 시 사용으로 설정됨",
+  "bootDisabledWarn": "{{label}}이(가) 실행 중이지만 부팅 시 시작되지 않습니다. 재부팅 후에도 유지하려면 사용으로 설정하세요.",
+  "bootDisabledShort": "부팅 시 아님",
+  "mariadbNotInstalled": "MariaDB가 설치되지 않음"
 }

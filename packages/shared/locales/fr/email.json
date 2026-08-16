@@ -317,7 +317,7 @@
     "ptrBad": "PTR (DNS inverse) manquant ou incorrect — demander au fournisseur VPS",
     "port25Blocked": "Le port sortant 25 semble bloqué — demander le déblocage ou utiliser un relais SMTP",
     "port25Unknown": "État du port 25 inconnu — lancer le test de connectivité",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC est généré dans le panel mais n'est pas encore publié dans le DNS public"
   },
   "stack": {
     "tlsNote": "Certificats TLS via Let’s Encrypt pour SMTP/IMAP",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "Échec du rechargement Postfix : {{detail}}",
     "dovecotApplied": "Snippet TLS Dovecot écrit et rechargement tenté.",
     "dovecotSkipped": "Dovecot ignoré (non installé ou doveconf indisponible).",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "Le certificat de courrier est manquant ; a écrit ssl=no pour que Dovecot puisse démarrer sans les fichiers LE."
   },
   "policyApplySystemHint": "Cocher « appliquer au système » pour écrire les maps Postfix/Rspamd et recharger ;",
   "rateLimitAppliedNote": "Limite horaire sortante et drapeau antispam appliqués (quand l’application système est activée).",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "Supprimer ce message en file ?",
   "deleteQueueDesc": "Retirer {{id}} de la file MTA locale. YSK_EXECUTE requis.",
   "openQueuePage": "Ouvrir la file mail",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "Pas encore vérifié",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "Domaines de messagerie enregistrés sur cet hôte",
   "healthChecklist": "Liste {{score}}/100",
   "healthChecklistHint": "Score de liste — DNS / PTR / port 25 pas encore sondés",
-  "healthLiveHint": "Score de sonde réelle"
+  "healthLiveHint": "Score de sonde réelle",
+  "installWebmailTitle": "Créer le projet de webmail partagé (première installation)",
+  "reinstallWebmailTitle": "Reconstruire/mettre à niveau le projet webmail existant",
+  "reinstallNeedInstall": "Installez d'abord la messagerie Web",
+  "dovecotFailedStatus": "Le pigeonnier est {{status}}. Ouvrez l'onglet Logiciel pour le résumé de l'unité.",
+  "mailCertMissing": "Pas de certificat pour {{hosts}}. Émettez-le sur la page SSL.",
+  "mailCertPresent": "Un certificat de courrier est déjà émis : il ne s'agit pas d'un problème de certificat manquant.",
+  "webmailNeedCert": "Aucun certificat pour {{host}} — émettez-le sur SSL avant de forcer HTTPS.",
+  "flushQueueEmpty": "La file d'attente est vide",
+  "flushQueueNeedExecute": "Le vidage de la file d'attente nécessite YSK_EXECUTE (autorisation d'exécution de l'hôte)",
+  "healthUncheckedHint": "DNS / PTR / port 25 n’ont pas encore été sondés.",
+  "deliverabilityScore": "Pack de délivrabilité",
+  "opendkimNoReload": "OpenDKIM n’a pas de reload — redémarrez après un changement de clés ou de tables.",
+  "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile"
 }

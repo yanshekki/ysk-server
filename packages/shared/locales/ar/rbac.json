@@ -103,10 +103,10 @@
   "enabledCount": "{{enabled}} من {{total}} ممكّنة",
   "bandAboveMax": "فوق المستوى الأقصى",
   "dirtyHint": "حسب الطلب (يختلف عن المصنع)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "غير محفوظة",
+  "unsavedHint": "التعديلات غير المحفوظة على هذا الدور",
+  "nothingToSave": "لا شيء للحفظ",
+  "saveRole": "حفظ {{role}} السياسة",
+  "discardTitle": "هل تريد تجاهل السياسة غير المحفوظة؟",
+  "discardDesc": "يؤدي تبديل الأدوار إلى إسقاط تعديلات الإمكانات غير المحفوظة."
 }

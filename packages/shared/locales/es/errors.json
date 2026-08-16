@@ -38,7 +38,8 @@
     "sessionIdle": "Tiempo de inactividad; iniciar sesión de nuevo",
     "totpNotEnabled": "2FA no está habilitado",
     "totpSecretNoDataDir": "El secreto TOTP está cifrado pero el directorio de datos no está configurado",
-    "mustChangePassword": "Debe establecer una contraseña nueva antes de continuar"
+    "mustChangePassword": "Debe establecer una contraseña nueva antes de continuar",
+    "policyNeedsOwn2fa": "Active 2FA para esta cuenta y confirme con un código TOTP antes de solicitar 2FA para otras"
   },
   "http": {
     "notFoundRoute": "No encontrado: {{method}} {{path}}",

@@ -100,10 +100,11 @@
   "requestFailed": "سرٹیفکیٹ کی درخواست کامیاب نہیں ہوئی۔",
   "applyFailed": "درخواست ناکام ہوگئی",
   "deletedCert": "حذف شدہ {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "certbot کو ہٹانے سے موجودہ Let's Encrypt سرٹیفکیٹس کی خودکار تجدید رک جاتی ہے۔",
+  "renew": "تجدید کریں۔",
+  "renewFor": "{{domain}} کے لیے آئیے انکرپٹ کی تجدید کریں",
   "domainRequired": "ڈومین درج کریں۔",
   "domainInvalid": "ڈومین فارمیٹ درست نہیں۔",
-  "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔"
+  "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔",
+  "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔"
 }

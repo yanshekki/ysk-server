@@ -23,26 +23,26 @@
     "autoClear": "Vaciar automáticamente la instancia detenida más grande cuando el disco es crítico (desactivado por defecto)"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "Etereum",
+    "avax": "Avalancha",
     "near": "NEAR",
     "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
+    "btc": "bitcóin",
+    "cosmos": "Centro Cosmos",
+    "sui": "sui",
     "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "dot": "lunares",
+    "sol": "solana"
   },
   "network": {
-    "hoodi": "Hoodi",
+    "hoodi": "sudadera con capucha",
     "sepolia": "Sepolia",
     "mainnet": "Red principal",
-    "fuji": "Fuji",
+    "fuji": "fuji",
     "testnet": "Red de pruebas",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "Avance",
+    "preprod": "preproducción",
+    "westend": "Oeste"
   },
   "networkKind": {
     "testnet": "Red de pruebas",

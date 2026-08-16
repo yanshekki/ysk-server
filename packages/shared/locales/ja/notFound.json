@@ -1,6 +1,6 @@
 {
-  "title": "Page not found",
-  "body": "No panel page at {{path}}.",
-  "hint": "Unknown URLs no longer send you to the dashboard.",
-  "home": "Dashboard"
+  "title": "ページが見つかりません",
+  "body": "{{path}} にはパネル ページがありません。",
+  "hint": "不明な URL によってダッシュボードが表示されることはなくなりました。",
+  "home": "ダッシュボード"
 }

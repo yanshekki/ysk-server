@@ -1,7 +1,7 @@
 {
   "title": "バリデーター (Beta)",
   "subtitle": "このホストで L1 ノードを導入・管理します。ノンカストディアル — 鍵は自分で保管してください。",
-  "beta": "Beta",
+  "beta": "ベータ",
   "tab": {
     "nodes": "ノード",
     "disk": "ディスク",
@@ -23,26 +23,26 @@
     "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "イーサリアム",
+    "avax": "雪崩",
     "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "ada": "カルダノ",
+    "btc": "ビットコイン",
+    "cosmos": "コスモスハブ",
+    "sui": "スイ",
+    "aptos": "アプトス",
+    "dot": "水玉模様",
+    "sol": "ソラナ"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "フーディ",
+    "sepolia": "セポリア",
     "mainnet": "メインネット",
-    "fuji": "Fuji",
+    "fuji": "富士山",
     "testnet": "テストネット",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "プレビュー",
+    "preprod": "プリプロド",
+    "westend": "ウェストエンド"
   },
   "networkKind": {
     "testnet": "テストネット",

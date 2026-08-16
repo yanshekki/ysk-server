@@ -67,7 +67,7 @@ export async function handleSystemApplyServicesRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as {
       unit?: string;
-      action?: 'start' | 'stop' | 'restart' | 'reload';
+      action?: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
     };
     if (!data.unit || !data.action) {
       sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0458')] });

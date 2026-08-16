@@ -668,6 +668,12 @@ export function UsersPage() {
         </ActionBar>
       }
     >
+      {admins <= 1 && with2fa === 0 ? (
+        <Alert variant="warn">
+          {t('users.singleAdminNo2fa')}{' '}
+          <Link to="/security">{t('users.securityCenter')}</Link>
+        </Alert>
+      ) : null}
       {loading ? (
         <LoadingBlock label={t('users.loading')} />
       ) : (
@@ -789,7 +795,12 @@ export function UsersPage() {
                       variant="secondary"
                       size="sm"
                       loading={busy}
-                      title={t('users.impersonateHint')}
+                      disabled={u.id === me?.id}
+                      title={
+                        u.id === me?.id
+                          ? t('users.cannotImpersonateSelf')
+                          : t('users.impersonateHint')
+                      }
                       onClick={() => setPending({ kind: 'impersonate', user: u })}
                     >
                       {t('users.impersonate')}

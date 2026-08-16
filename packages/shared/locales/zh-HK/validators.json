@@ -1,7 +1,7 @@
 {
   "title": "驗證者節點 (Beta)",
   "subtitle": "在此主機安裝與管理 L1 節點。非託管 — 私鑰由你自行保管。",
-  "beta": "Beta",
+  "beta": "貝塔",
   "tab": {
     "nodes": "節點",
     "disk": "磁碟",
@@ -23,26 +23,26 @@
     "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
-    "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "eth": "以太坊",
+    "avax": "雪崩",
+    "near": "靠近",
+    "ada": "卡爾達諾",
+    "btc": "比特幣",
+    "cosmos": "宇宙中心",
+    "sui": "隋",
+    "aptos": "阿普托斯",
+    "dot": "波爾卡圓點",
+    "sol": "索拉納"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "胡迪",
+    "sepolia": "塞波利亞",
     "mainnet": "主網",
-    "fuji": "Fuji",
+    "fuji": "富士",
     "testnet": "測試網",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "預覽",
+    "preprod": "預生產",
+    "westend": "韋斯特滕德"
   },
   "networkKind": {
     "testnet": "測試網",
@@ -52,7 +52,7 @@
     "minimal": "精簡",
     "pruned": "已修剪",
     "validator-ready": "驗證者就緒",
-    "rpc": "RPC"
+    "rpc": "遠程過程調用"
   },
   "col": {
     "id": "識別碼",

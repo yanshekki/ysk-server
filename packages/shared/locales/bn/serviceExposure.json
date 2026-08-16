@@ -28,11 +28,13 @@
   "privateStartTitle": "নেটওয়ার্কে {{service}} প্রকাশ করবেন?",
   "confirmAndStart": "নিশ্চিত করুন এবং শুরু করুন",
   "cloudSgNote": "শুধুমাত্র হোস্ট ফায়ারওয়াল — ক্লাউড সিকিউরিটি গ্রুপ (AWS/GCP/Azure) পরিবর্তন করা হয় না।",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "সেট করা হয়নি",
+  "modeLoading": "লোড হচ্ছে",
+  "summaryUndecided": "অ্যাক্সেস মোড নিশ্চিত করা হয়নি (ক্যাটালগ ডিফল্ট: {{suggested}})।",
+  "summaryNotEnforced": "ফায়ারওয়াল বন্ধ - প্যানেল এই পোর্টগুলি খুলছে না বা ব্লক করছে না।",
+  "roleSmtp": "SMTP জমা",
+  "roleImap": "IMAP/POP3 মেলবক্স",
+  "serviceNotInstalled": "এই পরিষেবাটি ইনস্টল করা নেই, তাই ফায়ারওয়াল নিয়ম প্রযোজ্য নয়৷",
+  "openButStopped": "পোর্ট খোলা - পরিষেবা চলছে না",
+  "openNoTenants": "কোন ভাড়াটে ছাড়া পাবলিক পোর্ট"
 }

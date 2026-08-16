@@ -34,7 +34,16 @@ describe('panel-tls', () => {
     const st = getPanelTlsStatus({ config: baseConfig('/tmp/x') });
     expect(st.tlsEnabled).toBe(false);
     expect(st.servingHttps).toBe(false);
-    expect(st.httpsUrl).toContain(':9287');
+    expect(st.listenHost).toBe('0.0.0.0');
+    expect(st.httpsUrl).not.toContain('127.0.0.1');
+    expect(st.notes.some((n) => /0\.0\.0\.0|public/i.test(n))).toBe(true);
+  });
+
+  it('parseSsListenHosts reads public bind', async () => {
+    const { parseSsListenHosts } = await import('./panel-tls.js');
+    expect(
+      parseSsListenHosts('LISTEN 0  4096  0.0.0.0:9287  0.0.0.0:*\n', 9287),
+    ).toEqual(['0.0.0.0']);
   });
 
   it('enable writes config when cert files exist', () => {

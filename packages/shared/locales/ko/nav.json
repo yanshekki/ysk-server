@@ -80,5 +80,5 @@
   "noAccessDesc": "현재 역할로는 이 페이지를 열 수 없습니다. 필요하면 관리자에게 요청하세요.",
   "backToDashboard": "대시보드로 돌아가기",
   "validators": "검증자 (Beta)",
-  "docker": "Docker"
+  "docker": "도커"
 }

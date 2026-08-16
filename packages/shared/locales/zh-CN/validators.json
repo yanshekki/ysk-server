@@ -1,7 +1,7 @@
 {
   "title": "验证者节点 (Beta)",
   "subtitle": "在此主机安装与管理 L1 节点。非托管 — 私钥由你自行保管。",
-  "beta": "Beta",
+  "beta": "贝塔",
   "tab": {
     "nodes": "节点",
     "disk": "磁盘",
@@ -23,26 +23,26 @@
     "autoClear": "磁盘危急时自动清空最大的已停止实例（默认关闭）"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
-    "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "eth": "以太坊",
+    "avax": "雪崩",
+    "near": "靠近",
+    "ada": "卡尔达诺",
+    "btc": "比特币",
+    "cosmos": "宇宙中心",
+    "sui": "隋",
+    "aptos": "阿普托斯",
+    "dot": "波尔卡圆点",
+    "sol": "索拉纳"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "胡迪",
+    "sepolia": "塞波利亚",
     "mainnet": "主网",
-    "fuji": "Fuji",
+    "fuji": "富士",
     "testnet": "测试网",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "预览",
+    "preprod": "预生产",
+    "westend": "韦斯特滕德"
   },
   "networkKind": {
     "testnet": "测试网",
@@ -52,7 +52,7 @@
     "minimal": "精简",
     "pruned": "已修剪",
     "validator-ready": "验证者就绪",
-    "rpc": "RPC"
+    "rpc": "远程过程调用"
   },
   "col": {
     "id": "标识",

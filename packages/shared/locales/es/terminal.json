@@ -30,8 +30,10 @@
   "stepUpTitle": "Confirmar shell raíz",
   "stepUpDesc": "Ingrese su código de autenticación o un código de recuperación.",
   "totpLabel": "TOTP/código de recuperación",
-  "sessionStillOpen": "A live shell is still connected while you read this page.",
-  "rootConfirmTitle": "Open a root shell?",
-  "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
-  "rootConfirmBody": "Only continue if you intend to run privileged host commands."
+  "sessionStillOpen": "Un shell en vivo todavía está conectado mientras lees esta página.",
+  "rootConfirmTitle": "¿Abrir un shell raíz?",
+  "rootConfirmDesc": "Esta sesión es un PTY raíz sin restricciones en el host. Los comandos son auditados.",
+  "rootConfirmBody": "Continúe únicamente si desea ejecutar comandos de host privilegiados.",
+  "copyAll": "Copiar todo",
+  "copyAllNeedConn": "Conéctese primero: el búfer está vacío mientras está desconectado"
 }

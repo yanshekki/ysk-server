@@ -170,19 +170,60 @@
   "notInstalled": "No instalado",
   "goToPage": "Abrir página",
   "hubHint": "Catálogo de software y tiempos de ejecución en este host. Escanee para actualizar.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "cada día",
+  "intervalDays": "cada {{n}} días",
+  "intervalHour": "cada hora",
+  "intervalHours": "cada {{n}} horas",
+  "intervalMinutes": "cada {{n}} minutos",
+  "intervalSeconds": "cada {{n}} segundos",
+  "availableHint": "Paquetes con un candidato más nuevo del administrador de paquetes.",
+  "servicesHint": "Servicios de catálogo en este host. Abra la página de servicio para instalar.",
+  "runtimeHint": "Tiempos de ejecución en este host. Las actualizaciones de versión se realizan en cada página de tiempo de ejecución.",
+  "needsReboot": "Reiniciar es necesario",
+  "kernelRebootWarn": "La instalación de un nuevo kernel generalmente requiere un reinicio antes de usarlo.",
+  "neverRun": "aún no se ha ejecutado",
+  "scanOsvN": "Escanear + OSV (primero {{n}})",
+  "rebootNeeded": "reiniciar",
+  "kernelRebootHint": "Los paquetes del kernel necesitan reiniciarse después de aplicar",
+  "needApprovalHint": "Abra Disponible y filtre por paquetes que necesitan aprobación",
+  "applyNeedConfirm": "Abre un cuadro de diálogo de confirmación antes de aplicar.",
+  "probeFailed": "Sonda fallida",
+  "notViaApt": "No gestionado por apt: no hay candidato",
+  "noCandidate": "Sin versión candidata",
+  "jobOpenGeo": "página GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Sonda de protección",
+      "hint": "Señales de defensa periódicas."
+    },
+    "updates_scan": {
+      "name": "Escaneo de actualizaciones",
+      "hint": "Actualizar inventario de paquetes"
+    },
+    "daily_backup": {
+      "name": "Copia de seguridad diaria",
+      "hint": "Copia de seguridad programada de todos"
+    },
+    "db_temp_expire": {
+      "name": "Caducar usuarios temporales de base de datos",
+      "hint": "Eliminar usuarios de bases de datos temporales caducados"
+    },
+    "defense_auto_ban": {
+      "name": "Prohibición automática de defensa",
+      "hint": "Aplicar marca de prohibición automática"
+    },
+    "defense_geoip_update": {
+      "name": "Actualización GeoIP",
+      "hint": "Descargar bases de datos GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "vacío de troncos",
+      "hint": "retención en diario"
+    },
+    "email_dnsbl": {
+      "name": "Correo electrónico DNSBL",
+      "hint": "Comprobación DNSBL de correo"
+    }
+  },
+  "applyPanelAlreadyLatest": "Ya la última versión del panel."
 }

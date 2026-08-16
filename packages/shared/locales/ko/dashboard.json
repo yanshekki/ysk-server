@@ -115,9 +115,9 @@
   "colTitle": "알림",
   "colDetail": "내용",
   "colSource": "출처",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "알림 검색",
+  "notifAll": "전체",
+  "notifDismiss": "숨다",
+  "goFix": "고치다",
   "needDomainFirst": "먼저 도메인을 입력하세요"
 }

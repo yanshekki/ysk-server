@@ -170,19 +170,60 @@
   "notInstalled": "未インストール",
   "goToPage": "ページを開く",
   "hubHint": "このホスト上のソフトウェアとランタイムをカタログします。スキャンして更新します。",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "毎日",
+  "intervalDays": "{{n}} 日ごと",
+  "intervalHour": "毎時間",
+  "intervalHours": "{{n}} 時間ごと",
+  "intervalMinutes": "{{n}}分ごと",
+  "intervalSeconds": "{{n}} 秒ごと",
+  "availableHint": "パッケージ マネージャーからの新しい候補を含むパッケージ。",
+  "servicesHint": "このホスト上のサービスをカタログします。サービスページを開いてインストールします。",
+  "runtimeHint": "このホスト上のランタイム。バージョンのアップグレードは各ランタイム ページで行われます。",
+  "needsReboot": "再起動が必要です",
+  "kernelRebootWarn": "新しいカーネルをインストールするには、通常、使用する前に再起動が必要です。",
+  "neverRun": "まだ実行されていません",
+  "scanOsvN": "スキャン + OSV (最初の {{n}})",
+  "rebootNeeded": "リブート",
+  "kernelRebootHint": "カーネルパッケージは適用後に再起動が必要です",
+  "needApprovalHint": "[利用可能] を開き、承認が必要なパッケージにフィルターします",
+  "applyNeedConfirm": "適用する前に確認ダイアログを開きます",
+  "probeFailed": "プローブが失敗しました",
+  "notViaApt": "apt によって管理されていない - 候補者なし",
+  "noCandidate": "候補バージョンなし",
+  "jobOpenGeo": "地域IPページ",
+  "job": {
+    "protection_probe": {
+      "name": "保護プローブ",
+      "hint": "定期的な防御信号"
+    },
+    "updates_scan": {
+      "name": "アップデートスキャン",
+      "hint": "パッケージインベントリを更新する"
+    },
+    "daily_backup": {
+      "name": "毎日のバックアップ",
+      "hint": "すべてのスケジュールされたバックアップ"
+    },
+    "db_temp_expire": {
+      "name": "一時 DB ユーザーを期限切れにする",
+      "hint": "期限切れの一時データベース ユーザーを削除する"
+    },
+    "defense_auto_ban": {
+      "name": "防衛自動禁止",
+      "hint": "自動禁止チェックを適用する"
+    },
+    "defense_geoip_update": {
+      "name": "地域IPの更新",
+      "hint": "GeoIP データベースをダウンロードする"
+    },
+    "log_auto_vacuum": {
+      "name": "対数真空",
+      "hint": "ジャーナルの保持"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL にメールを送信する",
+      "hint": "メールDNSBLチェック"
+    }
+  },
+  "applyPanelAlreadyLatest": "すでに最新のパネルバージョン"
 }

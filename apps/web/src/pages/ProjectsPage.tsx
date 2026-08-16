@@ -82,7 +82,8 @@ export function ProjectsPage() {
             label: t('projects.statUnhealthy'),
             value: stats.unhealthy,
             tone: 'danger' },
-          { label: t('projects.statStopped'), value: stats.stopped },
+          { label: t('projects.statStoppedOnly'), value: stats.stopped },
+          { label: t('projects.statReadyOnly'), value: stats.ready },
         ] }}
       actions={
         <ActionBar>

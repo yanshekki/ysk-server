@@ -13,7 +13,8 @@ import {
   CardSection,
   DescriptionList,
   FormActions,
-  SummaryStrip } from '../../../shared/components/ui';
+  SummaryStrip,
+  buttonClassName } from '../../../shared/components/ui';
 import { HealthSummary } from './HealthSummary';
 import { projectNeedsLiveRetry } from '../model/status';
 import { isRuntimeBinFallback } from '../model/ops';
@@ -157,11 +158,12 @@ export function ProjectOverviewTab({
                   : usage.withinQuota === true
                     ? 'ok'
                     : 'default' },
-            ...(webStats
+            ...(webStats && webStats.linesRead > 0
               ? [
                   {
                     label: '2xx / 4xx / 5xx',
                     value: `${webStats.status2xx}/${webStats.status4xx}/${webStats.status5xx}`,
+                    hint: t('projects.httpStatsHint'),
                     tone:
                       webStats.status5xx > 0
                         ? ('danger' as const)
@@ -169,7 +171,14 @@ export function ProjectOverviewTab({
                           ? ('warn' as const)
                           : ('ok' as const) },
                 ]
-              : []),
+              : [
+                  {
+                    label: '2xx / 4xx / 5xx',
+                    value: '—',
+                    hint: t('projects.httpStatsNone'),
+                    tone: 'default' as const,
+                  },
+                ]),
           ]}
         />
       ) : null}
@@ -243,15 +252,17 @@ export function ProjectOverviewTab({
             ]}
           />
           <FormActions>
-            <Link to={`/files?root=project:${encodeURIComponent(project.id)}`}>
-              <Button variant="secondary" size="md">
-                {t('projects.ovOpenFiles')}
-              </Button>
+            <Link
+              to={`/files?root=project:${encodeURIComponent(project.id)}`}
+              className={buttonClassName({ variant: 'secondary', size: 'md' })}
+            >
+              {t('projects.ovOpenFiles')}
             </Link>
-            <Link to={`/ftp?project=${encodeURIComponent(project.id)}`}>
-              <Button variant="secondary" size="md">
-                {t('projects.advFtpManage')}
-              </Button>
+            <Link
+              to={`/ftp?project=${encodeURIComponent(project.id)}`}
+              className={buttonClassName({ variant: 'secondary', size: 'md' })}
+            >
+              {t('projects.advFtpManage')}
             </Link>
           </FormActions>
         </CardSection>

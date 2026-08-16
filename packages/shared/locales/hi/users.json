@@ -127,10 +127,12 @@
   "lockLastAdminHint": "यह अंतिम व्यवस्थापक है। हटाना, निलंबन और पदावनति बंद है।",
   "demoteAdminTitle": "इस व्यवस्थापक को पदावनत करें?",
   "demoteAdminDesc": "यह उपयोगकर्ता पूर्ण व्यवस्थापक पहुँच खो देगा। पुष्टि करें कि अन्य व्यवस्थापक रहें।",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "फ़ैक्टरी ऑपरेटर में उच्च-जोखिम लेखन शामिल है। संकीर्ण करना केवल नए खातों पर; डिफ़ॉल्ट बदलने से मौजूदा ऑपरेटर प्रभावित होते हैं।"
+  "searchPkgPh": "पैकेज का नाम",
+  "quotaNonNeg": "गिनती और कोटा नकारात्मक नहीं हो सकते.",
+  "diskQuotaHint": "प्रीसेट GiB हैं; कस्टम बॉक्स MiB है.",
+  "bandwidthHint": "0 का मतलब असीमित है.",
+  "impersonateHint": "इस उपयोगकर्ता के रूप में एक सत्र खोलता है. प्रतिरूपण छोड़ने के लिए खाता मेनू का उपयोग करें.",
+  "operatorHighRiskHint": "फ़ैक्टरी ऑपरेटर में उच्च-जोखिम लेखन शामिल है। संकीर्ण करना केवल नए खातों पर; डिफ़ॉल्ट बदलने से मौजूदा ऑपरेटर प्रभावित होते हैं।",
+  "cannotImpersonateSelf": "आप पहले से ही इस खाते के रूप में साइन इन हैं",
+  "singleAdminNo2fa": "इस होस्ट में एक ही एडमिन है और 2FA बंद है - 2FA सक्षम करें और एक बैकअप एडमिन जोड़ें।"
 }

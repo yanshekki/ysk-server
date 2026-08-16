@@ -25,14 +25,14 @@
   "cryptoAddress": "العنوان",
   "copy": "نسخ",
   "copied": "تم النسخ",
-  "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "docsLink": "التوثيق",
+  "diagTitle": "ملخص التشخيص",
+  "diagBody": "انسخ الإصدار، وقم بتنفيذ، واستضافة الحقائق للصقها في رسالة بريد إلكتروني. هذه ليست حزمة سجل كاملة.",
+  "diagCopy": "نسخ الملخص التشخيصي",
+  "diagCopied": "تم نسخ الملخص التشخيصي",
   "copyTitle": "نسخ {{address}}",
   "diagCopyTitle": "نسخ الإصدار وEXECUTE وبيانات المضيف",
   "diagPreview": "معاينة ما سيُنسخ",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "جارٍ تحميل التشخيص…",
+  "diagLoadFailed": "تعذر تحميل التشخيص"
 }

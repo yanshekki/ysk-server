@@ -117,7 +117,7 @@ export function leftoverKindFromNote(note: string): LeftoverKind {
 
 export function leftoverHrefForKind(kind: LeftoverKind): string | undefined {
   if (kind === 'apache') return '/apache';
-  if (kind === 'vsftpd') return '/ftp';
+  if (kind === 'vsftpd') return '/ftp?tab=service';
   if (kind === 'nginx') return '/nginx';
   if (kind === 'dovecot') return '/email';
   if (kind === 'cli') return '/updates';
@@ -187,6 +187,13 @@ export function localizeReadinessCopy(
     display = display.replace(/尚未\s*os_provisioned/gi, t('readiness.notOsProvisioned'));
     tech.push('os_provisioned');
   }
+  if (/not yet\s*os_provisioned/i.test(display)) {
+    display = display.replace(/not yet\s*os_provisioned/gi, t('readiness.notOsProvisioned'));
+    tech.push('os_provisioned');
+  }
+
+  display = display.replace(/遷移到\s*\/主目錄\//g, 'migrate to /home/');
+  display = display.replace(/迁移到\s*\/主目录\//g, 'migrate to /home/');
 
   // Package names / PATH stay English
   display = display.replace(/在 PATH/g, 'in PATH');
@@ -194,6 +201,10 @@ export function localizeReadinessCopy(
   if (inPath) {
     display = t('readiness.binInPath', { bin: inPath[1] });
   }
+
+  display = display.replace(/\bpdns-伺服器\b/gi, 'pdns-server');
+  display = display.replace(/\bpdns伺服器\b/gi, 'pdns-server');
+  display = display.replace(/\bDB[- ]?IP\b/gi, 'DB-IP');
 
   return { display, technical: tech.length ? [...new Set(tech)].join('\n') : undefined };
 }

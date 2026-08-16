@@ -51,6 +51,7 @@ import {
   bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
 import { ServiceLifecycleBar } from '../features/system/ServiceLifecycleBar';
+import { sslApi } from '../features/ssl/api';
 
 function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -191,6 +192,9 @@ export function EmailPage() {
   >([]);
   const [hostIps, setHostIps] = useState<string[]>([]);
   const [dovecotFailed, setDovecotFailed] = useState(false);
+  const [dovecotActive, setDovecotActive] = useState<string>('');
+  const [svcActive, setSvcActive] = useState<Record<string, string>>({});
+  const [certNames, setCertNames] = useState<string[]>([]);
 
   // Global webmail (shared by all mail domains)
   const [wmTool, setWmTool] = useState<'roundcube' | 'snappymail'>('roundcube');
@@ -209,10 +213,39 @@ export function EmailPage() {
       .then((r) => {
         if (cancelled) return;
         const dove = (r.items ?? []).find((s) => s.id === 'dovecot');
+        setDovecotActive(String(dove?.active ?? ''));
         setDovecotFailed(dove?.active === 'failed');
+        const map: Record<string, string> = {};
+        for (const s of r.items ?? []) {
+          if (s.id) map[s.id] = String(s.active ?? '');
+        }
+        setSvcActive(map);
       })
       .catch(() => {
         if (!cancelled) setDovecotFailed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void sslApi
+      .list()
+      .then((r) => {
+        if (cancelled) return;
+        const names = (r.items ?? [])
+          .flatMap((c) => [
+            String((c as { domain?: string }).domain ?? ''),
+            ...(((c as { names?: string[] }).names ?? []) as string[]),
+          ])
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean);
+        setCertNames([...new Set(names)]);
+      })
+      .catch(() => {
+        if (!cancelled) setCertNames([]);
       });
     return () => {
       cancelled = true;
@@ -269,6 +302,19 @@ export function EmailPage() {
   const healthy = countHealthyDomains(items);
   const draft = countDraftDomains(items, facets);
   const { isEmailBookmarked, toggleEmail } = useNavBookmarks();
+  const mailHostsWanted = useMemo(() => {
+    const out = new Set<string>();
+    for (const d of items) {
+      const base = String(d.domain || '').trim().toLowerCase();
+      if (!base) continue;
+      out.add(`mail.${base}`);
+    }
+    const wm = wmHost.trim().toLowerCase();
+    if (wm) out.add(wm);
+    return [...out];
+  }, [items, wmHost]);
+  const missingMailCerts = mailHostsWanted.filter((h) => !certNames.includes(h));
+  const wmHasCert = certNames.includes(wmHost.trim().toLowerCase());
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -450,10 +496,20 @@ export function EmailPage() {
       {list.error ? <Alert variant="error">{list.error}</Alert> : null}
       {dovecotFailed ? (
         <Alert variant="error">
-          {t('email.dovecotFailedHint')}{' '}
+          {t('email.dovecotFailedStatus', { status: dovecotActive || 'failed' })}{' '}
           <Link to="/email?tab=stack">{t('email.tabStack')}</Link>
-          {' · '}
-          <Link to="/ssl">SSL</Link>
+          {missingMailCerts.length ? (
+            <>
+              {' · '}
+              {t('email.mailCertMissing', { hosts: missingMailCerts.join(', ') })}{' '}
+              <Link to="/ssl">SSL</Link>
+            </>
+          ) : (
+            <>
+              {' · '}
+              {t('email.mailCertPresent')}
+            </>
+          )}
         </Alert>
       ) : null}
 
@@ -665,16 +721,23 @@ export function EmailPage() {
                 </FormLayout>
                 <CheckboxField
                   id="g-wm-https"
-                  checked={wmForceHttps}
-                  onChange={setWmForceHttps}
+                  checked={wmForceHttps && wmHasCert}
+                  onChange={(c) => {
+                    if (c && !wmHasCert) return;
+                    setWmForceHttps(c);
+                  }}
                   label={t('email.webmailForceHttps')}
+                  description={
+                    wmHasCert ? undefined : t('email.webmailNeedCert', { host: wmHost })
+                  }
                 />
                 <ActionBar size="md">
                   <Button
                     variant="primary"
                     size="md"
                     loading={wmBusy}
-                    onClick={() => void runWebmail({ reinstall: true })}
+                    title={t('email.installWebmailTitle')}
+                    onClick={() => void runWebmail({ reinstall: false })}
                   >
                     {t('email.installWebmailProject')}
                   </Button>
@@ -682,6 +745,12 @@ export function EmailPage() {
                     variant="secondary"
                     size="md"
                     loading={wmBusy}
+                    disabled={!wmLog?.projectId}
+                    title={
+                      wmLog?.projectId
+                        ? t('email.reinstallWebmailTitle')
+                        : t('email.reinstallNeedInstall')
+                    }
                     onClick={() => void runWebmail({ reinstall: true })}
                   >
                     {t('email.reinstallWebmail')}
@@ -744,6 +813,11 @@ export function EmailPage() {
                     size="md"
                     loading={queueBusy}
                     disabled={!queueItems.length}
+                    title={
+                      !queueItems.length
+                        ? t('email.flushQueueEmpty')
+                        : t('email.flushQueueNeedExecute')
+                    }
                     onClick={bindSet(setFlushConfirmOpen, true)}
                   >
                     {t('email.flushQueue')}
@@ -849,6 +923,7 @@ export function EmailPage() {
                   { role: 'submission', port: '587', proto: 'tcp' },
                 ]}
                 compact
+                tenantCount={items.length}
               />
               <ServiceAccessStrip
                 serviceId="dovecot"
@@ -860,11 +935,12 @@ export function EmailPage() {
                   { role: 'pop3s', port: '995', proto: 'tcp' },
                 ]}
                 compact
+                tenantCount={items.length}
               />
             </div>
             <Card>
               <CardSection title="Postfix">
-                <SoftwareVersionBar softwareId="postfix" title="Postfix" />
+                <SoftwareVersionBar softwareId="postfix" title="Postfix" unitStatus={svcActive.postfix} />
                 <ServiceLifecycleBar
                   unit="postfix"
                   label="Postfix"
@@ -875,7 +951,7 @@ export function EmailPage() {
             </Card>
             <Card>
               <CardSection title="Dovecot">
-                <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
+                <SoftwareVersionBar softwareId="dovecot" title="Dovecot" unitStatus={svcActive.dovecot} />
                 <ServiceLifecycleBar
                   unit="dovecot"
                   label="Dovecot"
@@ -886,13 +962,16 @@ export function EmailPage() {
             </Card>
             <Card>
               <CardSection title="OpenDKIM">
-                <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />
+                <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" unitStatus={svcActive.opendkim} />
                 <ServiceLifecycleBar
                   unit="opendkim"
                   label="OpenDKIM"
                   actions={['start', 'stop', 'restart']}
                   size="sm"
                 />
+                <p className="muted u-text-sm u-mt-2" title={t('email.opendkimNoReloadTitle')}>
+                  {t('email.opendkimNoReload')}
+                </p>
               </CardSection>
             </Card>
           </div>

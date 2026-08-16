@@ -29,7 +29,7 @@
   "timezone": "时区",
   "timezoneHint": "从清单选择时区（例如 Asia/Hong_Kong）",
   "timezoneSelect": "请选择时区",
-  "dns": "DNS",
+  "dns": "域名系统",
   "updated": "已更新",
   "applyIdentity": "套用身份",
   "identitySetHostname": "主机名已设为 {{name}}",
@@ -78,10 +78,16 @@
     "leFailed": "申请证书失败：{{detail}}",
     "leHint": "请确认域名 A 记录指向本机，且 80 端口可从外网到达（或 nginx 已服务该域名）",
     "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）",
-    "disableConfirmTitle": "Disable panel HTTPS?",
-    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
-    "disableNeedConfirm": "需确认 — 请输入 DISABLE-HTTPS"
+    "disableConfirmTitle": "禁用面板 HTTPS？",
+    "disableConfirmDesc": "该面板将提供 HTTP 服务。 WebAuthn / Passkey 将停止工作，直到 HTTPS 再次打开。",
+    "disablePasskeyWarn": "注册的密钥需要 HTTPS — 它们在 HTTP 上会失败。",
+    "disableNeedConfirm": "需确认 — 请输入 DISABLE-HTTPS",
+    "listenPublic": "小组正在监听公共地址 (0.0.0.0/::)。使用防火墙限制或绑定到 127.0.0.1。",
+    "bootstrapCert": "这是自签名引导证书——浏览器会发出警告。为面板域颁发受信任的证书。",
+    "cliNoSocket": "CLI 没有实时 HTTP 套接字； servingHttps 是从配置和监听套接字 (ss) 推断出来的。",
+    "listenHost": "收听地址",
+    "currentHost": "本次会议",
+    "replaceCert": "替换为受信任的证书"
   },
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",
@@ -194,5 +200,8 @@
   "nginxLeftover": "残留",
   "nginxUnused": "未使用",
   "nginxLeftoverHint": "旧 public-files 或其他残留配置。同步仍会一并写入，除非操作员另行处理。",
-  "nginxUnusedHint": "默认／catch-all 配置（000-default）。同步仍会一并写入，除非操作员另行处理。"
+  "nginxUnusedHint": "默认／catch-all 配置（000-default）。同步仍会一并写入，除非操作员另行处理。",
+  "powerUnlock": "解锁危险区域",
+  "powerLock": "锁定危险区域",
+  "noScheduledPower": "未安排重新启动或关机"
 }

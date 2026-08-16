@@ -28,11 +28,13 @@
   "privateStartTitle": "नेटवर्क पर {{service}} का पर्दाफाश करें?",
   "confirmAndStart": "पुष्टि करें और प्रारंभ करें",
   "cloudSgNote": "केवल होस्ट फ़ायरवॉल - क्लाउड सुरक्षा समूह (AWS/GCP/Azure) नहीं बदले गए हैं।",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "सेट नहीं",
+  "modeLoading": "लोड हो रहा है",
+  "summaryUndecided": "एक्सेस मोड की पुष्टि नहीं हुई (कैटलॉग डिफ़ॉल्ट: {{suggested}})।",
+  "summaryNotEnforced": "फ़ायरवॉल बंद है - पैनल इन पोर्ट को खोल या अवरुद्ध नहीं कर रहा है।",
+  "roleSmtp": "एसएमटीपी सबमिशन",
+  "roleImap": "IMAP/POP3 मेलबॉक्स",
+  "serviceNotInstalled": "यह सेवा स्थापित नहीं है, इसलिए फ़ायरवॉल नियम लागू नहीं होते हैं।",
+  "openButStopped": "पोर्ट खुले हैं - सेवा नहीं चल रही है",
+  "openNoTenants": "बिना किरायेदारों वाले सार्वजनिक बंदरगाह"
 }

@@ -16,7 +16,7 @@
   "keepData": "ডেটা রাখুন",
   "purgeData": "ডেটা পরিষ্কার করুন",
   "uninstallNow": "এখনই আনইনস্টল করুন",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "অন্তত একটি বান্ডিল নির্বাচন করুন. খালি নির্বাচন আর মানে সব মুছে ফেলা।",
+  "uninstallConfirmTitle": "নির্বাচিত বান্ডিলগুলি সরাতে চান?",
+  "uninstallConfirmDesc": "{{count}} বান্ডিল(গুলি) সরানো হবে। নিশ্চিত করতে REMOVE টাইপ করুন।"
 }

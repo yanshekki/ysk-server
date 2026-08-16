@@ -69,8 +69,13 @@
   "noRequirepass": "وضع الحماية يعمل لكن requirepass فارغ أو غير مقروء — لا كلمة مرور.",
   "setRequirepass": "تعيين كلمة المرور",
   "rdbOnlyLossHint": "AOF متوقف وRDB يعمل. إعادة التشغيل أو الانهيار قد تفقد كتابات حديثة.",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/ البيانات (الحاوية)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/ البيانات عادة ما تكون مسار حاوية؛ لا يمكن لهذه اللوحة تأكيد وجودها.",
+  "saveOff": "تعطيل اللقطات (غير مستحسن)",
+  "saveOffWarn": "تؤدي سلسلة الحفظ الفارغة إلى إيقاف تشغيل لقطات RDB. يمكن أن يؤدي العطل إلى فقدان جميع البيانات إذا تم إيقاف تشغيل AOF أيضًا.",
+  "dirMoveWarn": "تغيير دير لا ينقل dump.rdb / AOF. تستخدم البداية التالية المسار الجديد كما هو.",
+  "passwordUnset": "لم يتم تعيينه على الخدمة",
+  "passwordSetHidden": "مجموعة (غير معروضة)"
 }

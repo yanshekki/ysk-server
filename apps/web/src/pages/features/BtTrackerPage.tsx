@@ -12,6 +12,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   FeaturePageLayout,
   Field,
   FormActions,
@@ -87,7 +88,13 @@ function announceProto(url: string): 'http' | 'ws' | 'udp' | 'other' {
 export function BtTrackerPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'overview', {
-    aliases: { trackers: 'tracker', extras: 'tracker', extra: 'tracker', jobs: 'torrents' },
+    aliases: {
+      trackers: 'tracker',
+      extras: 'tracker',
+      extra: 'tracker',
+      jobs: 'torrents',
+      torrent: 'torrents',
+    },
   });
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const [status, setStatus] = useState<BtTrackerStatusDto | null>(null);
@@ -98,6 +105,7 @@ export function BtTrackerPage() {
   const [torrentQ, setTorrentQ] = useState('');
   const [torrentFilter, setTorrentFilter] = useState('all');
   const [addOpen, setAddOpen] = useState(false);
+  const [stopOpen, setStopOpen] = useState(false);
 
   const refreshJobs = useCallback(async () => {
     try {
@@ -237,6 +245,13 @@ export function BtTrackerPage() {
             label: t('btTracker.port'),
             value: String(status?.settings?.httpPort ?? '—'),
           },
+          {
+            label: t('btTracker.announceHost'),
+            value:
+              status?.settings?.publicAnnounceHost?.trim() ||
+              t('btTracker.announceHostUnset'),
+            tone: status?.settings?.publicAnnounceHost?.trim() ? 'ok' : 'warn',
+          },
         ],
       }}
       actions={
@@ -254,7 +269,13 @@ export function BtTrackerPage() {
               {t('btTracker.start')}
             </Button>
           ) : (
-            <Button variant="danger" size="sm" loading={busy} onClick={onStop}>
+            <Button
+              variant="danger"
+              size="sm"
+              loading={busy}
+              title={t('btTracker.stopTitle')}
+              onClick={() => setStopOpen(true)}
+            >
               {t('btTracker.stop')}
             </Button>
           )}
@@ -305,9 +326,7 @@ export function BtTrackerPage() {
                     {t('btTracker.announceHost')}{' '}
                     <strong>
                       {status?.settings?.publicAnnounceHost?.trim() ||
-                        t('btTracker.announceHostUnset', {
-                          defaultValue: '—',
-                        })}
+                        t('btTracker.announceHostUnset')}
                     </strong>
                   </span>
                   <span>
@@ -320,7 +339,13 @@ export function BtTrackerPage() {
                       {t('btTracker.start')}
                     </Button>
                   ) : (
-                    <Button variant="danger" size="sm" loading={busy} onClick={onStop}>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      loading={busy}
+                      title={t('btTracker.stopTitle')}
+                      onClick={() => setStopOpen(true)}
+                    >
                       {t('btTracker.stop')}
                     </Button>
                   )}
@@ -596,6 +621,22 @@ export function BtTrackerPage() {
                       onChange={bindInput((v) => patchDraft('publicAnnounceHost', v))}
                       placeholder="example.com"
                     />
+                    {!String(draft.publicAnnounceHost || '').trim() &&
+                    window.location.hostname.includes('.') ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        title={t('btTracker.fillPublicHostTitle')}
+                        onClick={() =>
+                          patchDraft('publicAnnounceHost', window.location.hostname)
+                        }
+                      >
+                        {t('btTracker.fillPublicHost', {
+                          host: window.location.hostname,
+                        })}
+                      </Button>
+                    ) : null}
                   </Field>
                   <label className="bt-toggle bt-toggle--compact" htmlFor="bt-ws">
                     <input
@@ -686,6 +727,18 @@ export function BtTrackerPage() {
           {tab === 'about' ? <PageGuide guideId="btTracker" /> : null}
         </PageTabs>
       </div>
+      <ConfirmDialog
+        open={stopOpen}
+        onClose={() => setStopOpen(false)}
+        title={t('btTracker.stopTitle')}
+        description={t('btTracker.stopDesc')}
+        danger
+        confirmLabel={t('btTracker.stop')}
+        onConfirm={() => {
+          setStopOpen(false);
+          onStop();
+        }}
+      />
       <AddTorrentModal
         open={addOpen}
         onClose={() => setAddOpen(false)}

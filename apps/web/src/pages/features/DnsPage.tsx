@@ -132,7 +132,7 @@ export function DnsPage() {
   const [zoneOpen, setZoneOpen] = useState(false);
   const [recOpen, setRecOpen] = useState(false);
   const [editRec, setEditRec] = useState<ResourceRow | null>(null);
-  const [delZone, setDelZone] = useState<string | null>(null);
+  const [delZone, setDelZone] = useState<{ id: string; name: string } | null>(null);
   const [delRec, setDelRec] = useState<string | null>(null);
   const [zone, setZone] = useState('');
   const [serverIp, setServerIp] = useState('');
@@ -725,9 +725,13 @@ export function DnsPage() {
                       <button
                         type="button"
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-                        disabled={zones.busy}
+                        disabled={zones.busy || health?.unitActive === false}
                         onClick={bindCall1(zones.apply, r.id)}
-                        title={t('dns.applyZoneTitle')}
+                        title={
+                          health?.unitActive === false
+                            ? t('dns.applyNeedService')
+                            : t('dns.applyZoneTitle')
+                        }
                       >
                         {t('dns.applyZone')}
                       </button>
@@ -742,7 +746,13 @@ export function DnsPage() {
                         type="button"
                         className={buttonClassName({ variant: 'danger', size: 'sm' })}
                         disabled={zones.busy}
-                        onClick={bindSet(setDelZone, r.id)}
+                        title={t('dns.deleteZoneNeedName')}
+                        onClick={() =>
+                          setDelZone({
+                            id: r.id,
+                            name: String(r.zone || r.name || r.id),
+                          })
+                        }
                       >
                         {t('common.delete')}
                       </button>
@@ -1504,6 +1514,12 @@ export function DnsPage() {
                       variant="primary"
                       size="sm"
                       loading={pdnsHealBusy}
+                      disabled={health.unit === 'none'}
+                      title={
+                        health.unit === 'none'
+                          ? t('dns.healNeedInstall')
+                          : t('dns.healthHealPdns')
+                      }
                       onClick={() => {
                         setPdnsHealBusy(true);
                         void api
@@ -1546,24 +1562,38 @@ export function DnsPage() {
                     </Button>
                   </FormActions>
                   <div className="u-mt-3">
-                    <ServiceAccessStrip
-                      serviceId="pdns"
-                      ports={[
-                        { role: 'dns-udp', port: '53', proto: 'udp' },
-                        { role: 'dns-tcp', port: '53', proto: 'tcp' },
-                      ]}
-                      compact
-                      onUpdated={() => void refreshHealth()}
-                    />
-                    <ServiceLifecycleBar
-                      unit="pdns"
-                      label="PowerDNS"
-                      running={health?.unitActive}
-                      actions={['start', 'stop', 'restart', 'reload']}
-                      size="sm"
-                      className="u-mt-3"
-                      onDone={() => void refreshHealth()}
-                    />
+                    <div className="u-mt-3">
+                      <div className="muted u-text-sm">
+                        <strong>{t('dns.toolsFirewallTitle')}</strong>
+                        {' — '}
+                        {t('dns.toolsFirewallHint')}
+                      </div>
+                      <ServiceAccessStrip
+                        serviceId="pdns"
+                        ports={[
+                          { role: 'dns-udp', port: '53', proto: 'udp' },
+                          { role: 'dns-tcp', port: '53', proto: 'tcp' },
+                        ]}
+                        compact
+                        onUpdated={() => void refreshHealth()}
+                      />
+                    </div>
+                    <div className="u-mt-3">
+                      <div className="muted u-text-sm">
+                        <strong>{t('dns.toolsUnitTitle')}</strong>
+                        {' — '}
+                        {t('dns.toolsUnitHint')}
+                      </div>
+                      <ServiceLifecycleBar
+                        unit="pdns"
+                        label="PowerDNS"
+                        running={health?.unitActive}
+                        actions={['start', 'stop', 'restart', 'reload']}
+                        size="sm"
+                        className="u-mt-2"
+                        onDone={() => void refreshHealth()}
+                      />
+                    </div>
                   </div>
                 </CardSection>
               </Card>
@@ -1706,7 +1736,22 @@ export function DnsPage() {
       
         {tab === 'stack' ? (
           <div className="tab-panel stack">
-            <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} showReadyActions={false} />
+            <SoftwareInstallBanner
+              feature="dns"
+              title={t('dns.notInstalled')}
+              showReadyActions={false}
+              installConfirm={{
+                title: t('dns.installConfirmTitle'),
+                description:
+                  health?.listenUdp53 || health?.listenTcp53
+                    ? t('dns.installPort53Busy')
+                    : t('dns.installConfirmDesc'),
+                consequences:
+                  health?.listenUdp53 || health?.listenTcp53
+                    ? [t('dns.installPort53BusyConsequence')]
+                    : [t('dns.installConfirmConsequence')],
+              }}
+            />
             <SoftwareVersionBar softwareId="pdns-server" />
           </div>
         ) : null}
@@ -2012,13 +2057,14 @@ export function DnsPage() {
         onClose={bindSet(setDelZone, null)}
         onConfirm={() => {
           if (delZone)
-            void zones.remove(delZone).then(() => {
-              if (selectedZone?.id === delZone) setSelectedZone(null);
+            void zones.remove(delZone.id).then(() => {
+              if (selectedZone?.id === delZone.id) setSelectedZone(null);
               setDelZone(null);
             });
         }}
         title={t('dns.deleteZoneTitle')}
         description={t('dns.deleteZoneDesc')}
+        confirmText={delZone?.name}
         severity="destructive"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

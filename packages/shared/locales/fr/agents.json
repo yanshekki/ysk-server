@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "accusé de réception + CLI JSON",
   "labelStdoutBody": "Corps stdout CLI",
-  "resultOuterHint": "Le résultat externe est la sortie stdout de CLI --json."
+  "resultOuterHint": "Le résultat externe est la sortie stdout de CLI --json.",
+  "statusFlowTitle": "Flux de statut",
+  "statusFlow": "Enregistré uniquement → en ligne → obsolète (> 60 s) → hors ligne (déconnecté). Le filtre « Hors ligne » est déconnecté.",
+  "colSession": "UUID de session",
+  "copySession": "Copier l'UUID de session pour le cluster/CLI --session",
+  "staleFor": "Invisible {{age}}",
+  "commandTitle": "Mettre une commande en file d'attente pour cette session",
+  "historyTitleShort": "Ouvrir l'historique des commandes (lecture seule)",
+  "expEdge": "Sur un bord :"
 }

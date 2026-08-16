@@ -127,10 +127,12 @@
   "lockLastAdminHint": "এটি শেষ অ্যাডমিন। মুছে ফেলা, স্থগিত ও পদত্যাগ বন্ধ।",
   "demoteAdminTitle": "এই অ্যাডমিনকে পদত্যাগ করবেন?",
   "demoteAdminDesc": "এই ব্যবহারকারী পূর্ণ অ্যাডমিন অ্যাক্সেস হারাবেন। নিশ্চিত করুন অন্য অ্যাডমিন আছেন।",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "কারখানা অপারেটরে উচ্চ-ঝুঁকির লেখা আছে। সংকীর্ণ করলে শুধু নতুন অ্যাকাউন্ট; ডিফল্ট বদলালে বিদ্যমান অপারেটর প্রভাবিত।"
+  "searchPkgPh": "প্যাকেজের নাম",
+  "quotaNonNeg": "গণনা এবং কোটা নেতিবাচক হতে পারে না।",
+  "diskQuotaHint": "প্রিসেটগুলি হল GiB; কাস্টম বক্স হল MiB।",
+  "bandwidthHint": "0 মানে সীমাহীন।",
+  "impersonateHint": "এই ব্যবহারকারী হিসাবে একটি সেশন খোলে। ছদ্মবেশ ত্যাগ করতে অ্যাকাউন্ট মেনু ব্যবহার করুন।",
+  "operatorHighRiskHint": "কারখানা অপারেটরে উচ্চ-ঝুঁকির লেখা আছে। সংকীর্ণ করলে শুধু নতুন অ্যাকাউন্ট; ডিফল্ট বদলালে বিদ্যমান অপারেটর প্রভাবিত।",
+  "cannotImpersonateSelf": "আপনি ইতিমধ্যে এই অ্যাকাউন্ট হিসাবে সাইন ইন করেছেন",
+  "singleAdminNo2fa": "এই হোস্টের একজন একক প্রশাসক আছে এবং 2FA বন্ধ আছে — 2FA সক্ষম করুন এবং একজন ব্যাকআপ অ্যাডমিন যোগ করুন।"
 }

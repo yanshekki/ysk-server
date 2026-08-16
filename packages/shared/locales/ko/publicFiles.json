@@ -30,8 +30,13 @@
   "managedConf": "관리형 구성",
   "systemConf": "시스템 구성",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "아직 관리되는 Nginx conf가 없습니다. 적용을 클릭하세요.",
+    "notSynced": "관리되는 conf가 존재하지만 /etc/nginx/conf.d 아래에 있지 않습니다. YSK_EXECUTE를 사용하여 루트로 다시 적용합니다."
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "디렉토리 목록(자동 색인)",
+  "liveSystemConf": "실제 시스템 설정: {{path}}",
+  "publicRootNote": "공개 루트: {{path}}",
+  "applyConfirmTitle": "공개 파일 사이트를 적용할까요?",
+  "applyConfirmDesc": "Nginx server_name {{name}}을(를) 쓰고 Nginx를 다시 로드합니다.",
+  "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다."
 }

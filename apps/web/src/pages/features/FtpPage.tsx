@@ -571,7 +571,10 @@ export function FtpPage() {
               onInstalled={() => void loadServiceStatus()}
               showReadyActions={false}
             />
-            <SoftwareVersionBar softwareId="vsftpd" />
+            <SoftwareVersionBar
+              softwareId="vsftpd"
+              unitStatus={serviceStatus?.active}
+            />
           </div>
         ) : null}
 

@@ -170,19 +170,60 @@
   "notInstalled": "ইনস্টল করা হয়নি",
   "goToPage": "পৃষ্ঠা খুলুন",
   "hubHint": "এই হোস্টে ক্যাটালগ সফ্টওয়্যার এবং রানটাইম। রিফ্রেশ করতে স্ক্যান করুন।",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "প্রতিদিন",
+  "intervalDays": "প্রতি {{n}} দিনে",
+  "intervalHour": "প্রতি ঘন্টা",
+  "intervalHours": "প্রতি {{n}} ঘন্টা",
+  "intervalMinutes": "প্রতি {{n}} মিনিটে",
+  "intervalSeconds": "প্রতি {{n}} সেকেন্ডে",
+  "availableHint": "প্যাকেজ ম্যানেজার থেকে একজন নতুন প্রার্থীর সাথে প্যাকেজ।",
+  "servicesHint": "এই হোস্টে ক্যাটালগ পরিষেবা। ইনস্টল করতে পরিষেবা পৃষ্ঠা খুলুন।",
+  "runtimeHint": "এই হোস্টে রানটাইম। প্রতিটি রানটাইম পৃষ্ঠায় সংস্করণ আপগ্রেড করা হয়।",
+  "needsReboot": "রিবুট প্রয়োজন",
+  "kernelRebootWarn": "একটি নতুন কার্নেল ইনস্টল করার জন্য সাধারণত এটি ব্যবহার করার আগে একটি রিবুট প্রয়োজন।",
+  "neverRun": "এখনও চালান না",
+  "scanOsvN": "স্ক্যান + OSV (প্রথম {{n}})",
+  "rebootNeeded": "রিবুট",
+  "kernelRebootHint": "প্রয়োগ করার পরে কার্নেল প্যাকেজগুলিকে পুনরায় বুট করতে হবে",
+  "needApprovalHint": "উপলব্ধ খুলুন এবং অনুমোদন প্রয়োজন প্যাকেজ ফিল্টার",
+  "applyNeedConfirm": "আবেদন করার আগে একটি নিশ্চিত ডায়ালগ খোলে",
+  "probeFailed": "তদন্ত ব্যর্থ হয়েছে",
+  "notViaApt": "apt দ্বারা পরিচালিত হয় না — কোন প্রার্থী",
+  "noCandidate": "কোন প্রার্থী সংস্করণ নেই",
+  "jobOpenGeo": "জিওআইপি পৃষ্ঠা",
+  "job": {
+    "protection_probe": {
+      "name": "সুরক্ষা তদন্ত",
+      "hint": "পর্যায়ক্রমিক প্রতিরক্ষা সংকেত"
+    },
+    "updates_scan": {
+      "name": "আপডেট স্ক্যান",
+      "hint": "প্যাকেজ তালিকা রিফ্রেশ করুন"
+    },
+    "daily_backup": {
+      "name": "দৈনিক ব্যাকআপ",
+      "hint": "নির্ধারিত ব্যাকআপ সব"
+    },
+    "db_temp_expire": {
+      "name": "টেম্প ডিবি ব্যবহারকারীদের মেয়াদ শেষ",
+      "hint": "মেয়াদোত্তীর্ণ অস্থায়ী ডাটাবেস ব্যবহারকারীদের বাদ দিন"
+    },
+    "defense_auto_ban": {
+      "name": "প্রতিরক্ষা স্বয়ংক্রিয় নিষেধাজ্ঞা",
+      "hint": "অটো-ব্যান টিক প্রয়োগ করুন"
+    },
+    "defense_geoip_update": {
+      "name": "জিওআইপি আপডেট",
+      "hint": "জিওআইপি ডাটাবেস ডাউনলোড করুন"
+    },
+    "log_auto_vacuum": {
+      "name": "লগ ভ্যাকুয়াম",
+      "hint": "জার্নাল্ড ধরে রাখা"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL ইমেল করুন",
+      "hint": "মেল DNSBL চেক"
+    }
+  },
+  "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ"
 }

@@ -72,5 +72,10 @@
   "dirDataContainer": "/data (container)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists.",
+  "saveOff": "禁用快照（不推荐）",
+  "saveOffWarn": "空保存字符串会关闭 RDB 快照。如果 AOF 也关闭，则崩溃可能会丢失所有数据。",
+  "dirMoveWarn": "更改目录不会移动 dump.rdb / AOF。下次启动将按原样使用新路径。",
+  "passwordUnset": "未在服务上设置",
+  "passwordSetHidden": "设置（未显示）"
 }

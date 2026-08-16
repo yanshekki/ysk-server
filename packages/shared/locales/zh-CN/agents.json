@@ -126,5 +126,13 @@
   "labelStderr": "标准错误",
   "labelAckCli": "确认 + CLI JSON",
   "labelStdoutBody": "CLI 标准输出内容",
-  "resultOuterHint": "外层 result 为 CLI --json 标准输出。"
+  "resultOuterHint": "外层 result 为 CLI --json 标准输出。",
+  "statusFlowTitle": "状态流程",
+  "statusFlow": "仅注册→在线→陈旧（>60s）→离线（断开连接）。过滤器“离线”已断开。",
+  "colSession": "会话UUID",
+  "copySession": "复制集群/CLI --session 的会话 UUID",
+  "staleFor": "看不见的{{年龄}}",
+  "commandTitle": "为此会话排队命令",
+  "historyTitleShort": "打开命令历史记录（只读）",
+  "expEdge": "在边缘："
 }

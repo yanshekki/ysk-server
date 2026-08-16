@@ -26,6 +26,8 @@ export type SoftwareVersionBarProps = {
   onRuntimeInstall?: (version: string) => void | Promise<void>;
   /** Show uninstall control when installed (default true). */
   allowUninstall?: boolean;
+  /** systemd / probe status shown next to the version (running / failed / stopped). */
+  unitStatus?: string;
   className?: string;
 };
 
@@ -46,6 +48,7 @@ export function SoftwareVersionBar({
   title,
   onRuntimeInstall,
   allowUninstall = true,
+  unitStatus,
   className }: SoftwareVersionBarProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -269,6 +272,25 @@ export function SoftwareVersionBar({
         ) : (
           <Badge tone="warn">{t('software.status.notInstalled')}</Badge>
         )}
+        {unitStatus ? (
+          <Badge
+            tone={
+              unitStatus === 'active' || unitStatus === 'running'
+                ? 'ok'
+                : unitStatus === 'failed'
+                  ? 'danger'
+                  : 'warn'
+            }
+          >
+            {unitStatus === 'active' || unitStatus === 'running'
+              ? t('common.running')
+              : unitStatus === 'failed'
+                ? t('common.failed')
+                : unitStatus === 'inactive'
+                  ? t('common.stopped')
+                  : unitStatus}
+          </Badge>
+        ) : null}
         {st.upgradable ? (
           <Badge tone="warn">{t('software.badge.update')}</Badge>
         ) : st.installed && st.latestVersion ? (

@@ -136,5 +136,9 @@
   "settingsNoSandboxWarn": "会关闭 Chromium 沙箱。只应在可信的 container 内使用。下次真实浏览器工作阶段才生效。",
   "settingsDangerDlWarn": "允许经主机浏览器下载可执行文件与脚本。请确认确实需要。",
   "settingsDangerConfirmTitle": "启用高风险浏览设置？",
-  "needUrl": "请先在上方输入网址开始会话。"
+  "needUrl": "请先在上方输入网址开始会话。",
+  "envColVar": "变量",
+  "envColHost": "主机进程",
+  "envColPanel": "面板设置",
+  "envColEffective": "生效值"
 }

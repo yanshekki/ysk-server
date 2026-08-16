@@ -4,6 +4,7 @@
   "packages": "方案",
   "suspended": "暫停",
   "securityCenter": "安全中心",
+  "singleAdminNo2fa": "全機只有一名管理員且未開 2FA — 請啟用 2FA 並建立備援管理員。",
   "loading": "載入用戶與方案…",
   "userList": "用戶列表 ({{count}})",
   "userListDesc": "開啟詳情可改角色、密碼、方案、權限覆寫",
@@ -22,6 +23,7 @@
   "impersonate": "模擬登入",
   "impersonateHint": "以該用戶開啟工作階段。離開時請用帳戶選單結束模擬。",
   "cannotDeleteSelf": "不能刪除目前登入的帳戶",
+  "cannotImpersonateSelf": "你已用此帳戶登入",
   "openDetail": "詳情",
   "edit": "編輯",
   "resetPassword": "重設密碼",
@@ -110,7 +112,7 @@
     "admin": "全功能、用戶與權限、危險操作。永遠全開。",
     "operator": "日常運維：服務、更新、DNS／SSL、建站等。",
     "viewer": "只讀：查看狀態、日誌、列表，不可以改。",
-    "agent": "自動化／代理：低危寫入，受 scope 限制。"
+    "agent": "自動化／代理：低危寫入，受範圍限制。"
   },
   "securityTitle": "雙重驗證（此用戶）",
   "securityPerUserHint": "每位用戶獨立 TOTP／Passkey。管理員可清除此用戶 2FA，但不可以代持或共用 secret。",
@@ -132,5 +134,5 @@
   "quotaNonNeg": "數量與配額不可為負數。",
   "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
   "bandwidthHint": "0 代表不限。",
-  "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新建帳戶；修改預設會影響現有操作員。"
+  "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新授予的權限；修改預設會影響現有操作員。"
 }

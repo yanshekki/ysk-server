@@ -35,7 +35,7 @@ export function enabledLabel(v: string, t: TFunction): string {
 }
 
 export function actionLabel(
-  action: 'start' | 'stop' | 'restart' | 'reload',
+  action: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable',
   t: TFunction,
 ): string {
   return t(`services.action.${action}`);
@@ -132,7 +132,7 @@ export function ServicesPage() {
 
   async function lifecycle(
     unit: string,
-    action: 'start' | 'stop' | 'restart' | 'reload',
+    action: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable',
   ) {
     await run(async () => {
       try {
@@ -244,21 +244,32 @@ export function ServicesPage() {
           {t('services.clusterCount', { count: haOverview.count })} ·{' '}
           {haOverview.items
             .slice(0, 4)
-            .map((x) => `${x.name}(${x.status})`)
+            .map((x) => {
+              const st = t(`db.cluster.status.${x.status}`, { defaultValue: x.status });
+              return `${x.name}(${st})`;
+            })
             .join(' · ')}
           {haOverview.count > 4 ? ' …' : ''}{' '}
-          <Link
-            to="/databases/mariadb/service"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('services.mariadbCluster')}
-          </Link>{' '}
-          <Link
-            to="/databases/mysql/service"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            MySQL
-          </Link>
+          {items.some((i) => i.id === 'mariadb' && i.installed) ? (
+            <Link
+              to="/databases/mariadb/service"
+              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            >
+              {t('services.mariadbCluster')}
+            </Link>
+          ) : (
+            <span className="muted" title={t('services.mariadbNotInstalled')}>
+              {t('services.mariadbNotInstalled')}
+            </span>
+          )}{' '}
+          {items.some((i) => i.id === 'mysql' && i.installed) ? (
+            <Link
+              to="/databases/mysql/service"
+              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+            >
+              MySQL
+            </Link>
+          ) : null}
         </Alert>
       ) : null}
 
@@ -317,10 +328,13 @@ export function ServicesPage() {
                         onClick={bindSet(setCatFilter, 'all')}
                       >
                         {t('services.all')}
-                        <span className="ops-chip__n">{items.length}</span>
+                        <span className="ops-chip__n">
+                          {items.filter((i) => i.installed).length}
+                        </span>
                       </button>
                       {categories.map((c) => {
-                        const n = items.filter((i) => i.category === c).length;
+                        const n = items.filter((i) => i.category === c && i.installed).length;
+                        if (n === 0) return null;
                         return (
                           <button
                             key={c}
@@ -391,6 +405,16 @@ export function ServicesPage() {
                             {!row.installed ? (
                               <Badge tone="danger">{t('common.notInstalled')}</Badge>
                             ) : null}
+                            {row.installed &&
+                            row.active === 'active' &&
+                            row.enabled !== 'enabled' ? (
+                              <Badge
+                                tone="warn"
+                                title={t('services.bootDisabledWarn', { label: row.label })}
+                              >
+                                {t('services.bootDisabledShort')}
+                              </Badge>
+                            ) : null}
                           </div>
                         </div>
                         <div className="ops-svc__actions">
@@ -452,6 +476,18 @@ export function ServicesPage() {
                               >
                                 {t('services.action.restart')}
                               </Button>
+                              {row.active === 'active' && row.enabled !== 'enabled' ? (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  loading={busy}
+                                  disabled={!canMutate || !row.installed}
+                                  title={t('services.bootDisabledWarn', { label: row.label })}
+                                  onClick={bindCall2(lifecycle, row.unit, 'enable')}
+                                >
+                                  {t('services.action.enable')}
+                                </Button>
+                              ) : null}
                               <Button
                                 variant="ghost"
                                 size="sm"

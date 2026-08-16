@@ -79,10 +79,10 @@
   "executeNote": "호스트에는 YSK_EXECUTE=1 및 루트 API가 필요합니다. 마이그레이션 후 DNS A/AAAA를 업데이트하고 클라우드 방화벽 + 메일 PTR을 확인하세요.",
   "dnsCutover": "DNS 컷오버(수동)",
   "dnsCutoverDesc": "이러한 이름에 대한 A/AAAA를 새 공용 IP로 지정합니다.",
-  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
-  "orphanRemove": "Remove leftover home",
-  "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanHomesHint": "남은 프로젝트 주택(상점에 없음) 사용되지 않은 것을 확인한 후에만 제거하십시오.",
+  "orphanRemove": "남은 집 없애기",
+  "orphanRemoveTitle": "남은 프로젝트 홈을 삭제하시겠습니까?",
+  "orphanRemoveDesc": "디스크에서 {{path}}를 영구적으로 삭제합니다. 이것은 상점 프로젝트가 아닙니다. YSK_EXECUTE=1이 필요합니다.",
   "orphanRemovePhrase": "확인하려면 DELETE를 입력하세요.",
   "orphanRemoveNeedConfirm": "확인이 필요합니다"
 }

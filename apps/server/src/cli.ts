@@ -5525,7 +5525,14 @@ async function mainInner(
         printJson({ ok: true, ...r });
         return 0;
       }
-      if (sub === 'start' || sub === 'stop' || sub === 'restart' || sub === 'reload') {
+      if (
+        sub === 'start' ||
+        sub === 'stop' ||
+        sub === 'restart' ||
+        sub === 'reload' ||
+        sub === 'enable' ||
+        sub === 'disable'
+      ) {
         const unit = getOpt(args, '--unit') ?? getOpt(args, '--id');
         if (!unit) {
           process.stderr.write(`${tl('cli.usage.cli.name.services.sub.--unit.4fe3fa', { CLI_NAME, sub })}\n`);

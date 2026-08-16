@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "डाक में काम करनेवाला मज़दूर",
   "subtitle": "इस होस्ट पर Docker इंजन, कंटेनर, छवियाँ, Compose प्रोजेक्ट और डिस्क स्थापित व नियंत्रित करें।",
   "refresh": "ताज़ा करें",
   "notInstalled": "Docker Engine स्थापित नहीं है। इस पृष्ठ से docker.io और docker-compose-v2 स्थापित करें।",
@@ -13,7 +13,7 @@
     "overview": "सारांश",
     "containers": "कंटेनर",
     "images": "छवियाँ",
-    "compose": "Compose",
+    "compose": "लिखें",
     "volumes": "Volume",
     "networks": "नेटवर्क",
     "prune": "साफ़ करें",

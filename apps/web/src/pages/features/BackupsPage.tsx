@@ -28,6 +28,19 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { bindCall1, bindCheck, bindInput, bindSet, bindVoid } from '../bind-handlers';
+import { formatDateTime } from '../../shared/lib/datetime';
+
+function localizeBackupNote(
+  raw: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  let s = String(raw || '').replace(/Wrotebackup/gi, 'Wrote backup');
+  s = s.replace(/\bkept:\s*(\d+)/gi, (_m, n) => t('backups.noteKept', { n }));
+  s = s.replace(/\bskipped:\s*/gi, t('backups.noteSkipped'));
+  s = s.replace(/Home tar only — no SQL dump\./gi, t('backups.noteHomeTarOnly'));
+  s = s.replace(/\.env \/ \.db\.env excluded\./gi, t('backups.noteEnvExcluded'));
+  return s;
+}
 
 const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
 
@@ -286,6 +299,7 @@ export function BackupsPage() {
         notes?: string[];
       }>)
     : [];
+  const lastSkipped = lastResults.some((x) => x.skipped);
 
   const [tab, setTab] = usePageTab(BK_TABS, 'files');
 
@@ -301,23 +315,27 @@ export function BackupsPage() {
   }
 
   const lastLabel =
-    lastOk === true
-      ? lastRun?.empty
-        ? t('backups.nothingToDo')
-        : lastRun?.sideOk === false
-          ? t('backups.tarOkSideFail')
-          : t('common.success')
-      : lastOk === false
-        ? t('backups.hasFailures')
-        : t('backups.notYet');
+    lastOk === true && lastSkipped
+      ? t('backups.partialSkipped')
+      : lastOk === true
+        ? lastRun?.empty
+          ? t('backups.nothingToDo')
+          : lastRun?.sideOk === false
+            ? t('backups.tarOkSideFail')
+            : t('common.success')
+        : lastOk === false
+          ? t('backups.hasFailures')
+          : t('backups.notYet');
   const lastTone =
-    lastOk === true
-      ? lastRun?.sideOk === false
-        ? 'warn'
-        : 'ok'
-      : lastOk === false
-        ? 'danger'
-        : 'ok';
+    lastOk === true && lastSkipped
+      ? 'warn'
+      : lastOk === true
+        ? lastRun?.sideOk === false
+          ? 'warn'
+          : 'ok'
+        : lastOk === false
+          ? 'danger'
+          : 'ok';
   const resticLabel = restic.enabled
     ? resticPasswordSet || restic.password
       ? t('common.enabled')
@@ -429,7 +447,7 @@ export function BackupsPage() {
                           </span>
                           <span>
                             {b.mtime
-                              ? new Date(b.mtime).toLocaleString('zh-HK')
+                              ? formatDateTime(b.mtime, { locale: i18n.language })
                               : '—'}
                           </span>
                         </div>
@@ -462,6 +480,7 @@ export function BackupsPage() {
                                 variant="ghost"
                                 size="sm"
                                 loading={busy}
+                                title={t('backups.previewTitle')}
                                 onClick={() => {
                                   setRestoreMode('dry-run');
                                   setRestoreTarget(b);
@@ -473,6 +492,7 @@ export function BackupsPage() {
                                 variant="secondary"
                                 size="sm"
                                 loading={busy}
+                                title={t('backups.restoreWebTitle')}
                                 onClick={() => {
                                   setRestoreMode('web');
                                   setRestoreTarget(b);
@@ -481,9 +501,10 @@ export function BackupsPage() {
                                 {t('backups.restoreWeb')}
                               </Button>
                               <Button
-                                variant="primary"
+                                variant="secondary"
                                 size="sm"
                                 loading={busy}
+                                title={t('backups.restoreFullTitle')}
                                 onClick={() => {
                                   setRestoreMode('full');
                                   setRestoreTarget(b);
@@ -678,7 +699,7 @@ export function BackupsPage() {
                   {
                     label: t('common.time'),
                     value: lastRun.at
-                      ? new Date(String(lastRun.at)).toLocaleString()
+                      ? formatDateTime(String(lastRun.at), { locale: i18n.language })
                       : '—' },
                   {
                     label: t('projects.healthDetail.overall'),
@@ -693,7 +714,9 @@ export function BackupsPage() {
                   {
                     label: t('common.notes'),
                     value: Array.isArray(lastRun.notes)
-                      ? (lastRun.notes as string[]).join(
+                      ? (lastRun.notes as string[])
+                          .map((n) => localizeBackupNote(n, t))
+                          .join(
                           i18n.language?.toLowerCase().startsWith('en') ? '; ' : '；',
                         )
                       : '—' },
@@ -813,7 +836,7 @@ export function BackupsPage() {
                       className: 'muted',
                       nowrap: true,
                       render: (s) =>
-                        s.time ? new Date(s.time).toLocaleString() : '—' },
+                        s.time ? formatDateTime(s.time, { locale: i18n.language }) : '—' },
                     {
                       key: 'tags',
                       header: 'Tags',
@@ -923,12 +946,12 @@ export function BackupsPage() {
                   {
                     label: t('common.time'),
                     value: lastRun.at
-                      ? new Date(String(lastRun.at)).toLocaleString()
+                      ? formatDateTime(String(lastRun.at), { locale: i18n.language })
                       : '—' },
                   ...(Array.isArray(lastRun.notes)
                     ? (lastRun.notes as string[]).slice(0, 4).map((n, i) => ({
                         label: i === 0 ? t('common.notes') : t('backups.noteN', { n: i + 1 }),
-                        value: n }))
+                        value: localizeBackupNote(n, t) }))
                     : []),
                 ]}
               />
@@ -1323,6 +1346,9 @@ export function BackupsPage() {
             : ''
         }
         confirmLabel={restoreMode === 'dry-run' ? t('system.preview') : t('files.restore')}
+        confirmText={
+          restoreMode === 'full' && restoreTarget ? restoreTarget.name : undefined
+        }
         cancelLabel={t('common.cancel')}
         danger={restoreMode === 'full'}
         busy={busy}

@@ -136,18 +136,20 @@
       "gcore": "Dapatkan CDN",
       "custom": "Proksi khusus"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list.",
-    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
+    "needProvider": "Pilih penyedia CDN sebelum mengambil daftar IP-nya.",
+    "spoofWarn": "Mempercayai CIDR yang salah memungkinkan klien memalsukan header X-Forwarded-For/CDN sebagai IP mereka."
   },
   "linkUp": "Ke atas",
   "linkDown": "Turun",
-  "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
-  "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "linkDownTitle": "Ambil {{name}} offline",
+  "linkDownNeedConfirm": "Ketikkan nama antarmuka untuk mengonfirmasi",
+  "persistNmHint": "Bertahan berarti perubahan dapat bertahan saat reboot melalui NetworkManager.",
+  "hideRaw": "Sembunyikan keluaran mentah",
+  "rawLoadedAt": "Dimuat {{time}}",
+  "deleteDefaultPanelWarn": "Menghapus rute default dapat membatalkan sesi panel ini. Ketik DEFAULT untuk mengonfirmasi.",
+  "typeDefaultToConfirm": "Ketik DEFAULT untuk mengonfirmasi",
   "deleteDefaultNeedConfirm": "Perlu konfirmasi — ketik DEFAULT (dapat memutus panel ini)",
-  "deleteRouteNeedConfirm": "Perlu konfirmasi"
+  "deleteRouteNeedConfirm": "Perlu konfirmasi",
+  "nmUnavailable": "NetworkManager tidak berjalan — hanya rute langsung yang dapat ditambahkan",
+  "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus."
 }

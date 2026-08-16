@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "confirmação + CLI JSON",
   "labelStdoutBody": "Corpo padrão da CLI",
-  "resultOuterHint": "O resultado externo é CLI --json stdout."
+  "resultOuterHint": "O resultado externo é CLI --json stdout.",
+  "statusFlowTitle": "Fluxo de status",
+  "statusFlow": "Registrado apenas → online → obsoleto (>60 anos) → offline (desconectado). O filtro “Offline” está desconectado.",
+  "colSession": "UUID da sessão",
+  "copySession": "Copiar UUID de sessão para cluster/CLI --session",
+  "staleFor": "Invisível {{age}}",
+  "commandTitle": "Enfileirar um comando para esta sessão",
+  "historyTitleShort": "Abrir histórico de comandos (somente leitura)",
+  "expEdge": "No limite:"
 }

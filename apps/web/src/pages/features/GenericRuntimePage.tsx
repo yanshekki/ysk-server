@@ -558,9 +558,17 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           {
             label: t('common.available'),
             value: probeData.available.length },
-          { label: t('common.target'), value: version },
+          { label: t('common.target'), value: version || panelDefault || '—' },
+          {
+            label: t('runtime.panelDefaultLabel'),
+            value: panelDefault || t('runtime.panelDefaultNone'),
+          },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
           { label: t('common.host'), value: hostDisplay || '—' },
+          {
+            label: t('runtime.binaryPath'),
+            value: nodePathSafety?.path || probeData.hostRaw || '—',
+          },
         ] }}
       actions={<>
           <Button

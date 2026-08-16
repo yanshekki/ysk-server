@@ -102,10 +102,10 @@
   "disableConfirmTitle": "UFW を無効にしますか？",
   "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
   "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "failed2ban = 一時的なログベースの禁止",
+  "servicesUfwOff": "UFWはオフです。このリストは望ましい暴露であり、ホストが強制するルールではありません。",
+  "desiredOnlyUfwOff": "望ましい: {{mode}} · UFW オフ (適用されません)",
+  "syncNotApplied": "UFWオフ・未適用",
+  "defaultNotApplied": "該当なし (UFW オフ)",
+  "ufwOffHint": "UFW がオフの場合、デフォルトの着信は適用されません"
 }

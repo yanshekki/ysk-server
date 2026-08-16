@@ -317,7 +317,7 @@
     "ptrBad": "PTR عكس DNS مفقود أو غير صحيح - طلب من مزود VPS",
     "port25Blocked": "يبدو أن المنفذ الصادر 25 محظور — اطلب إلغاء الحظر أو استخدم ترحيل SMTP",
     "port25Unknown": "حالة المنفذ 25 غير معروفة - قم بإجراء فحص الاتصال",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "يتم إنشاء DMARC في اللوحة ولكن لم يتم نشره في DNS العام بعد"
   },
   "stack": {
     "tlsNote": "شهادات TLS عبر Let’s Encrypt لـ SMTP/IMAP",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "فشلت إعادة تحميل Postfix: {{detail}}",
     "dovecotApplied": "كتب مقتطف Dovecot TLS وحاول إعادة التحميل.",
     "dovecotSkipped": "تم تخطي Dovecot (غير مثبت أو أن doveconf غير متوفر).",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "شهادة البريد مفقودة؛ كتب ssl=no حتى يتمكن Dovecot من البدء بدون ملفات LE."
   },
   "policyApplySystemHint": "حدد \"تطبيق على النظام\" لكتابة خرائط Postfix/Rspamd وإعادة التحميل؛",
   "rateLimitAppliedNote": "تم تطبيق معدل الصادر بالساعة وعلامة مكافحة البريد العشوائي (عند تشغيل النظام).",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "حذف هذه الرسالة من الطابور؟",
   "deleteQueueDesc": "إزالة {{id}} من طابور MTA المحلي. يحتاج YSK_EXECUTE.",
   "openQueuePage": "فتح طابور البريد",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "لم يتم التحقق بعد",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "مجالات البريد المسجلة على هذا المضيف",
   "healthChecklist": "قائمة التحقق {{score}}/100",
   "healthChecklistHint": "درجة القائمة — لم يُفحص DNS / PTR / المنفذ 25 بعد",
-  "healthLiveHint": "درجة الفحص الحي"
+  "healthLiveHint": "درجة الفحص الحي",
+  "installWebmailTitle": "إنشاء مشروع بريد الويب المشترك (التثبيت الأول)",
+  "reinstallWebmailTitle": "إعادة بناء/ترقية مشروع بريد الويب الحالي",
+  "reinstallNeedInstall": "قم بتثبيت بريد الويب أولاً",
+  "dovecotFailedStatus": "الحمامة هي {{status}}. افتح علامة تبويب البرنامج للحصول على ملخص الوحدة.",
+  "mailCertMissing": "لا توجد شهادة لـ {{hosts}}. قم بإصداره على صفحة SSL.",
+  "mailCertPresent": "لقد تم إصدار شهادة بريد بالفعل — وهذه ليست مشكلة فقدان الشهادة.",
+  "webmailNeedCert": "لا توجد شهادة لـ {{host}} — قم بإصدارها على SSL قبل فرض HTTPS.",
+  "flushQueueEmpty": "قائمة الانتظار فارغة",
+  "flushQueueNeedExecute": "يحتاج مسح قائمة الانتظار إلى YSK_EXECUTE (إذن تنفيذ المضيف)",
+  "healthUncheckedHint": "لم يُفحص بعد DNS / PTR / المنفذ 25.",
+  "deliverabilityScore": "حزمة قابلية التسليم",
+  "opendkimNoReload": "OpenDKIM لا يدعم إعادة التحميل — استخدم إعادة التشغيل بعد تغيير المفاتيح أو الجداول.",
+  "opendkimNoReloadTitle": "systemctl reload opendkim غير مدعوم في هذه الحزمة"
 }

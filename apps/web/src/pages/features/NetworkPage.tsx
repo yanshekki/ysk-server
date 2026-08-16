@@ -184,7 +184,7 @@ export function NetworkPage() {
   const [routeGw, setRouteGw] = useState('');
   const [routeDev, setRouteDev] = useState('');
   /** Save to NetworkManager (survives reboot) */
-  const [routePersist, setRoutePersist] = useState(true);
+  const [routePersist, setRoutePersist] = useState(false);
   const [delRoute, setDelRoute] = useState<NetRoute | null>(null);
   const [delRoutePersist, setDelRoutePersist] = useState(true);
   const [delRoutePhrase, setDelRoutePhrase] = useState('');
@@ -238,6 +238,7 @@ export function NetworkPage() {
       try {
         const s = await networkApi.snapshot({ raw });
         setSnap(s);
+        setRoutePersist(s.backend.networkManager === 'active');
         setError(s.ok ? null : s.notes?.[0] ?? t('network.loadFailed'));
         setDetail((prev) => {
           if (!prev) return null;
@@ -452,7 +453,7 @@ export function NetworkPage() {
                           disabled={busy || r.isLoopback}
                           title={
                             r.isDefaultEgress
-                              ? t('network.defaultRouteDownWarn')
+                              ? t('network.defaultRouteDownNeedName')
                               : t('network.linkDownNeedConfirm', {
                                   defaultValue: t('network.confirmDown'),
                                 })
@@ -599,10 +600,14 @@ export function NetworkPage() {
                     <CheckboxField
                       id="net-route-persist"
                       label={t('network.saveNm')}
-                      description={t('network.ephemeralHint')}
+                      description={
+                        snap.backend.networkManager === 'active'
+                          ? t('network.ephemeralHint')
+                          : t('network.nmUnavailable')
+                      }
                       checked={routePersist}
                       onChange={setRoutePersist}
-                      disabled={busy}
+                      disabled={busy || snap.backend.networkManager !== 'active'}
                     />
                   </FormLayout>
                   <FormActions align="end">
@@ -614,7 +619,7 @@ export function NetworkPage() {
                         setRouteDst('default');
                         setRouteGw(snap.defaultGateway || '');
                         setRouteDev(snap.defaultDev || '');
-                        setRoutePersist(true);
+                        setRoutePersist(snap.backend.networkManager === 'active');
                       }}
                     >
                       {t('network.reset')}

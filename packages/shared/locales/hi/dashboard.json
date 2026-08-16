@@ -115,9 +115,9 @@
   "colTitle": "अलर्ट",
   "colDetail": "विवरण",
   "colSource": "स्रोत",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "अलर्ट खोजें",
+  "notifAll": "सभी",
+  "notifDismiss": "छिपाना",
+  "goFix": "हल करना",
   "needDomainFirst": "पहले डोमेन भरें"
 }

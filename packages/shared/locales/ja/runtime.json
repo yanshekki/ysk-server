@@ -452,9 +452,9 @@
     "noProjects": "プロジェクトがありません",
     "noProjectsDesc": "パネルにノード/バン プロジェクトがないか、OS ユーザーがプロビジョニングされていません。",
     "pm2OnlyDesc": "パネル ユーザーの下で PM2 で起動されたアプリのみ。 systemd のデプロイは上に表示されます。",
-    "startupTitle": "Start on boot",
-    "startupDesc": "Register PM2 so processes come back after reboot.",
-    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
+    "startupTitle": "ブート時に開始",
+    "startupDesc": "再起動後にプロセスが戻るように PM2 を登録します。",
+    "systemdActionsHint": "systemd アクションには root と YSK_EXECUTE が必要です。"
   },
   "recordedInstalled": "記録しました {{v}}",
   "remoteSourceSuffix": "({{source}})",
@@ -509,9 +509,9 @@
   "fullVersion": "フルバージョン",
   "useListForDefaults": "ホストまたはパネルのデフォルトを変更するか、このバージョンを削除するには、上記のリストを使用してください。",
   "alreadyHostDefaultShort": "ホストのデフォルト",
-  "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}",
+  "managedPathMissingTitle": "管理対象 {{name}} パスの準備ができていません",
+  "managedPathMissing": "YSK 管理の {{name}} バージョン {{version}} は準備ができていません。再プローブまたは再インストールします。",
+  "installRecordedCta": "インストールが記録されました {{v}}",
   "targetMissing": "目標バージョンが未インストール",
   "targetMissingHint": "目標 {{version}} はこのホストにありません。インストール済みに切り替えるか、この版を入れてください。",
   "needsInstall": "要インストール",
@@ -523,7 +523,10 @@
   "phpFpmServiceDesc": "PHP-FPM ユニットの開始・停止・再読込・再起動",
   "rustupDefaultMissingTitle": "rustup のデフォルトツールチェーンがありません",
   "rustupDefaultMissing": "rustup にデフォルトがありません。ソフトウェアタブで stable を設定してください。",
-  "rustupDefaultMissingShort": "No default toolchain",
-  "rustupSetDefaultHint": "Set default toolchain",
-  "uninstalledCountHint": "{{n}} 版はこのホストにありません"
+  "rustupDefaultMissingShort": "デフォルトのツールチェーンはありません",
+  "rustupSetDefaultHint": "デフォルトのツールチェーンを設定する",
+  "uninstalledCountHint": "{{n}} 版はこのホストにありません",
+  "applyPhpVhostTitle": "確認が必要 — プール/vhost ファイルを書き込みます",
+  "applyPhpVhostDesc": "{{pool}} プールと {{domain}} vhost を書き込みます。サービスをリロードします: {{reload}}。",
+  "binaryPath": "バイナリパス"
 }

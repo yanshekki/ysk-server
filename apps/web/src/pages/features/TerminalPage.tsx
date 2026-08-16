@@ -495,12 +495,30 @@ export function TerminalPage() {
                 disabled={conn === 'connected' || conn === 'connecting'}
                 onChange={(e) => setTargetId(e.target.value)}
               >
-                {(targets?.items ?? []).map((item) => (
-                  <option key={item.id} value={item.id} disabled={!item.available}>
-                    {item.label}
-                    {!item.available ? ` (${t('terminal.unavailable')})` : ''}
-                  </option>
-                ))}
+                {(targets?.items ?? []).map((item) => {
+                  const reason = (item.notes ?? []).filter(Boolean).join(' · ');
+                  const title =
+                    item.kind === 'project'
+                      ? [item.projectName, item.linuxUser, item.id, reason]
+                          .filter(Boolean)
+                          .join(' · ')
+                      : [item.label, item.id, reason].filter(Boolean).join(' · ');
+                  return (
+                    <option
+                      key={item.id}
+                      value={item.id}
+                      disabled={!item.available}
+                      title={title}
+                    >
+                      {item.kind === 'project'
+                        ? `${item.projectName} (${item.linuxUser || '—'})`
+                        : item.label}
+                      {!item.available
+                        ? ` (${t('terminal.unavailable')}${reason ? ` — ${reason}` : ''})`
+                        : ''}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="term-toolbar__actions">
@@ -525,6 +543,12 @@ export function TerminalPage() {
               <Button
                 variant="secondary"
                 size="md"
+                disabled={conn !== 'connected'}
+                title={
+                  conn !== 'connected'
+                    ? t('terminal.copyAllNeedConn')
+                    : t('terminal.copyAll')
+                }
                 onClick={() => {
                   const term = termRef.current;
                   if (!term) return;
@@ -535,7 +559,7 @@ export function TerminalPage() {
                   void navigator.clipboard?.writeText(buf.join('\n').trimEnd());
                 }}
               >
-                {t('terminal.copyAll', { defaultValue: 'Copy all' })}
+                {t('terminal.copyAll')}
               </Button>
               {statusLine ? (
                 <span className="term-meta">

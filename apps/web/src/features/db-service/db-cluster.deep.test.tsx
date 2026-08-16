@@ -196,7 +196,8 @@ describe('DbClusterPanel deep', () => {
       name: /confirm|apply|確認|确认|套用/i })[0];
     if (confirmApply) await user.click(confirmApply);
 
-    await clickAll(/^Bootstrap$/i, 1);
+    await clickAll(/more|更多/i, 1);
+    await clickAll(/bootstrap|初始化/i, 1);
     const confirmBoot = screen.queryAllByRole('button', {
       name: /confirm|apply|確認|确认/i })[0];
     if (confirmBoot) await user.click(confirmBoot);

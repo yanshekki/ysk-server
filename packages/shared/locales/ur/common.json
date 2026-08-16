@@ -122,9 +122,9 @@
   "done": "ہو گیا",
   "next": "اگلا",
   "previous": "پچھلا",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "تمام",
+  "showPassword": "دکھائیں۔",
+  "hidePassword": "چھپائیں",
+  "more": "مزید",
   "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})"
 }

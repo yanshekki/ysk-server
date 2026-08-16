@@ -88,7 +88,7 @@
     "noTarget": "कोई अद्यतन लक्ष्य नहीं",
     "needRuntimePage": "इस संस्करण को रनटाइम पेज पर स्थापित करें",
     "noAptCandidate": "कोई उपयुक्त उम्मीदवार संस्करण नहीं",
-    "sourceLabel": "Source"
+    "sourceLabel": "स्रोत"
   },
   "install": {
     "progress": "इंस्टाल कर रहा है: {{list}}…",

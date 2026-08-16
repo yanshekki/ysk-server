@@ -122,9 +122,9 @@
   "done": "完成",
   "next": "下一步",
   "previous": "上一步",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "全部",
+  "showPassword": "展示",
+  "hidePassword": "隐藏",
+  "more": "更多的",
   "redirectedTo": "已转到 {{to}}（原为 {{from}}）"
 }

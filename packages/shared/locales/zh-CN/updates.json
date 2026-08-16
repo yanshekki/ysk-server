@@ -183,6 +183,47 @@
   "kernelRebootWarn": "安装新 kernel 后通常要重启才会生效。",
   "neverRun": "尚未执行",
   "scanOsvN": "扫描 + OSV（前 {{n}} 个）",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "rebootNeeded": "重新启动",
+  "kernelRebootHint": "内核包应用后需要重新启动",
+  "needApprovalHint": "打开“可用”并筛选需要批准的软件包",
+  "applyNeedConfirm": "申请前打开确认对话框",
+  "probeFailed": "探测失败",
+  "notViaApt": "不由 apt 管理 — 没有候选人",
+  "noCandidate": "无候选版本",
+  "jobOpenGeo": "地理IP页面",
+  "job": {
+    "protection_probe": {
+      "name": "保护探头",
+      "hint": "周期性防御信号"
+    },
+    "updates_scan": {
+      "name": "更新扫描",
+      "hint": "刷新包裹库存"
+    },
+    "daily_backup": {
+      "name": "每日备份",
+      "hint": "计划备份全部"
+    },
+    "db_temp_expire": {
+      "name": "使临时数据库用户过期",
+      "hint": "删除过期的临时数据库用户"
+    },
+    "defense_auto_ban": {
+      "name": "国防自动禁令",
+      "hint": "应用自动禁止勾选"
+    },
+    "defense_geoip_update": {
+      "name": "地理IP更新",
+      "hint": "下载 GeoIP 数据库"
+    },
+    "log_auto_vacuum": {
+      "name": "原木真空",
+      "hint": "日记保留"
+    },
+    "email_dnsbl": {
+      "name": "电子邮件 DNSBL",
+      "hint": "邮件 DNSBL 检查"
+    }
+  },
+  "applyPanelAlreadyLatest": "已经是最新的面板版本了"
 }

@@ -4,7 +4,9 @@
     "start": "Começar",
     "stop": "Parar",
     "restart": "Reiniciar",
-    "reload": "Recarregar"
+    "reload": "Recarregar",
+    "enable": "Ativar no arranque",
+    "disable": "Desativar no arranque"
   },
   "lifecycleTitle": "Controlo do serviço {{label}}",
   "startedOk": "{{label}} iniciado",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "Enquanto {{label}} estiver parado, este anfitrião não serve HTTP/HTTPS.",
   "stopConfirmSshdTitle": "Parar sshd?",
   "stopConfirmSshdDesc": "Parar sshd fecha o SSH remoto. Confirme consola ou outro acesso.",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "parar sshd",
   "stopConfirmSshdConsequence": "Novas sessões SSH falham até iniciar o sshd na consola do anfitrião.",
   "stopConfirmPanelTitle": "Parar YSK Server?",
   "stopConfirmPanelDesc": "O painel e a API ficam offline até iniciar a unidade no anfitrião.",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "pare o servidor ysk",
   "stopConfirmPanelConsequence": "Esta sessão do browser desliga-se. Inicie a unidade por SSH ou consola.",
   "actionDone": "{{action}} concluído",
   "runningOf": "{{running}}/{{total}} em execução",
@@ -54,16 +56,20 @@
   "probeDone": "Sondagem concluída",
   "runProtection": "Executar investigação de proteção",
   "notProbedYet": "Ainda não foi investigado",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "Parar o fail2ban?",
+  "stopConfirmFail2banDesc": "Interromper o fail2ban desativa os banimentos automáticos de IP. Sites e SSH continuam funcionando.",
+  "stopConfirmFail2banConsequence": "Novos invasores não são banidos até que o fail2ban seja reiniciado.",
+  "installOrOpen": "Instalar / abrir",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "Todos os estados",
+    "running": "Correndo",
+    "failed": "Fracassado",
+    "missing": "Não instalado"
   },
   "stopNeedConfirm": "Requer confirmação",
-  "stopNeedConfirmPhrase": "É necessário escrever a frase de confirmação"
+  "stopNeedConfirmPhrase": "É necessário escrever a frase de confirmação",
+  "enabledOk": "{{label}} ativado no arranque",
+  "bootDisabledWarn": "{{label}} está a correr mas não arranca no boot. Ative para persistir após reinício.",
+  "bootDisabledShort": "Não no arranque",
+  "mariadbNotInstalled": "MariaDB não está instalado"
 }

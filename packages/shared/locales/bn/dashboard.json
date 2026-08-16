@@ -115,9 +115,9 @@
   "colTitle": "সতর্কতা",
   "colDetail": "বিস্তারিত",
   "colSource": "উৎস",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "অনুসন্ধান সতর্কতা",
+  "notifAll": "সব",
+  "notifDismiss": "লুকান",
+  "goFix": "ঠিক করুন",
   "needDomainFirst": "আগে ডোমেইন লিখুন"
 }

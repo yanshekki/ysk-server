@@ -9,7 +9,9 @@
   "pillReady": "就緒",
   "pill2faOff": "雙重驗證 未啟用",
   "stat2fa": "2FA",
-  "statApi": "API",
+  "statApi": "API 金鑰",
+  "statApiSessions": "API 工作階段",
+  "revokeOtherTitle": "登出另外 {{n}} 個工作階段",
   "statSsh": "SSH",
   "statPending": "待批",
   "on": "開",
@@ -433,7 +435,9 @@
   },
   "confirmDeleteApiKey": "刪除此 API 金鑰？",
   "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。",
-  "policyNoTotpHint": "此帳號尚未設定 2FA — 儲存政策不需 TOTP。如要強制其他人使用 2FA，請先在上方設定。",
+  "policyNoTotpHint": "此帳號尚未設定 2FA。請先在上方啟用 2FA，才可要求管理員或全部用戶啟用 — 否則可能令全站無法登入。",
+  "policyNeedSelf2fa": "請先為本帳號啟用 2FA，再用驗證碼確認",
+  "revokeAllDevicesTitle": "撤銷全部已記住的裝置 — 你與其他管理員需再做 2FA",
   "sessionCli": "CLI",
   "sessionApi": "API"
 }

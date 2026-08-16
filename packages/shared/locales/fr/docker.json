@@ -13,7 +13,7 @@
     "overview": "Aperçu",
     "containers": "Conteneurs",
     "images": "Images Docker",
-    "compose": "Compose",
+    "compose": "Composer",
     "volumes": "Volumes",
     "networks": "Réseaux",
     "prune": "Nettoyer",

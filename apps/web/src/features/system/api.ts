@@ -438,7 +438,7 @@ export const systemApi = {
   },
   serviceLifecycle: (body: {
     unit: string;
-    action: 'start' | 'stop' | 'restart' | 'reload';
+    action: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
   }) =>
     api.requestRaw('/api/v1/system/services/lifecycle', {
       method: 'POST',

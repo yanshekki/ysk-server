@@ -69,8 +69,13 @@
   "noRequirepass": "Mode terlindung aktif, tetapi requirepass kosong atau belum dibaca — tidak ada kata sandi.",
   "setRequirepass": "Setel kata sandi",
   "rdbOnlyLossHint": "AOF mati dan RDB nyala. Mulai ulang atau crash bisa kehilangan tulis terbaru.",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/data (wadah)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data biasanya merupakan jalur kontainer; panel ini tidak dapat memastikan keberadaannya.",
+  "saveOff": "Nonaktifkan snapshot (tidak disarankan)",
+  "saveOffWarn": "String penyimpanan kosong mematikan snapshot RDB. Crash dapat kehilangan semua data jika AOF juga nonaktif.",
+  "dirMoveWarn": "Mengubah dir tidak memindahkan dump.rdb/AOF. Permulaan berikutnya menggunakan jalur baru apa adanya.",
+  "passwordUnset": "Tidak disetel pada layanan",
+  "passwordSetHidden": "Tetapkan (tidak ditampilkan)"
 }

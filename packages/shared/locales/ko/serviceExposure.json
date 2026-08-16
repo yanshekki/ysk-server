@@ -28,11 +28,13 @@
   "privateStartTitle": "네트워크에 {{service}}를 노출하시겠습니까?",
   "confirmAndStart": "확인하고 시작하세요",
   "cloudSgNote": "호스트 방화벽만 해당 - 클라우드 보안 그룹(AWS/GCP/Azure)은 변경되지 않습니다.",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "설정되지 않음",
+  "modeLoading": "로드 중",
+  "summaryUndecided": "액세스 모드가 확인되지 않았습니다(카탈로그 기본값: {{suggested}}).",
+  "summaryNotEnforced": "방화벽이 꺼져 있습니다. 패널이 이러한 포트를 열거나 차단하지 않습니다.",
+  "roleSmtp": "SMTP 제출",
+  "roleImap": "IMAP/POP3 사서함",
+  "serviceNotInstalled": "이 서비스는 설치되지 않았으므로 방화벽 규칙이 적용되지 않습니다.",
+  "openButStopped": "포트가 열려 있음 - 서비스가 실행되고 있지 않음",
+  "openNoTenants": "테넌트가 없는 공용 포트"
 }

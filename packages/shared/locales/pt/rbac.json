@@ -103,10 +103,10 @@
   "enabledCount": "{{enabled}} de {{total}} ativado",
   "bandAboveMax": "Acima do nível máximo",
   "dirtyHint": "Personalizado (diferente da fábrica)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "Não salvo",
+  "unsavedHint": "Edições não salvas nesta função",
+  "nothingToSave": "Nada para salvar",
+  "saveRole": "Salvar política {{role}}",
+  "discardTitle": "Descartar política não salva?",
+  "discardDesc": "A troca de funções descarta edições de recursos não salvas."
 }

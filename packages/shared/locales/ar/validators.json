@@ -1,7 +1,7 @@
 {
   "title": "المدققون (Beta)",
   "subtitle": "ثبّت وأدر عُقد L1 على هذا المضيف. غير وصائي — المفاتيح تبقى لديك.",
-  "beta": "Beta",
+  "beta": "بيتا",
   "tab": {
     "nodes": "العُقد",
     "disk": "القرص",
@@ -23,26 +23,26 @@
     "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "ايثريوم",
+    "avax": "انهيار جليدي",
     "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "ada": "كاردانو",
+    "btc": "بيتكوين",
+    "cosmos": "مركز الكون",
+    "sui": "سوي",
+    "aptos": "ابتوس",
+    "dot": "المنقط",
+    "sol": "سولانا"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "هودي",
+    "sepolia": "سيبوليا",
     "mainnet": "الشبكة الرئيسية",
-    "fuji": "Fuji",
+    "fuji": "فوجي",
     "testnet": "شبكة الاختبار",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "معاينة",
+    "preprod": "إنتاج مسبق",
+    "westend": "ويستند"
   },
   "networkKind": {
     "testnet": "شبكة الاختبار",

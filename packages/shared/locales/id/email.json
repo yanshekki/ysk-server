@@ -317,7 +317,7 @@
     "ptrBad": "PTR membalikkan DNS hilang atau salah — permintaan di penyedia VPS",
     "port25Blocked": "Port Keluar 25 tampak diblokir — minta buka blokir atau gunakan relai SMTP",
     "port25Unknown": "Status port 25 tidak diketahui — jalankan pemeriksaan konektivitas",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC dibuat di panel tetapi belum dipublikasikan di DNS publik"
   },
   "stack": {
     "tlsNote": "Sertifikat TLS melalui Let's Encrypt untuk SMTP/IMAP",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "Gagal memuat ulang postfix: {{detail}}",
     "dovecotApplied": "Menulis cuplikan TLS Dovecot dan mencoba memuat ulang.",
     "dovecotSkipped": "Melewati Dovecot (tidak diinstal atau doveconf tidak tersedia).",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "Sertifikat surat hilang; menulis ssl=no agar Dovecot dapat memulai tanpa file LE."
   },
   "policyApplySystemHint": "Centang “apply to system” untuk menulis peta Postfix/Rspamd dan memuat ulang;",
   "rateLimitAppliedNote": "Tarif keluar per jam dan tanda antispam diterapkan (saat penerapan sistem aktif).",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "Hapus pesan antrean ini?",
   "deleteQueueDesc": "Hapus {{id}} dari antrean MTA lokal. Perlu YSK_EXECUTE.",
   "openQueuePage": "Buka antrean surat",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "Belum diperiksa",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "Domain email terdaftar di host ini",
   "healthChecklist": "Daftar periksa {{score}}/100",
   "healthChecklistHint": "Skor daftar — DNS / PTR / port 25 belum diuji",
-  "healthLiveHint": "Skor uji langsung"
+  "healthLiveHint": "Skor uji langsung",
+  "installWebmailTitle": "Buat proyek webmail bersama (instalasi pertama)",
+  "reinstallWebmailTitle": "Membangun kembali/meningkatkan proyek webmail yang ada",
+  "reinstallNeedInstall": "Instal webmail terlebih dahulu",
+  "dovecotFailedStatus": "Tempat perlindungan merpati adalah {{status}}. Buka tab Perangkat Lunak untuk ringkasan unit.",
+  "mailCertMissing": "Tidak ada sertifikat untuk {{hosts}}. Terbitkan di halaman SSL.",
+  "mailCertPresent": "Sertifikat email telah diterbitkan — ini bukan masalah sertifikat yang hilang.",
+  "webmailNeedCert": "Tidak ada sertifikat untuk {{host}} — terbitkan di SSL sebelum memaksa HTTPS.",
+  "flushQueueEmpty": "Antrian kosong",
+  "flushQueueNeedExecute": "Membilas antrian memerlukan YSK_EXECUTE (izin eksekusi host)",
+  "healthUncheckedHint": "DNS / PTR / port 25 belum diperiksa.",
+  "deliverabilityScore": "Paket keterkiriman",
+  "opendkimNoReload": "OpenDKIM tidak mendukung reload — gunakan restart setelah mengubah kunci atau tabel.",
+  "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini"
 }

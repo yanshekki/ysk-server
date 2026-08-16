@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "عامل ميناء",
   "subtitle": "ثبّت وتحكّم بمحرك Docker والحاويات والصور ومشاريع Compose والقرص على هذا المضيف.",
   "refresh": "تحديث",
   "notInstalled": "Docker Engine غير مثبت. ثبّت docker.io و docker-compose-v2 من هذه الصفحة.",
@@ -13,8 +13,8 @@
     "overview": "نظرة عامة",
     "containers": "الحاويات",
     "images": "الصور",
-    "compose": "Compose",
-    "volumes": "Volumes",
+    "compose": "يؤلف",
+    "volumes": "مجلدات",
     "networks": "الشبكات",
     "prune": "تنظيف",
     "settings": "الإعدادات",

@@ -35,6 +35,8 @@
   "defaultDev": "Default egress: {{dev}}",
   "saveNm": "Save (NetworkManager, survives reboot)",
   "ephemeralHint": "Unchecked = live ip route add only",
+  "nmUnavailable": "NetworkManager is not running — only a live route can be added",
+  "defaultRouteDownNeedName": "This is the default route egress. Type the interface name to confirm — the panel may disconnect.",
   "saveRoute": "Save route",
   "dnsSettings": "DNS settings",
   "dnsNmHint": "Writes NM connection “{{conn}}” and reconnects (persistent)",

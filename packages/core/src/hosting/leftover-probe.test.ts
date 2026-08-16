@@ -71,7 +71,7 @@ describe('leftover-probe', () => {
     ]);
     expect(collectStaleCliNotes({ host: h, currentVersion: '1.0.38' }).length).toBeGreaterThan(0);
     expect(r.findings.find((f) => f.id === 'apache-default')?.href).toBe('/apache');
-    expect(r.findings.find((f) => f.id === 'vsftpd-failed')?.href).toBe('/ftp');
+    expect(r.findings.find((f) => f.id === 'vsftpd-failed')?.href).toBe('/ftp?tab=service');
     expect(r.findings.find((f) => f.id === 'stale-cli')?.href).toBe('/updates');
   });
 
@@ -94,6 +94,7 @@ describe('leftover-probe', () => {
       'cli',
     );
     expect(leftoverHrefForId('apache-default')).toBe('/apache');
+    expect(leftoverHrefForId('vsftpd-failed')).toBe('/ftp?tab=service');
     expect(splitLeftoverNotes('one · two · three')).toEqual(['one', 'two', 'three']);
   });
 

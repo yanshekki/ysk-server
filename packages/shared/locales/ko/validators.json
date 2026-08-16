@@ -1,7 +1,7 @@
 {
   "title": "검증자 노드 (Beta)",
   "subtitle": "이 호스트에서 L1 노드를 설치하고 관리합니다. 비수탁 — 키는 직접 보관하세요.",
-  "beta": "Beta",
+  "beta": "베타",
   "tab": {
     "nodes": "노드",
     "disk": "디스크",
@@ -23,26 +23,26 @@
     "autoClear": "디스크가 위험할 때 가장 큰 중지 인스턴스를 자동 삭제(기본 꺼짐)"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "이더리움",
+    "avax": "눈사태",
     "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "ada": "카르다노",
+    "btc": "비트코인",
+    "cosmos": "코스모스 허브",
+    "sui": "수이",
+    "aptos": "앱토스",
+    "dot": "폴카닷",
+    "sol": "솔라나"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "후디",
+    "sepolia": "세폴리아",
     "mainnet": "메인넷",
-    "fuji": "Fuji",
+    "fuji": "후지산",
     "testnet": "테스트넷",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "시사",
+    "preprod": "프레프로트",
+    "westend": "웨스트엔드"
   },
   "networkKind": {
     "testnet": "테스트넷",

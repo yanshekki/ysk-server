@@ -352,14 +352,57 @@ export function loadPanelTlsOptions(config?: YskConfig | null): {
   }
 }
 
+/** Parse `ss -lnt` / `ss -lntp` lines for a TCP listen port. */
+export function parseSsListenHosts(ssOut: string, port: number): string[] {
+  const hosts: string[] = [];
+  const seen = new Set<string>();
+  const re = new RegExp(
+    `(?:^|\\s)(\\*|0\\.0\\.0\\.0|::|\\[::\\]|\\d+\\.\\d+\\.\\d+\\.\\d+|\\[[0-9a-fA-F:]+\\]):${port}\\b`,
+  );
+  for (const line of String(ssOut || '').split('\n')) {
+    const m = line.match(re);
+    if (!m) continue;
+    let h = m[1];
+    if (h === '*' || h === '[::]') h = h === '*' ? '0.0.0.0' : '::';
+    if (seen.has(h)) continue;
+    seen.add(h);
+    hosts.push(h);
+  }
+  return hosts;
+}
+
+export function isWildcardListenHost(host: string | undefined): boolean {
+  const h = String(host || '').trim();
+  return h === '0.0.0.0' || h === '::' || h === '*' || h === '[::]';
+}
+
+export function isBootstrapPanelCert(certPath?: string | null): boolean {
+  return /bootstrap-cert\.pem$/i.test(String(certPath || ''));
+}
+
+export async function probeListenHosts(
+  host: HostExecutor,
+  port: number,
+): Promise<string[]> {
+  const r = await host.runCommand(['ss', '-lnt'], { timeoutMs: 3_000 });
+  if (r.exitCode !== 0) return [];
+  return parseSsListenHosts(r.stdout, port);
+}
+
 export function getPanelTlsStatus(input: {
   config?: YskConfig | null;
   /** True when this process bound with HTTPS */
   servingHttps?: boolean;
+  /** Host header of the current request (panel UI) — never invent 127.0.0.1 */
+  requestHost?: string;
+  /** Actual listen addresses from `ss` when known */
+  listenHostsActual?: string[];
 }): PanelTlsStatus {
   const config = input.config;
   const listenPort = config?.listenPort ?? 9287;
-  const listenHost = config?.listenHost ?? '127.0.0.1';
+  const configListen = config?.listenHost ?? '127.0.0.1';
+  const actual = (input.listenHostsActual ?? []).filter(Boolean);
+  const listenHost = actual[0] || configListen;
   const domain = config?.panelDomain?.trim() || undefined;
   const m = resolvePanelTlsMaterials(config);
   const tlsEnabled = Boolean(config?.tlsEnabled);
@@ -371,9 +414,24 @@ export function getPanelTlsStatus(input: {
   if (tlsEnabled && !servingHttps) {
     notes.push(tl('system.panelTls.restartToApply'));
   }
+  const publicBind =
+    isWildcardListenHost(listenHost) || actual.some((h) => isWildcardListenHost(h));
+  if (publicBind) {
+    notes.push(tl('system.panelTls.listenPublic'));
+  }
+  if (isBootstrapPanelCert(m.certPath)) {
+    notes.push(tl('system.panelTls.bootstrapCert'));
+  }
+  const reqHost = String(input.requestHost || '')
+    .trim()
+    .replace(/:\d+$/, '');
   const hostLabel =
     domain ||
-    (listenHost === '0.0.0.0' || listenHost === '::' ? '127.0.0.1' : listenHost);
+    (reqHost && reqHost !== '127.0.0.1' && reqHost !== 'localhost' && reqHost !== '::1'
+      ? reqHost
+      : publicBind
+        ? listenHost
+        : listenHost);
   return {
     ok: !tlsEnabled || (m.certExists && m.keyExists),
     tlsEnabled,

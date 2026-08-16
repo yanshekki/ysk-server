@@ -16,6 +16,7 @@ import {
   applyFtpsService,
   buildPamSnippet,
   buildVsftpdConf,
+  parseVsftpdListenFlags,
   chownFtpAccountHomes,
   createProjectFtpAccount,
   isFtpHomeAllowed,
@@ -128,6 +129,19 @@ describe('ftps-service pure helpers', () => {
     expect(pamUserDbBasePath('/data/ftps/virtual_users.DB')).toBe('/data/ftps/virtual_users');
     expect(pamUserDbBasePath('/data/ftps/virtual_users')).toBe('/data/ftps/virtual_users');
     expect(pamUserDbBasePath('/tmp/foo.db.db')).toBe('/tmp/foo.db');
+  });
+
+  it('parseVsftpdListenFlags detects mutual YES', () => {
+    expect(parseVsftpdListenFlags('listen=YES\nlisten_ipv6=YES\n')).toEqual({
+      listen: true,
+      listenIpv6: true,
+      conflict: true,
+    });
+    expect(parseVsftpdListenFlags('listen=YES\nlisten_ipv6=NO\n')).toEqual({
+      listen: true,
+      listenIpv6: false,
+      conflict: false,
+    });
   });
 
   it('ftpsFirewallPortSpecs covers listen + full PASV + 990', () => {

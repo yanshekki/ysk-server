@@ -38,7 +38,8 @@
     "sessionIdle": "مهلة الخمول. تسجيل الدخول مرة أخرى",
     "totpNotEnabled": "لم يتم تمكين 2FA",
     "totpSecretNoDataDir": "تم تشفير سر TOTP ولكن لم يتم تعيين dataDir",
-    "mustChangePassword": "يجب تعيين كلمة مرور جديدة قبل المتابعة"
+    "mustChangePassword": "يجب تعيين كلمة مرور جديدة قبل المتابعة",
+    "policyNeedsOwn2fa": "قم بتشغيل المصادقة الثنائية لهذا الحساب وقم بالتأكيد باستخدام رمز TOTP قبل طلب المصادقة الثنائية للآخرين"
   },
   "http": {
     "notFoundRoute": "لم يتم العثور على: {{method}} {{path}}",

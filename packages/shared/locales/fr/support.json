@@ -26,13 +26,13 @@
   "copy": "Copier",
   "copied": "Copié",
   "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "diagTitle": "Résumé du diagnostic",
+  "diagBody": "Copiez la version, exécutez et hébergez les faits à coller dans un e-mail. Il ne s'agit pas d'un ensemble de journaux complet.",
+  "diagCopy": "Copier le résumé du diagnostic",
+  "diagCopied": "Résumé du diagnostic copié",
   "copyTitle": "Copier {{address}}",
   "diagCopyTitle": "Copier version, EXECUTE et faits hôte",
   "diagPreview": "Aperçu de ce qui sera copié",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "Chargement du diagnostic…",
+  "diagLoadFailed": "Impossible de charger le diagnostic"
 }

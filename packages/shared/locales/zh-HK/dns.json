@@ -206,6 +206,9 @@
   "lookupServer": "查詢伺服器（@）",
   "lookupServerHint": "127.0.0.1 = 本機權威；公網 IP 測對外；留空用系統 resolver",
   "healthHealPdns": "修復 PowerDNS 綁定",
+  "healNeedInstall": "尚未安裝 PowerDNS — 請先到軟件分頁安裝",
+  "applyNeedService": "DNS 服務未運行 — 請先啟動或安裝再寫入／套用",
+  "deleteZoneNeedName": "刪除此區域 — 需輸入區域名稱確認",
   "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
   "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
   "healthHealPdnsFailed": "PowerDNS 修復失敗",
@@ -217,5 +220,14 @@
   "aboutHealthBody": "在「工具」探測 PowerDNS、修復綁定、開放 53 埠。",
   "aboutStackTitle": "軟件版本",
   "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。",
-  "createMailZoneNow": "已建立郵件區域 {{domain}}"
+  "createMailZoneNow": "已建立郵件區域 {{domain}}",
+  "toolsFirewallTitle": "防火牆（UFW）",
+  "toolsFirewallHint": "允許或拒絕 53 埠。不會啟動或停止 PowerDNS。",
+  "toolsUnitTitle": "PowerDNS 服務單元",
+  "toolsUnitHint": "systemd 單元 pdns — 啟動、停止、重啟、重載。",
+  "installConfirmTitle": "安裝 PowerDNS？",
+  "installConfirmDesc": "會安裝 pdns-server 並寫入受管權威設定。需要 root 與 YSK_EXECUTE=1。",
+  "installConfirmConsequence": "安裝並啟動後，PowerDNS 會綁定 53 埠。",
+  "installPort53Busy": "53 埠已有程序在聽。未停止或修復該聽埠前，PowerDNS 可能無法綁定。",
+  "installPort53BusyConsequence": "請先修復綁定或停止其他聽埠，才可預期 53 埠有回應。"
 }

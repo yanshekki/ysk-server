@@ -345,11 +345,11 @@
     "skipped": "Ignorado",
     "cancelled": "Cancelado"
   },
-  "emptyTrashTitle": "Empty trash?",
-  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
-  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "emptyTrashTitle": "Lixo vazio?",
+  "emptyTrashDesc": "Todos os arquivos na lixeira serão excluídos permanentemente. Isto não pode ser desfeito.",
+  "purgeForeverDesc": "Este arquivo será excluído permanentemente. Isto não pode ser desfeito.",
+  "webdavReissueUnchanged": "O ID do token não mudou após a reemissão — a gravação pode não ter persistido. Tente novamente.",
+  "webdavDisableFailed": "O WebDAV ainda está ativado após a desativação — a gravação pode não ter persistido. Tente novamente.",
   "dirNamedLikeFile": "(pasta residual; o nome parece um ficheiro)",
   "webdavAfterEnable": "Disponível depois de ativar o WebDAV e emitir um token."
 }

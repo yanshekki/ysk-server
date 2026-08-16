@@ -100,10 +100,11 @@
   "requestFailed": "인증서 요청이 실패했습니다.",
   "applyFailed": "요청 실패",
   "deletedCert": "삭제됨 {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "certbot을 제거하면 기존 Let's Encrypt 인증서의 자동 갱신이 중지됩니다.",
+  "renew": "고쳐 쓰다",
+  "renewFor": "{{domain}}에 대한 Let’s Encrypt 갱신",
   "domainRequired": "도메인을 입력하세요.",
   "domainInvalid": "도메인 형식이 올바르지 않습니다.",
-  "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요."
+  "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요.",
+  "deleteNeedDomain": "이 인증서 삭제 - 도메인 이름을 입력하여 확인하세요."
 }

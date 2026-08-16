@@ -16,7 +16,7 @@
   "keepData": "Mantener datos",
   "purgeData": "Purgar datos",
   "uninstallNow": "Desinstalar ahora",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "Seleccione al menos un paquete. La selección vacía ya no significa eliminar todo.",
+  "uninstallConfirmTitle": "¿Eliminar paquetes seleccionados?",
+  "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar."
 }

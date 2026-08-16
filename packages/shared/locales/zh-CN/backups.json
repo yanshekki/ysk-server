@@ -135,8 +135,12 @@
   "testRemoteFailed": "远端探测失败",
   "resticRepoPh": "面板资料目录／restic 库",
   "testDisabledHint": "请先开启远端推送才可测试。",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "identityId": "出站 SSH 身份",
+  "identityHint": "首选。与 /security SSH 相同的保管库。密码需要sshpass。",
+  "identityNone": "无 — 密码或默认密钥",
+  "remotePathHint": "相对于远程用户的主目录（或 SFTP chroot）。 “。”就是那个家。",
+  "restoreFullTitle": "覆盖此存档中的项目文件和数据库 - 输入文件名进行确认",
+  "restoreWebTitle": "仅从此存档恢复网站文件",
+  "previewTitle": "无需写入即可预览恢复",
+  "partialSkipped": "部分 — 跳过一些项目"
 }

@@ -30,8 +30,13 @@
   "managedConf": "マネージドコンファレンス",
   "systemConf": "システム設定",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "管理対象の Nginx conf がまだありません — [適用] をクリックします",
+    "notSynced": "管理対象の conf は存在しますが、/etc/nginx/conf.d の下にありません — YSK_EXECUTE を使用して root として再度適用します"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "ディレクトリリスト (自動インデックス)",
+  "liveSystemConf": "稼働中のシステム設定: {{path}}",
+  "publicRootNote": "公開ルート: {{path}}",
+  "applyConfirmTitle": "公開ファイルサイトを適用しますか？",
+  "applyConfirmDesc": "Nginx server_name {{name}} を書き込み、Nginx を再読込します。",
+  "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。"
 }

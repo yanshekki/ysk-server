@@ -4,7 +4,9 @@
     "start": "يبدأ",
     "stop": "قف",
     "restart": "إعادة تشغيل",
-    "reload": "إعادة تحميل"
+    "reload": "إعادة تحميل",
+    "enable": "تمكين عند الإقلاع",
+    "disable": "تعطيل عند الإقلاع"
   },
   "lifecycleTitle": "التحكم بخدمة {{label}}",
   "startedOk": "تم تشغيل {{label}}",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "لن يُقدَّم HTTP/HTTPS على هذا المضيف أثناء إيقاف {{label}}.",
   "stopConfirmSshdTitle": "إيقاف sshd؟",
   "stopConfirmSshdDesc": "إيقاف sshd يغلق SSH البعيد. تأكد من وجود وحدة تحكم أو مسار دخول آخر.",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "وقف سشد",
   "stopConfirmSshdConsequence": "ستفشل جلسات SSH الجديدة حتى تشغيل sshd من وحدة تحكم المضيف.",
   "stopConfirmPanelTitle": "إيقاف YSK Server؟",
   "stopConfirmPanelDesc": "ستتوقف اللوحة وواجهة API حتى تشغيل الوحدة على المضيف.",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "إيقاف خادم ysk",
   "stopConfirmPanelConsequence": "سينقطع هذا المتصفح. شغّل الوحدة من SSH أو وحدة تحكم المضيف.",
   "actionDone": "{{action}} تم",
   "runningOf": "{{running}}/{{total}} جاري",
@@ -54,16 +56,20 @@
   "probeDone": "اكتمل التحقيق",
   "runProtection": "تشغيل مسبار الحماية",
   "notProbedYet": "لم يتم التحقيق فيها بعد",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "وقف Fail2ban؟",
+  "stopConfirmFail2banDesc": "يؤدي إيقاف Fail2ban إلى إيقاف حظر IP التلقائي. تستمر مواقع الويب وSSH في العمل.",
+  "stopConfirmFail2banConsequence": "لا يتم حظر المهاجمين الجدد حتى يتم بدء Fail2ban مرة أخرى.",
+  "installOrOpen": "تثبيت / فتح",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "جميع الولايات",
+    "running": "جري",
+    "failed": "فشل",
+    "missing": "غير مثبت"
   },
   "stopNeedConfirm": "يلزم التأكيد",
-  "stopNeedConfirmPhrase": "يلزم إدخال عبارة التأكيد"
+  "stopNeedConfirmPhrase": "يلزم إدخال عبارة التأكيد",
+  "enabledOk": "تم تمكين {{label}} عند الإقلاع",
+  "bootDisabledWarn": "{{label}} يعمل لكنه لن يبدأ عند الإقلاع. مكّنه ليثبت بعد إعادة التشغيل.",
+  "bootDisabledShort": "ليس عند الإقلاع",
+  "mariadbNotInstalled": "MariaDB غير مثبّت"
 }

@@ -1,7 +1,7 @@
 {
   "title": "ভ্যালিডেটর (Beta)",
   "subtitle": "এই হোস্টে L1 নোড স্থাপন ও পরিচালনা করুন। নন-কাস্টোডিয়াল — চাবি আপনার কাছেই থাকবে।",
-  "beta": "Beta",
+  "beta": "বেটা",
   "tab": {
     "nodes": "নোড",
     "disk": "ডিস্ক",
@@ -23,26 +23,26 @@
     "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)"
   },
   "chain": {
-    "eth": "Ethereum",
-    "avax": "Avalanche",
+    "eth": "ইথেরিয়াম",
+    "avax": "তুষারপাত",
     "near": "NEAR",
-    "ada": "Cardano",
-    "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "ada": "কার্ডানো",
+    "btc": "বিটকয়েন",
+    "cosmos": "কসমস হাব",
+    "sui": "সুই",
+    "aptos": "অ্যাপটোস",
+    "dot": "পোলকাডট",
+    "sol": "সোলানা"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "হুডি",
+    "sepolia": "সেপোলিয়া",
     "mainnet": "মেইননেট",
-    "fuji": "Fuji",
+    "fuji": "ফুজি",
     "testnet": "টেস্টনেট",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "পূর্বরূপ",
+    "preprod": "প্রিপ্রোড",
+    "westend": "ওয়েস্টেন্ড"
   },
   "networkKind": {
     "testnet": "টেস্টনেট",

@@ -206,6 +206,9 @@
   "lookupServer": "Server (@)",
   "lookupServerHint": "127.0.0.1 = local auth; public IP tests external; empty = system resolver",
   "healthHealPdns": "Heal PowerDNS bind",
+  "healNeedInstall": "PowerDNS is not installed — install it on the Software tab first",
+  "applyNeedService": "DNS service is not running — start or install it before apply",
+  "deleteZoneNeedName": "Delete this zone — you will type the zone name to confirm",
   "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0",
   "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",
   "healthHealPdnsFailed": "PowerDNS heal failed",
@@ -217,5 +220,14 @@
   "aboutHealthBody": "Use Tools to probe PowerDNS, heal bind, and open port 53.",
   "aboutStackTitle": "Software",
   "aboutStackBody": "Check/update the PowerDNS package under Software.",
-  "createMailZoneNow": "Created mail zone {{domain}}"
+  "createMailZoneNow": "Created mail zone {{domain}}",
+  "toolsFirewallTitle": "Firewall (UFW)",
+  "toolsFirewallHint": "Allow or deny port 53. This does not start or stop PowerDNS.",
+  "toolsUnitTitle": "PowerDNS unit",
+  "toolsUnitHint": "systemd unit pdns — start, stop, restart, reload.",
+  "installConfirmTitle": "Install PowerDNS?",
+  "installConfirmDesc": "Installs pdns-server and writes the managed authoritative config. Needs root and YSK_EXECUTE=1.",
+  "installConfirmConsequence": "After install and start, PowerDNS will bind port 53.",
+  "installPort53Busy": "Something already listens on port 53. PowerDNS may fail to bind until that listener is stopped or healed.",
+  "installPort53BusyConsequence": "Heal bind or stop the other listener before expecting answers on port 53."
 }

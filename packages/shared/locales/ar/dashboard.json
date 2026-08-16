@@ -115,9 +115,9 @@
   "colTitle": "تنبيه",
   "colDetail": "التفاصيل",
   "colSource": "المصدر",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "تنبيهات البحث",
+  "notifAll": "الجميع",
+  "notifDismiss": "يخفي",
+  "goFix": "يصلح",
   "needDomainFirst": "أدخل نطاقاً أولاً"
 }

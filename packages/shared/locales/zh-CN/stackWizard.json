@@ -16,7 +16,7 @@
   "keepData": "保留数据",
   "purgeData": "清除数据",
   "uninstallNow": "立即移除",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "至少选择一个捆绑包。空选择不再意味着全部删除。",
+  "uninstallConfirmTitle": "删除选定的捆绑包？",
+  "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。"
 }

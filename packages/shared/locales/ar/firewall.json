@@ -102,10 +102,10 @@
   "disableConfirmTitle": "تعطيل UFW؟",
   "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
   "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW.",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "Fail2ban = الحظر المؤقت القائم على السجل",
+  "servicesUfwOff": "UFW معطل. هذه القائمة هي التعرض المطلوب، وليست القواعد التي يفرضها المضيف.",
+  "desiredOnlyUfwOff": "المطلوب: {{mode}} · إيقاف UFW (غير مطبق)",
+  "syncNotApplied": "UFW متوقف · لم يتم تطبيقه",
+  "defaultNotApplied": "غير متوفر (إيقاف تشغيل UFW)",
+  "ufwOffHint": "لا يتم تطبيق الوارد الافتراضي أثناء إيقاف تشغيل UFW"
 }

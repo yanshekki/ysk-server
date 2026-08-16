@@ -4,7 +4,9 @@
     "start": "Comenzar",
     "stop": "Detener",
     "restart": "Reanudar",
-    "reload": "Recargar"
+    "reload": "Recargar",
+    "enable": "Habilitar al arranque",
+    "disable": "Deshabilitar al arranque"
   },
   "lifecycleTitle": "Control del servicio {{label}}",
   "startedOk": "{{label}} iniciado",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "Mientras {{label}} esté detenido, este host no servirá HTTP/HTTPS.",
   "stopConfirmSshdTitle": "¿Detener sshd?",
   "stopConfirmSshdDesc": "Detener sshd cierra SSH remoto. Confirme que tiene consola u otra vía de acceso.",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "detener sshd",
   "stopConfirmSshdConsequence": "Las nuevas sesiones SSH fallarán hasta iniciar sshd desde la consola del host.",
   "stopConfirmPanelTitle": "¿Detener YSK Server?",
   "stopConfirmPanelDesc": "El panel y la API quedarán fuera de línea hasta iniciar la unidad en el host.",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "detener el servidor ysk",
   "stopConfirmPanelConsequence": "Esta sesión del navegador se desconectará. Inicie la unidad desde SSH o la consola.",
   "actionDone": "{{action}} hecho",
   "runningOf": "{{running}}/{{total}} corriendo",
@@ -54,16 +56,20 @@
   "probeDone": "Sonda completa",
   "runProtection": "Ejecutar sonda de protección",
   "notProbedYet": "Aún no investigado",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "¿Detener fail2ban?",
+  "stopConfirmFail2banDesc": "Detener fail2ban desactiva las prohibiciones automáticas de IP. Los sitios web y SSH siguen funcionando.",
+  "stopConfirmFail2banConsequence": "Los nuevos atacantes no son prohibidos hasta que se reinicie fail2ban.",
+  "installOrOpen": "Instalar/abrir",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "Todos los estados",
+    "running": "Correr",
+    "failed": "Fallido",
+    "missing": "No instalado"
   },
   "stopNeedConfirm": "Requiere confirmación",
-  "stopNeedConfirmPhrase": "Hay que escribir la frase de confirmación"
+  "stopNeedConfirmPhrase": "Hay que escribir la frase de confirmación",
+  "enabledOk": "{{label}} habilitado al arranque",
+  "bootDisabledWarn": "{{label}} está en ejecución pero no arrancará al iniciar. Habilítelo para persistir.",
+  "bootDisabledShort": "No al arranque",
+  "mariadbNotInstalled": "MariaDB no está instalado"
 }

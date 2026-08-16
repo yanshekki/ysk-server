@@ -103,9 +103,9 @@
   "disableConfirmTitle": "停用 UFW？",
   "disableConfirmDesc": "主机防火墙将停止过滤流量。若主机在公众网络上，SSH 与面板可能直接暴露。",
   "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
+  "toolHintFail2ban": "fail2ban = 基于日志的临时禁令",
   "desiredOnlyUfwOff": "设定：{{mode}} · UFW 关闭（未套用）",
   "syncNotApplied": "UFW 关闭 · 未套用",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "defaultNotApplied": "不适用（UFW 关闭）",
+  "ufwOffHint": "UFW 关闭时不应用默认传入"
 }

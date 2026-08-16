@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "সমস্ত দ্বন্দ্ব অবশিষ্টাংশ পরিষ্কার?",
   "cleanupConflictsDesc": "প্রতিটি অন-ডিস্ক আর্টিফ্যাক্ট কনফ সরান যা একটি প্রকল্প বা স্বতন্ত্র সার্ভারনামের সাথে বিরোধপূর্ণ। প্রকল্প সারি রাখা হয়.",
   "artifactRemovedOk": "অবশিষ্ট কনফ সরানো হয়েছে",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS সামনে Nginx এ শেষ হয়",
   "removeArtifactHint": "শুধু এই অবশিষ্ট ডিস্ক conf মুছে। প্রকল্প মুছে না।"
 }

@@ -26,11 +26,25 @@ export async function handleSystemHostPanelRoutes(
     const encrypted = Boolean(
       (req.socket as { encrypted?: boolean }).encrypted,
     );
+    let listenHostsActual: string[] = [];
+    try {
+      const { probeListenHosts } = await import('ysk-server-core');
+      listenHostsActual = await probeListenHosts(
+        ctx.host,
+        ctx.config?.listenPort ?? 9287,
+      );
+    } catch {
+      listenHostsActual = [];
+    }
+    const requestHost = String(req.headers.host || '').trim();
     sendJson(res, 200, {
       ...getPanelTlsStatus({
         config: ctx.config,
         servingHttps: encrypted,
+        requestHost,
+        listenHostsActual,
       }),
+      listenHostsActual,
       configPath: ctx.configPath ?? null,
     });
     return true;

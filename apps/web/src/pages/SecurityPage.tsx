@@ -34,7 +34,12 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindCheck, bindVoid } from './bind-handlers';
 
 const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'tools', 'about'] as const;
-const TAB_ALIASES: Record<string, string> = { allowlist: 'tools', perms: 'tools' };
+const TAB_ALIASES: Record<string, string> = {
+  allowlist: 'tools',
+  perms: 'tools',
+  api: 'keys',
+  apikeys: 'keys',
+};
 
 type SessionRow = {
   id: string;
@@ -450,6 +455,10 @@ export function SecurityPage() {
             tone: !totpKnown ? 'neutral' : totpOn ? 'ok' : 'warn' },
           { label: t('security.statApi'), value: apiKeys.length },
           {
+            label: t('security.statApiSessions'),
+            value: sessions.filter((s) => parseUserAgent(s.user_agent).kind === 'api').length,
+          },
+          {
             label: t('security.statSsh'),
             value: `${sshCounts.identities}/${sshCounts.loginKeys}` },
           {
@@ -560,6 +569,9 @@ export function SecurityPage() {
                     variant="danger"
                     size="md"
                     disabled={sessions.filter((s) => !s.current).length === 0}
+                    title={t('security.revokeOtherTitle', {
+                      n: sessions.filter((s) => !s.current).length,
+                    })}
                     onClick={bindSet(setRevokeOthersOpen, true)}
                   >
                     {t('security.revokeOtherSessions')}
@@ -621,6 +633,7 @@ export function SecurityPage() {
                                 <Button
                                   variant="danger"
                                   size="md"
+                                  title={t('security.revokeSessionTitle')}
                                   onClick={bindSet(setRevokeTarget, s)}
                                 >
                                   {t('security.revoke')}
@@ -844,6 +857,7 @@ export function SecurityPage() {
                   <Button
                     variant="danger"
                     size="sm"
+                    title={t('security.revokeAllDevicesTitle')}
                     onClick={bindSet(setRevokeDevicesOpen, true)}
                   >
                     {t('security.revokeAllDevices')}
@@ -940,7 +954,27 @@ export function SecurityPage() {
                   <Button
                     variant="primary"
                     size="md"
+                    disabled={
+                      totpKnown &&
+                      !totpOn &&
+                      (requireAdminTotp || requireUserTotp)
+                    }
+                    title={
+                      totpKnown &&
+                      !totpOn &&
+                      (requireAdminTotp || requireUserTotp)
+                        ? t('security.policyNeedSelf2fa')
+                        : undefined
+                    }
                     onClick={() => {
+                      if (
+                        totpKnown &&
+                        !totpOn &&
+                        (requireAdminTotp || requireUserTotp)
+                      ) {
+                        toast.error(t('security.policyNeedSelf2fa'));
+                        return;
+                      }
                       if (requireStrict) {
                         setStrictConfirmOpen(true);
                         return;

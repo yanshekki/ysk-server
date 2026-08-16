@@ -25,14 +25,14 @@
   "cryptoAddress": "ঠিকানা",
   "copy": "কপি",
   "copied": "কপি হয়েছে",
-  "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "docsLink": "ডকুমেন্টেশন",
+  "diagTitle": "ডায়গনিস্টিক সারাংশ",
+  "diagBody": "একটি ইমেলে পেস্ট করতে ভার্সন কপি করুন, এক্সিকিউট করুন এবং হোস্ট ফ্যাক্ট। এটি একটি সম্পূর্ণ লগ বান্ডিল নয়.",
+  "diagCopy": "ডায়াগনস্টিক সারাংশ কপি করুন",
+  "diagCopied": "ডায়গনিস্টিক সারাংশ কপি করা হয়েছে",
   "copyTitle": "{{address}} অনুলিপি",
   "diagCopyTitle": "সংস্করণ, EXECUTE ও হোস্ট তথ্য অনুলিপি",
   "diagPreview": "যা কপি হবে তার পূর্বরূপ",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "ডায়াগনস্টিক লোড হচ্ছে...",
+  "diagLoadFailed": "ডায়গনিস্টিক লোড করা যায়নি"
 }

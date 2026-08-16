@@ -134,6 +134,15 @@
   "sftpTechNote": "Las claves se escriben en la ruta administrada.",
   "filterProject": "Solo cuentas FTP de este proyecto",
   "clearProjectFilter": "Mostrar todas las cuentas",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd falló. Abra la pestaña Servicio (escuchar y escuchar_ipv6 no pueden ser ambos SÍ).",
+  "tabService": "Servicio",
+  "listenConflictLive": "Live vsftpd.conf tiene listening={{v4}} y listening_ipv6={{v6}}; ambos SÍ no podrán iniciarse.",
+  "listenConflictNeedFix": "Primero arregle listening/listen_ipv6 (ambos no pueden ser SÍ), luego aplique.",
+  "fixListenIpv4": "Utilice solo IPv4 (escuchar=SÍ, escuchar_ipv6=NO)",
+  "liveFileValue": "Presentar ahora: {{value}}",
+  "startBlockedFailed": "El servicio falla: aplique una configuración válida antes de comenzar",
+  "ftpsNeedCert": "Elija primero un dominio de certificado",
+  "detectPublicIp": "Detectar IP pública",
+  "detectPublicIpTitle": "Complete el primer IPv4 sin bucle invertido de este host",
+  "pasvIpRequired": "Defina una IP pública PASV antes de aplicar (NAT/nube). Detecte o escriba una dirección."
 }

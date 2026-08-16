@@ -69,8 +69,13 @@
   "noRequirepass": "محفوظ موڈ آن ہے مگر requirepass خالی یا نہ پڑھا گیا — پاس ورڈ نہیں۔",
   "setRequirepass": "پاس ورڈ سیٹ کریں",
   "rdbOnlyLossHint": "AOF بند اور RDB آن۔ دوبارہ شروع یا کریش سے حالیہ تحریر کھو سکتی ہے۔",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/ڈیٹا (کنٹینر)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data عام طور پر ایک کنٹینر پاتھ ہوتا ہے۔ یہ پینل اس کے موجود ہونے کی تصدیق نہیں کر سکتا۔",
+  "saveOff": "اسنیپ شاٹس کو غیر فعال کریں (تجویز نہیں کی گئی)",
+  "saveOffWarn": "خالی سیو سٹرنگ RDB سنیپ شاٹس کو آف کر دیتی ہے۔ AOF بھی آف ہونے پر کریش تمام ڈیٹا کو کھو سکتا ہے۔",
+  "dirMoveWarn": "dir کو تبدیل کرنے سے dump.rdb/AOF منتقل نہیں ہوتا ہے۔ اگلی شروعات نئے راستے کا استعمال کرتی ہے۔",
+  "passwordUnset": "سروس پر سیٹ نہیں ہے۔",
+  "passwordSetHidden": "سیٹ کریں (نہیں دکھایا گیا)"
 }

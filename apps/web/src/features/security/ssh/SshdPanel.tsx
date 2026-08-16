@@ -48,7 +48,7 @@ export function SshdPanel({ onFlash }: Props) {
         matrixId="sshd"
         label="sshd"
         danger="sshd"
-        actions={['start', 'stop', 'restart', 'reload']}
+        actions={['start', 'stop', 'restart', 'reload', 'enable']}
         size="sm"
       />
 

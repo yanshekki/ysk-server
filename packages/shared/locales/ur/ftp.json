@@ -134,6 +134,15 @@
   "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔",
   "filterProject": "صرف اس پروجیکٹ کے FTP اکاؤنٹس",
   "clearProjectFilter": "تمام اکاؤنٹس دکھائیں",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd ناکام ہوگیا۔ سروس ٹیب کھولیں (سنیں اور listen_ipv6 دونوں ہاں نہیں ہو سکتے)۔",
+  "tabService": "سروس",
+  "listenConflictLive": "لائیو vsftpd.conf میں listen={{v4}} اور listen_ipv6={{v6}} — دونوں ہاں شروع ہونے میں ناکام ہو جائیں گے۔",
+  "listenConflictNeedFix": "پہلے listen/ listen_ipv6 کو درست کریں (وہ دونوں ہاں نہیں ہو سکتے)، پھر اپلائی کریں۔",
+  "fixListenIpv4": "صرف IPv4 استعمال کریں (سنیں=YES، listen_ipv6=NO)",
+  "liveFileValue": "ابھی فائل کریں: {{value}}",
+  "startBlockedFailed": "سروس ناکام ہو گئی ہے - شروع کرنے سے پہلے ایک درست کنفیگریشن لگائیں۔",
+  "ftpsNeedCert": "پہلے ایک سرٹیفکیٹ ڈومین منتخب کریں۔",
+  "detectPublicIp": "عوامی IP کا پتہ لگائیں۔",
+  "detectPublicIpTitle": "اس میزبان سے پہلا نان لوپ بیک IPv4 پُر کریں۔",
+  "pasvIpRequired": "لاگو کرنے سے پہلے PASV پبلک IP سیٹ کریں (NAT/کلاؤڈ)۔ پتہ لگائیں یا پتہ لکھیں۔"
 }

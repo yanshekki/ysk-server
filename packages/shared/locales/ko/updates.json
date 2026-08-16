@@ -170,19 +170,60 @@
   "notInstalled": "미설치",
   "goToPage": "페이지 열기",
   "hubHint": "이 호스트의 카탈로그 소프트웨어 및 런타임. 새로고침하려면 스캔하세요.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "매일",
+  "intervalDays": "{{n}}일마다",
+  "intervalHour": "매시간",
+  "intervalHours": "{{n}}시간마다",
+  "intervalMinutes": "{{n}}분마다",
+  "intervalSeconds": "{{n}}초마다",
+  "availableHint": "패키지 관리자의 최신 후보가 포함된 패키지입니다.",
+  "servicesHint": "이 호스트의 카탈로그 서비스입니다. 설치하려면 서비스 페이지를 엽니다.",
+  "runtimeHint": "이 호스트의 런타임. 버전 업그레이드는 각 런타임 페이지에서 수행됩니다.",
+  "needsReboot": "재부팅 필요",
+  "kernelRebootWarn": "새 커널을 설치하려면 일반적으로 사용하기 전에 재부팅해야 합니다.",
+  "neverRun": "아직 실행되지 않음",
+  "scanOsvN": "스캔 + OSV(첫 번째 {{n}})",
+  "rebootNeeded": "재부팅",
+  "kernelRebootHint": "커널 패키지를 적용한 후 재부팅해야 함",
+  "needApprovalHint": "사용 가능을 열고 승인이 필요한 패키지로 필터링합니다.",
+  "applyNeedConfirm": "적용하기 전에 확인 대화상자를 엽니다.",
+  "probeFailed": "프로브 실패",
+  "notViaApt": "apt에서 관리하지 않음 — 후보자 없음",
+  "noCandidate": "후보 버전 없음",
+  "jobOpenGeo": "GeoIP 페이지",
+  "job": {
+    "protection_probe": {
+      "name": "보호 프로브",
+      "hint": "주기적 방어 신호"
+    },
+    "updates_scan": {
+      "name": "업데이트 검사",
+      "hint": "패키지 인벤토리 새로 고침"
+    },
+    "daily_backup": {
+      "name": "일일 백업",
+      "hint": "전체 백업 예약"
+    },
+    "db_temp_expire": {
+      "name": "임시 DB 사용자 만료",
+      "hint": "만료된 임시 데이터베이스 사용자 삭제"
+    },
+    "defense_auto_ban": {
+      "name": "방어 자동 금지",
+      "hint": "자동 차단 체크 적용"
+    },
+    "defense_geoip_update": {
+      "name": "GeoIP 업데이트",
+      "hint": "GeoIP 데이터베이스 다운로드"
+    },
+    "log_auto_vacuum": {
+      "name": "로그 진공",
+      "hint": "저널링 보존"
+    },
+    "email_dnsbl": {
+      "name": "이메일 DNSBL",
+      "hint": "메일 DNSBL 확인"
+    }
+  },
+  "applyPanelAlreadyLatest": "이미 최신 패널 버전"
 }

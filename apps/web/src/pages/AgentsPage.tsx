@@ -41,6 +41,41 @@ export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral
   return 'info';
 }
 
+export function worstFleetStatus(
+  agents: Array<{ status?: string }>,
+): string {
+  const rank = (s?: string) => {
+    if (s === 'disconnected' || s === 'failed' || s === 'error') return 4;
+    if (s === 'stale') return 3;
+    if (s === 'registered') return 2;
+    if (s === 'connected' || s === 'running') return 1;
+    return 0;
+  };
+  let worst = '';
+  let best = -1;
+  for (const a of agents) {
+    const n = rank(a.status);
+    if (n > best) {
+      best = n;
+      worst = a.status ?? '';
+    }
+  }
+  return worst;
+}
+
+export function staleAgeLabel(iso: string | undefined, now = Date.now()): string | null {
+  if (!iso) return null;
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return null;
+  const ms = now - t;
+  if (ms < 60_000) return null;
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 48) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
 export function statusLabel(status: string | undefined, tr: (k: string) => string): string {
   if (status === 'running') return tr('agents.status.running');
   if (status === 'connected') return tr('agents.status.connected');
@@ -189,6 +224,7 @@ export function AgentsPage() {
   const [cmdCustom, setCmdCustom] = useState('projects list --json');
 
   const [histAgent, setHistAgent] = useState<FleetAgent | null>(null);
+  const [histBusy, setHistBusy] = useState(false);
   const [resultCmd, setResultCmd] = useState<FleetCommand | null>(null);
   const [delAgent, setDelAgent] = useState<FleetAgent | null>(null);
 
@@ -211,6 +247,14 @@ export function AgentsPage() {
   const running = runtimeList.filter((r) => r.status === 'running').length;
   const unitActive = runtimeList.filter((r) => r.unitActive === 'active').length;
   const liveAgents = agents.filter((a) => a.status === 'connected').length;
+  const worstStatus = worstFleetStatus(agents);
+  const worstTone = statusTone(worstStatus);
+  const pillTone: 'ok' | 'warn' | 'danger' | 'neutral' =
+    liveAgents > 0 && worstStatus === 'connected'
+      ? 'ok'
+      : worstTone === 'info'
+        ? 'neutral'
+        : worstTone;
 
   const controlPlane = useMemo(() => {
     if (typeof window === 'undefined') return 'http://127.0.0.1:9287';
@@ -304,12 +348,13 @@ export function AgentsPage() {
       status={{
         pill: {
           label:
-            liveAgents > 0
+            liveAgents > 0 && (worstStatus === 'connected' || worstStatus === 'running')
               ? t('agents.liveN', { count: liveAgents })
               : agents.length
-                ? t('agents.registeredOnly')
+                ? statusLabel(worstStatus, t)
                 : t('agents.awaitProbe'),
-          tone: liveAgents > 0 ? 'ok' : 'warn' },
+          tone: pillTone,
+        },
         items: [
           { label: t('agents.runtimes'), value: runtimeList.length },
           {
@@ -341,13 +386,23 @@ export function AgentsPage() {
       <WithPageGuide guideId="agents">
 
       <Alert variant="info">
-        <strong>{t('agents.expBanner')}</strong> {t('agents.expBody')}
-        <code className="inline"> ysk-server … --json</code>
-         {t('agents.expDocs')} <code className="inline">docs/agent/README.md</code>
-        。Edge：
+        <strong>{t('agents.expBanner')}</strong> {t('agents.expBody')}{' '}
+        <code className="inline">ysk-server agents fleet commands --json</code>
+        {' · '}
+        {t('agents.expDocs')}{' '}
+        <a
+          href="https://github.com/ysk-limited/ysk-server/blob/main/docs/agent/README.md"
+          target="_blank"
+          rel="noreferrer"
+        >
+          docs/agent/README.md
+        </a>
+        {' · '}
+        {t('agents.expEdge')}{' '}
         <code className="inline">ysk-server agent run --id …</code>
-         {t('agents.expPayload')}{' '}
-        <code className="inline">{`{ "cli": ["projects", "list"] }`}</code>。
+        {' · '}
+        {t('agents.expPayload')}{' '}
+        <code className="inline">{`{ "cli": ["projects", "list"] }`}</code>
       </Alert>
       {error ? <Alert variant="error">{error}</Alert> : null}
       <Card>
@@ -370,6 +425,9 @@ export function AgentsPage() {
             </li>
             <li>
               <strong>{t('agents.capStatus')}</strong>：{t('agents.capStatusD')}
+            </li>
+            <li>
+              <strong>{t('agents.statusFlowTitle')}</strong>：{t('agents.statusFlow')}
             </li>
           </ul>
         </CardSection>
@@ -419,14 +477,44 @@ export function AgentsPage() {
                 header: t('agents.colId'),
                 render: (a) => <code className="inline">{a.agent_id}</code> },
               {
+                key: 'session',
+                header: t('agents.colSession'),
+                render: (a) => (
+                  <span className="u-flex u-items-center u-gap-2">
+                    <code className="inline u-break-all">{a.id}</code>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      title={t('agents.copySession')}
+                      onClick={() => {
+                        void navigator.clipboard.writeText(a.id).then(
+                          () => undefined,
+                          () => undefined,
+                        );
+                      }}
+                    >
+                      {t('common.copy')}
+                    </Button>
+                  </span>
+                ) },
+              {
                 key: 'status',
                 header: t('agents.colStatus'),
                 nowrap: true,
-                render: (a) => (
-                  <Badge tone={statusTone(a.status)}>
-                    {statusLabel(a.status, t)}
-                  </Badge>
-                ) },
+                render: (a) => {
+                  const age = staleAgeLabel(a.last_seen_at);
+                  return (
+                    <span title={age ? t('agents.staleFor', { age }) : undefined}>
+                      <Badge tone={statusTone(a.status)}>
+                        {statusLabel(a.status, t)}
+                      </Badge>
+                      {age ? (
+                        <span className="muted u-text-sm"> · {t('agents.staleFor', { age })}</span>
+                      ) : null}
+                    </span>
+                  );
+                } },
               {
                 key: 'group',
                 header: t('agents.colGroup'),
@@ -446,7 +534,7 @@ export function AgentsPage() {
                 <Button
                   variant="primary"
                   size="sm"
-                  loading={busy}
+                  title={t('agents.commandTitle')}
                   onClick={() => {
                     setCmdPreset('ping');
                     setCmdAgent(a);
@@ -457,15 +545,19 @@ export function AgentsPage() {
                 <Button
                   variant="secondary"
                   size="sm"
-                  loading={busy}
-                  onClick={bindCall1(openHistory, a)}
+                  loading={histBusy}
+                  title={t('agents.historyTitleShort')}
+                  onClick={() => {
+                    setHistBusy(true);
+                    void openHistory(a).finally(() => setHistBusy(false));
+                  }}
                 >
                   {t('agents.history')}
                 </Button>
                 <Button
                   variant="danger"
                   size="sm"
-                  loading={busy}
+                  title={t('agents.deleteTitlePlain')}
                   onClick={bindSet(setDelAgent, a)}
                 >
                   {t('common.delete')}
@@ -653,6 +745,11 @@ intervalMs: 5000`}
           ) : (
             <InfoCardGrid cols={3}>
               {runtimeList.map((rt) => {
+                const honestStatus =
+                  rt.pathExists === false ||
+                  (!rt.pathExists && rt.status === 'stopped' && !rt.unitActive)
+                    ? 'not_installed'
+                    : rt.status;
                 const pathLine = rt.installPath
                   ? `${rt.pathExists ? t('agents.pathExists') : t('agents.pathMissing')} · ${rt.installPath}`
                   : '—';
@@ -666,8 +763,8 @@ intervalMs: 5000`}
                     key={rt.kind}
                     title={rt.name ?? rt.kind}
                     badge={{
-                      label: statusLabel(rt.status, t),
-                      tone: statusTone(rt.status) }}
+                      label: statusLabel(honestStatus, t),
+                      tone: statusTone(honestStatus) }}
                     facts={[
                       {
                         label: t('agents.path'),

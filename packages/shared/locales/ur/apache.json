@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "تمام تنازعات کی باقیات کو صاف کریں؟",
   "cleanupConflictsDesc": "ہر آن ڈسک آرٹفیکٹ conf کو ہٹا دیں جو کسی پروجیکٹ یا اسٹینڈ ایلون ServerName سے متصادم ہو۔ پروجیکٹ کی قطاریں رکھی جاتی ہیں۔",
   "artifactRemovedOk": "بقایا conf کو ہٹا دیا گیا۔",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS سامنے Nginx پر ختم ہوتا ہے۔",
   "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔"
 }

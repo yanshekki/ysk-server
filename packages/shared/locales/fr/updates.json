@@ -170,19 +170,60 @@
   "notInstalled": "Non installé",
   "goToPage": "Ouvrir la page",
   "hubHint": "Cataloguez les logiciels et les environnements d'exécution sur cet hôte. Numérisez pour actualiser.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "tous les jours",
+  "intervalDays": "tous les {{n}} jours",
+  "intervalHour": "toutes les heures",
+  "intervalHours": "toutes les {{n}} heures",
+  "intervalMinutes": "toutes les {{n}} minutes",
+  "intervalSeconds": "toutes les {{n}} secondes",
+  "availableHint": "Packages avec un candidat plus récent du gestionnaire de packages.",
+  "servicesHint": "Services de catalogue sur cet hôte. Ouvrez la page du service pour installer.",
+  "runtimeHint": "Durées d'exécution sur cet hôte. Les mises à niveau de version sont effectuées sur chaque page d'exécution.",
+  "needsReboot": "Redémarrage nécessaire",
+  "kernelRebootWarn": "L'installation d'un nouveau noyau nécessite généralement un redémarrage avant son utilisation.",
+  "neverRun": "pas encore couru",
+  "scanOsvN": "Scan + OSV (premier {{n}})",
+  "rebootNeeded": "redémarrer",
+  "kernelRebootHint": "Les packages du noyau nécessitent un redémarrage après l'application",
+  "needApprovalHint": "Ouvrez Disponible et filtrez les packages qui nécessitent une approbation",
+  "applyNeedConfirm": "Ouvre une boîte de dialogue de confirmation avant d'appliquer",
+  "probeFailed": "La sonde a échoué",
+  "notViaApt": "Non géré par apt — aucun candidat",
+  "noCandidate": "Aucune version candidate",
+  "jobOpenGeo": "Page GéoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Sonde de protection",
+      "hint": "Signaux de défense périodiques"
+    },
+    "updates_scan": {
+      "name": "Analyse des mises à jour",
+      "hint": "Actualiser l'inventaire des packages"
+    },
+    "daily_backup": {
+      "name": "Sauvegarde quotidienne",
+      "hint": "Sauvegarde planifiée tout"
+    },
+    "db_temp_expire": {
+      "name": "Expiration des utilisateurs de base de données temporaires",
+      "hint": "Supprimer les utilisateurs de base de données temporaires expirés"
+    },
+    "defense_auto_ban": {
+      "name": "Interdiction automatique de la défense",
+      "hint": "Appliquer une coche d'interdiction automatique"
+    },
+    "defense_geoip_update": {
+      "name": "Mise à jour GeoIP",
+      "hint": "Télécharger les bases de données GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "Aspirateur à bûches",
+      "hint": "conservation du journal"
+    },
+    "email_dnsbl": {
+      "name": "Envoyer un e-mail à DNSBL",
+      "hint": "Vérification DNSBL par courrier"
+    }
+  },
+  "applyPanelAlreadyLatest": "Déjà la dernière version du panneau"
 }

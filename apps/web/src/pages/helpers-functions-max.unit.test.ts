@@ -87,7 +87,11 @@ import {
   exitCodeOf,
   exitTone,
   exitHint,
+  worstFleetStatus,
+  staleAgeLabel,
 } from './AgentsPage';
+import { looksLikeProbeError, jobI18nKey } from './UpdatesPage';
+import { clusterStatusLabel } from '../features/db-service/DbClusterPanel';
 import { badgeForKey } from './DashboardPage';
 import { asOps } from './EmailDomainPage';
 import { formatBytes as bakFormatBytes } from './features/BackupsPage';
@@ -95,6 +99,7 @@ import {
   formatBytes as metFormatBytes,
   formatUptime as metFormatUptime,
   alertLabel,
+  isProtectedSignalTarget,
 } from './features/MetricsPage';
 import {
   formatBytes as netFormatBytes,
@@ -113,6 +118,14 @@ import {
 
 const t = (k: string, o?: Record<string, unknown>) =>
   o ? `${k}:${JSON.stringify(o)}` : k;
+
+describe('metrics protected PIDs', () => {
+  it('blocks PID 1 and init', () => {
+    expect(isProtectedSignalTarget({ pid: '1', command: '/sbin/init' })).toBe(true);
+    expect(isProtectedSignalTarget({ pid: '2', command: 'kthreadd' })).toBe(true);
+    expect(isProtectedSignalTarget({ pid: '649880', command: 'ysk-server' })).toBe(false);
+  });
+});
 
 describe('ProtectionPage helpers', () => {
   it('levelMeta / presetWhen / presetMeta / threat', () => {
@@ -363,6 +376,11 @@ describe('Project Agents Dashboard misc helpers', () => {
       expect(statusTone(s)).toBeTruthy();
       expect(statusLabel(s, t)).toBeTruthy();
     }
+    expect(worstFleetStatus([{ status: 'registered' }, { status: 'stale' }])).toBe('stale');
+    expect(staleAgeLabel(new Date(Date.now() - 3 * 3600_000).toISOString())).toBe('3h');
+    expect(looksLikeProbeError('error: rustup could not choose')).toBe(true);
+    expect(jobI18nKey('defense-geoip-update')).toBe('updates.job.defense_geoip_update');
+    expect(clusterStatusLabel('failed', t)).toContain('db.cluster.status.failed');
     for (const s of ['done', 'queued', 'acked', 'error', 'z']) {
       expect(cmdStatusTone(s)).toBeTruthy();
     }

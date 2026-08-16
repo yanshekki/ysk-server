@@ -60,12 +60,12 @@
   "dockCancelled": "تم الإلغاء · {{title}}",
   "cancelHint": "إلغاء الطلب. توقف العميل عن الاستماع؛ قد ينهي المضيف الخطوة/الخطوة الحالية. أعد فحص الحالة بعد لحظة.",
   "cancelledToast": "تم إلغاء العملية (توقف العميل عن التدفق)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "يتقدم",
+  "kindScan": "مسح",
+  "kindDeploy": "نشر",
+  "kindRuntime": "وقت التشغيل",
+  "jobDone": "انتهى · {{title}}",
+  "jobFailed": "فشل · {{title}}",
   "uninstallUfwWarn": "إزالة UFW تترك هذا المضيف دون جدار حماية المنافذ الذي يديره اللوحة.",
   "uninstallFail2banWarn": "إزالة fail2ban توقف الـ jail وترفع الحظر الحالي. إن أبقيته فأضف IP تسجيل الدخول إلى ignoreip أولاً."
 }

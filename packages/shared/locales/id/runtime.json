@@ -452,9 +452,9 @@
     "noProjects": "Tidak ada proyek",
     "noProjectsDesc": "Tidak ada proyek node/bun di panel, atau pengguna OS tidak tersedia.",
     "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas.",
-    "startupTitle": "Start on boot",
-    "startupDesc": "Register PM2 so processes come back after reboot.",
-    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
+    "startupTitle": "Mulai saat boot",
+    "startupDesc": "Daftarkan PM2 sehingga proses kembali setelah reboot.",
+    "systemdActionsHint": "tindakan systemd memerlukan root dan YSK_EXECUTE."
   },
   "recordedInstalled": "Direkam {{v}}",
   "remoteSourceSuffix": "({{source}})",
@@ -509,9 +509,9 @@
   "fullVersion": "Versi lengkap",
   "useListForDefaults": "Untuk mengubah default host atau panel, atau menghapus versi ini, gunakan daftar di atas.",
   "alreadyHostDefaultShort": "Default tuan rumah",
-  "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}",
+  "managedPathMissingTitle": "Jalur {{name}} yang dikelola belum siap",
+  "managedPathMissing": "{{name}} yang dikelola YSK untuk versi {{version}} belum siap. Periksa ulang atau instal ulang.",
+  "installRecordedCta": "Instal direkam {{v}}",
   "targetMissing": "Versi target belum terpasang",
   "targetMissingHint": "Target {{version}} tidak ada di host ini. Ikat versi terpasang atau pasang pin ini.",
   "needsInstall": "perlu dipasang",
@@ -523,7 +523,10 @@
   "phpFpmServiceDesc": "Mulai, hentikan, muat ulang, atau mulai ulang unit PHP-FPM",
   "rustupDefaultMissingTitle": "Tidak ada toolchain default rustup",
   "rustupDefaultMissing": "rustup tidak punya default. Setel stable di tab Perangkat lunak.",
-  "rustupDefaultMissingShort": "No default toolchain",
-  "rustupSetDefaultHint": "Set default toolchain",
-  "uninstalledCountHint": "{{n}} versi tidak ada di host ini"
+  "rustupDefaultMissingShort": "Tidak ada rantai alat default",
+  "rustupSetDefaultHint": "Tetapkan rantai alat default",
+  "uninstalledCountHint": "{{n}} versi tidak ada di host ini",
+  "applyPhpVhostTitle": "Perlu konfirmasi — menulis file pool/vhost",
+  "applyPhpVhostDesc": "Akan menulis kumpulan {{pool}} dan {{domain}} vhost. Muat ulang layanan: {{reload}}.",
+  "binaryPath": "Jalur biner"
 }

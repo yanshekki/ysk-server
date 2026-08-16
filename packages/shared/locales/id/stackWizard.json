@@ -16,7 +16,7 @@
   "keepData": "Simpan datanya",
   "purgeData": "Bersihkan data",
   "uninstallNow": "Copot pemasangannya sekarang",
-  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
-  "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallNeedSelect": "Pilih setidaknya satu paket. Pilihan kosong bukan lagi berarti menghapus semua.",
+  "uninstallConfirmTitle": "Hapus paket yang dipilih?",
+  "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi."
 }

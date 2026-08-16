@@ -102,10 +102,10 @@
   "disableConfirmTitle": "UFW নিষ্ক্রিয় করবেন?",
   "disableConfirmDesc": "হোস্ট ফায়ারওয়াল ট্র্যাফিক ফিল্টার করা বন্ধ করবে। পাবলিক নেটওয়ার্কে SSH ও প্যানেল উন্মুক্ত হতে পারে।",
   "disableConfirmConsequence": "বিদ্যমান অনুমতি/প্রত্যাখ্যান নিয়ম থাকবে, কিন্তু UFW আবার চালু না হওয়া পর্যন্ত কার্যকর হবে না।",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "fail2ban = অস্থায়ী লগ-ভিত্তিক নিষেধাজ্ঞা",
+  "servicesUfwOff": "UFW বন্ধ আছে। এই তালিকাটি কাঙ্ক্ষিত এক্সপোজার, হোস্ট যে নিয়মগুলি প্রয়োগ করছে তা নয়।",
+  "desiredOnlyUfwOff": "কাঙ্ক্ষিত: {{mode}} · UFW বন্ধ (প্রযোজ্য নয়)",
+  "syncNotApplied": "UFW বন্ধ · প্রয়োগ করা হয়নি",
+  "defaultNotApplied": "n/a (UFW বন্ধ)",
+  "ufwOffHint": "UFW বন্ধ থাকা অবস্থায় ডিফল্ট ইনকামিং প্রয়োগ করা হয় না"
 }

@@ -8,6 +8,7 @@ import type { HostExecutor } from '../host/executor.js';
 import { existsSync } from 'node:fs';
 import { shellBinExists } from './software-probe/index.js';
 import { assertSafeOutboundUrl, isMetadataOrLoopbackHost } from '../net/ssrf.js';
+import { bashAnsiCQuote } from '../security/ssh-identity/ops.js';
 
 export type BackupRemoteSettings = {
   enabled: boolean;
@@ -244,7 +245,7 @@ function sftpPasswordArgv(input: {
   return [
     'bash',
     '-c',
-    `if ${shellBinExists('sshpass')}; then printf %s ${JSON.stringify(input.batch.endsWith('\n') ? input.batch : `${input.batch}\n`)} | sshpass -p ${JSON.stringify(input.password)} ${sftp.map((a) => JSON.stringify(a)).join(' ')}; else echo NEED_SSHPASS; fi`,
+    `if ${shellBinExists('sshpass')}; then printf %s ${bashAnsiCQuote(input.batch.endsWith('\n') ? input.batch : `${input.batch}\n`)} | sshpass -p ${JSON.stringify(input.password)} ${sftp.map((a) => JSON.stringify(a)).join(' ')}; else echo NEED_SSHPASS; fi`,
   ];
 }
 

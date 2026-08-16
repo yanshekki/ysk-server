@@ -151,8 +151,8 @@ export function StackWizard() {
   if (loading) return <LoadingBlock />;
 
   const canMutate = Boolean(status?.executeEnabled && status?.isRoot);
-  const missing = status?.components.filter((c) => !c.installed).length ?? 0;
-  const installed = status?.components.filter((c) => c.installed).length ?? 0;
+  const missing = status?.components?.filter((c) => !c.installed).length ?? 0;
+  const installed = status?.components?.filter((c) => c.installed).length ?? 0;
 
   return (
     <div className="stack-wizard" data-testid="stack-wizard">

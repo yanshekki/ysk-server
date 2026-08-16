@@ -191,6 +191,12 @@
   min-width: 0;
 }
 
+/* Author `display:flex` otherwise wins over the UA [hidden] rule. */
+.tab-panel[hidden],
+.tabs__panel > .stack[hidden] {
+  display: none !important;
+}
+
 .tab-panel > .card:first-child,
 .tab-panel > .alert:first-child {
   margin-top: 0;

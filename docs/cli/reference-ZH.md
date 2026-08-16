@@ -282,6 +282,16 @@ ysk-server agent run --control-plane URL --id AGENT_ID [--group g]
 
 Fleet：已註冊 ≠ 已連線（需 heartbeat）。入隊需 Bearer；公開路徑僅限 poller。
 
+## fleet
+
+`agents fleet` 的頂層別名。`--session` 是 fleet 工作階段 UUID（不是顯示用的 `agent_id`）。
+
+```bash
+ysk-server fleet list
+ysk-server fleet register --agent-id NAME
+ysk-server fleet commands --session UUID
+```
+
 ## logs | host | health | notifications | readiness | doctor | services | db-cluster
 
 ```bash

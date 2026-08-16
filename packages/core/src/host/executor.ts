@@ -348,6 +348,7 @@ const READ_ONLY_SIMPLE_BINS = new Set([
   'host',
   'nslookup',
   'getent',
+  'ss',
 ]);
 
 /** `crontab -l` / `crontab -u USER -l` are inventory. Install/edit/remove still mutate. */

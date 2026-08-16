@@ -136,18 +136,20 @@
       "gcore": "CDN Gcore",
       "custom": "Proxys personnalisés"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list.",
-    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
+    "needProvider": "Choisissez un fournisseur CDN avant de récupérer sa liste IP.",
+    "spoofWarn": "Faire confiance au mauvais CIDR permet aux clients d'usurper les en-têtes X-Forwarded-For / CDN comme adresse IP."
   },
   "linkUp": "En haut",
   "linkDown": "Vers le bas",
-  "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
-  "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "linkDownTitle": "Mettez {{name}} hors ligne",
+  "linkDownNeedConfirm": "Tapez le nom de l'interface pour confirmer",
+  "persistNmHint": "Persistant signifie que les modifications peuvent survivre au redémarrage via NetworkManager.",
+  "hideRaw": "Masquer la sortie brute",
+  "rawLoadedAt": "Chargé {{time}}",
+  "deleteDefaultPanelWarn": "La suppression de l'itinéraire par défaut peut abandonner cette session de panneau. Tapez DEFAULT pour confirmer.",
+  "typeDefaultToConfirm": "Tapez DEFAULT pour confirmer",
   "deleteDefaultNeedConfirm": "Confirmation requise — saisissez DEFAULT (peut couper ce panneau)",
-  "deleteRouteNeedConfirm": "Confirmation requise"
+  "deleteRouteNeedConfirm": "Confirmation requise",
+  "nmUnavailable": "NetworkManager n'est pas en cours d'exécution — seule une route en direct peut être ajoutée",
+  "defaultRouteDownNeedName": "Il s'agit de la sortie de route par défaut. Tapez le nom de l’interface pour confirmer – le panneau peut se déconnecter."
 }

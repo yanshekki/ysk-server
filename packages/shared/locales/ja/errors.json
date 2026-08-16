@@ -38,7 +38,8 @@
     "sessionIdle": "アイドルタイムアウト。再度サインインする",
     "totpNotEnabled": "2FA が有効になっていません",
     "totpSecretNoDataDir": "TOTP シークレットは暗号化されていますが、dataDir が設定されていません",
-    "mustChangePassword": "続行する前に新しいパスワードを設定してください"
+    "mustChangePassword": "続行する前に新しいパスワードを設定してください",
+    "policyNeedsOwn2fa": "このアカウントの 2FA をオンにし、他のアカウントに 2FA を要求する前に TOTP コードで確認してください"
   },
   "http": {
     "notFoundRoute": "見つかりません: {{method}} {{path}}",

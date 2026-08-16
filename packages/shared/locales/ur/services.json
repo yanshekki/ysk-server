@@ -4,7 +4,9 @@
     "start": "شروع کریں۔",
     "stop": "رک جاؤ",
     "restart": "دوبارہ شروع کریں۔",
-    "reload": "دوبارہ لوڈ کریں۔"
+    "reload": "دوبارہ لوڈ کریں۔",
+    "enable": "بوٹ پر فعال کریں",
+    "disable": "بوٹ پر غیر فعال"
   },
   "lifecycleTitle": "{{label}} سروس کنٹرول",
   "startedOk": "{{label}} شروع ہو گیا",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "{{label}} بند رہنے پر یہ ہوسٹ HTTP/HTTPS نہیں دے گا۔",
   "stopConfirmSshdTitle": "sshd روکیں؟",
   "stopConfirmSshdDesc": "sshd روکنے سے ریموٹ SSH کٹ جائے گا۔ کنسول یا دوسرا لاگ اِن یقینی بنائیں۔",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "sshd بند کرو",
   "stopConfirmSshdConsequence": "ہوسٹ کنسول سے sshd شروع ہونے تک نئی SSH ناکام رہیں گی۔",
   "stopConfirmPanelTitle": "YSK Server روکیں؟",
   "stopConfirmPanelDesc": "ہوسٹ پر یونٹ شروع ہونے تک پینل اور API آف لائن رہیں گے۔",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "ysk-server کو روکیں۔",
   "stopConfirmPanelConsequence": "یہ براؤزر سیشن کٹ جائے گا۔ SSH یا ہوسٹ کنسول سے یونٹ شروع کریں۔",
   "actionDone": "{{action}} ہو گیا۔",
   "runningOf": "{{running}}/{{total}} چل رہا ہے۔",
@@ -54,16 +56,20 @@
   "probeDone": "تحقیقات مکمل",
   "runProtection": "تحفظ کی تحقیقات چلائیں۔",
   "notProbedYet": "ابھی تک تفتیش نہیں ہوئی۔",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "fail2ban کو روکیں؟",
+  "stopConfirmFail2banDesc": "fail2ban کو روکنے سے خودکار IP پابندیاں بند ہوجاتی ہیں۔ ویب سائٹس اور SSH چلتے رہتے ہیں۔",
+  "stopConfirmFail2banConsequence": "نئے حملہ آوروں پر اس وقت تک پابندی نہیں لگائی جاتی جب تک کہ fail2ban دوبارہ شروع نہ ہو جائے۔",
+  "installOrOpen": "انسٹال / کھولیں۔",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "تمام ریاستیں۔",
+    "running": "چل رہا ہے۔",
+    "failed": "ناکام",
+    "missing": "انسٹال نہیں ہے۔"
   },
   "stopNeedConfirm": "تصدیق درکار",
-  "stopNeedConfirmPhrase": "تصدیقی فقرہ لکھنا ضروری ہے"
+  "stopNeedConfirmPhrase": "تصدیقی فقرہ لکھنا ضروری ہے",
+  "enabledOk": "{{label}} بوٹ پر فعال",
+  "bootDisabledWarn": "{{label}} چل رہا ہے مگر بوٹ پر شروع نہیں ہوگا۔ ری بوٹ کے بعد برقرار رکھنے کے لیے فعال کریں۔",
+  "bootDisabledShort": "بوٹ پر نہیں",
+  "mariadbNotInstalled": "MariaDB انسٹال نہیں"
 }

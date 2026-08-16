@@ -100,6 +100,14 @@ export function versionArrow(
   return `${cur} → ${lat}`;
 }
 
+export function looksLikeProbeError(s?: string): boolean {
+  return Boolean(s && /error:|rustup|could not|wasn't specified|no default/i.test(s));
+}
+
+export function jobI18nKey(id: string): string {
+  return `updates.job.${String(id).replace(/[.-]/g, '_')}`;
+}
+
 export function isHighRisk(row: AdviceRow): boolean {
   return (
     row.risk === 'high' ||
@@ -258,6 +266,8 @@ export function UpdatesPage() {
   const [q, setQ] = useState(qFromUrl);
   const [debouncedQ, setDebouncedQ] = useState(qFromUrl);
   const [highRiskApply, setHighRiskApply] = useState<AdviceRow | null>(null);
+  const [pkgPage, setPkgPage] = useState(0);
+  const PKG_PAGE = 50;
   /** Selected package row keys for bulk update */
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set());
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
@@ -320,6 +330,10 @@ export function UpdatesPage() {
     else if (riskFilter === 'low') qparams.risk = 'low';
     else if (riskFilter === 'approval') qparams.approval = '1';
     return qparams;
+  }, [debouncedQ, riskFilter]);
+
+  useEffect(() => {
+    setPkgPage(0);
   }, [debouncedQ, riskFilter]);
 
   // Server-backed filter: reload when listQuery changes (after first mount load from hook)
@@ -515,8 +529,21 @@ export function UpdatesPage() {
             tone: highRisk > 0 ? 'danger' : 'ok' },
           {
             label: t('updates.needApproval'),
-            value: needApproval,
-            tone: needApproval > 0 ? 'warn' : 'neutral' },
+            value: (
+              <button
+                type="button"
+                className="linkish"
+                onClick={() => {
+                  setTab('available');
+                  setRiskFilter('approval');
+                }}
+              >
+                {needApproval}
+              </button>
+            ),
+            tone: needApproval > 0 ? 'warn' : 'neutral',
+            hint: t('updates.needApprovalHint'),
+          },
           {
             label: t('updates.hasCve'),
             value: withCve,
@@ -745,12 +772,32 @@ export function UpdatesPage() {
                   header: t('updates.colVersion'),
                   mobile: 'meta',
                   render: (e) => {
+                    if (looksLikeProbeError(e.currentVersion) || looksLikeProbeError(e.latestVersion)) {
+                      const raw = e.currentVersion || e.latestVersion || '';
+                      return (
+                        <details>
+                          <summary>
+                            <Badge tone="warn">{t('updates.probeFailed')}</Badge>
+                          </summary>
+                          <pre className="u-text-sm u-mt-1">{raw}</pre>
+                        </details>
+                      );
+                    }
                     const cur = shortVersion(e.currentVersion);
-                    const lat = shortVersion(e.latestVersion);
-                    const label = versionArrow(cur, lat);
-                    const raw = `${e.currentVersion ?? ''} → ${e.latestVersion ?? ''}`;
+                    const lat = e.latestVersion ? shortVersion(e.latestVersion) : '—';
+                    const label = `${cur} → ${lat}`;
                     return (
-                      <span title={raw !== label ? raw : undefined}>{label}</span>
+                      <span
+                        title={
+                          e.latestVersion
+                            ? undefined
+                            : tab === 'runtime'
+                              ? t('updates.notViaApt')
+                              : t('updates.noCandidate')
+                        }
+                      >
+                        {label}
+                      </span>
                     );
                   },
                 },
@@ -758,7 +805,8 @@ export function UpdatesPage() {
                   key: 'kind',
                   header: t('updates.colAdvice'),
                   mobile: 'hide',
-                  render: (e) => e.kind,
+                  render: (e) =>
+                    t(`updates.kind.${e.kind}`, { defaultValue: e.kind }),
                 },
                 {
                   key: 'act',
@@ -769,12 +817,22 @@ export function UpdatesPage() {
                       {e.applyPath === 'apt' && e.upgradable && canApply ? (
                         <Button
                           size="sm"
-                          variant="primary"
                           disabled={busy}
                           title={
                             isKernelPackage(e.packageName || e.title)
                               ? t('updates.kernelRebootHint')
-                              : undefined
+                              : t('updates.applyNeedConfirm')
+                          }
+                          variant={
+                            isHighRisk({
+                              packageName: e.packageName || e.title,
+                              currentVersion: e.currentVersion || '',
+                              candidateVersion: e.latestVersion,
+                              risk: e.risk,
+                              requiresApproval: e.requiresApproval,
+                            })
+                              ? 'danger'
+                              : 'secondary'
                           }
                           onClick={() => {
                             const row = {
@@ -785,11 +843,7 @@ export function UpdatesPage() {
                               requiresApproval: e.requiresApproval,
                               summary: e.summary,
                             };
-                            if (isHighRisk(row)) {
-                              setHighRiskApply(row);
-                              return;
-                            }
-                            void applyPackage(row);
+                            setHighRiskApply(row);
                           }}
                         >
                           {t('updates.applyPkg')}
@@ -808,7 +862,11 @@ export function UpdatesPage() {
                           {t('updates.applyPanelUpdate')}
                         </Button>
                       ) : null}
-                      <Link className="btn btn--ghost btn--sm" to={e.href}>
+                      <Link
+                        className="btn btn--ghost btn--sm"
+                        to={e.href}
+                        title={t('updates.goToPage')}
+                      >
                         {t('updates.goToPage')}
                       </Link>
                     </ActionBar>
@@ -1050,7 +1108,7 @@ export function UpdatesPage() {
                       );
                     } },
                 ]}
-                rows={filtered}
+                rows={filtered.slice(pkgPage * PKG_PAGE, (pkgPage + 1) * PKG_PAGE)}
                 rowKey={(i) => packageRowKey(i)}
                 rowClassName={(i) =>
                   selectedKeys.has(packageRowKey(i)) ? 'is-selected' : undefined
@@ -1075,18 +1133,15 @@ export function UpdatesPage() {
                         title={
                           !canApply
                             ? t('rbac.cap.updatesApply')
-                            : hasUpgrade
-                              ? t('updates.upgradeTo', { v: i.candidateVersion })
-                              : t('updates.sameVersion')
+                            : !hasUpgrade
+                              ? t('updates.sameVersion')
+                              : isHighRisk(i)
+                                ? t('updates.applyNeedConfirm')
+                                : t('updates.upgradeTo', { v: i.candidateVersion })
                         }
                         onClick={() => {
                           if (!hasUpgrade || !canApply) return;
-                          const high = isHighRisk(i);
-                          if (high) {
-                            setHighRiskApply(i);
-                            return;
-                          }
-                          void applyPackage(i, false);
+                          setHighRiskApply(i);
                         }}
                       >
                         {hasUpgrade ? t('common.apply') : t('updates.noNeedUpgrade')}
@@ -1109,6 +1164,29 @@ export function UpdatesPage() {
                 }
               />
             )}
+            {filtered.length > PKG_PAGE ? (
+              <ActionBar>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={pkgPage === 0}
+                  onClick={() => setPkgPage((p) => Math.max(0, p - 1))}
+                >
+                  {t('common.previous')}
+                </Button>
+                <span className="muted u-text-sm">
+                  {pkgPage * PKG_PAGE + 1}–{Math.min(filtered.length, (pkgPage + 1) * PKG_PAGE)} / {filtered.length}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={(pkgPage + 1) * PKG_PAGE >= filtered.length}
+                  onClick={() => setPkgPage((p) => p + 1)}
+                >
+                  {t('common.next')}
+                </Button>
+              </ActionBar>
+            ) : null}
           </div>
         ) : null}
 
@@ -1154,7 +1232,13 @@ export function UpdatesPage() {
                         size="sm"
                         loading={busy}
                         disabled={!selfAvailable || !canApply}
-                        title={!canApply ? t('rbac.cap.updatesApply') : undefined}
+                        title={
+                          !canApply
+                            ? t('rbac.cap.updatesApply')
+                            : !selfAvailable
+                              ? t('updates.applyPanelAlreadyLatest')
+                              : t('updates.applyPanelUpdate')
+                        }
                         onClick={bindVoid(applySelf)}
                       >
                         {t('updates.applyPanelUpdate')}
@@ -1266,13 +1350,16 @@ export function UpdatesPage() {
                 <ul className="upd-job-list">
                   {jobs.map((j) => (
                     <li key={String(j.id)}>
-                      <span className="upd-job__id">{String(j.id)}</span>
+                      <span className="upd-job__id" title={t(`${jobI18nKey(String(j.id))}.hint`, { defaultValue: String(j.id) })}>
+                        {t(`${jobI18nKey(String(j.id))}.name`, { defaultValue: String(j.id) })}
+                      </span>
                       <span className="upd-job__meta">
                         {j.intervalMs != null
                           ? formatIntervalMs(Number(j.intervalMs), t)
                           : j.interval
                             ? String(j.interval)
                             : '—'}
+                        {' · '}
                         {j.lastRunAt ||
                         (String(j.id) === 'updates.scan' && (summary?.lastScanAt ?? lastAt))
                           ? t('updates.lastRun', {
@@ -1285,7 +1372,14 @@ export function UpdatesPage() {
                                 t,
                               ),
                             })
-                          : ` · ${t('updates.neverRun')}`}
+                          : t('updates.neverRun')}
+                        {String(j.id) === 'defense-geoip-update' &&
+                        !(j.lastRunAt) ? (
+                          <>
+                            {' · '}
+                            <Link to="/protection?tab=geo">{t('updates.jobOpenGeo')}</Link>
+                          </>
+                        ) : null}
                       </span>
                     </li>
                   ))}

@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "Nettoyer tous les résidus de conflit ?",
   "cleanupConflictsDesc": "Supprimez toutes les configurations d'artefacts sur disque en conflit avec un projet ou un nom de serveur autonome. Les lignes du projet sont conservées.",
   "artifactRemovedOk": "Conf résiduel supprimé",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS se termine à l'avant de Nginx",
   "removeArtifactHint": "Supprime seulement ce conf disque reliquat. Ne supprime pas le projet."
 }

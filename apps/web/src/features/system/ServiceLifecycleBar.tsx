@@ -9,7 +9,7 @@ import type { ConfirmSeverity } from '../../shared/components/ui';
 import { systemApi } from './api';
 import { useFeatureAction } from './useFeatureAction';
 
-export type ServiceLifecycleAction = 'start' | 'stop' | 'restart' | 'reload';
+export type ServiceLifecycleAction = 'start' | 'stop' | 'restart' | 'reload' | 'enable';
 export type ServiceLifecycleDanger = 'normal' | 'edge' | 'sshd' | 'panel' | 'fail2ban';
 
 export type ServiceLifecycleBarProps = {
@@ -48,12 +48,13 @@ export function ServiceLifecycleBar({
   const { busy, run } = useFeatureAction();
   const [resolvedUnit, setResolvedUnit] = useState(unitProp?.trim() || '');
   const [pendingStop, setPendingStop] = useState(false);
+  const [bootEnabled, setBootEnabled] = useState<string | undefined>();
 
   useEffect(() => {
     if (unitProp?.trim()) {
       setResolvedUnit(unitProp.trim());
-      return;
     }
+    if (!matrixId && unitProp?.trim()) return;
     if (!matrixId) return;
     let cancelled = false;
     void systemApi
@@ -61,7 +62,8 @@ export function ServiceLifecycleBar({
       .then((r) => {
         if (cancelled) return;
         const row = (r.items ?? []).find((x) => x.id === matrixId);
-        if (row?.unit && row.unit !== '—') setResolvedUnit(row.unit);
+        if (!unitProp?.trim() && row?.unit && row.unit !== '—') setResolvedUnit(row.unit);
+        if (row?.enabled) setBootEnabled(row.enabled);
       })
       .catch(() => {
         /* keep empty — buttons stay disabled */
@@ -120,6 +122,7 @@ export function ServiceLifecycleBar({
       if (action === 'stop') return t('services.stoppedOk', { label });
       if (action === 'start') return t('services.startedOk', { label });
       if (action === 'reload') return t('services.reloadedOk', { label });
+      if (action === 'enable') return t('services.enabledOk', { label });
       return t('services.restartedOk', { label });
     },
     [label, t],
@@ -135,6 +138,15 @@ export function ServiceLifecycleBar({
           return r;
         }
         const r = await systemApi.serviceLifecycle({ unit, action });
+        if (matrixId) {
+          try {
+            const mx = await systemApi.servicesMatrix();
+            const row = (mx.items ?? []).find((x) => x.id === matrixId);
+            if (row?.enabled) setBootEnabled(row.enabled);
+          } catch {
+            /* ignore */
+          }
+        }
         await onDone?.();
         return r;
       }, okMessage(action));
@@ -195,6 +207,18 @@ export function ServiceLifecycleBar({
           onClick={() => void fire('reload')}
         >
           {t('services.action.reload')}
+        </Button>
+      ) : null}
+      {show('enable') && bootEnabled && bootEnabled !== 'enabled' ? (
+        <Button
+          variant="secondary"
+          size={size}
+          loading={busy}
+          disabled={!canAct}
+          title={t('services.bootDisabledWarn', { label })}
+          onClick={() => void fire('enable')}
+        >
+          {t('services.action.enable')}
         </Button>
       ) : null}
 

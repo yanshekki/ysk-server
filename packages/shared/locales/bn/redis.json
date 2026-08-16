@@ -69,8 +69,13 @@
   "noRequirepass": "সুরক্ষিত মোড চালু, কিন্তু requirepass খালি বা পড়া হয়নি — পাসওয়ার্ড নেই।",
   "setRequirepass": "পাসওয়ার্ড সেট করুন",
   "rdbOnlyLossHint": "AOF বন্ধ ও RDB চালু। পুনরায় চালু বা ক্র্যাশে সাম্প্রতিক লেখা হারাতে পারে।",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/ডেটা (ধারক)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/ডেটা সাধারণত একটি ধারক পথ; এই প্যানেল এটি বিদ্যমান নিশ্চিত করতে পারে না.",
+  "saveOff": "স্ন্যাপশট অক্ষম করুন (প্রস্তাবিত নয়)",
+  "saveOffWarn": "খালি সেভ স্ট্রিং RDB স্ন্যাপশট বন্ধ করে দেয়। AOF বন্ধ থাকলে ক্র্যাশ সমস্ত ডেটা হারাতে পারে।",
+  "dirMoveWarn": "dir পরিবর্তন করা dump.rdb/AOF সরানো হয় না। পরবর্তী সূচনা নতুন পাথ যেমন-ই ব্যবহার করে।",
+  "passwordUnset": "পরিষেবাতে সেট করা নেই",
+  "passwordSetHidden": "সেট (দেখানো হয়নি)"
 }

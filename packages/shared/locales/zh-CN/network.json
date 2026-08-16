@@ -11,7 +11,7 @@
   "tabs": {
     "ifaces": "接口",
     "routes": "路由",
-    "dns": "DNS",
+    "dns": "域名系统",
     "advanced": "高级",
     "about": "说明",
     "realip": "真实 IP / CDN"
@@ -146,8 +146,10 @@
   "linkDownTitle": "將 {{name}} 離線",
   "linkDownNeedConfirm": "需輸入介面名稱確認",
   "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultPanelWarn": "删除默认路由可以删除此面板会话。键入 DEFAULT 进行确认。",
+  "typeDefaultToConfirm": "输入 DEFAULT 进行确认",
   "deleteDefaultNeedConfirm": "需确认 — 请输入 DEFAULT（可能中断本面板）",
-  "deleteRouteNeedConfirm": "需确认"
+  "deleteRouteNeedConfirm": "需确认",
+  "nmUnavailable": "NetworkManager 未运行 — 只能添加实时路由",
+  "defaultRouteDownNeedName": "这是默认路由出口。输入接口名称进行确认 - 面板可能会断开连接。"
 }

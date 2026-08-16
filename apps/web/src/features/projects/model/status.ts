@@ -6,6 +6,7 @@ export type ProjectStatusBucket =
   | 'degraded'
   | 'unhealthy'
   | 'stopped'
+  | 'ready'
   | 'pending_os'
   | 'other';
 
@@ -175,7 +176,7 @@ export function deriveProjectStatus(
       labelKey: 'projects.status.ready',
       labelFallback: 'Ready',
       tone: 'neutral',
-      bucket: 'stopped',
+      bucket: 'ready',
       hintKey: 'projects.status.readyHint',
       hintFallback: 'Created — deploy to start',
       raw,
@@ -196,6 +197,7 @@ export function summarizeProjects(items: ProjectDto[]) {
   let degraded = 0;
   let unhealthy = 0;
   let stopped = 0;
+  let ready = 0;
   let pendingOs = 0;
   for (const p of items) {
     const b = deriveProjectStatus(p).bucket;
@@ -203,9 +205,10 @@ export function summarizeProjects(items: ProjectDto[]) {
     else if (b === 'degraded') degraded += 1;
     else if (b === 'unhealthy') unhealthy += 1;
     else if (b === 'pending_os') pendingOs += 1;
+    else if (b === 'ready') ready += 1;
     else stopped += 1;
   }
-  return { total: items.length, running, degraded, unhealthy, stopped, pendingOs };
+  return { total: items.length, running, degraded, unhealthy, stopped, ready, pendingOs };
 }
 
 export type ChecklistStepState = 'done' | 'warn' | 'todo';

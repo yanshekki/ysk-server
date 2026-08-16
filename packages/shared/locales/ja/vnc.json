@@ -243,7 +243,7 @@
   "editClientTitle": "リモートクライアントの編集",
   "editClientDesc": "パス、ホスト、およびオプションで保存されているパスワードを更新します。",
   "clientUpdated": "クライアントプロファイルが更新されました",
-  "rememberNeedPassword": "Enter a password first.",
-  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
-  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
+  "rememberNeedPassword": "最初にパスワードを入力してください。",
+  "settingsNeedStack": "これらのデフォルトは、TigerVNC (および選択されている場合は XFCE) がインストールされている場合に適用されます。まず、[インストール] タブでそれらをインストールします。",
+  "clientNeedNovnc": "ブラウザで開くには VNC は必要ありません。ここで開く予定のリモートを追加する前に、[インストール] タブにインストールしてください。"
 }

@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "Este motor VPN não está instalado no anfitrião.",
   "serverNotListening": "A unidade do servidor não está ativa. UDP/TCP {{port}} pode estar fechado.",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "Instale o mecanismo VPN primeiro",
+  "portHint": {
+    "51820": "Porta de escuta padrão do WireGuard",
+    "51821": "Porta de escuta alternativa do WireGuard",
+    "51822": "Segunda porta de escuta alternativa do WireGuard"
+  }
 }

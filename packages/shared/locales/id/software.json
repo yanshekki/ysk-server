@@ -88,7 +88,7 @@
     "noTarget": "Tidak ada target pembaruan",
     "needRuntimePage": "Instal versi ini di halaman runtime",
     "noAptCandidate": "Tidak ada versi kandidat yang tepat",
-    "sourceLabel": "Source"
+    "sourceLabel": "Sumber"
   },
   "install": {
     "progress": "Memasang: {{list}}…",

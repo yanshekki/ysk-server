@@ -102,10 +102,10 @@
   "disableConfirmTitle": "Desativar o UFW?",
   "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
   "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado.",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "fail2ban = banimentos temporários baseados em log",
+  "servicesUfwOff": "A UFW está desligada. Esta lista é a exposição desejada, não as regras que o host está aplicando.",
+  "desiredOnlyUfwOff": "Desejado: {{mode}} · UFW desativado (não aplicado)",
+  "syncNotApplied": "UFW desativado · não aplicado",
+  "defaultNotApplied": "n/a (UFW desativado)",
+  "ufwOffHint": "A entrada padrão não é aplicada enquanto o UFW está desligado"
 }

@@ -1,10 +1,10 @@
 /**
  * Project network — domain / port meta. Nginx edge ops live on /nginx.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import type { ProjectDto, OpsApplyResultDto } from 'ysk-server-shared';
+import type { CertificateView, ProjectDto, OpsApplyResultDto } from 'ysk-server-shared';
 import {
   ActionBar,
   Alert,
@@ -18,7 +18,9 @@ import {
   buttonClassName,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import { sslApi } from '../../ssl/api';
 import { bindInput } from '../../../pages/bind-handlers';
+import { formatDateTime } from '../../../shared/lib/datetime';
 
 export interface ProjectNetworkTabProps {
   project: ProjectDto;
@@ -74,7 +76,7 @@ export function ProjectNetworkTab({
   busy,
   onSaved,
   onOpsResult }: ProjectNetworkTabProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [domain, setDomain] = useState(project.domain ?? '');
   const [aliasesText, setAliasesText] = useState((project.domainAliases ?? []).join('\n'));
   const [forceHttps, setForceHttps] = useState(Boolean(project.forceHttps));
@@ -91,6 +93,7 @@ export function ProjectNetworkTab({
     project.realIpProvider ?? 'inherit',
   );
   const [saving, setSaving] = useState(false);
+  const [certs, setCerts] = useState<CertificateView[]>([]);
 
   useEffect(() => {
     setDomain(project.domain ?? '');
@@ -116,6 +119,21 @@ export function ProjectNetworkTab({
     project.preferredPort,
     project.realIpProvider,
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void sslApi
+      .list()
+      .then((r) => {
+        if (!cancelled) setCerts(r.items ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setCerts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [project.id]);
 
   function parseAliases(): string[] {
     return aliasesText
@@ -162,6 +180,17 @@ export function ProjectNetworkTab({
 
   const localBusy = busy || saving;
   const suspended = project.status === 'suspended';
+  const hostnames = useMemo(() => {
+    const names = [domain.trim(), ...parseAliases()].filter(Boolean);
+    return names.map((n) => n.toLowerCase());
+  }, [domain, aliasesText]);
+  const boundCert = useMemo(() => {
+    return certs.find(
+      (c) =>
+        c.files_exist &&
+        hostnames.includes(String(c.domain || '').toLowerCase()),
+    );
+  }, [certs, hostnames]);
   const showPort =
     project.runtime !== 'static' &&
     !(project.runtime === 'php' && !project.port);
@@ -224,19 +253,42 @@ export function ProjectNetworkTab({
 
       <Card>
         <CardSection title="HTTPS">
+          <FormLayout>
+            <Field label={t('projects.netBoundCert')} htmlFor="net-bound-cert" flush>
+              {boundCert ? (
+                <code id="net-bound-cert" className="inline">
+                  {boundCert.domain}
+                  {boundCert.expires_at
+                    ? ` · ${t('projects.netBoundCertExpiry', {
+                        at: formatDateTime(boundCert.expires_at, { locale: i18n.language }),
+                      })}`
+                    : ''}
+                </code>
+              ) : (
+                <span id="net-bound-cert" className="muted">
+                  {t('projects.netNoBoundCert')}
+                </span>
+              )}
+            </Field>
+          </FormLayout>
           <div className="form-switches">
             <CheckboxField
               id="net-https"
               label={t('projects.netForceHttps')}
               checked={forceHttps}
-              onChange={setForceHttps}
-              disabled={suspended}
+              onChange={(v) => {
+                if (v && !boundCert) return;
+                setForceHttps(v);
+              }}
+              disabled={suspended || (!boundCert && !forceHttps)}
               description={
-                forceHttps
-                  ? t('projects.netForceHttpsOn')
-                  : project.nginxConfigPath
-                    ? t('projects.netHttpsLiveNotForced')
-                    : t('projects.netForceHttpsOff')
+                !boundCert
+                  ? t('projects.netForceHttpsNeedCert')
+                  : forceHttps
+                    ? t('projects.netForceHttpsOn')
+                    : project.nginxConfigPath
+                      ? t('projects.netHttpsLiveNotForced')
+                      : t('projects.netForceHttpsOff')
               }
             />
             <CheckboxField

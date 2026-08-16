@@ -69,8 +69,13 @@
   "noRequirepass": "O modo protegido está ligado, mas requirepass está vazio ou não foi lido — sem palavra-passe.",
   "setRequirepass": "Definir palavra-passe",
   "rdbOnlyLossHint": "AOF desligado e RDB ligado. Um reinício ou falha pode perder escritas recentes.",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/dados (contêiner)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data geralmente é um caminho de contêiner; este painel não pode confirmar que existe.",
+  "saveOff": "Desativar instantâneos (não recomendado)",
+  "saveOffWarn": "A string de salvamento vazia desativa os instantâneos RDB. Uma falha pode perder todos os dados se o AOF também estiver desativado.",
+  "dirMoveWarn": "Alterar o diretório não move dump.rdb/AOF. A próxima inicialização usa o novo caminho como está.",
+  "passwordUnset": "Não definido no serviço",
+  "passwordSetHidden": "Conjunto (não mostrado)"
 }

@@ -115,9 +115,9 @@
   "colTitle": "通知",
   "colDetail": "詳細",
   "colSource": "出典",
-  "notifSearch": "Search alerts",
-  "notifAll": "All",
-  "notifDismiss": "Hide",
-  "goFix": "Fix",
+  "notifSearch": "検索アラート",
+  "notifAll": "すべて",
+  "notifDismiss": "隠れる",
+  "goFix": "修理",
   "needDomainFirst": "先にドメインを入力してください"
 }

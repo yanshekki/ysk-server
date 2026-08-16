@@ -317,7 +317,7 @@
     "ptrBad": "PTR ریورس DNS غائب یا غلط — VPS فراہم کنندہ سے درخواست کریں۔",
     "port25Blocked": "آؤٹ باؤنڈ پورٹ 25 بلاک نظر آتا ہے — ان بلاک کرنے کی درخواست کریں یا SMTP ریلے استعمال کریں۔",
     "port25Unknown": "پورٹ 25 اسٹیٹس نامعلوم — کنیکٹیویٹی چیک چلائیں۔",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC پینل میں تیار کیا گیا ہے لیکن ابھی تک عوامی DNS میں شائع نہیں ہوا ہے۔"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP کے لیے Let's Encrypt کے ذریعے TLS سرٹیفکیٹ",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "پوسٹ فکس دوبارہ لوڈ کرنے میں ناکام: {{detail}}",
     "dovecotApplied": "Dovecot TLS کا ٹکڑا لکھا اور دوبارہ لوڈ کرنے کی کوشش کی۔",
     "dovecotSkipped": "Dovecot کو چھوڑ دیا گیا (انسٹال نہیں یا doveconf دستیاب نہیں ہے)۔",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "میل سرٹیفکیٹ غائب ہے؛ ssl=no لکھا ہے لہذا Dovecot LE فائلوں کے بغیر شروع ہوسکتا ہے۔"
   },
   "policyApplySystemHint": "پوسٹ فکس/Rspamd نقشے لکھنے اور دوبارہ لوڈ کرنے کے لیے \"سسٹم پر اپلائی کریں\" کو چیک کریں۔",
   "rateLimitAppliedNote": "گھنٹہ وار آؤٹ باؤنڈ ریٹ اور اینٹی اسپام فلیگ لاگو کیا جاتا ہے (جب سسٹم لاگو ہوتا ہے)۔",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
   "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
   "openQueuePage": "میل قطار کھولیں",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "ابھی تک چیک نہیں ہوا۔",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "میل ڈومینز اس میزبان پر رجسٹرڈ ہیں۔",
   "healthChecklist": "چیک لسٹ {{score}}/100",
   "healthChecklistHint": "چیک لسٹ اسکور — DNS / PTR / پورٹ 25 ابھی پروب نہیں ہوا",
-  "healthLiveHint": "لائیو پروب اسکور"
+  "healthLiveHint": "لائیو پروب اسکور",
+  "installWebmailTitle": "مشترکہ ویب میل پروجیکٹ بنائیں (پہلی انسٹال)",
+  "reinstallWebmailTitle": "موجودہ ویب میل پروجیکٹ کو دوبارہ بنائیں / اپ گریڈ کریں۔",
+  "reinstallNeedInstall": "پہلے ویب میل انسٹال کریں۔",
+  "dovecotFailedStatus": "ڈوکوٹ {{status}} ہے۔ یونٹ کے خلاصے کے لیے سافٹ ویئر ٹیب کھولیں۔",
+  "mailCertMissing": "{{hosts}} کے لیے کوئی سرٹیفکیٹ نہیں ہے۔ اسے SSL صفحہ پر جاری کریں۔",
+  "mailCertPresent": "ایک میل سرٹیفکیٹ پہلے ہی جاری کیا گیا ہے — یہ گمشدہ سرٹیفکیٹ کا مسئلہ نہیں ہے۔",
+  "webmailNeedCert": "{{host}} کے لیے کوئی سرٹیفکیٹ نہیں — HTTPS کو مجبور کرنے سے پہلے اسے SSL پر جاری کریں۔",
+  "flushQueueEmpty": "قطار خالی ہے۔",
+  "flushQueueNeedExecute": "قطار کو فلش کرنے کے لیے YSK_EXECUTE (میزبان کی اجازت کی ضرورت ہے)",
+  "healthUncheckedHint": "DNS / PTR / پورٹ 25 ابھی پروب نہیں ہوئے۔",
+  "deliverabilityScore": "ڈیلیوریبلٹی پیک",
+  "opendkimNoReload": "OpenDKIM ری لوڈ نہیں کرتا — کلید یا جدول بدلنے کے بعد ری اسٹارٹ استعمال کریں۔",
+  "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں"
 }

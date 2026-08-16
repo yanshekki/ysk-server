@@ -69,8 +69,13 @@
   "noRequirepass": "सुरक्षित मोड चालू है, पर requirepass खाली या अपठित है — पासवर्ड नहीं।",
   "setRequirepass": "पासवर्ड सेट करें",
   "rdbOnlyLossHint": "AOF बंद और RDB चालू। पुनः प्रारंभ या क्रैश से हाल के लेखन खो सकते हैं।",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/डेटा (कंटेनर)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/डेटा आमतौर पर एक कंटेनर पथ है; यह पैनल इसकी पुष्टि नहीं कर सकता कि यह मौजूद है।",
+  "saveOff": "स्नैपशॉट अक्षम करें (अनुशंसित नहीं)",
+  "saveOffWarn": "खाली सेव स्ट्रिंग आरडीबी स्नैपशॉट को बंद कर देती है। यदि एओएफ भी बंद है तो क्रैश से सारा डेटा नष्ट हो सकता है।",
+  "dirMoveWarn": "डीआईआर बदलने से डंप.आरडीबी/एओएफ स्थानांतरित नहीं होता है। अगली शुरुआत यथावत नए पथ का उपयोग करती है।",
+  "passwordUnset": "सेवा पर सेट नहीं है",
+  "passwordSetHidden": "सेट (दिखाया नहीं गया)"
 }

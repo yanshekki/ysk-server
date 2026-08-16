@@ -361,19 +361,23 @@ export function DashboardPage() {
       title={t('nav.dashboard')}
       status={{
         pill: {
-          label:
-            health?.status === 'ok'
+          label: loading
+            ? t('common.loading')
+            : health?.status === 'ok'
               ? t('dashboard.status.healthy')
               : readiness?.productionReady
                 ? t('dashboard.status.prodReady')
                 : t('dashboard.status.needsCheck'),
-          tone:
-            health?.status === 'ok'
+          tone: loading
+            ? 'neutral'
+            : health?.status === 'ok'
               ? 'ok'
               : notifCounts.critical > 0
                 ? 'danger'
                 : 'warn' },
-        items: [
+        items: loading
+          ? [{ label: t('common.loading'), value: '…' }]
+          : [
           { label: t('nav.projects'), value: projects.length },
           {
             label: t('projects.statRunning'),

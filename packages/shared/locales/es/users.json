@@ -127,10 +127,12 @@
   "lockLastAdminHint": "Este es el último administrador. Eliminar, suspender y degradar están bloqueados.",
   "demoteAdminTitle": "¿Degradar a este administrador?",
   "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador.",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "El operador de fábrica incluye escrituras de alto riesgo. Estrecharlo solo afecta cuentas nuevas; cambiar el valor predeterminado afecta a los operadores existentes."
+  "searchPkgPh": "Nombre del paquete",
+  "quotaNonNeg": "Los conteos y cuotas no pueden ser negativos.",
+  "diskQuotaHint": "Los ajustes preestablecidos son GiB; La caja personalizada es MiB.",
+  "bandwidthHint": "0 significa ilimitado.",
+  "impersonateHint": "Abre una sesión como este usuario. Utilice el menú de cuenta para salir de la suplantación.",
+  "operatorHighRiskHint": "El operador de fábrica incluye escrituras de alto riesgo. Estrecharlo solo afecta cuentas nuevas; cambiar el valor predeterminado afecta a los operadores existentes.",
+  "cannotImpersonateSelf": "Ya has iniciado sesión como esta cuenta",
+  "singleAdminNo2fa": "Este host tiene un único administrador y 2FA está desactivado: habilite 2FA y agregue un administrador de respaldo."
 }

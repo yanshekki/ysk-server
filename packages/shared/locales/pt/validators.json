@@ -28,10 +28,10 @@
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
+    "cosmos": "Centro Cosmos",
     "sui": "Sui",
     "aptos": "Aptos",
-    "dot": "Polkadot",
+    "dot": "De bolinhas",
     "sol": "Solana"
   },
   "network": {
@@ -40,9 +40,9 @@
     "mainnet": "Rede principal",
     "fuji": "Fuji",
     "testnet": "Rede de testes",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "Visualização",
+    "preprod": "Pré-produção",
+    "westend": "Oeste"
   },
   "networkKind": {
     "testnet": "Rede de testes",

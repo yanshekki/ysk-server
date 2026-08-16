@@ -38,7 +38,8 @@
     "sessionIdle": "निष्क्रिय टाइम आउट; पुनः साइन इन करें",
     "totpNotEnabled": "2FA सक्षम नहीं है",
     "totpSecretNoDataDir": "TOTP रहस्य एन्क्रिप्ट किया गया है लेकिन डेटाडिर सेट नहीं है",
-    "mustChangePassword": "जारी रखने से पहले नया पासवर्ड सेट करें"
+    "mustChangePassword": "जारी रखने से पहले नया पासवर्ड सेट करें",
+    "policyNeedsOwn2fa": "इस खाते के लिए 2FA चालू करें और दूसरों के लिए 2FA की आवश्यकता से पहले TOTP कोड से पुष्टि करें"
   },
   "http": {
     "notFoundRoute": "नहीं मिला: {{method}} {{path}}",

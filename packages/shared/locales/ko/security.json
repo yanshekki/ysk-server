@@ -373,9 +373,9 @@
     "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
     "strictDryRun": "엄격 모드 미리보기",
     "errorNoDetail": "테스트 실패(상세 없음)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "privCloseWithoutAck": "닫은. 개인 키는 다시 표시되지 않습니다. 저장하지 않은 경우 새 것을 생성하십시오.",
+    "loginNoProjects": "프로젝트가 없습니다. 아래에서 기존 Linux 사용자(루트/테스터)에게 권한을 부여하세요. /root/.ssh를 작성하려면 YSK_EXECUTE=1이 필요합니다.",
+    "loginLinuxHint": "프로젝트가 없을 때 사용됩니다. 예: 루트 또는 테스터."
   },
   "sessionsActive": "활성 세션",
   "sessionsOther": "기타 장치",
@@ -431,9 +431,13 @@
     "critical": "심각"
   },
   "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다",
-  "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "confirmDeleteApiKey": "이 API 키를 삭제하시겠습니까?",
+  "confirmDeleteApiKeyDesc": "'{{name}}'을 입력하면 인증이 중단됩니다. 이 작업은 취소할 수 없습니다.",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "API 세션",
+  "revokeOtherTitle": "로그아웃 {{n}} 다른 세션",
+  "policyNeedSelf2fa": "먼저 이 계정에서 2FA를 활성화한 다음 TOTP 코드로 확인하세요.",
+  "revokeAllDevicesTitle": "기억된 모든 장치를 취소합니다. 귀하와 다른 관리자는 2FA를 다시 확인해야 합니다."
 }

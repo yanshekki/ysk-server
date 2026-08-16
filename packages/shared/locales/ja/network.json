@@ -136,18 +136,20 @@
       "gcore": "GコアCDN",
       "custom": "カスタムプロキシ"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list.",
-    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
+    "needProvider": "IP リストを取得する前に、CDN プロバイダーを選択してください。",
+    "spoofWarn": "間違った CIDR を信頼すると、クライアントは X-Forwarded-For / CDN ヘッダーを IP として偽装することができます。"
   },
   "linkUp": "Postfix",
   "linkDown": "ダウン",
-  "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
-  "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}",
-  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "linkDownTitle": "{{name}} をオフラインにする",
+  "linkDownNeedConfirm": "確認するインターフェース名を入力します",
+  "persistNmHint": "永続的とは、NetworkManager による再起動時に変更が存続できることを意味します。",
+  "hideRaw": "生の出力を非表示にする",
+  "rawLoadedAt": "ロード済み {{time}}",
+  "deleteDefaultPanelWarn": "デフォルト ルートを削除すると、このパネル セッションが削除される可能性があります。 「DEFAULT」と入力して確認します。",
+  "typeDefaultToConfirm": "「DEFAULT」と入力して確認します",
   "deleteDefaultNeedConfirm": "確認が必要です — DEFAULT と入力（このパネルが切断される場合があります）",
-  "deleteRouteNeedConfirm": "確認が必要です"
+  "deleteRouteNeedConfirm": "確認が必要です",
+  "nmUnavailable": "NetworkManager は実行されていません - 追加できるのはライブ ルートのみです",
+  "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。"
 }

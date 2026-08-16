@@ -317,7 +317,7 @@
     "ptrBad": "PTR 역방향 DNS가 없거나 잘못됨 - VPS 공급자에게 요청",
     "port25Blocked": "아웃바운드 포트 25가 차단된 것으로 나타납니다. 차단 해제를 요청하거나 SMTP 릴레이를 사용하세요.",
     "port25Unknown": "포트 25 상태를 알 수 없음 - 연결 확인 실행",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC가 패널에서 생성되었지만 아직 공개 DNS에 게시되지 않았습니다."
   },
   "stack": {
     "tlsNote": "SMTP/IMAP용 Let's Encrypt를 통한 TLS 인증서",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "접미사 다시 로드 실패: {{detail}}",
     "dovecotApplied": "Dovecot TLS 코드 조각을 작성하고 다시 로드를 시도했습니다.",
     "dovecotSkipped": "건너뛴 Dovecot(설치되지 않았거나 doveconf를 사용할 수 없음)",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "메일 인증서가 누락되었습니다. ssl=no를 작성하여 Dovecot이 LE 파일 없이 시작할 수 있도록 했습니다."
   },
   "policyApplySystemHint": "Postfix/Rspamd 맵을 작성하고 다시 로드하려면 \"시스템에 적용\"을 선택하세요.",
   "rateLimitAppliedNote": "시간당 아웃바운드 비율 및 스팸 방지 플래그가 적용됩니다(시스템 적용이 켜져 있는 경우).",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
   "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
   "openQueuePage": "메일 큐 열기",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "아직 확인되지 않음",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "이 호스트에 등록된 메일 도메인",
   "healthChecklist": "점검표 {{score}}/100",
   "healthChecklistHint": "점검표 점수 — DNS/PTR/포트 25 실측 전",
-  "healthLiveHint": "실측 점수"
+  "healthLiveHint": "실측 점수",
+  "installWebmailTitle": "공유 웹메일 프로젝트 생성(첫 설치)",
+  "reinstallWebmailTitle": "기존 웹메일 프로젝트 재구축/업그레이드",
+  "reinstallNeedInstall": "먼저 웹메일을 설치하세요",
+  "dovecotFailedStatus": "비둘기장은 {{status}}입니다. 장치 요약을 보려면 소프트웨어 탭을 엽니다.",
+  "mailCertMissing": "{{hosts}}에 대한 인증서가 없습니다. SSL 페이지에서 발급하세요.",
+  "mailCertPresent": "메일 인증서가 이미 발급되었습니다. 이는 인증서 누락 문제가 아닙니다.",
+  "webmailNeedCert": "{{host}}에 대한 인증서가 없습니다. HTTPS를 강제하기 전에 SSL에서 발급하세요.",
+  "flushQueueEmpty": "대기열이 비어 있습니다.",
+  "flushQueueNeedExecute": "큐를 플러시하려면 YSK_EXECUTE(호스트 실행 권한)가 필요합니다.",
+  "healthUncheckedHint": "DNS / PTR / 25번 포트는 아직 검사하지 않았습니다.",
+  "deliverabilityScore": "전달성 팩",
+  "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
+  "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다"
 }

@@ -127,10 +127,12 @@
   "lockLastAdminHint": "هذا آخر مسؤول. حُظر الحذف والإيقاف والتخفيض.",
   "demoteAdminTitle": "تخفيض هذا المسؤول؟",
   "demoteAdminDesc": "سيفقد هذا المستخدم صلاحيات المسؤول الكاملة. تأكد من بقاء مسؤول آخر.",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "دور المشغّل الافتراضي يشمل كتابات عالية المخاطر. تضييقه يؤثر على الحسابات الجديدة فقط؛ تغيير الافتراضي يؤثر على المشغّلين الحاليين."
+  "searchPkgPh": "اسم الحزمة",
+  "quotaNonNeg": "لا يمكن أن تكون الأعداد والحصص سلبية.",
+  "diskQuotaHint": "الإعدادات المسبقة هي GiB؛ الصندوق المخصص هو MiB.",
+  "bandwidthHint": "0 يعني غير محدود.",
+  "impersonateHint": "يفتح جلسة باسم هذا المستخدم. استخدم قائمة الحساب لترك انتحال الشخصية.",
+  "operatorHighRiskHint": "دور المشغّل الافتراضي يشمل كتابات عالية المخاطر. تضييقه يؤثر على الحسابات الجديدة فقط؛ تغيير الافتراضي يؤثر على المشغّلين الحاليين.",
+  "cannotImpersonateSelf": "لقد قمت بالفعل بتسجيل الدخول باستخدام هذا الحساب",
+  "singleAdminNo2fa": "هذا المضيف لديه مسؤول واحد والمصادقة الثنائية متوقفة - قم بتمكين المصادقة الثنائية وأضف مسؤولًا احتياطيًا."
 }

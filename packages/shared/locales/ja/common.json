@@ -122,9 +122,9 @@
   "done": "完了",
   "next": "次へ",
   "previous": "前へ",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "すべて",
+  "showPassword": "見せる",
+  "hidePassword": "隠れる",
+  "more": "もっと",
   "redirectedTo": "{{to}} を開きました（元: {{from}}）"
 }

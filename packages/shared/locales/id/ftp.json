@@ -134,6 +134,15 @@
   "sftpTechNote": "Kunci ditulis di bawah jalur yang dikelola",
   "filterProject": "Hanya akun FTP proyek ini",
   "clearProjectFilter": "Tampilkan semua akun",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd gagal. Buka tab Service (listen dan listening_ipv6 tidak boleh keduanya YA).",
+  "tabService": "Melayani",
+  "listenConflictLive": "Vsftpd.conf langsung telah mendengarkan={{v4}} dan mendengarkan_ipv6={{v6}} — keduanya YA akan gagal untuk memulai.",
+  "listenConflictNeedFix": "Perbaiki dulu dengar / dengar_ipv6 (tidak bisa keduanya YA), lalu terapkan.",
+  "fixListenIpv4": "Gunakan IPv4 saja (listen=YES, listening_ipv6=NO)",
+  "liveFileValue": "Ajukan sekarang: {{value}}",
+  "startBlockedFailed": "Layanan gagal — terapkan konfigurasi yang valid sebelum memulai",
+  "ftpsNeedCert": "Pilih domain sertifikat terlebih dahulu",
+  "detectPublicIp": "Deteksi IP publik",
+  "detectPublicIpTitle": "Isi IPv4 non-loopback pertama dari host ini",
+  "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat."
 }

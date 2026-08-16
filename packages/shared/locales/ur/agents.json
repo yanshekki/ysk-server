@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "ack + CLI JSON",
   "labelStdoutBody": "CLI stdout body",
-  "resultOuterHint": "بیرونی نتیجہ CLI --json stdout ہے۔"
+  "resultOuterHint": "بیرونی نتیجہ CLI --json stdout ہے۔",
+  "statusFlowTitle": "حیثیت کا بہاؤ",
+  "statusFlow": "صرف رجسٹرڈ → آن لائن → سٹیل (>60s) → آف لائن (منقطع)۔ فلٹر \"آف لائن\" منقطع ہے۔",
+  "colSession": "سیشن UUID",
+  "copySession": "کلسٹر / CLI --session کے لیے سیشن UUID کاپی کریں۔",
+  "staleFor": "غیب {{age}}",
+  "commandTitle": "اس سیشن کے لیے ایک کمانڈ کو قطار میں لگائیں۔",
+  "historyTitleShort": "کمانڈ کی تاریخ کھولیں (صرف پڑھنے کے لیے)",
+  "expEdge": "ایک کنارے پر:"
 }

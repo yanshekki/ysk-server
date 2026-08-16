@@ -100,10 +100,11 @@
   "requestFailed": "La solicitud de certificado no tuvo éxito",
   "applyFailed": "Solicitud fallida",
   "deletedCert": "Eliminado {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "La eliminación de certbot detiene la renovación automática de los certificados Let's Encrypt existentes.",
+  "renew": "Renovar",
+  "renewFor": "Renovar Let's Encrypt para {{domain}}",
   "domainRequired": "Introduzca un dominio.",
   "domainInvalid": "El formato del dominio no es válido.",
-  "domainKnownHint": "Elija un dominio de proyecto, DNS o correo, o escriba uno."
+  "domainKnownHint": "Elija un dominio de proyecto, DNS o correo, o escriba uno.",
+  "deleteNeedDomain": "Eliminar este certificado: escriba el nombre de dominio para confirmar"
 }

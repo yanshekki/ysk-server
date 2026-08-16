@@ -317,7 +317,7 @@
     "ptrBad": "PTR 逆引き DNS が見つからないか正しくありません - VPS プロバイダーでリクエストしてください",
     "port25Blocked": "送信ポート 25 がブロックされているようです — ブロック解除を要求するか、SMTP リレーを使用してください",
     "port25Unknown": "ポート 25 のステータスが不明です - 接続チェックを実行します",
-    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
+    "dmarcUnpublished": "DMARC はパネルで生成されますが、パブリック DNS ではまだ公開されていません"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP の Let’s Encrypt による TLS 証明書",
@@ -359,7 +359,7 @@
     "postfixReloadFailed": "Postfix のリロードに失敗しました: {{detail}}",
     "dovecotApplied": "Dovecot TLS スニペットを作成し、リロードを試みました。",
     "dovecotSkipped": "Dovecot をスキップしました (インストールされていないか、doveconf が利用できません)。",
-    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
+    "dovecotSslOmitted": "メール証明書がありません。 ssl=no と書いたので、Dovecot は LE ファイルなしで起動できます。"
   },
   "policyApplySystemHint": "「システムに適用」にチェックを入れて、Postfix/Rspamd マップを書き込み、リロードします。",
   "rateLimitAppliedNote": "1 時間ごとのアウトバウンド率とスパム対策フラグが適用されます (システム適用がオンの場合)。",
@@ -489,10 +489,23 @@
   "deleteQueueTitle": "このキューメールを削除しますか？",
   "deleteQueueDesc": "ローカル MTA キューから {{id}} を削除します。YSK_EXECUTE が必要です。",
   "openQueuePage": "メールキューを開く",
-  "healthUnchecked": "Not checked yet",
+  "healthUnchecked": "まだチェックされていません",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host",
+  "domainsListDesc": "このホストに登録されているメール ドメイン",
   "healthChecklist": "チェックリスト {{score}}/100",
   "healthChecklistHint": "チェックリスト点 — DNS / PTR / ポート 25 の実測は未実施",
-  "healthLiveHint": "実測スコア"
+  "healthLiveHint": "実測スコア",
+  "installWebmailTitle": "共有 Web メール プロジェクトを作成する (最初のインストール)",
+  "reinstallWebmailTitle": "既存の Web メール プロジェクトを再構築/アップグレードする",
+  "reinstallNeedInstall": "まずはウェブメールをインストールしてください",
+  "dovecotFailedStatus": "Dovecotは{{status}}です。 「ソフトウェア」タブを開き、ユニットの概要を表示します。",
+  "mailCertMissing": "{{hosts}} の証明書がありません。 SSLページで発行してください。",
+  "mailCertPresent": "メール証明書はすでに発行されています。これは証明書の欠落の問題ではありません。",
+  "webmailNeedCert": "{{host}} には証明書がありません — HTTPS を強制する前に SSL で発行してください。",
+  "flushQueueEmpty": "キューが空です",
+  "flushQueueNeedExecute": "キューのフラッシュにはYSK_EXECUTE（ホスト実行権限）が必要です",
+  "healthUncheckedHint": "DNS / PTR / 25番はまだ未検査です。",
+  "deliverabilityScore": "到達性パック",
+  "opendkimNoReload": "OpenDKIM は reload 非対応です。鍵や表の変更後は再起動してください。",
+  "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません"
 }

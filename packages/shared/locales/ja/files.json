@@ -345,11 +345,11 @@
     "skipped": "スキップしました",
     "cancelled": "キャンセルしました"
   },
-  "emptyTrashTitle": "Empty trash?",
-  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
-  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "emptyTrashTitle": "ゴミ箱を空にしますか？",
+  "emptyTrashDesc": "ゴミ箱内のすべてのファイルは完全に削除されます。これを元に戻すことはできません。",
+  "purgeForeverDesc": "このファイルは完全に削除されます。これを元に戻すことはできません。",
+  "webdavReissueUnchanged": "再発行後もトークン ID は変更されませんでした。書き込みが持続していない可能性があります。もう一度やり直してください。",
+  "webdavDisableFailed": "WebDAV は無効にしても有効のままです。書き込みが持続していない可能性があります。もう一度やり直してください。",
   "dirNamedLikeFile": "（フォルダーの残留。名前がファイルのようです）",
   "webdavAfterEnable": "WebDAV を有効にしてトークンを発行すると使えます。"
 }

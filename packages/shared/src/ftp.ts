@@ -30,6 +30,9 @@ export interface FtpsStatusDto {
   accountCount: number;
   settings: FtpsSettingsDto;
   lastAppliedAt?: string;
+  liveListen?: boolean | null;
+  liveListenIpv6?: boolean | null;
+  listenConflict?: boolean;
 }
 
 export interface SelectOptionDto {

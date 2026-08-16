@@ -129,6 +129,10 @@ export type ServiceAccessStripProps = {
   onUpdated?: () => void;
   /** When false, do not claim public exposure — the daemon is not installed. */
   serviceInstalled?: boolean;
+  /** When false, warn if ports are still public. */
+  serviceRunning?: boolean;
+  /** Zero tenants + public ports is a relay / login surface. */
+  tenantCount?: number;
 };
 
 export function ServiceAccessStrip({
@@ -139,6 +143,8 @@ export function ServiceAccessStrip({
   className,
   onUpdated,
   serviceInstalled,
+  serviceRunning,
+  tenantCount,
 }: ServiceAccessStripProps) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<ExposureStatus | null>(null);
@@ -223,6 +229,12 @@ export function ServiceAccessStrip({
             <Badge tone={displayTone}>{displayModeLabel}</Badge>
             {loaded && decided && !fwOff && !inSync ? (
               <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge>
+            ) : null}
+            {loaded && serviceRunning === false && mode === 'public' && !missingService ? (
+              <Badge tone="warn">{t('serviceExposure.openButStopped')}</Badge>
+            ) : null}
+            {loaded && tenantCount === 0 && mode === 'public' && !missingService ? (
+              <Badge tone="warn">{t('serviceExposure.openNoTenants')}</Badge>
             ) : null}
           </div>
           <p className="service-access-strip__summary muted">{summary}</p>

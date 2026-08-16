@@ -373,9 +373,9 @@
     "strictBlocked": "पैकेज या PAM तैयार नहीं; Strict लागू नहीं किया जा सकता।",
     "strictDryRun": "सख्त मोड पूर्वावलोकन",
     "errorNoDetail": "परीक्षण विफल (विवरण नहीं)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
-    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
-    "loginLinuxHint": "Used when no project. Example: root or tester."
+    "privCloseWithoutAck": "बंद किया हुआ। निजी कुंजी दोबारा नहीं दिखाई जाएगी; यदि आपने इसे सहेजा नहीं है तो एक नया बनाएं।",
+    "loginNoProjects": "कोई प्रोजेक्ट नहीं. नीचे मौजूदा लिनक्स उपयोगकर्ता (रूट/टेस्टर) को अधिकृत करें। /root/.ssh लिखने के लिए YSK_EXECUTE=1 की आवश्यकता है।",
+    "loginLinuxHint": "जब कोई प्रोजेक्ट न हो तो उपयोग किया जाता है। उदाहरण: रूट या परीक्षक."
   },
   "sessionsActive": "सक्रिय सत्र",
   "sessionsOther": "अन्य उपकरण",
@@ -431,9 +431,13 @@
     "critical": "गंभीर"
   },
   "totpStatusLoadFailed": "2FA स्थिति लोड नहीं हो सकी",
-  "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "confirmDeleteApiKey": "यह API कुंजी हटाएँ?",
+  "confirmDeleteApiKeyDesc": "\"{{name}}\" प्रमाणीकरण करना बंद कर देगा। इसे असंपादित नहीं किया जा सकता है।",
   "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
   "sessionCli": "CLI",
-  "sessionApi": "API"
+  "sessionApi": "API",
+  "statApiSessions": "एपीआई सत्र",
+  "revokeOtherTitle": "साइन आउट करें {{n}} अन्य सत्र",
+  "policyNeedSelf2fa": "पहले इस खाते पर 2FA सक्षम करें, फिर TOTP कोड से पुष्टि करें",
+  "revokeAllDevicesTitle": "प्रत्येक याद किए गए डिवाइस को रद्द करें - आपको और अन्य व्यवस्थापकों को 2FA को फिर से सत्यापित करना होगा"
 }

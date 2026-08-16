@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "یہ VPN انجن میزبان پر نصب نہیں ہے۔",
   "serverNotListening": "سرور یونٹ فعال نہیں ہے۔ UDP/TCP {{port}} بند ہو سکتا ہے۔",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "پہلے VPN انجن انسٹال کریں۔",
+  "portHint": {
+    "51820": "ڈیفالٹ وائر گارڈ سننے کا پورٹ",
+    "51821": "متبادل وائر گارڈ سننے کا پورٹ",
+    "51822": "دوسرا متبادل وائر گارڈ سننے کا بندرگاہ"
+  }
 }

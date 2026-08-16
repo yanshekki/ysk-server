@@ -134,6 +134,15 @@
   "sftpTechNote": "تتم كتابة المفاتيح ضمن المسار المُدار",
   "filterProject": "عرض حسابات FTP لهذا المشروع فقط",
   "clearProjectFilter": "عرض كل الحسابات",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "فشل vsftpd. افتح علامة التبويب \"الخدمة\" (لا يمكن للاستماع وlisten_ipv6 أن يكونا نعم).",
+  "tabService": "خدمة",
+  "listenConflictLive": "يحتوي Live vsftpd.conf على استمع={{v4}} وlisten_ipv6={{v6}} — سيفشل كلاهما YES في البدء.",
+  "listenConflictNeedFix": "أصلح الاستماع / استمع_ipv6 أولاً (لا يمكن أن يكون كلاهما نعم)، ثم قم بالتطبيق.",
+  "fixListenIpv4": "استخدم IPv4 فقط (استمع=نعم، استمع_ipv6=لا)",
+  "liveFileValue": "الملف الآن: {{value}}",
+  "startBlockedFailed": "فشلت الخدمة — قم بتطبيق تكوين صالح قبل البدء",
+  "ftpsNeedCert": "اختر مجال الشهادة أولاً",
+  "detectPublicIp": "كشف IP العام",
+  "detectPublicIpTitle": "املأ أول IPv4 غير الاسترجاعي من هذا المضيف",
+  "pasvIpRequired": "عيّن IP عام لـ PASV قبل التطبيق (NAT/سحابة). اكتشف أو اكتب عنواناً."
 }

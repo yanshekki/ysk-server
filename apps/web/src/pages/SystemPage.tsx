@@ -139,6 +139,7 @@ export function SystemPage() {
   }, []);
   const [powerDlg, setPowerDlg] = useState<PowerDialog | null>(null);
   const [powerConfirm, setPowerConfirm] = useState('');
+  const [powerUnlocked, setPowerUnlocked] = useState(false);
   const [rebuildSyncConfirm, setRebuildSyncConfirm] = useState(false);
 
   const [snapshot, setSnapshot] = useState<ExportSnapshot | null>(null);
@@ -669,14 +670,20 @@ export function SystemPage() {
                             {panelTls?.servingHttps
                               ? t('system.panelTls.serving')
                               : t('system.panelTls.servingHttp')}
-                            {panelTls?.httpsUrl ? (
-                              <>
-                                {' · '}
-                                <code>{panelTls.httpsUrl}</code>
-                              </>
-                            ) : null}
+                            {' · '}
+                            <code>{window.location.origin}</code>
                           </dd>
                         </div>
+                        {panelTls?.listenHost ? (
+                          <div>
+                            <dt>{t('system.panelTls.listenHost')}</dt>
+                            <dd>
+                              <code>
+                                {panelTls.listenHost}:{panelTls.listenPort ?? 9287}
+                              </code>
+                            </dd>
+                          </div>
+                        ) : null}
                         {panelTls?.expiresAt ? (
                           <div>
                             <dt>{t('system.panelTls.expires')}</dt>
@@ -690,6 +697,12 @@ export function SystemPage() {
                             <dt>{t('system.panelTls.certPath')}</dt>
                             <dd>
                               <code className="sys-dl__muted">{panelTls.certPath}</code>
+                              {/bootstrap-cert\.pem$/i.test(panelTls.certPath) ? (
+                                <>
+                                  {' '}
+                                  <Badge tone="warn">{t('system.panelTls.bootstrapCert')}</Badge>
+                                </>
+                              ) : null}
                             </dd>
                           </div>
                         ) : null}
@@ -1069,8 +1082,10 @@ export function SystemPage() {
                         {t('system.powerWarn')}
                       </p>
                     </div>
-                    <Badge tone={host?.caps.canPower ? 'ok' : 'warn'}>
-                      {host?.caps.canPower ? t('system.unlocked') : t('system.locked')}
+                    <Badge tone={host?.caps.canPower && powerUnlocked ? 'ok' : 'warn'}>
+                      {host?.caps.canPower && powerUnlocked
+                        ? t('system.unlocked')
+                        : t('system.locked')}
                     </Badge>
                   </header>
 
@@ -1091,10 +1106,28 @@ export function SystemPage() {
 
                   <div className="sys-power-actions">
                     <Button
+                      variant="secondary"
+                      size="md"
+                      disabled={!host?.caps.canPower}
+                      title={
+                        host?.caps.canPower
+                          ? powerUnlocked
+                            ? t('system.powerLock')
+                            : t('system.powerUnlock')
+                          : t('system.powerCaps', {
+                              exec: host?.caps.executeEnabled ? t('common.on') : t('common.off'),
+                              root: host?.caps.isRoot ? t('common.yes') : t('common.no'),
+                            })
+                      }
+                      onClick={() => setPowerUnlocked((v) => !v)}
+                    >
+                      {powerUnlocked ? t('system.powerLock') : t('system.powerUnlock')}
+                    </Button>
+                    <Button
                       variant="danger"
                       size="md"
                       loading={busy}
-                      disabled={!host?.caps.canPower}
+                      disabled={!host?.caps.canPower || !powerUnlocked}
                       onClick={() => {
                         setPowerConfirm('');
                         setPowerDlg({
@@ -1109,7 +1142,7 @@ export function SystemPage() {
                       variant="danger"
                       size="md"
                       loading={busy}
-                      disabled={!host?.caps.canPower}
+                      disabled={!host?.caps.canPower || !powerUnlocked}
                       onClick={() => {
                         setPowerConfirm('');
                         setPowerDlg({
@@ -1124,7 +1157,12 @@ export function SystemPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
-                      disabled={!host?.caps.canPower}
+                      disabled={!host?.caps.canPower || !powerUnlocked || !host.power.pending}
+                      title={
+                        !host?.power.pending
+                          ? t('system.noScheduledPower')
+                          : t('system.cancelSchedule')
+                      }
                       onClick={() => {
                         setBusy(true);
                         setErr(null);

@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   DescriptionList,
   FeaturePageLayout,
   Field,
@@ -46,6 +47,7 @@ export function PublicFilesPage() {
   const { busy, error, result, msg, run, setMsg } = useFeatureAction();
   const [status, setStatus] = useState<FilesStatus | null>(null);
   const [statusErr, setStatusErr] = useState<string | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   const refreshStatus = useCallback(async () => {
     setStatusErr(null);
@@ -78,7 +80,7 @@ export function PublicFilesPage() {
           tone: liveTone,
         },
         items: [
-          { label: 'server_name', value: serverName || t('common.noneSelectedShort') },
+          { label: t('publicFiles.serverName'), value: serverName || t('common.noneSelectedShort') },
           {
             label: t('publicFiles.quota'),
             value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
@@ -188,7 +190,17 @@ export function PublicFilesPage() {
             {status?.notes?.length ? (
               <ul className="u-mt-3 u-pl-5 muted u-text-sm">
                 {status.notes.slice(0, 8).map((n) => (
-                  <li key={n}>{n}</li>
+                  <li key={n}>
+                    {n.startsWith('Live system conf:')
+                      ? t('publicFiles.liveSystemConf', { path: n.replace(/^Live system conf:\s*/, '') })
+                      : n.startsWith('Public root:')
+                        ? t('publicFiles.publicRootNote', { path: n.replace(/^Public root:\s*/, '') })
+                        : /^No managed Nginx conf/i.test(n)
+                          ? t('publicFiles.notes.noManagedConf')
+                          : /not under \/etc\/nginx\/conf\.d/i.test(n)
+                            ? t('publicFiles.notes.notSynced')
+                            : n}
+                  </li>
                 ))}
               </ul>
             ) : null}
@@ -249,34 +261,27 @@ export function PublicFilesPage() {
               />
               <span>{t('publicFiles.autoindex', { defaultValue: 'Directory listing (autoindex)' })}</span>
             </label>
+            {status?.serverName &&
+            serverName.trim() &&
+            status.serverName !== serverName.trim() ? (
+              <Alert variant="warn">{t('publicFiles.serverNameMismatch', {
+                live: status.serverName,
+                draft: serverName.trim(),
+              })}</Alert>
+            ) : null}
             <FormHint>{t('publicFiles.applyHint')}</FormHint>
             <FormActions>
               <Button
                 variant="primary"
                 size="md"
                 loading={busy}
-                onClick={() =>
-                  void run(async () => {
-                    try {
-                      const r = (await systemApi.publicFilesApply({
-                        serverName,
-                        quotaMb: Number(quotaMb) || undefined,
-                        reload: true,
-                        autoindex,
-                      })) as OpsResultLike & {
-                        publicRoot?: string;
-                        nginxReloaded?: boolean;
-                        live?: boolean;
-                        ok?: boolean;
-                      };
-                      await refreshStatus();
-                      return r;
-                    } catch (e) {
-                      const m = e instanceof Error ? e.message : t('common.applyFailed');
-                      return { ok: false, blocked: true, blockMessage: m, notes: [m] };
-                    }
-                  }, t('publicFiles.appliedOk'))
+                disabled={!serverName.trim()}
+                title={
+                  !serverName.trim()
+                    ? t('publicFiles.serverNameHint')
+                    : t('publicFiles.applyConfirmTitle')
                 }
+                onClick={() => setApplyOpen(true)}
               >
                 {t('publicFiles.applyReload')}
               </Button>
@@ -288,6 +293,37 @@ export function PublicFilesPage() {
           title={t('opsResult.title')}
           result={result}
           message={msg}
+          busy={busy}
+        />
+        <ConfirmDialog
+          open={applyOpen}
+          onClose={() => !busy && setApplyOpen(false)}
+          onConfirm={() => {
+            setApplyOpen(false);
+            void run(async () => {
+              try {
+                const r = (await systemApi.publicFilesApply({
+                  serverName,
+                  quotaMb: Number(quotaMb) || undefined,
+                  reload: true,
+                  autoindex,
+                })) as OpsResultLike & {
+                  publicRoot?: string;
+                  nginxReloaded?: boolean;
+                  live?: boolean;
+                  ok?: boolean;
+                };
+                await refreshStatus();
+                return r;
+              } catch (e) {
+                const m = e instanceof Error ? e.message : t('common.applyFailed');
+                return { ok: false, blocked: true, blockMessage: m, notes: [m] };
+              }
+            }, t('publicFiles.appliedOk'));
+          }}
+          title={t('publicFiles.applyConfirmTitle')}
+          description={t('publicFiles.applyConfirmDesc', { name: serverName.trim() })}
+          confirmLabel={t('publicFiles.applyReload')}
           busy={busy}
         />
       </WithPageGuide>

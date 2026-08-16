@@ -282,6 +282,16 @@ ysk-server agent run --control-plane URL --id AGENT_ID [--group g]
 
 Fleet: registered ≠ connected until heartbeat. Enqueue needs Bearer; public poller paths limited.
 
+## fleet
+
+Top-level alias of `agents fleet`. `--session` is the fleet session UUID (not the display `agent_id`).
+
+```bash
+ysk-server fleet list
+ysk-server fleet register --agent-id NAME
+ysk-server fleet commands --session UUID
+```
+
 ## logs | host | health | notifications | readiness | doctor | services | metrics via host
 
 ```bash

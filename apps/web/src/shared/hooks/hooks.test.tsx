@@ -45,6 +45,11 @@ describe('usePageTab', () => {
       { wrapper: wrapRouter('/?tab=disk') },
     );
     expect(disk.result.current[0]).toBe('storage');
+    const dash = renderHook(
+      () => usePageTab(['nodes', 'dashboard', 'sites'] as const, 'nodes'),
+      { wrapper: wrapRouter('/?tab=dash') },
+    );
+    expect(dash.result.current[0]).toBe('dashboard');
   });
 
   it('rewrites unknown query tabs to the default', async () => {

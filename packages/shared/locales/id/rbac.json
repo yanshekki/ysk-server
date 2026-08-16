@@ -103,10 +103,10 @@
   "enabledCount": "{{enabled}} dari {{total}} diaktifkan",
   "bandAboveMax": "Di atas level maksimal",
   "dirtyHint": "Disesuaikan (berbeda dari pabrik)",
-  "unsaved": "Unsaved",
-  "unsavedHint": "Unsaved edits on this role",
-  "nothingToSave": "Nothing to save",
-  "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "unsaved": "Belum disimpan",
+  "unsavedHint": "Pengeditan yang belum disimpan pada peran ini",
+  "nothingToSave": "Tidak ada yang perlu disimpan",
+  "saveRole": "Simpan kebijakan {{role}}",
+  "discardTitle": "Hapus kebijakan yang belum disimpan?",
+  "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan."
 }

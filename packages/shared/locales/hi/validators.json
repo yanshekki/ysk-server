@@ -1,7 +1,7 @@
 {
   "title": "वैलिडेटर (Beta)",
   "subtitle": "इस होस्ट पर L1 नोड स्थापित और प्रबंधित करें। गैर-कस्टोडियल — कुंजियाँ आपके पास रहें।",
-  "beta": "Beta",
+  "beta": "बीटा",
   "tab": {
     "nodes": "नोड",
     "disk": "डिस्क",
@@ -24,25 +24,25 @@
   },
   "chain": {
     "eth": "Ethereum",
-    "avax": "Avalanche",
+    "avax": "हिमस्खलन",
     "near": "NEAR",
-    "ada": "Cardano",
+    "ada": "कार्डानो",
     "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
-    "sui": "Sui",
-    "aptos": "Aptos",
-    "dot": "Polkadot",
-    "sol": "Solana"
+    "cosmos": "कॉसमॉस हब",
+    "sui": "सुई",
+    "aptos": "एप्टोस",
+    "dot": "पोल्का डॉट",
+    "sol": "सोलाना"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "हुडी",
+    "sepolia": "सेपोलिया",
     "mainnet": "मुख्य नेट",
-    "fuji": "Fuji",
+    "fuji": "फ़ूजी",
     "testnet": "परीक्षण नेट",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "पूर्व दर्शन",
+    "preprod": "प्रीप्रोड",
+    "westend": "वेस्ट एंड"
   },
   "networkKind": {
     "testnet": "परीक्षण नेट",

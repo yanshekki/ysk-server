@@ -127,10 +127,12 @@
   "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
   "demoteAdminTitle": "Rétrograder cet administrateur ?",
   "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste.",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "Le rôle opérateur d’usine inclut des écritures à haut risque. Le restreindre n’affecte que les nouveaux comptes ; changer le défaut affecte les opérateurs existants."
+  "searchPkgPh": "Nom du package",
+  "quotaNonNeg": "Les décomptes et les quotas ne peuvent pas être négatifs.",
+  "diskQuotaHint": "Les préréglages sont en GiB ; la boîte personnalisée est MiB.",
+  "bandwidthHint": "0 signifie illimité.",
+  "impersonateHint": "Ouvre une session en tant qu'utilisateur. Utilisez le menu du compte pour quitter l’usurpation d’identité.",
+  "operatorHighRiskHint": "Le rôle opérateur d’usine inclut des écritures à haut risque. Le restreindre n’affecte que les nouveaux comptes ; changer le défaut affecte les opérateurs existants.",
+  "cannotImpersonateSelf": "Vous êtes déjà connecté avec ce compte",
+  "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde."
 }

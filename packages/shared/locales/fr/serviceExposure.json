@@ -28,11 +28,13 @@
   "privateStartTitle": "Exposer {{service}} sur le réseau ?",
   "confirmAndStart": "Confirmez et démarrez",
   "cloudSgNote": "Pare-feu hôte uniquement : les groupes de sécurité cloud (AWS/GCP/Azure) ne sont pas modifiés.",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "Non défini",
+  "modeLoading": "Chargement",
+  "summaryUndecided": "Mode d'accès non confirmé (par défaut du catalogue : {{suggested}}).",
+  "summaryNotEnforced": "Le pare-feu est désactivé : le panneau n'ouvre ni ne bloque ces ports.",
+  "roleSmtp": "Soumission SMTP",
+  "roleImap": "Boîte aux lettres IMAP/POP3",
+  "serviceNotInstalled": "Ce service n'est pas installé, les règles de pare-feu ne s'appliquent donc pas.",
+  "openButStopped": "Ports ouverts – le service ne fonctionne pas",
+  "openNoTenants": "Ports publics sans locataires"
 }

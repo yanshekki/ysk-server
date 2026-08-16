@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClassName } from './Button';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useFeatureSoftware } from '../../../features/software';
 import { softwareApi } from '../../../features/software/api';
 import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
@@ -32,6 +33,12 @@ export interface SoftwareInstallBannerProps {
    */
   showReadyActions?: boolean;
   compact?: boolean;
+  /** When set, install waits for this confirm (e.g. DNS port 53 clash). */
+  installConfirm?: {
+    title: string;
+    description: string;
+    consequences?: string[];
+  };
 }
 
 export function SoftwareInstallBanner({
@@ -42,6 +49,7 @@ export function SoftwareInstallBanner({
   readyTitle,
   uninstallTitle,
   showReadyActions = true,
+  installConfirm,
 }: SoftwareInstallBannerProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -65,6 +73,7 @@ export function SoftwareInstallBanner({
 
   const [uninstallOpen, setUninstallOpen] = useState(false);
   const [uninstallBusy, setUninstallBusy] = useState(false);
+  const [installOpen, setInstallOpen] = useState(false);
 
   const missingList = Array.isArray(missing) ? missing : [];
   const installedAny = (items ?? []).some((i) => i.installed);
@@ -310,7 +319,10 @@ export function SoftwareInstallBanner({
                 type="button"
                 className={buttonClassName({ variant: 'primary', size: 'md' })}
                 disabled={busy || stream?.isBusy}
-                onClick={() => void runInstall()}
+                onClick={() => {
+                  if (installConfirm) setInstallOpen(true);
+                  else void runInstall();
+                }}
               >
                 {busy
                   ? t('softwareBanner.installing')
@@ -377,6 +389,20 @@ export function SoftwareInstallBanner({
         busy={uninstallBusy}
         onClose={() => !uninstallBusy && setUninstallOpen(false)}
         onConfirm={runUninstall}
+      />
+
+      <ConfirmDialog
+        open={installOpen}
+        onClose={() => !busy && setInstallOpen(false)}
+        onConfirm={() => {
+          setInstallOpen(false);
+          void runInstall();
+        }}
+        title={installConfirm?.title ?? t('softwareBanner.installOneClick')}
+        description={installConfirm?.description ?? ''}
+        consequences={installConfirm?.consequences}
+        confirmLabel={t('softwareBanner.installOneClick')}
+        busy={busy}
       />
     </div>
   );

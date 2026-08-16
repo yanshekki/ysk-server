@@ -60,12 +60,12 @@
   "dockCancelled": "キャンセルされました · {{title}}",
   "cancelHint": "キャンセルが要求されました。クライアントは聞くのをやめました。ホストは現在の apt/step を終了する可能性があります。しばらくしてからステータスを再調査します。",
   "cancelledToast": "操作がキャンセルされました (クライアントがストリーミングを停止しました)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "適用",
+  "kindScan": "スキャン",
+  "kindDeploy": "展開する",
+  "kindRuntime": "ランタイム",
+  "jobDone": "完了 · {{title}}",
+  "jobFailed": "失敗しました · {{title}}",
   "uninstallUfwWarn": "UFW を外すと、パネル管理のポートファイアウォールがなくなります。",
   "uninstallFail2banWarn": "fail2ban を外すと jail が止まり、現在の禁止が解除されます。残すなら先にログイン IP を ignoreip へ。"
 }

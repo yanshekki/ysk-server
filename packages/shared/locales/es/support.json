@@ -25,14 +25,14 @@
   "cryptoAddress": "Dirección",
   "copy": "Copiar",
   "copied": "Copiado",
-  "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "docsLink": "Documentación",
+  "diagTitle": "Resumen diagnóstico",
+  "diagBody": "Copie la versión, ejecútela y aloje datos para pegarlos en un correo electrónico. Este no es un paquete de registro completo.",
+  "diagCopy": "Copiar resumen de diagnóstico",
+  "diagCopied": "Resumen de diagnóstico copiado",
   "copyTitle": "Copiar {{address}}",
   "diagCopyTitle": "Copiar versión, EXECUTE y datos del anfitrión",
   "diagPreview": "Vista previa de lo que se copiará",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "Cargando diagnóstico…",
+  "diagLoadFailed": "No se pudo cargar el diagnóstico"
 }

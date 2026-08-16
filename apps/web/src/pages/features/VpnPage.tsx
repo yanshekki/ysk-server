@@ -493,6 +493,9 @@ export function VpnPage() {
                     ? 'primary'
                     : 'ghost'
                 }
+                title={t(`vpn.portHint.${p.port}`, {
+                  defaultValue: p.label,
+                })}
                 onClick={() => {
                   const proto =
                     p.proto === 'tcp' || p.proto === 'udp' ? p.proto : undefined;
@@ -681,6 +684,12 @@ export function VpnPage() {
               onChange={(e) => setPeerName(e.target.value)}
               placeholder={t('vpn.peerNamePlaceholder')}
               aria-label={t('vpn.peerName')}
+              disabled={!engineStatus(status, engine)?.installed}
+              title={
+                engineStatus(status, engine)?.installed
+                  ? undefined
+                  : t('vpn.installEngineFirst')
+              }
             />
             <Button
               variant="primary"

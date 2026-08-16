@@ -38,7 +38,8 @@
     "sessionIdle": "閒置逾時，請重新登入",
     "totpNotEnabled": "未啟用 雙重驗證",
     "totpSecretNoDataDir": "TOTP secret 已加密但未設定 dataDir",
-    "mustChangePassword": "請先設定新密碼才可繼續"
+    "mustChangePassword": "請先設定新密碼才可繼續",
+    "policyNeedsOwn2fa": "請先為本帳號啟用 2FA，並以驗證碼確認，才可要求其他人啟用 2FA"
   },
   "http": {
     "notFoundRoute": "找不到：{{method}} {{path}}",

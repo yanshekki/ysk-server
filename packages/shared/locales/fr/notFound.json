@@ -1,6 +1,6 @@
 {
-  "title": "Page not found",
-  "body": "No panel page at {{path}}.",
-  "hint": "Unknown URLs no longer send you to the dashboard.",
-  "home": "Dashboard"
+  "title": "Page introuvable",
+  "body": "Pas de page de panneau à {{path}}.",
+  "hint": "Les URL inconnues ne vous renvoient plus au tableau de bord.",
+  "home": "Tableau de bord"
 }

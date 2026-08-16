@@ -1,6 +1,6 @@
 {
-  "title": "Page not found",
-  "body": "No panel page at {{path}}.",
-  "hint": "Unknown URLs no longer send you to the dashboard.",
-  "home": "Dashboard"
+  "title": "找不到页面",
+  "body": "{{path}} 处没有面板页面。",
+  "hint": "未知 URL 不再将您发送至仪表板。",
+  "home": "仪表板"
 }

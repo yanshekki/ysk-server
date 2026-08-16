@@ -38,7 +38,8 @@
     "sessionIdle": "بیکار ٹائم آؤٹ؛ دوبارہ سائن ان کریں۔",
     "totpNotEnabled": "2FA فعال نہیں ہے۔",
     "totpSecretNoDataDir": "TOTP سیکرٹ کو خفیہ کیا گیا ہے لیکن dataDir سیٹ نہیں ہے۔",
-    "mustChangePassword": "جاری رکھنے سے پہلے نیا پاس ورڈ سیٹ کریں"
+    "mustChangePassword": "جاری رکھنے سے پہلے نیا پاس ورڈ سیٹ کریں",
+    "policyNeedsOwn2fa": "اس اکاؤنٹ کے لیے 2FA آن کریں اور دوسروں کے لیے 2FA کی ضرورت سے پہلے TOTP کوڈ کے ساتھ تصدیق کریں۔"
   },
   "http": {
     "notFoundRoute": "نہیں ملا: {{method}} {{path}}",

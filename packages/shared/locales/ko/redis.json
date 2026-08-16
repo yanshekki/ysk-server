@@ -69,8 +69,13 @@
   "noRequirepass": "보호 모드는 켜져 있지만 requirepass가 비었거나 읽히지 않았습니다 — 암호 없음.",
   "setRequirepass": "암호 설정",
   "rdbOnlyLossHint": "AOF 꺼짐, RDB 켜짐. 재시작이나 충돌 시 최근 쓰기가 유실될 수 있습니다.",
-  "dirDataContainer": "/data (container)",
+  "dirDataContainer": "/data(컨테이너)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data는 일반적으로 컨테이너 경로입니다. 이 패널에서는 존재 여부를 확인할 수 없습니다.",
+  "saveOff": "스냅샷 비활성화(권장되지 않음)",
+  "saveOffWarn": "빈 저장 문자열은 RDB 스냅샷을 끕니다. AOF도 꺼져 있으면 충돌로 인해 모든 데이터가 손실될 수 있습니다.",
+  "dirMoveWarn": "dir을 변경해도 dump.rdb / AOF는 이동되지 않습니다. 다음 시작에서는 새 경로를 그대로 사용합니다.",
+  "passwordUnset": "서비스에 설정되지 않음",
+  "passwordSetHidden": "설정(표시되지 않음)"
 }

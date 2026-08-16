@@ -54,6 +54,6 @@
   "cleanupConflictsTitle": "すべての競合残留物をクリーンアップしますか?",
   "cleanupConflictsDesc": "プロジェクトまたはスタンドアロン ServerName と競合するすべてのディスク上のアーティファクト conf を削除します。プロジェクト行は保持されます。",
   "artifactRemovedOk": "残ったconfが削除されました",
-  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "sslTerminatedUpstream": "TLS はフロント Nginx で終了します",
   "removeArtifactHint": "この残留ディスク conf だけ削除します。プロジェクトは消しません。"
 }

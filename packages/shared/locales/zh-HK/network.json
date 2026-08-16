@@ -11,7 +11,7 @@
   "tabs": {
     "ifaces": "介面",
     "routes": "路由",
-    "dns": "DNS",
+    "dns": "域名系統",
     "advanced": "進階",
     "about": "說明",
     "realip": "真實 IP / CDN"
@@ -35,6 +35,8 @@
   "defaultDev": "預設出口：{{dev}}",
   "saveNm": "保存（NetworkManager，重開不消失）",
   "ephemeralHint": "取消則只做即時 ip route add",
+  "nmUnavailable": "NetworkManager 未運行 — 只能加入即時路由",
+  "defaultRouteDownNeedName": "此介面是預設路由出口。請輸入介面名稱確認 — 可能會斷開面板連線。",
   "saveRoute": "保存路由",
   "dnsSettings": "DNS 設定",
   "dnsNmHint": "經 NetworkManager 寫入連線「{{conn}}」並重連（持久）",

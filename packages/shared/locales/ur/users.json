@@ -127,10 +127,12 @@
   "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
   "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
   "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔",
-  "searchPkgPh": "Package name",
-  "quotaNonNeg": "Counts and quotas cannot be negative.",
-  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-  "bandwidthHint": "0 means unlimited.",
-  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "فیکٹری آپریٹر میں اعلیٰ خطرے کی تحریر شامل ہے۔ تنگ کرنا صرف نئے اکاؤنٹس؛ ڈیفالٹ بدلنے سے موجودہ آپریٹر متاثر ہوتے ہیں۔"
+  "searchPkgPh": "پیکیج کا نام",
+  "quotaNonNeg": "شمار اور کوٹے منفی نہیں ہو سکتے۔",
+  "diskQuotaHint": "پیش سیٹیں GiB ہیں؛ کسٹم باکس ایم آئی بی ہے۔",
+  "bandwidthHint": "0 کا مطلب ہے لامحدود۔",
+  "impersonateHint": "اس صارف کے بطور سیشن کھولتا ہے۔ نقالی چھوڑنے کے لیے اکاؤنٹ کا مینو استعمال کریں۔",
+  "operatorHighRiskHint": "فیکٹری آپریٹر میں اعلیٰ خطرے کی تحریر شامل ہے۔ تنگ کرنا صرف نئے اکاؤنٹس؛ ڈیفالٹ بدلنے سے موجودہ آپریٹر متاثر ہوتے ہیں۔",
+  "cannotImpersonateSelf": "آپ پہلے ہی اس اکاؤنٹ کے بطور سائن ان ہیں۔",
+  "singleAdminNo2fa": "اس میزبان کا ایک واحد منتظم ہے اور 2FA آف ہے — 2FA کو فعال کریں اور ایک بیک اپ ایڈمن شامل کریں۔"
 }

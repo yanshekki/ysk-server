@@ -4,7 +4,9 @@
     "start": "Démarrer",
     "stop": "Arrêter",
     "restart": "Redémarrer",
-    "reload": "Recharger"
+    "reload": "Recharger",
+    "enable": "Activer au démarrage",
+    "disable": "Désactiver au démarrage"
   },
   "lifecycleTitle": "Contrôle du service {{label}}",
   "startedOk": "{{label}} démarré",
@@ -17,11 +19,11 @@
   "stopConfirmEdgeConsequence": "Tant que {{label}} est arrêté, cet hôte ne sert pas HTTP/HTTPS.",
   "stopConfirmSshdTitle": "Arrêter sshd ?",
   "stopConfirmSshdDesc": "Arrêter sshd coupe le SSH distant. Confirmez un accès console ou une autre voie.",
-  "stopConfirmSshdToken": "stop sshd",
+  "stopConfirmSshdToken": "arrête sshd",
   "stopConfirmSshdConsequence": "Les nouvelles sessions SSH échoueront jusqu’au démarrage de sshd depuis la console.",
   "stopConfirmPanelTitle": "Arrêter YSK Server ?",
   "stopConfirmPanelDesc": "Le panneau et l’API seront hors ligne jusqu’au démarrage de l’unité sur l’hôte.",
-  "stopConfirmPanelToken": "stop ysk-server",
+  "stopConfirmPanelToken": "arrêter le serveur Ysk",
   "stopConfirmPanelConsequence": "Cette session navigateur sera coupée. Démarrez l’unité via SSH ou la console hôte.",
   "actionDone": "{{action}} terminé",
   "runningOf": "{{running}}/{{total}} en cours",
@@ -54,16 +56,20 @@
   "probeDone": "Sonde terminée",
   "runProtection": "Lancer la sonde de protection",
   "notProbedYet": "Pas encore sondé",
-  "stopConfirmFail2banTitle": "Stop fail2ban?",
-  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
-  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-  "installOrOpen": "Install / open",
+  "stopConfirmFail2banTitle": "Arrêter fail2ban ?",
+  "stopConfirmFail2banDesc": "L'arrêt de fail2ban désactive les interdictions IP automatiques. Les sites Web et SSH continuent de fonctionner.",
+  "stopConfirmFail2banConsequence": "Les nouveaux attaquants ne sont pas bannis tant que fail2ban n’est pas redémarré.",
+  "installOrOpen": "Installer / ouvrir",
   "statusFilter": {
-    "all": "All states",
-    "running": "Running",
-    "failed": "Failed",
-    "missing": "Not installed"
+    "all": "Tous les états",
+    "running": "En cours d'exécution",
+    "failed": "Échoué",
+    "missing": "Non installé"
   },
   "stopNeedConfirm": "Confirmation requise",
-  "stopNeedConfirmPhrase": "Saisie de la phrase de confirmation requise"
+  "stopNeedConfirmPhrase": "Saisie de la phrase de confirmation requise",
+  "enabledOk": "{{label}} activé au démarrage",
+  "bootDisabledWarn": "{{label}} tourne mais ne démarrera pas au boot. Activez-le pour le conserver.",
+  "bootDisabledShort": "Pas au boot",
+  "mariadbNotInstalled": "MariaDB n’est pas installé"
 }

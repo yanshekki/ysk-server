@@ -38,6 +38,7 @@ import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '../../shared/lib/datetime';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 import {
   ServiceAccessStrip,
@@ -103,7 +104,7 @@ export function pillToneFromService(
 }
 
 export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const title = engineTitle(engine);
   const servicePath = engineServicePath(engine);
   const dbs = useResourceCrud('mysql/databases', { engine });
@@ -253,6 +254,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const dbNameById = useMemo(() => buildDbNameById(dbs.items), [dbs.items]);
 
   const st = serviceLabel(svc, t);
+  const probing = svc == null;
   const installed = Boolean(svc?.serverInstalled);
   const running = svc?.active === 'active';
   const hostDatabases = svc?.hostDatabases ?? [];
@@ -269,9 +271,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       showCapability={false}
       status={{
         pill: {
-          label: st.text,
-          tone: pillToneFromService(st.tone) },
-        items: [
+          label: probing ? t('common.loading') : st.text,
+          tone: probing ? 'neutral' : pillToneFromService(st.tone) },
+        items: probing
+          ? [{ label: t('common.loading'), value: '…' }]
+          : [
           {
             label: t('common.status'),
             value: st.text,
@@ -425,7 +429,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
-      {!installed ? (
+      {!probing && !installed ? (
         <SoftwareInstallBanner
           feature={engine === 'mariadb' ? 'mariadb' : 'mysql'}
           title={t('db.installBannerHint', { engine: title })}
@@ -938,7 +942,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       {String(h.port)} · {String(h.username ?? '—')}
                       {h.hasPassword ? ' · 🔐' : ''}
                       {h.lastChecked
-                        ? ` · ${Boolean((h.lastChecked as { ok?: boolean }).ok) ? t('db.remoteTestOk') : t('db.remoteTestFail')}`
+                        ? ` · ${Boolean((h.lastChecked as { ok?: boolean }).ok) ? t('db.remoteTestOk') : t('db.remoteTestFail')}${(h.lastChecked as { at?: string }).at ? ` · ${formatDateTime(String((h.lastChecked as { at?: string }).at), { locale: i18n.language })}` : ''}`
                         : ` · ${t('db.remoteNotChecked')}`}
                     </span>
                     <span className="u-flex u-gap-2">
@@ -965,7 +969,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     <Button
                       variant="danger"
                       size="sm"
+                      title={t('db.remoteDeleteTitle')}
                       onClick={() => {
+                        if (!window.confirm(t('db.remoteDeleteConfirm', { name: String(h.label || h.host) }))) return;
                         void api
                           .requestRaw(`/api/v1/db/remote-hosts/${h.id}`, {
                             method: 'DELETE' })

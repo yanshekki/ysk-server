@@ -134,6 +134,15 @@
   "sftpTechNote": "キーは管理対象パスの下に書き込まれます",
   "filterProject": "このプロジェクトの FTP アカウントのみ表示",
   "clearProjectFilter": "すべてのアカウントを表示",
-  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
-  "tabService": "Service"
+  "vsftpdFailedHint": "vsftpd が失敗しました。 [Service] タブを開きます (listen と listen_ipv6 を両方とも YES にすることはできません)。",
+  "tabService": "サービス",
+  "listenConflictLive": "ライブ vsftpd.conf には listen={{v4}} と listen_ipv6={{v6}} が含まれています。両方とも YES では起動に失敗します。",
+  "listenConflictNeedFix": "まず listen / listen_ipv6 を修正してから (両方を YES にすることはできません)、それから適用します。",
+  "fixListenIpv4": "IPv4 のみを使用する (listen=YES、listen_ipv6=NO)",
+  "liveFileValue": "今すぐファイルします: {{value}}",
+  "startBlockedFailed": "サービスが失敗しました - 開始する前に有効な構成を適用してください",
+  "ftpsNeedCert": "最初に証明書ドメインを選択します",
+  "detectPublicIp": "パブリックIPの検出",
+  "detectPublicIpTitle": "このホストから最初の非ループバック IPv4 を入力します",
+  "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。"
 }

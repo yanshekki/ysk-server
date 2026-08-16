@@ -126,5 +126,13 @@
   "labelStderr": "stderr",
   "labelAckCli": "ack + CLI JSON",
   "labelStdoutBody": "Badan CLI yang kokoh",
-  "resultOuterHint": "Hasil luarnya adalah CLI --json stdout."
+  "resultOuterHint": "Hasil luarnya adalah CLI --json stdout.",
+  "statusFlowTitle": "Aliran status",
+  "statusFlow": "Hanya terdaftar → online → basi (>60an) → offline (terputus). Filter “Offline” terputus.",
+  "colSession": "Sesi UUID",
+  "copySession": "Salin UUID sesi untuk cluster / CLI --session",
+  "staleFor": "Tak terlihat {{age}}",
+  "commandTitle": "Antrean perintah untuk sesi ini",
+  "historyTitleShort": "Buka riwayat perintah (hanya baca)",
+  "expEdge": "Di tepi:"
 }

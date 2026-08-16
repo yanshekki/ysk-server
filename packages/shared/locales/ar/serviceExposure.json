@@ -28,11 +28,13 @@
   "privateStartTitle": "فضح {{service}} على الشبكة؟",
   "confirmAndStart": "تأكيد والبدء",
   "cloudSgNote": "جدار حماية المضيف فقط - لم يتم تغيير مجموعات الأمان السحابية (AWS/GCP/Azure).",
-  "modeUndecided": "Not set",
-  "modeLoading": "Loading",
-  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
-  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
-  "roleSmtp": "SMTP submission",
-  "roleImap": "IMAP / POP3 mailbox",
-  "serviceNotInstalled": "This service is not installed, so firewall rules do not apply."
+  "modeUndecided": "لم يتم ضبطه",
+  "modeLoading": "تحميل",
+  "summaryUndecided": "لم يتم تأكيد وضع الوصول (الكتالوج الافتراضي: {{suggested}}).",
+  "summaryNotEnforced": "جدار الحماية معطل - اللوحة لا تفتح هذه المنافذ أو تحجبها.",
+  "roleSmtp": "إرسال SMTP",
+  "roleImap": "صندوق بريد IMAP/POP3",
+  "serviceNotInstalled": "لم يتم تثبيت هذه الخدمة، لذا لا يتم تطبيق قواعد جدار الحماية.",
+  "openButStopped": "المنافذ مفتوحة - الخدمة لا تعمل",
+  "openNoTenants": "الموانئ العامة بدون مستأجرين"
 }

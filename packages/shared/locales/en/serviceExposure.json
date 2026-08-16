@@ -18,6 +18,8 @@
   "summaryRestricted": "Restricted · {{count}} source(s)",
   "summaryFirewallOff": "Host firewall: {{detail}} — rules not enforced until UFW is active.",
   "outOfSync": "Out of sync",
+  "openButStopped": "Ports open — service not running",
+  "openNoTenants": "Public ports with no tenants",
   "firewallOff": "Firewall off",
   "ufwMissing": "UFW not installed",
   "ufwInactive": "inactive",

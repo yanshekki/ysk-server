@@ -133,12 +133,21 @@ export function sftpQuote(path: string): string {
   return `"${path.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
+/**
+ * Quote a batch so bash `printf %s $'…'` emits real newlines.
+ * JSON.stringify("pwd\n") is `"pwd\\n"`; `printf %s` then feeds sftp the
+ * two-character command `pwd\n` → "Invalid command."
+ */
+export function bashAnsiCQuote(s: string): string {
+  return `$'${s.replace(/\\/g, '\\\\').replace(/'/g, `\\'`).replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`;
+}
+
 export function sftpStdinArgv(sftpArgv: string[], batch: string): string[] {
   const body = batch.endsWith('\n') ? batch : `${batch}\n`;
   return [
     'bash',
     '-c',
-    `printf %s ${JSON.stringify(body)} | ${sftpArgv.map((a) => JSON.stringify(a)).join(' ')}`,
+    `printf %s ${bashAnsiCQuote(body)} | ${sftpArgv.map((a) => JSON.stringify(a)).join(' ')}`,
   ];
 }
 

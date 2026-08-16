@@ -588,10 +588,10 @@ export function EmailDomainPage() {
           {
             label: t('email.statHealth'),
             value: emailHealthUnprobed(domain)
-              ? t('email.healthChecklist', { score: domain.health_score ?? 0 })
+              ? t('email.healthUnchecked')
               : `${domain.health_score}/100`,
             hint: emailHealthUnprobed(domain)
-              ? t('email.healthChecklistHint')
+              ? t('email.healthUncheckedHint')
               : t('email.healthLiveHint'),
             tone: emailHealthUnprobed(domain)
               ? 'warn'
@@ -669,8 +669,12 @@ export function EmailDomainPage() {
                     items={[
                       {
                         label: t('email.healthScore'),
-                        value: `${bundle.health.score}/${bundle.health.maxScore}`,
-                        tone: healthScoreTone(bundle.health.score),
+                        value: emailHealthUnprobed(domain)
+                          ? t('email.healthUnchecked')
+                          : `${bundle.health.score}/${bundle.health.maxScore}`,
+                        tone: emailHealthUnprobed(domain)
+                          ? 'default'
+                          : healthScoreTone(bundle.health.score),
                       },
                       {
                         label: t('email.suggestedRecords'),
@@ -1384,7 +1388,7 @@ export function EmailDomainPage() {
                   <SummaryStrip
                     items={[
                       {
-                        label: t('email.healthScore'),
+                        label: t('email.deliverabilityScore'),
                         value: String(deliverability.score),
                         tone: healthScoreTone(deliverability.score),
                       },

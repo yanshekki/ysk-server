@@ -448,6 +448,7 @@ export function SslPage() {
                     variant="danger"
                     size="sm"
                     loading={busy}
+                    title={t('ssl.deleteNeedDomain')}
                     onClick={bindSet(setDel, r)}
                   >
                     {t('common.delete')}
@@ -638,6 +639,7 @@ export function SslPage() {
           }}
           title={t('ssl.deleteTitle')}
           description={t('ssl.deleteDesc', { domain: del?.domain ?? '' })}
+          confirmText={del?.domain}
           severity="destructive"
           confirmLabel={t('common.delete')}
           cancelLabel={t('common.cancel')}

@@ -170,19 +170,60 @@
   "notInstalled": "स्थापित नहीं हे",
   "goToPage": "पेज खोलें",
   "hubHint": "इस होस्ट पर कैटलॉग सॉफ़्टवेयर और रनटाइम। ताज़ा करने के लिए स्कैन करें.",
-  "intervalDay": "every day",
-  "intervalDays": "every {{n}} days",
-  "intervalHour": "every hour",
-  "intervalHours": "every {{n}} hours",
-  "intervalMinutes": "every {{n}} minutes",
-  "intervalSeconds": "every {{n}} seconds",
-  "availableHint": "Packages with a newer candidate from the package manager.",
-  "servicesHint": "Catalog services on this host. Open the service page to install.",
-  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
-  "needsReboot": "Reboot needed",
-  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
-  "neverRun": "not run yet",
-  "scanOsvN": "Scan + OSV (first {{n}})",
-  "rebootNeeded": "reboot",
-  "kernelRebootHint": "Kernel packages need a reboot after apply"
+  "intervalDay": "रोज रोज",
+  "intervalDays": "हर {{n}} दिन",
+  "intervalHour": "हर घंटे",
+  "intervalHours": "हर {{n}} घंटे",
+  "intervalMinutes": "हर {{n}} मिनट",
+  "intervalSeconds": "हर {{n}} सेकंड",
+  "availableHint": "पैकेज मैनेजर से एक नए उम्मीदवार के साथ पैकेज।",
+  "servicesHint": "इस होस्ट पर कैटलॉग सेवाएँ। इंस्टॉल करने के लिए सेवा पृष्ठ खोलें.",
+  "runtimeHint": "इस होस्ट पर रनटाइम. प्रत्येक रनटाइम पेज पर संस्करण अपग्रेड किया जाता है।",
+  "needsReboot": "रीबूट की आवश्यकता है",
+  "kernelRebootWarn": "किसी नए कर्नेल को स्थापित करने के लिए आमतौर पर इसका उपयोग करने से पहले रीबूट की आवश्यकता होती है।",
+  "neverRun": "अभी तक नहीं चला",
+  "scanOsvN": "स्कैन + ओएसवी (पहला {{n}})",
+  "rebootNeeded": "रिबूट",
+  "kernelRebootHint": "लागू होने के बाद कर्नेल पैकेज को रीबूट की आवश्यकता होती है",
+  "needApprovalHint": "उपलब्ध खोलें और उन पैकेजों को फ़िल्टर करें जिन्हें अनुमोदन की आवश्यकता है",
+  "applyNeedConfirm": "आवेदन करने से पहले एक पुष्टि संवाद खोलता है",
+  "probeFailed": "जांच विफल रही",
+  "notViaApt": "उपयुक्त द्वारा प्रबंधित नहीं - कोई उम्मीदवार नहीं",
+  "noCandidate": "कोई उम्मीदवार संस्करण नहीं",
+  "jobOpenGeo": "जियोआईपी पेज",
+  "job": {
+    "protection_probe": {
+      "name": "सुरक्षा जांच",
+      "hint": "आवधिक रक्षा संकेत"
+    },
+    "updates_scan": {
+      "name": "अद्यतन स्कैन",
+      "hint": "पैकेज सूची ताज़ा करें"
+    },
+    "daily_backup": {
+      "name": "दैनिक बैकअप",
+      "hint": "शेड्यूल किया गया बैकअप सभी"
+    },
+    "db_temp_expire": {
+      "name": "अस्थायी DB उपयोगकर्ताओं को समाप्त करें",
+      "hint": "समाप्त हो चुके अस्थायी डेटाबेस उपयोगकर्ताओं को छोड़ें"
+    },
+    "defense_auto_ban": {
+      "name": "रक्षा स्वत: प्रतिबंध",
+      "hint": "ऑटो-बैन टिक लागू करें"
+    },
+    "defense_geoip_update": {
+      "name": "जियोआईपी अपडेट",
+      "hint": "जियोआईपी डेटाबेस डाउनलोड करें"
+    },
+    "log_auto_vacuum": {
+      "name": "लॉग वैक्यूम",
+      "hint": "जर्नल प्रतिधारण"
+    },
+    "email_dnsbl": {
+      "name": "डीएनएसबीएल को ईमेल करें",
+      "hint": "मेल डीएनएसबीएल जांच"
+    }
+  },
+  "applyPanelAlreadyLatest": "पहले से ही नवीनतम पैनल संस्करण"
 }

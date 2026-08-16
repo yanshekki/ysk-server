@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "ডকার",
   "subtitle": "এই হোস্টে Docker ইঞ্জিন, কন্টেইনার, ইমেজ, Compose প্রকল্প ও ডিস্ক স্থাপন ও নিয়ন্ত্রণ করুন।",
   "refresh": "রিফ্রেশ",
   "notInstalled": "Docker Engine স্থাপিত নয়। এই পাতা থেকে docker.io ও docker-compose-v2 স্থাপন করুন।",
@@ -13,7 +13,7 @@
     "overview": "সারসংক্ষেপ",
     "containers": "কন্টেইনার",
     "images": "ইমেজ",
-    "compose": "Compose",
+    "compose": "রচনা করুন",
     "volumes": "Volume",
     "networks": "নেটওয়ার্ক",
     "prune": "পরিষ্কার",

@@ -3,7 +3,7 @@
     "vsftpd": "vsftpd（FTPS）",
     "db_util": "db-util（FTP 用戶資料庫）",
     "nginx": "Nginx",
-    "certbot": "Certbot（Let's Encrypt）",
+    "certbot": "Certbot (Let's Encrypt)",
     "mysql_client": "MySQL／MariaDB 客戶端",
     "mysql_server": "MySQL 伺服器",
     "mariadb_server": "MariaDB 伺服器",
@@ -17,13 +17,13 @@
     "dovecot": "Dovecot",
     "opendkim": "OpenDKIM",
     "pdns_server": "PowerDNS",
-    "git": "Git",
+    "git": "git",
     "node": "Node.js",
     "php": "PHP",
     "python": "Python",
     "go": "Go",
     "rust": "Rust",
-    "chromium": "Chromium／Chrome"
+    "chromium": "Chromium / Chrome"
   },
   "php": {
     "session": "工作階段",

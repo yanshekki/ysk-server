@@ -1,7 +1,7 @@
 {
   "title": "Validateurs (Beta)",
   "subtitle": "Installez et gérez des nœuds L1 sur cet hôte. Non dépositaire — vous gardez les clés.",
-  "beta": "Beta",
+  "beta": "Bêta",
   "tab": {
     "nodes": "Nœuds",
     "disk": "Disque",
@@ -23,25 +23,25 @@
     "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)"
   },
   "chain": {
-    "eth": "Ethereum",
+    "eth": "Éthereum",
     "avax": "Avalanche",
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
+    "cosmos": "Centre Cosmos",
     "sui": "Sui",
     "aptos": "Aptos",
-    "dot": "Polkadot",
+    "dot": "Pois",
     "sol": "Solana"
   },
   "network": {
-    "hoodi": "Hoodi",
-    "sepolia": "Sepolia",
+    "hoodi": "Sweat à capuche",
+    "sepolia": "Sépolie",
     "mainnet": "Réseau principal",
     "fuji": "Fuji",
     "testnet": "Réseau de test",
-    "preview": "Preview",
-    "preprod": "Preprod",
+    "preview": "Aperçu",
+    "preprod": "Préproduction",
     "westend": "Westend"
   },
   "networkKind": {

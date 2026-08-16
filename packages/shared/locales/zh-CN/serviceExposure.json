@@ -34,5 +34,7 @@
   "summaryUndecided": "尚未確認存取模式（目錄建議：{{suggested}}）。",
   "summaryNotEnforced": "防火牆未啟用，面板未強制開放或封鎖此埠。",
   "roleSmtp": "SMTP 提交",
-  "roleImap": "IMAP／POP3 收件"
+  "roleImap": "IMAP／POP3 收件",
+  "openButStopped": "端口打开 — 服务未运行",
+  "openNoTenants": "没有租户的公共港口"
 }

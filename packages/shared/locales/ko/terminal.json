@@ -30,8 +30,10 @@
   "stepUpTitle": "루트 쉘 확인",
   "stepUpDesc": "인증 코드 또는 복구 코드를 입력하세요.",
   "totpLabel": "TOTP / 복구 코드",
-  "sessionStillOpen": "A live shell is still connected while you read this page.",
-  "rootConfirmTitle": "Open a root shell?",
-  "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
-  "rootConfirmBody": "Only continue if you intend to run privileged host commands."
+  "sessionStillOpen": "이 페이지를 읽는 동안 라이브 셸은 계속 연결되어 있습니다.",
+  "rootConfirmTitle": "루트 쉘을 여시겠습니까?",
+  "rootConfirmDesc": "이 세션은 호스트의 무제한 루트 PTY입니다. 명령이 감사됩니다.",
+  "rootConfirmBody": "권한 있는 호스트 명령을 실행하려는 경우에만 계속하십시오.",
+  "copyAll": "모두 복사",
+  "copyAllNeedConn": "먼저 연결 - 연결이 끊어진 동안 버퍼는 비어 있습니다."
 }

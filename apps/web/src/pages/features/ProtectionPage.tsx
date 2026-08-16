@@ -878,6 +878,12 @@ export function ProtectionPage() {
                 tone: meta.tone },
               items: [
                 {
+                  label: t('protection.statSuspects'),
+                  value: suspects.length,
+                  hint: t('protection.scoreBasisHint'),
+                  tone: suspects.length > 0 ? 'warn' : 'ok',
+                },
+                {
                   label: 'fail2ban',
                   value: labels?.fail2ban.short ?? '—',
                   tone: toneToBadge(labels?.fail2ban.tone),
@@ -1893,7 +1899,7 @@ export function ProtectionPage() {
                       </div>
                       <p className="def-suspect__why">{s.reasons.slice(0, 3).join(' · ') || '—'}</p>
                       <div className="def-suspect__meta">
-                        <span>{s.hits} hits</span>
+                        <span>{t('protection.hitsCount', { n: s.hits })}</span>
                         <span>{s.sources.join(', ')}</span>
                         <span>{relTime(s.lastSeen, t)}</span>
                       </div>
@@ -2215,12 +2221,13 @@ export function ProtectionPage() {
               <section className="def-panel-card">
                 <div className="def-section-head">
                   <h3 className="def-section-head__title">
-                    Top IP{' '}
+                    {t('protection.topIpsTitle')}{' '}
                     <Badge tone="neutral">{topIps.length}</Badge>
                   </h3>
                   <span className="muted u-text-sm">{t('protection.accessAuthSample')}</span>
                 </div>
                 <FormHint>
+                  {t('protection.sampleWindowHint')}{' '}
                   {t('protection.fullLogsAt')}{' '}
                   <Link to="/logs?source=file:auth">{t('protection.logCenter')}</Link>
                 </FormHint>
@@ -2243,12 +2250,12 @@ export function ProtectionPage() {
                       ) },
                     {
                       key: 'hits',
-                      header: 'hits',
+                      header: t('protection.colHits'),
                       nowrap: true,
                       render: (row) => row.hits },
                     {
                       key: 's429',
-                      header: '429',
+                      header: t('protection.col429'),
                       nowrap: true,
                       render: (row) => row.s429 },
                   ]}
@@ -2274,7 +2281,7 @@ export function ProtectionPage() {
                         loading={busy}
                         onClick={bindBanOne(banOne, row.ip, `top-ip score=${row.score}`)}
                       >
-                        {t('protection.banShort')}
+                        {t('protection.ban')}
                       </Button>
                       )}
                     </ActionBar>
@@ -2414,7 +2421,7 @@ export function ProtectionPage() {
                 <>
                   <SummaryStrip
                     items={[
-                      { label: 'Provider', value: geoStatus.provider },
+                      { label: t('protection.provider'), value: geoStatus.provider === 'sapics+dbip' ? 'DB-IP / sapics' : geoStatus.provider },
                       {
                         label: t('protection.dbReady'),
                         value: geoStatus.ready ? t('protection.yes') : t('protection.no'),
@@ -2720,10 +2727,13 @@ export function ProtectionPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
+                  disabled={!geoStatus?.ready}
                   title={
-                    geoEnabled
-                      ? t('protection.savePolicy')
-                      : t('protection.geoDraftOnly')
+                    !geoStatus?.ready
+                      ? t('protection.geoNeedDb')
+                      : geoEnabled
+                        ? t('protection.savePolicy')
+                        : t('protection.geoDraftOnly')
                   }
                   onClick={() =>
                     void run(async () => {
@@ -2762,11 +2772,13 @@ export function ProtectionPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  disabled={!geoEnabled}
+                  disabled={!geoEnabled || !geoStatus?.ready}
                   title={
-                    geoEnabled
-                      ? t('protection.applyNginxSnippet')
-                      : t('protection.geoDraftOnly')
+                    !geoStatus?.ready
+                      ? t('protection.geoNeedDb')
+                      : geoEnabled
+                        ? t('protection.applyNginxSnippet')
+                        : t('protection.geoDraftOnly')
                   }
                   onClick={bindDefenseGeoApply(
                     run,

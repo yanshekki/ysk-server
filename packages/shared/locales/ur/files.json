@@ -345,11 +345,11 @@
     "skipped": "چھوڑ دیا",
     "cancelled": "منسوخ"
   },
-  "emptyTrashTitle": "Empty trash?",
-  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
-  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "emptyTrashTitle": "کوڑے دان کو خالی کریں؟",
+  "emptyTrashDesc": "کوڑے دان میں موجود ہر فائل کو مستقل طور پر حذف کر دیا جائے گا۔ اسے کالعدم نہیں کیا جا سکتا۔",
+  "purgeForeverDesc": "یہ فائل مستقل طور پر حذف ہو جائے گی۔ اسے کالعدم نہیں کیا جا سکتا۔",
+  "webdavReissueUnchanged": "ٹوکن آئی ڈی دوبارہ جاری کرنے کے بعد تبدیل نہیں ہوئی — ممکن ہے تحریر برقرار نہ رہی ہو۔ دوبارہ کوشش کریں۔",
+  "webdavDisableFailed": "WebDAV کو غیر فعال کرنے کے بعد بھی فعال کیا جاتا ہے - ہو سکتا ہے تحریر برقرار نہ رہی ہو۔ دوبارہ کوشش کریں۔",
   "dirNamedLikeFile": "(بقیہ فولڈر؛ نام فائل جیسا ہے)",
   "webdavAfterEnable": "WebDAV فعال کر کے ٹوکن جاری کرنے کے بعد دستیاب۔"
 }

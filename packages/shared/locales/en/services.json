@@ -4,8 +4,14 @@
     "start": "Start",
     "stop": "Stop",
     "restart": "Restart",
-    "reload": "Reload"
+    "reload": "Reload",
+    "enable": "Enable on boot",
+    "disable": "Disable on boot"
   },
+  "enabledOk": "{{label}} enabled on boot",
+  "bootDisabledWarn": "{{label}} is running but will not start at boot. Enable it to persist across reboot.",
+  "bootDisabledShort": "Not on boot",
+  "mariadbNotInstalled": "MariaDB is not installed",
   "lifecycleTitle": "{{label}} service control",
   "startedOk": "{{label}} started",
   "stoppedOk": "{{label}} stopped",

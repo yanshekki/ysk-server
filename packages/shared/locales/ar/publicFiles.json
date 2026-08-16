@@ -30,8 +30,13 @@
   "managedConf": "أسيوط المدارة",
   "systemConf": "مؤتمرات النظام",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "لم يتم إدارة Nginx conf حتى الآن - انقر فوق \"تطبيق\".",
+    "notSynced": "يوجد ملف conf مُدار ولكنه ليس ضمن /etc/nginx/conf.d - قم بتطبيقه مرة أخرى كجذر باستخدام YSK_EXECUTE"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "قائمة الدليل (الفهرسة التلقائية)",
+  "liveSystemConf": "إعداد النظام الحي: {{path}}",
+  "publicRootNote": "جذر عام: {{path}}",
+  "applyConfirmTitle": "تطبيق موقع الملفات العامة؟",
+  "applyConfirmDesc": "كتابة Nginx server_name {{name}} وإعادة تحميل Nginx.",
+  "serverNameMismatch": "الإعداد الحي يستخدم {{live}}؛ النموذج فيه {{draft}}. طبّق للاستبدال."
 }

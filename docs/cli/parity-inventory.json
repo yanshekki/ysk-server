@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-15T17:37:19.551Z",
-  "cliCommandsCount": 55,
+  "generatedAt": "2026-08-16T04:59:49.158Z",
+  "cliCommandsCount": 56,
   "cliCommands": [
     "setup",
     "update",
@@ -31,6 +31,7 @@
     "protection",
     "cdn",
     "agents",
+    "fleet",
     "agent",
     "store",
     "files",
@@ -58,7 +59,7 @@
     "version",
     "help"
   ],
-  "handlersCount": 48,
+  "handlersCount": 49,
   "handlers": [
     "agent",
     "agents",
@@ -75,6 +76,7 @@
     "docker",
     "email",
     "files",
+    "fleet",
     "ftp",
     "health",
     "host",

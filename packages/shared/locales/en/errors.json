@@ -38,7 +38,8 @@
     "sessionIdle": "Idle timeout; sign in again",
     "totpNotEnabled": "2FA is not enabled",
     "totpSecretNoDataDir": "TOTP secret is encrypted but dataDir is not set",
-    "mustChangePassword": "You must set a new password before continuing"
+    "mustChangePassword": "You must set a new password before continuing",
+    "policyNeedsOwn2fa": "Turn on 2FA for this account and confirm with a TOTP code before requiring 2FA for others"
   },
   "http": {
     "notFoundRoute": "Not found: {{method}} {{path}}",

@@ -79,10 +79,10 @@
   "executeNote": "হোস্টের প্রয়োজন YSK_EXECUTE=1 এবং রুট API। মাইগ্রেট করার পরে, DNS A/AAAA আপডেট করুন এবং ক্লাউড ফায়ারওয়াল + মেল PTR চেক করুন।",
   "dnsCutover": "DNS কাটওভার (ম্যানুয়াল)",
   "dnsCutoverDesc": "নতুন পাবলিক আইপিতে এই নামের জন্য A/AAAA পয়েন্ট করুন;",
-  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
-  "orphanRemove": "Remove leftover home",
-  "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanHomesHint": "অবশিষ্ট প্রকল্পের বাড়ি (স্টোরে নয়)। সেগুলি অব্যবহৃত হয়েছে তা নিশ্চিত করার পরেই সরান৷",
+  "orphanRemove": "বাড়ির অবশিষ্টাংশ সরান",
+  "orphanRemoveTitle": "অবশিষ্ট প্রকল্প বাড়ি মুছে ফেলবেন?",
+  "orphanRemoveDesc": "স্থায়ীভাবে ডিস্ক থেকে {{path}} মুছে দিন। এটি একটি দোকান প্রকল্প নয়. প্রয়োজন YSK_EXECUTE=1।",
   "orphanRemovePhrase": "নিশ্চিত করতে DELETE লিখুন।",
   "orphanRemoveNeedConfirm": "নিশ্চিতকরণ প্রয়োজন"
 }

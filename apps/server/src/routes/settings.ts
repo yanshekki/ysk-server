@@ -2,7 +2,7 @@
  * HTTP routes — extracted from http-server (Wave2 R2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from 'ysk-server-shared';
+import { tl, YskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -169,9 +169,22 @@ export async function handleSettingsRoutes(
           totp?: string;
         };
         try {
+          const forcingUsers =
+            data.requireAdminTotp === true || data.requireUserTotp === true;
+          if (forcingUsers) {
+            const totp = ctx.auth.totpStatus(user.id);
+            if (!totp.enabled && !totp.enrolled) {
+              sendJson(res, 403, {
+                ok: false,
+                code: 'YSK_POLICY_NEEDS_2FA',
+                message: tl('errors.auth.policyNeedsOwn2fa'),
+                needsEnroll: true,
+              });
+              return true;
+            }
+          }
           if (
-            data.requireAdminTotp === true ||
-            data.requireUserTotp === true ||
+            forcingUsers ||
             data.requireAdminTotpStrict === true
           ) {
             ctx.auth.requireStepUp(user.id, data.totp);

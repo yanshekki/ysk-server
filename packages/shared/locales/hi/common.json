@@ -122,9 +122,9 @@
   "done": "हो गया",
   "next": "अगला",
   "previous": "पहले का",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "सभी",
+  "showPassword": "दिखाओ",
+  "hidePassword": "छिपाना",
+  "more": "अधिक",
   "redirectedTo": "{{to}} खोला गया (पहले {{from}})"
 }

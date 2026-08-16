@@ -25,14 +25,14 @@
   "cryptoAddress": "पता",
   "copy": "कॉपी",
   "copied": "कॉपी हो गया",
-  "docsLink": "Documentation",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "docsLink": "प्रलेखन",
+  "diagTitle": "निदानात्मक सारांश",
+  "diagBody": "ईमेल में चिपकाने के लिए तथ्यों को कॉपी करें, निष्पादित करें और होस्ट करें। यह पूर्ण लॉग बंडल नहीं है.",
+  "diagCopy": "निदान सारांश कॉपी करें",
+  "diagCopied": "निदान सारांश कॉपी किया गया",
   "copyTitle": "{{address}} कॉपी करें",
   "diagCopyTitle": "संस्करण, EXECUTE और होस्ट तथ्य कॉपी करें",
   "diagPreview": "जो कॉपी होगा उसकी झलक",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "निदान लोड हो रहा है...",
+  "diagLoadFailed": "डायग्नोस्टिक लोड नहीं किया जा सका"
 }

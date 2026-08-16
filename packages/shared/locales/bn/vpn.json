@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "এই VPN ইঞ্জিন হোস্টে ইনস্টল নেই।",
   "serverNotListening": "সার্ভার ইউনিট সক্রিয় নয়। UDP/TCP {{port}} বন্ধ থাকতে পারে।",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "প্রথমে VPN ইঞ্জিন ইনস্টল করুন",
+  "portHint": {
+    "51820": "ডিফল্ট ওয়্যারগার্ড লিসেন পোর্ট",
+    "51821": "বিকল্প ওয়্যারগার্ড শোনার পোর্ট",
+    "51822": "দ্বিতীয় বিকল্প ওয়্যারগার্ড লিসেন পোর্ট"
+  }
 }

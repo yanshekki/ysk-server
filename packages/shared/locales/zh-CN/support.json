@@ -1,7 +1,7 @@
 {
   "title": "支持",
   "sub": "Creator、赞助与 YSK Limited — 免费产品，实在支持",
-  "creatorTitle": "Creator",
+  "creatorTitle": "创作者",
   "creatorBody": "YSK Server 是免费、诚实的单机控制平面，给想自己掌控服务器的人。项目开源维护；你的反馈和 bug 报告很重要。",
   "donateTitle": "支持／赞助",
   "donateBody": "如果 YSK Server 帮你省时间，欢迎赞助开发。每一份支持都帮产品继续免费给所有人用。",
@@ -18,7 +18,7 @@
   "helpTitle": "遇到问题？",
   "helpBody": "请来信说明操作系统、安装 log 路径、预期与实际结果。每封信都会看。",
   "docsHint": "完整文档在仓库",
-  "donateLinktree": "Linktree",
+  "donateLinktree": "链接树",
   "cryptoTitle": "加密货币／Web3 地址",
   "cryptoHint": "请只在对应网络转账，转账前请再次核对地址。",
   "cryptoNetwork": "网络",
@@ -26,13 +26,13 @@
   "copy": "复制",
   "copied": "已复制",
   "docsLink": "说明文件",
-  "diagTitle": "Diagnostic summary",
-  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
-  "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied",
+  "diagTitle": "诊断总结",
+  "diagBody": "复制版本、执行并托管事实以粘贴到电子邮件中。这不是完整的日志包。",
+  "diagCopy": "复制诊断摘要",
+  "diagCopied": "已复制诊断摘要",
   "copyTitle": "复制 {{address}}",
   "diagCopyTitle": "复制版本、EXECUTE 与主机资料",
   "diagPreview": "预览将复制的内容",
-  "diagLoading": "Loading diagnostic…",
-  "diagLoadFailed": "Could not load diagnostic"
+  "diagLoading": "正在加载诊断...",
+  "diagLoadFailed": "无法加载诊断"
 }

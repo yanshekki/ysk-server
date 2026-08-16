@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "Buruh pelabuhan",
   "subtitle": "Pasang dan kendalikan mesin Docker, kontainer, citra, proyek Compose, dan disk di host ini.",
   "refresh": "Segarkan",
   "notInstalled": "Docker Engine belum terpasang. Pasang docker.io dan docker-compose-v2 dari halaman ini.",
@@ -13,7 +13,7 @@
     "overview": "Ringkasan",
     "containers": "Kontainer",
     "images": "Citra",
-    "compose": "Compose",
+    "compose": "Menyusun",
     "volumes": "Volume",
     "networks": "Jaringan",
     "prune": "Bersihkan",
@@ -33,7 +33,7 @@
     "ports": "Port",
     "managed": "Dikelola panel",
     "size": "Ukuran",
-    "driver": "Driver",
+    "driver": "Pengemudi",
     "type": "Jenis",
     "reclaimable": "Dapat diklaim ulang"
   },

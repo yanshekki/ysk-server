@@ -30,8 +30,13 @@
   "managedConf": "Conf gérée",
   "systemConf": "conf.d système",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "Aucune configuration Nginx gérée pour l'instant : cliquez sur Appliquer",
+    "notSynced": "La configuration gérée existe mais ne se trouve pas sous /etc/nginx/conf.d — appliquez-la à nouveau en tant que root avec YSK_EXECUTE"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "Liste des répertoires (indexation automatique)",
+  "liveSystemConf": "Conf système active : {{path}}",
+  "publicRootNote": "Racine publique : {{path}}",
+  "applyConfirmTitle": "Appliquer le site des fichiers publics ?",
+  "applyConfirmDesc": "Écrire Nginx server_name {{name}} et recharger Nginx.",
+  "serverNameMismatch": "La conf active est {{live}} ; le formulaire a {{draft}}. Appliquez pour remplacer."
 }

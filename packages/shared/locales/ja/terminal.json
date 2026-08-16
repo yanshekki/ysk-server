@@ -30,8 +30,10 @@
   "stepUpTitle": "ルートシェルを確認する",
   "stepUpDesc": "認証コードまたは回復コードを入力します。",
   "totpLabel": "TOTP / リカバリーコード",
-  "sessionStillOpen": "A live shell is still connected while you read this page.",
-  "rootConfirmTitle": "Open a root shell?",
-  "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
-  "rootConfirmBody": "Only continue if you intend to run privileged host commands."
+  "sessionStillOpen": "このページを読んでいる間、ライブ シェルはまだ接続されています。",
+  "rootConfirmTitle": "ルートシェルを開きますか?",
+  "rootConfirmDesc": "このセッションは、ホスト上の無制限のルート PTY です。コマンドは監査されます。",
+  "rootConfirmBody": "特権ホスト コマンドを実行する場合にのみ続行してください。",
+  "copyAll": "すべてコピー",
+  "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です"
 }

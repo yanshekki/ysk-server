@@ -356,7 +356,7 @@
       "errorLogDefault": "系统默认（空）",
       "errorLogPhp": "/var/log/php/error.log",
       "errorLogFpm": "FPM 日志路径",
-      "errorLogSyslog": "syslog"
+      "errorLogSyslog": "系统日志"
     },
     "disableFn": {
       "groups": {
@@ -452,9 +452,9 @@
     "noProjects": "没有项目",
     "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
     "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。",
-    "startupTitle": "Start on boot",
-    "startupDesc": "Register PM2 so processes come back after reboot.",
-    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
+    "startupTitle": "开机启动",
+    "startupDesc": "注册 PM2，以便进程在重新启动后恢复。",
+    "systemdActionsHint": "systemd 操作需要 root 和 YSK_EXECUTE。"
   },
   "recordedInstalled": "记录已装 {{v}}",
   "remoteSourceSuffix": "（{{source}}）",
@@ -523,7 +523,10 @@
   "phpFpmServiceDesc": "启动、停止、重载或重启 PHP-FPM 单元",
   "rustupDefaultMissingTitle": "未设 rustup 默认工具链",
   "rustupDefaultMissing": "rustup 未设默认工具链。请到「软件」分页设为 stable。",
-  "rustupDefaultMissingShort": "No default toolchain",
-  "rustupSetDefaultHint": "Set default toolchain",
-  "uninstalledCountHint": "{{n}} 个版本未在本机"
+  "rustupDefaultMissingShort": "没有默认工具链",
+  "rustupSetDefaultHint": "设置默认工具链",
+  "uninstalledCountHint": "{{n}} 个版本未在本机",
+  "applyPhpVhostTitle": "需要确认 - 写入池/虚拟主机文件",
+  "applyPhpVhostDesc": "将写入 {{pool}} 池和 {{domain}} 虚拟主机。重新加载服务：{{reload}}。",
+  "binaryPath": "二进制路径"
 }

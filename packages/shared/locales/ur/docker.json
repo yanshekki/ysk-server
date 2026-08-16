@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "ڈوکر",
   "subtitle": "اس میزبان پر Docker انجن، کنٹینر، تصاویر، Compose منصوبے اور ڈسک نصب و کنٹرول کریں۔",
   "refresh": "تازہ کریں",
   "notInstalled": "Docker Engine نصب نہیں۔ اس صفحے سے docker.io اور docker-compose-v2 نصب کریں۔",
@@ -13,7 +13,7 @@
     "overview": "جائزہ",
     "containers": "کنٹینر",
     "images": "تصاویر",
-    "compose": "Compose",
+    "compose": "تحریر",
     "volumes": "Volume",
     "networks": "نیٹ ورک",
     "prune": "صاف کریں",

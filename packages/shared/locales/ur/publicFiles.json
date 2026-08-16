@@ -30,8 +30,13 @@
   "managedConf": "منظم conf",
   "systemConf": "سسٹم conf.d",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "ابھی تک کوئی نظم شدہ Nginx conf - اپلائی پر کلک کریں۔",
+    "notSynced": "منظم conf موجود ہے لیکن یہ /etc/nginx/conf.d کے تحت نہیں ہے — YSK_EXECUTE کے ساتھ جڑ کے طور پر دوبارہ درخواست دیں"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "ڈائرکٹری لسٹنگ (آٹو انڈیکس)",
+  "liveSystemConf": "لائیو سسٹم کنف: {{path}}",
+  "publicRootNote": "پبلک روٹ: {{path}}",
+  "applyConfirmTitle": "پبلک فائلز سائٹ لاگو کریں؟",
+  "applyConfirmDesc": "Nginx server_name {{name}} لکھیں اور Nginx ری لوڈ کریں۔",
+  "serverNameMismatch": "لائیو کنف {{live}} ہے؛ فارم میں {{draft}} ہے۔ بدلنے کے لیے لاگو کریں۔"
 }

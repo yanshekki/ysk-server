@@ -102,10 +102,10 @@
   "disableConfirmTitle": "Nonaktifkan UFW?",
   "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
   "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi.",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
-  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-  "syncNotApplied": "UFW off · not applied",
-  "defaultNotApplied": "n/a (UFW off)",
-  "ufwOffHint": "Default incoming is not applied while UFW is off"
+  "toolHintFail2ban": "fail2ban = larangan sementara berbasis log",
+  "servicesUfwOff": "UFW tidak aktif. Daftar ini adalah paparan yang diinginkan, bukan aturan yang diterapkan oleh tuan rumah.",
+  "desiredOnlyUfwOff": "Diinginkan: {{mode}} · UFW nonaktif (tidak diterapkan)",
+  "syncNotApplied": "UFW mati · tidak diterapkan",
+  "defaultNotApplied": "tidak ada (UFW nonaktif)",
+  "ufwOffHint": "Masuk default tidak diterapkan saat UFW mati"
 }

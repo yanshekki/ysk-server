@@ -60,12 +60,12 @@
   "dockCancelled": "Cancelado · {{title}}",
   "cancelHint": "Cancelar solicitado. El cliente dejó de escuchar; el anfitrión puede finalizar el apto/paso actual. Vuelva a sondear el estado después de un momento.",
   "cancelledToast": "Operación cancelada (el cliente dejó de transmitir)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "Aplicar",
+  "kindScan": "Escanear",
+  "kindDeploy": "Desplegar",
+  "kindRuntime": "Tiempo de ejecución",
+  "jobDone": "Terminado · {{title}}",
+  "jobFailed": "Fallido · {{title}}",
   "uninstallUfwWarn": "Quitar UFW deja este host sin el cortafuegos de puertos gestionado por el panel.",
   "uninstallFail2banWarn": "Quitar fail2ban detiene las jails y libera los bloqueos. Si lo conserva, añada su IP de inicio a ignoreip."
 }

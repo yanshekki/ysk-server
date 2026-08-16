@@ -24,11 +24,11 @@
   },
   "chain": {
     "eth": "Ethereum",
-    "avax": "Avalanche",
+    "avax": "Salju longsor",
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Cosmos Hub",
+    "cosmos": "Pusat Kosmos",
     "sui": "Sui",
     "aptos": "Aptos",
     "dot": "Polkadot",
@@ -40,9 +40,9 @@
     "mainnet": "Jaringan utama",
     "fuji": "Fuji",
     "testnet": "Jaringan uji",
-    "preview": "Preview",
-    "preprod": "Preprod",
-    "westend": "Westend"
+    "preview": "Pratinjau",
+    "preprod": "Persiapan",
+    "westend": "ujung barat"
   },
   "networkKind": {
     "testnet": "Jaringan uji",

@@ -2,13 +2,13 @@
   "unknownCommand": "未知命令：{{command}}\n執行 `{{cli}} help`",
   "usagePrefix": "用法：",
   "security": {
-    "help": "Usage: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "Usage: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "Usage: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+    "help": "用法：ysk-伺服器安全狀態\n       ysk-server 安全會話清單|撤銷|撤銷-其他 [--user U]\n       ysk-server 安全性 api 金鑰清單|建立|刪除 …",
+    "sessionsHelp": "用法：ysk-server 安全會話清單 [--user U]\n       ysk-server 安全會話撤銷 --id PREFIX [--user U]\n       ysk-伺服器安全會話撤銷其他 [--user U] [--keep-token T]",
+    "apiKeysHelp": "用法：ysk-server 安全 api 金鑰列表\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-伺服器安全 API 金鑰刪除 --id KEY_ID",
     "noUser": "找不到用戶。請先建立管理員，或傳入 --user <名稱或識別碼>。",
     "tokenOnce": "權杖 只顯示一次 — 請妥善保存",
-    "sessionRevokeUsage": "Usage: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "Usage: ysk-server security api-keys delete --id KEY_ID"
+    "sessionRevokeUsage": "用法：ysk-server 安全會話撤銷 --id <sessionIdPrefix> [--user U]",
+    "apiKeyDeleteUsage": "用法：ysk-server security api-keys delete --id KEY_ID"
   },
   "help": {
     "blurb": "控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json",

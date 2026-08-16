@@ -60,12 +60,12 @@
   "dockCancelled": "Dibatalkan · {{title}}",
   "cancelHint": "Pembatalan diminta. Klien berhenti mendengarkan; tuan rumah dapat menyelesaikan apt/langkah saat ini. Selidiki ulang statusnya setelah beberapa saat.",
   "cancelledToast": "Operasi dibatalkan (klien berhenti streaming)",
-  "kindApply": "Apply",
-  "kindScan": "Scan",
-  "kindDeploy": "Deploy",
-  "kindRuntime": "Runtime",
-  "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}",
+  "kindApply": "Menerapkan",
+  "kindScan": "Pindai",
+  "kindDeploy": "Menyebarkan",
+  "kindRuntime": "Waktu proses",
+  "jobDone": "Selesai · {{title}}",
+  "jobFailed": "Gagal · {{title}}",
   "uninstallUfwWarn": "Menghapus UFW membuat host ini tanpa firewall port yang dikelola panel.",
   "uninstallFail2banWarn": "Menghapus fail2ban menghentikan jail dan melepas blokir. Jika tetap dipakai, tambahkan IP login ke ignoreip dulu."
 }

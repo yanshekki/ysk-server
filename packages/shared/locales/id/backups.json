@@ -133,10 +133,14 @@
   "testRemote": "Uji tujuan",
   "testRemoteDone": "Probe jarak jauh selesai",
   "testRemoteFailed": "Probe jarak jauh gagal",
-  "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing.",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "resticRepoPh": "Direktori data panel / restic-repo",
+  "testDisabledHint": "Aktifkan push jarak jauh sebelum pengujian.",
+  "identityId": "Identitas SSH keluar",
+  "identityHint": "Lebih disukai. Gudang yang sama dengan /keamanan SSH. Kata sandi memerlukan sshpass.",
+  "identityNone": "Tidak ada — kata sandi atau kunci default",
+  "remotePathHint": "Relatif terhadap rumah pengguna jarak jauh (atau chroot SFTP). “.” apakah itu rumah.",
+  "restoreFullTitle": "Timpa file proyek dan database dari arsip ini — ketikkan nama file untuk mengonfirmasi",
+  "restoreWebTitle": "Pulihkan file situs web hanya dari arsip ini",
+  "previewTitle": "Pratinjau pemulihan tanpa menulis",
+  "partialSkipped": "Parsial — beberapa proyek dilewati"
 }

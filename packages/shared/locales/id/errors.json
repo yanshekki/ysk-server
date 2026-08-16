@@ -38,7 +38,8 @@
     "sessionIdle": "Batas waktu menganggur; masuk lagi",
     "totpNotEnabled": "2FA tidak diaktifkan",
     "totpSecretNoDataDir": "Rahasia TOTP dienkripsi tetapi dataDir tidak disetel",
-    "mustChangePassword": "Anda harus mengatur kata sandi baru sebelum lanjut"
+    "mustChangePassword": "Anda harus mengatur kata sandi baru sebelum lanjut",
+    "policyNeedsOwn2fa": "Aktifkan 2FA untuk akun ini dan konfirmasi dengan kode TOTP sebelum memerlukan 2FA untuk akun lainnya"
   },
   "http": {
     "notFoundRoute": "Tidak ditemukan: {{method}} {{path}}",

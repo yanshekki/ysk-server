@@ -1,5 +1,5 @@
 {
-  "title": "Docker",
+  "title": "ドッカー",
   "subtitle": "このサーバーで Docker エンジン、コンテナ、イメージ、Compose プロジェクト、ディスクを導入・操作します。",
   "refresh": "更新",
   "notInstalled": "Docker Engine が導入されていません。このページで docker.io と docker-compose-v2 を導入してください。",
@@ -13,7 +13,7 @@
     "overview": "概要",
     "containers": "コンテナ",
     "images": "イメージ",
-    "compose": "Compose",
+    "compose": "作曲する",
     "volumes": "Volume",
     "networks": "ネットワーク",
     "prune": "整理",

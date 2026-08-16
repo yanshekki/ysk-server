@@ -130,5 +130,10 @@
   },
   "engineNotInstalled": "यह VPN इंजन होस्ट पर स्थापित नहीं है।",
   "serverNotListening": "सर्वर यूनिट सक्रिय नहीं है। UDP/TCP {{port}} बंद हो सकता है।",
-  "installEngineFirst": "Install the VPN engine first"
+  "installEngineFirst": "सबसे पहले वीपीएन इंजन इंस्टॉल करें",
+  "portHint": {
+    "51820": "डिफ़ॉल्ट वायरगार्ड श्रवण पोर्ट",
+    "51821": "वैकल्पिक वायरगार्ड श्रवण पोर्ट",
+    "51822": "दूसरा वैकल्पिक वायरगार्ड श्रवण पोर्ट"
+  }
 }

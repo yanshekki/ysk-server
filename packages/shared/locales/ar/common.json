@@ -122,9 +122,9 @@
   "done": "منتهي",
   "next": "التالي",
   "previous": "سابق",
-  "all": "All",
-  "showPassword": "Show",
-  "hidePassword": "Hide",
-  "more": "More",
+  "all": "الجميع",
+  "showPassword": "يعرض",
+  "hidePassword": "يخفي",
+  "more": "أكثر",
   "redirectedTo": "فُتح {{to}} (كان {{from}})"
 }

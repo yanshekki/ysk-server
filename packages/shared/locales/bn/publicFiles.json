@@ -30,8 +30,13 @@
   "managedConf": "পরিচালিত conf",
   "systemConf": "সিস্টেম conf.d",
   "notes": {
-    "noManagedConf": "No managed Nginx conf yet — click Apply",
-    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    "noManagedConf": "এখনও কোন পরিচালিত Nginx conf - প্রয়োগ করুন ক্লিক করুন",
+    "notSynced": "পরিচালিত কনফ বিদ্যমান কিন্তু /etc/nginx/conf.d এর অধীনে নয় — YSK_EXECUTE এর সাথে রুট হিসাবে আবার প্রয়োগ করুন"
   },
-  "autoindex": "Directory listing (autoindex)"
+  "autoindex": "ডিরেক্টরি তালিকা (অটোইনডেক্স)",
+  "liveSystemConf": "লাইভ সিস্টেম কনফ: {{path}}",
+  "publicRootNote": "পাবলিক রুট: {{path}}",
+  "applyConfirmTitle": "পাবলিক-ফাইল সাইট প্রয়োগ করবেন?",
+  "applyConfirmDesc": "Nginx server_name {{name}} লিখে Nginx রিলোড করুন।",
+  "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।"
 }

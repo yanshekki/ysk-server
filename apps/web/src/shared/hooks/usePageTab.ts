@@ -16,9 +16,11 @@ export type UsePageTabOptions = {
 
 const DEFAULT_TAB_ALIASES: Record<string, string> = {
   apikeys: 'keys',
+  api: 'keys',
   perms: 'permissions',
   perm: 'permissions',
   plans: 'packages',
+  inventory: 'packages',
   shadowsocks: 'outline',
   ss: 'outline',
   truthip: 'realip',
@@ -27,6 +29,9 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   software: 'stack',
   self: 'panel',
   disk: 'storage',
+  dash: 'dashboard',
+  torrent: 'torrents',
+  admission: 'geo',
 };
 
 function resolveTabId(

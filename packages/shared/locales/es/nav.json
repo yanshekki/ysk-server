@@ -80,5 +80,5 @@
   "noAccessDesc": "Su rol no incluye esta página. Pida acceso a un administrador si la necesita.",
   "backToDashboard": "Volver al panel",
   "validators": "Validadores (Beta)",
-  "docker": "Docker"
+  "docker": "Estibador"
 }

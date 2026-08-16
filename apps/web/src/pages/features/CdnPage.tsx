@@ -374,7 +374,19 @@ export function CdnPage() {
   const sites = siteList.items;
   const [busy, setBusy] = useState(false);
   const [delNode, setDelNode] = useState<{ id: string; name: string } | null>(null);
+  const [drainTarget, setDrainTarget] = useState<{
+    id: string;
+    name: string;
+    draining: boolean;
+    last: boolean;
+  } | null>(null);
   const [delSite, setDelSite] = useState<{ id: string; name: string } | null>(null);
+  const [siteOp, setSiteOp] = useState<{
+    id: string;
+    name: string;
+    action: CdnSiteOpAction;
+    body?: Record<string, unknown>;
+  } | null>(null);
   /** Toast-backed feedback (errors must not use ok toast). */
   const setMsg = useCallback((text: string | null) => {
     if (!text) return;
@@ -812,15 +824,21 @@ export function CdnPage() {
       showCapability={false}
       status={{
         pill: {
-          label: formatCdnPillLabel(nodes.length, sites.length),
-          tone: nodes.length ? 'ok' : 'warn' },
+          label: t('cdn.pillNodesSites', {
+            n: nodes.length,
+            s: sites.length,
+          }),
+          tone: online > 0 ? 'ok' : nodes.length ? 'warn' : 'neutral' },
         items: [
           { label: t('cdn.statNodes'), value: nodes.length },
-          { label: 'Online', value: online },
+          { label: t('cdn.statOnline'), value: online },
           { label: t('cdn.statSites'), value: sites.length },
           {
-            label: 'Hit%',
-            value: formatHitRatePct(dashboard?.overallHitRatePct),
+            label: t('cdn.statHit'),
+            value:
+              dashboard?.overallHitRatePct == null
+                ? t('cdn.hitUnknown')
+                : formatHitRatePct(dashboard.overallHitRatePct),
             hint:
               dashboard?.overallHitRatePct == null
                 ? t('cdn.hitNoStats')
@@ -963,7 +981,24 @@ export function CdnPage() {
                   key: 'status',
                   header: t('cdn.colStatus'),
                   render: (n) => (
-                    <Badge tone={statusTone(n.status)}>{n.status}</Badge>
+                    <span title={
+                      n.lastHealth?.at
+                        ? t('cdn.lastHealthHint', {
+                            at: n.lastHealth.at,
+                            ok: n.lastHealth.ok ? t('common.ok') : t('common.failed'),
+                          })
+                        : t('cdn.lastHealthNever')
+                    }>
+                      <Badge tone={statusTone(n.status)}>
+                        {t(`cdn.nodeStatus.${n.status}`, { defaultValue: n.status })}
+                      </Badge>
+                      {n.lastHealth?.at ? (
+                        <span className="muted u-text-sm">
+                          {' '}
+                          {n.lastHealth.ok ? '' : t('cdn.lastHealthFail')}
+                        </span>
+                      ) : null}
+                    </span>
                   ) },
                 {
                   key: 'actions',
@@ -983,14 +1018,33 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={bindVoidCall2(onDrain, n.id, n.status !== 'draining')}
+                        title={
+                          n.status === 'draining'
+                            ? t('cdn.clearDrainTitle')
+                            : nodes.length <= 1
+                              ? t('cdn.drainLastTitle')
+                              : t('cdn.drainTitle')
+                        }
+                        onClick={() =>
+                          setDrainTarget({
+                            id: n.id,
+                            name: String(n.name || n.id),
+                            draining: n.status !== 'draining',
+                            last: nodes.length <= 1,
+                          })
+                        }
                       >
-                        {n.status === 'draining' ? t('cdn.clearDrain') : 'Drain'}
+                        {n.status === 'draining' ? t('cdn.clearDrain') : t('cdn.drain')}
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         loading={busy}
+                        title={
+                          nodes.length <= 1
+                            ? t('cdn.deleteLastNodeTitle')
+                            : t('cdn.deleteNodeTitle')
+                        }
                         onClick={() =>
                           setDelNode({ id: n.id, name: String(n.name || n.id) })
                         }
@@ -1033,6 +1087,11 @@ export function CdnPage() {
                     size="sm"
                     loading={busy}
                     disabled={!sites.length}
+                    title={
+                      !sites.length
+                        ? t('cdn.healthLoopNeedSites')
+                        : t('cdn.healthLoopAll')
+                    }
                     onClick={() =>
                       void (async () => {
                         setBusy(true);
@@ -1153,17 +1212,10 @@ export function CdnPage() {
                         <summary>{t('common.more', { defaultValue: 'More' })}</summary>
                         <div className="table-more__menu">
                       <Button
-                        variant="primary"
-                        size="sm"
-                        loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'apply', {})}
-                      >
-                        {t('cdn.applyEdges')}
-                      </Button>
-                      <Button
                         variant="secondary"
                         size="sm"
                         loading={busy}
+                        title={t('cdn.previewTitle')}
                         onClick={bindVoidCall3(postSiteOp, s.id, 'render', { dryRun: true })}
                       >
                         {t('cdn.preview')}
@@ -1172,23 +1224,61 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'render', { dryRun: false })}
+                        title={t('cdn.writeConfTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'render',
+                            body: { dryRun: false },
+                          })
+                        }
                       >
                         {t('cdn.writeConf')}
                       </Button>
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                         loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'purge', {})}
+                        title={t('cdn.applyEdgesTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'apply',
+                          })
+                        }
                       >
-                        Purge
+                        {t('cdn.applyEdges')}
                       </Button>
                       <Button
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'dns-sync', { probeFirst: false })}
+                        title={t('cdn.purgeTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'purge',
+                          })
+                        }
+                      >
+                        {t('cdn.purge')}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        title={t('cdn.dnsSyncTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'dns-sync',
+                            body: { probeFirst: false },
+                          })
+                        }
                       >
                         {t('cdn.dnsSync')}
                       </Button>
@@ -1196,6 +1286,7 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
+                        title={t('cdn.probeDnsTitle')}
                         onClick={bindVoidCall3(postSiteOp, s.id, 'health-loop', {})}
                       >
                         {t('cdn.probeDns')}
@@ -1204,7 +1295,14 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'ssl/distribute', {})}
+                        title={t('cdn.distSslTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'ssl/distribute',
+                          })
+                        }
                       >
                         {t('cdn.distSsl')}
                       </Button>
@@ -1212,24 +1310,27 @@ export function CdnPage() {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        onClick={() => {
-                          const email =
-                            sslEmail.trim() ||
-                            window.prompt('Let’s Encrypt email') ||
-                            '';
-                          if (!email) return;
-                          void postSiteOp(s.id, 'ssl/issue', {
-                            email,
-                            run: true,
-                            distribute: true });
-                        }}
+                        title={t('cdn.leIssueTitle')}
+                        onClick={() =>
+                          setSiteOp({
+                            id: s.id,
+                            name: String(s.name || s.id),
+                            action: 'ssl/issue',
+                            body: {
+                              email: sslEmail.trim(),
+                              run: true,
+                              distribute: true,
+                            },
+                          })
+                        }
                       >
                         {t('cdn.leIssue')}
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         loading={busy}
+                        title={t('cdn.deleteSiteTitle')}
                         onClick={() =>
                           setDelSite({ id: s.id, name: String(s.name || s.id) })
                         }
@@ -1816,6 +1917,35 @@ export function CdnPage() {
       </Modal>
 
       <ConfirmDialog
+        open={Boolean(drainTarget)}
+        onClose={() => {
+          if (!busy) setDrainTarget(null);
+        }}
+        onConfirm={() => {
+          if (!drainTarget) return;
+          const { id, draining } = drainTarget;
+          setDrainTarget(null);
+          void onDrain(id, draining);
+        }}
+        title={
+          drainTarget?.draining
+            ? drainTarget.last
+              ? t('cdn.drainLastTitle')
+              : t('cdn.drainTitle')
+            : t('cdn.clearDrainTitle')
+        }
+        description={
+          drainTarget?.draining
+            ? drainTarget.last
+              ? t('cdn.drainLastDesc', { name: drainTarget.name })
+              : t('cdn.drainDesc', { name: drainTarget.name })
+            : t('cdn.clearDrainDesc', { name: drainTarget?.name ?? '' })
+        }
+        confirmLabel={drainTarget?.draining ? t('cdn.drain') : t('cdn.clearDrain')}
+        severity="standard"
+        busy={busy}
+      />
+      <ConfirmDialog
         open={Boolean(delNode)}
         onClose={() => {
           if (!busy) setDelNode(null);
@@ -1829,6 +1959,28 @@ export function CdnPage() {
         title={t('cdn.confirmDeleteNode')}
         description={t('cdn.deleteNodeDesc', { name: delNode?.name ?? '' })}
         confirmLabel={t('common.delete')}
+        severity="standard"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={Boolean(siteOp)}
+        onClose={() => {
+          if (!busy) setSiteOp(null);
+        }}
+        onConfirm={() => {
+          if (!siteOp) return;
+          const next = siteOp;
+          setSiteOp(null);
+          void postSiteOp(next.id, next.action, next.body ?? {});
+        }}
+        title={t(`cdn.siteOpConfirm.${siteOp?.action === 'ssl/issue' ? 'issue' : siteOp?.action === 'ssl/distribute' ? 'dist' : siteOp?.action ?? 'apply'}`, {
+          defaultValue: t('cdn.siteOpConfirmGeneric', { name: siteOp?.name ?? '' }),
+        })}
+        description={t('cdn.siteOpConfirmDesc', {
+          name: siteOp?.name ?? '',
+          action: siteOp?.action ?? '',
+        })}
+        confirmLabel={t('common.confirm')}
         severity="standard"
         busy={busy}
       />

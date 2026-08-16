@@ -61,6 +61,11 @@
   "ensureServer": "Apply server",
   "openFirewall": "Open {{port}}/{{proto}}",
   "presets": "Port presets",
+  "portHint": {
+    "51820": "Default WireGuard listen port",
+    "51821": "Alternate WireGuard listen port",
+    "51822": "Second alternate WireGuard listen port"
+  },
   "proto": "Protocol",
   "protoUdp": "UDP",
   "protoTcp": "TCP",

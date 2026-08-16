@@ -72,5 +72,10 @@
   "dirDataContainer": "/data (container)",
   "dirHostDefault": "/var/lib/redis",
   "dirDefaultInstance": "/var/lib/redis/default",
-  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists.",
+  "saveOff": "Disable snapshots (not recommended)",
+  "saveOffWarn": "Empty save string turns RDB snapshots off. A crash can lose all data if AOF is also off.",
+  "dirMoveWarn": "Changing dir does not move dump.rdb / AOF. The next start uses the new path as-is.",
+  "passwordUnset": "Not set on the service",
+  "passwordSetHidden": "Set (not shown)"
 }

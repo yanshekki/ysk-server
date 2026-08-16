@@ -133,10 +133,14 @@
   "testRemote": "대상 테스트",
   "testRemoteDone": "원격 탐침 완료",
   "testRemoteFailed": "원격 탐침 실패",
-  "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing.",
-  "identityId": "Outbound SSH identity",
-  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key",
-  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
+  "resticRepoPh": "패널 데이터 디렉토리 / Restic-repo",
+  "testDisabledHint": "테스트하기 전에 원격 푸시를 켜십시오.",
+  "identityId": "아웃바운드 SSH ID",
+  "identityHint": "우선의. /security SSH와 동일한 볼트입니다. 비밀번호에는 sshpass가 필요합니다.",
+  "identityNone": "없음 — 비밀번호 또는 기본 키",
+  "remotePathHint": "원격 사용자의 집(또는 SFTP chroot)을 기준으로 합니다. “.” 그 집이에요.",
+  "restoreFullTitle": "이 아카이브의 프로젝트 파일 및 데이터베이스 덮어쓰기 - 확인하려면 파일 이름을 입력하세요.",
+  "restoreWebTitle": "이 아카이브에서만 웹사이트 파일을 복원하세요.",
+  "previewTitle": "쓰지 않고 복원 미리보기",
+  "partialSkipped": "부분 — 일부 프로젝트를 건너뛰었습니다."
 }

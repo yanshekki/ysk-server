@@ -100,10 +100,11 @@
   "requestFailed": "শংসাপত্রের অনুরোধ সফল হয়নি৷",
   "applyFailed": "অনুরোধ ব্যর্থ হয়েছে",
   "deletedCert": "মুছে ফেলা হয়েছে {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
-  "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "uninstallCertbotWarn": "certbot সরানো বিদ্যমান Let's Encrypt সার্টিফিকেটের স্বয়ংক্রিয় পুনর্নবীকরণ বন্ধ করে।",
+  "renew": "নবায়ন করুন",
+  "renewFor": "{{domain}} এর জন্য আসুন এনক্রিপ্ট পুনর্নবীকরণ করুন",
   "domainRequired": "ডোমেইন লিখুন।",
   "domainInvalid": "ডোমেইন বিন্যাস বৈধ নয়।",
-  "domainKnownHint": "পরিচিত প্রকল্প / DNS / মেইল ডোমেইন বেছে নিন, অথবা নিজে লিখুন।"
+  "domainKnownHint": "পরিচিত প্রকল্প / DNS / মেইল ডোমেইন বেছে নিন, অথবা নিজে লিখুন।",
+  "deleteNeedDomain": "এই শংসাপত্র মুছুন — নিশ্চিত করতে ডোমেন নাম টাইপ করুন"
 }

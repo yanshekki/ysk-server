@@ -79,10 +79,10 @@
   "executeNote": "Host membutuhkan YSK_EXECUTE=1 dan API root. Setelah migrasi, perbarui DNS A/AAAA dan periksa cloud firewall + mail PTR.",
   "dnsCutover": "Peralihan DNS (manual)",
   "dnsCutoverDesc": "Poin A/AAAA untuk nama-nama ini ke IP publik yang baru;",
-  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
-  "orphanRemove": "Remove leftover home",
-  "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanHomesHint": "Sisa rumah proyek (bukan di toko). Hapus hanya setelah Anda mengonfirmasi bahwa itu tidak digunakan.",
+  "orphanRemove": "Hapus sisa rumah",
+  "orphanRemoveTitle": "Hapus sisa proyek rumah?",
+  "orphanRemoveDesc": "Hapus {{path}} dari disk secara permanen. Ini bukan proyek toko. Membutuhkan YSK_EXECUTE=1.",
   "orphanRemovePhrase": "Ketik DELETE untuk mengonfirmasi.",
   "orphanRemoveNeedConfirm": "Perlu konfirmasi"
 }
