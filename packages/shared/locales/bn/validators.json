@@ -9,10 +9,7 @@
   },
   "empty": {
     "title": "এখনও কোনো ভ্যালিডেটর নোড নেই",
-    "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।",
-    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-    "copyCli": "Copy command",
-    "copied": "Copied"
+    "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।"
   },
   "refresh": "রিফ্রেশ",
   "disk": {
@@ -24,7 +21,9 @@
     "warn": "ডিস্ক ব্যবহার বেশি (৭০%+)",
     "danger": "ডিস্ক ব্যবহার সংকটজনক (৮৫%+)",
     "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+    "autoClearConfirmTitle": "Enable auto-clear?",
+    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
   },
   "chain": {
     "eth": "Ethereum",
@@ -50,7 +49,8 @@
   },
   "networkKind": {
     "testnet": "টেস্টনেট",
-    "mainnet": "মেইননেট"
+    "mainnet": "মেইননেট",
+    "mixed": "Mainnet + testnet"
   },
   "profile": {
     "minimal": "ন্যূনতম",
@@ -131,7 +131,9 @@
     "snapshotEthEl": "ethPandaOps EL আর্কাইভ পুনরুদ্ধার ও checkpoint sync-এর জন্য CL রিসেট",
     "snapshotEthCl": "অফিসিয়াল checkpoint sync-এর জন্য CL ডেটা রিসেট",
     "snapshotNear": "NEAR ডেটা মুছেছে; compose অফিসিয়াল genesis ও epoch sync দিয়ে আবার শুরু করবে",
-    "nativePrune": "ক্লায়েন্ট-নেটিভ পরিষ্কার কমান্ড চালানো হয়েছে"
+    "nativePrune": "ক্লায়েন্ট-নেটিভ পরিষ্কার কমান্ড চালানো হয়েছে",
+    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "deleted": "Node deleted"
   },
   "create": "নোড তৈরি",
   "wizard": {
@@ -156,7 +158,11 @@
     "diskShort": "Not enough free disk for this chain / network / profile",
     "limitNone": "No limit",
     "rpcDefault": "Default",
-    "customPath": "Use a custom data path"
+    "customPath": "Use a custom data path",
+    "installConfirmTitle": "Install this node?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+    "installC1": "Several gigabytes of images may be downloaded.",
+    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
   },
   "actions": {
     "detail": "বিস্তারিত",
@@ -169,7 +175,21 @@
     "prune": "ইমেজ পরিষ্কার",
     "switchNetwork": "নেটওয়ার্ক বদলান",
     "removeUnit": "compose / ইনস্ট্যান্স রেকর্ডও মুছুন",
-    "restoreAfter": "খালি করার পর স্ন্যাপশট পুনরুদ্ধার"
+    "restoreAfter": "খালি করার পর স্ন্যাপশট পুনরুদ্ধার",
+    "delete": "Delete",
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This removes the node from the panel.",
+    "deleteC1": "Docker Compose is stopped and removed",
+    "deleteC2": "Chain data on disk is deleted",
+    "deleteC3": "The instance record is removed",
+    "pruneTitle": "Prune unused images",
+    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+    "pruneC1": "Unused images labelled for this Compose project are deleted.",
+    "clearTitle": "Clear {{id}}",
+    "clearC1": "Chain data on disk is deleted.",
+    "clearC2": "The instance stays in the panel, stopped and empty.",
+    "switchTitle": "Switch network",
+    "switchC1": "The node is stopped and chain data is wiped before the new network is written."
   },
   "policy": {
     "label": "আপগ্রেড নীতি",
@@ -219,5 +239,28 @@
     "dockerTitle": "ভ্যালিডেটর নোডের জন্য Docker",
     "dockerOk": "{{count}}টি ভ্যালিডেটর ইনস্ট্যান্স; Docker স্থাপিত",
     "dockerMissing": "ভ্যালিডেটর ইনস্ট্যান্স আছে কিন্তু docker কমান্ড পাওয়া যায়নি"
+  },
+  "detail": {
+    "status": "Status",
+    "sync": "Sync",
+    "peers": "Peers",
+    "version": "Version",
+    "access": "Access",
+    "upgrade": "Updates",
+    "upgradeHint": "How this node tracks client versions.",
+    "network": "Network",
+    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+    "maintain": "Maintenance",
+    "danger": "Clear data",
+    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "compose": "Compose",
+    "logs": "Logs"
+  },
+  "state": {
+    "unknown": "Unknown",
+    "stopped": "Stopped",
+    "running": "Running",
+    "syncing": "Syncing",
+    "error": "Error"
   }
 }

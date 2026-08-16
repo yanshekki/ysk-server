@@ -36,5 +36,6 @@
   "roleImap": "IMAP/POP3 میل باکس",
   "serviceNotInstalled": "یہ سروس انسٹال نہیں ہے، اس لیے فائر وال کے اصول لاگو نہیں ہوتے ہیں۔",
   "openButStopped": "بندرگاہیں کھلی ہیں - سروس نہیں چل رہی ہے۔",
-  "openNoTenants": "عوامی بندرگاہیں بغیر کرایہ دار کے"
+  "openNoTenants": "عوامی بندرگاہیں بغیر کرایہ دار کے",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

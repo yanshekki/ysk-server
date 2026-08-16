@@ -245,5 +245,7 @@
   "clientUpdated": "تم تحديث ملف تعريف العميل",
   "rememberNeedPassword": "أدخل كلمة المرور أولاً.",
   "settingsNeedStack": "تنطبق هذه الإعدادات الافتراضية عند تثبيت TigerVNC (وXFCE إذا تم تحديده). قم بتثبيتها في علامة التبويب \"تثبيت\" أولاً.",
-  "clientNeedNovnc": "الفتح في المتصفح يحتاج إلى noVNC. قم بتثبيته في علامة التبويب \"تثبيت\" قبل إضافة أجهزة التحكم عن بعد التي تتوقع فتحها هنا."
+  "clientNeedNovnc": "الفتح في المتصفح يحتاج إلى noVNC. قم بتثبيته في علامة التبويب \"تثبيت\" قبل إضافة أجهزة التحكم عن بعد التي تتوقع فتحها هنا.",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

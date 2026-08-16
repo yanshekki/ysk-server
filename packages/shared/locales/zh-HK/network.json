@@ -3,6 +3,13 @@
   "canMutate": "可變更",
   "readOnlyBlocked": "唯讀／受阻",
   "statIfaces": "介面",
+  "statUp": "已啟用",
+  "oper": {
+    "up": "已啟用",
+    "down": "已停用",
+    "unknown": "未知",
+    "other": "其他"
+  },
   "statGateway": "閘道",
   "pageActions": "頁面操作",
   "loadingSnap": "讀取網絡快照…",

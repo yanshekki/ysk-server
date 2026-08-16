@@ -48,6 +48,7 @@ import {
   type DockerOpsResponse,
   type DockerVolumeRow,
 } from '../../features/docker';
+import { validatorsApi } from '../../features/validators';
 
 const TABS = [
   'overview',
@@ -72,6 +73,13 @@ const IMAGE_PRESETS = [
 const DEST_PRESETS = ['/data', '/app', '/var/www', '/tmp'] as const;
 const LOG_SIZES = ['1m', '10m', '20m', '50m', '100m'] as const;
 const CUSTOM = '__custom__';
+
+type DockerDelete =
+  | { kind: 'container'; token: string; state?: string }
+  | { kind: 'image'; token: string; id: string }
+  | { kind: 'volume'; token: string }
+  | { kind: 'network'; token: string }
+  | { kind: 'compose'; token: string; project: string; validatorId: string | null };
 
 const PORT_PRESETS = [
   { id: '80', host: 80, container: 80, label: '80 → 80' },
@@ -99,6 +107,46 @@ function imageRef(row: DockerImageRow): string {
   return `${row.repository}:${row.tag}`;
 }
 
+const DOCKER_STATE_KEYS = [
+  'running',
+  'exited',
+  'restarting',
+  'paused',
+  'created',
+  'dead',
+  'removing',
+] as const;
+
+export function dockerStateKey(state: string | undefined): (typeof DOCKER_STATE_KEYS)[number] | 'unknown' {
+  const s = String(state ?? '').toLowerCase();
+  return (DOCKER_STATE_KEYS as readonly string[]).includes(s)
+    ? (s as (typeof DOCKER_STATE_KEYS)[number])
+    : 'unknown';
+}
+
+export function parseRestartCount(status: string | undefined): number | null {
+  const m = String(status ?? '').match(/Restarting\s*\((\d+)\)/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function canStopContainer(state: string | undefined): boolean {
+  const s = String(state ?? '').toLowerCase();
+  return s === 'running' || s === 'restarting' || s === 'paused';
+}
+
+export function dockerDfTypeKey(type: string | undefined): 'images' | 'containers' | 'volumes' | 'builder' | 'other' {
+  const n = String(type ?? '')
+    .toLowerCase()
+    .replace(/\s+/g, '');
+  if (n.includes('image')) return 'images';
+  if (n.includes('container')) return 'containers';
+  if (n.includes('volume')) return 'volumes';
+  if (n.includes('build') || n.includes('cache')) return 'builder';
+  return 'other';
+}
+
 export function DockerPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'overview');
@@ -116,7 +164,14 @@ export function DockerPage() {
   const [ops, setOps] = useState<OpsResultLike | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [logTitle, setLogTitle] = useState('');
+  const [logId, setLogId] = useState('');
+  const [logFollow, setLogFollow] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<DockerDelete | null>(null);
+  const [pendingPrune, setPendingPrune] = useState(false);
   const [runOpen, setRunOpen] = useState(false);
+  const [pullOpen, setPullOpen] = useState(false);
+  const [volOpen, setVolOpen] = useState(false);
+  const [netOpen, setNetOpen] = useState(false);
   const [runImage, setRunImage] = useState<string>(IMAGE_PRESETS[0]);
   const [runName, setRunName] = useState('');
   const [runPublish, setRunPublish] = useState(false);
@@ -128,6 +183,7 @@ export function DockerPage() {
   const [runEnv, setRunEnv] = useState('');
   const [runRestart, setRunRestart] = useState('no');
   const [runNetwork, setRunNetwork] = useState('');
+  const [runNetKind, setRunNetKind] = useState<'default' | 'bridge'>('default');
   const [runAttachVol, setRunAttachVol] = useState(false);
   const [runVolName, setRunVolName] = useState('');
   const [runVolDest, setRunVolDest] = useState<string>(DEST_PRESETS[0]);
@@ -138,7 +194,6 @@ export function DockerPage() {
   const [volName, setVolName] = useState('');
   const [netName, setNetName] = useState('');
   const [pruneScope, setPruneScope] = useState('containers');
-  const [pruneAck, setPruneAck] = useState(false);
   const [logMaxSize, setLogMaxSize] = useState('10m');
   const [liveRestore, setLiveRestore] = useState(false);
   const [useMirrors, setUseMirrors] = useState(false);
@@ -216,10 +271,11 @@ export function DockerPage() {
   const resolvedPull = pullValue === CUSTOM ? pullCustom.trim() : pullImage;
   const resolvedRunImage = runImageValue === CUSTOM ? runCustom.trim() : runImage;
 
-  const userNetworks = useMemo(
-    () => networks.filter((n) => !n.protected || n.name === 'bridge'),
-    [networks],
-  );
+  const bridgeNets = useMemo(() => {
+    const list = networks.filter((n) => n.driver === 'bridge' && n.name !== 'host' && n.name !== 'none');
+    if (list.some((n) => n.name === 'bridge')) return list;
+    return [{ name: 'bridge', id: 'bridge', driver: 'bridge', scope: 'local', internal: false, protected: true }, ...list];
+  }, [networks]);
 
   const run = async (
     fn: () => Promise<DockerOpsResponse>,
@@ -270,11 +326,27 @@ export function DockerPage() {
     }
   };
 
-  const openLogs = async (id: string) => {
-    setLogTitle(id);
+  const fetchLogs = async (id: string) => {
     const r = await dockerApi.logs(id);
     setLogs(r.lines ?? []);
   };
+
+  const openLogs = async (id: string) => {
+    setInspectText('');
+    setLogId(id);
+    setLogTitle(id);
+    setLogFollow(false);
+    await fetchLogs(id);
+  };
+
+  useEffect(() => {
+    if (!logFollow || !logId) return;
+    const tick = () => {
+      void fetchLogs(logId);
+    };
+    const timer = window.setInterval(tick, 3000);
+    return () => window.clearInterval(timer);
+  }, [logFollow, logId]);
 
   const collectedPorts = () => {
     if (!runPublish) return [];
@@ -308,7 +380,7 @@ export function DockerPage() {
         name: runName.trim() || undefined,
         ports: collectedPorts(),
         env: Object.keys(env).length ? env : undefined,
-        restart: runRestart !== 'no' ? (runRestart as 'always' | 'unless-stopped' | 'on-failure') : undefined,
+        restart: (runRestart || 'no') as 'no' | 'always' | 'unless-stopped' | 'on-failure',
         network: runNetwork.trim() || undefined,
         volumes:
           runAttachVol && runVolName && dest
@@ -534,11 +606,28 @@ export function DockerPage() {
               {
                 key: 'state',
                 header: t('docker.col.status'),
-                render: (row) => (
-                  <Badge tone={row.state === 'running' ? 'ok' : 'neutral'}>
-                    {row.state || row.status}
-                  </Badge>
-                ),
+                render: (row) => {
+                  const key = dockerStateKey(row.state);
+                  const restarts = parseRestartCount(row.status);
+                  const label =
+                    key === 'restarting' && restarts != null
+                      ? t('docker.state.restartingCount', { n: restarts })
+                      : t(`docker.state.${key}`);
+                  return (
+                    <Badge
+                      tone={
+                        key === 'running'
+                          ? 'ok'
+                          : key === 'restarting' || key === 'dead'
+                            ? 'danger'
+                            : 'neutral'
+                      }
+                      title={row.status || row.state}
+                    >
+                      {label}
+                    </Badge>
+                  );
+                },
               },
               { key: 'ports', header: t('docker.col.ports'), render: (row) => row.ports || '—' },
               {
@@ -550,11 +639,11 @@ export function DockerPage() {
             ]}
             rows={containers}
             rowActions={(row) => {
-              const running = row.state === 'running';
+              const stoppable = canStopContainer(row.state);
               const id = row.name || row.id;
               return (
                 <ActionBar size="sm">
-                  {running ? (
+                  {stoppable ? (
                     <Button
                       size="sm"
                       disabled={busy}
@@ -578,6 +667,9 @@ export function DockerPage() {
                     size="sm"
                     onClick={() =>
                       void dockerApi.inspect(id).then((r) => {
+                        setLogFollow(false);
+                        setLogId('');
+                        setLogs([]);
                         setInspectText(JSON.stringify(r.inspect, null, 2));
                         setLogTitle(`${id} inspect`);
                       })
@@ -589,7 +681,9 @@ export function DockerPage() {
                     size="sm"
                     variant="danger"
                     disabled={busy}
-                    onClick={() => void run(() => dockerApi.containerAction(id, 'remove'))}
+                    onClick={() =>
+                      setPendingDelete({ kind: 'container', token: id, state: row.state })
+                    }
                   >
                     {t('docker.actions.remove')}
                   </Button>
@@ -600,91 +694,56 @@ export function DockerPage() {
         ) : null}
 
         {tab === 'images' ? (
-          <div className="dock-stack">
-            <Card>
-              <CardHeader title={t('docker.actions.pull')} description={t('docker.ui.imagePickHint')} />
-              <Form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!resolvedPull) return;
-                  void run(
-                    () => dockerApi.pull(resolvedPull),
-                    t('docker.actions.pull'),
-                    '/api/v1/docker/images/pull',
-                    { image: resolvedPull, execute: true },
-                  );
-                }}
+          <DataTable<DockerImageRow>
+            rowKey={(row) => `${row.repository}:${row.tag}:${row.id}`}
+            toolbar={
+              <Button
+                variant="primary"
+                disabled={!engineInstalled || busy}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => setPullOpen(true)}
               >
-                <Field htmlFor="dock-pull" label={t('docker.col.image')}>
-                  <SegRadio
-                    name="dock-pull"
-                    aria-label={t('docker.col.image')}
-                    value={pullValue}
-                    onChange={(v) => setPullImage(v === CUSTOM ? CUSTOM : v)}
-                    options={imageOptions}
-                  />
-                </Field>
-                {pullValue === CUSTOM ? (
-                  <Field htmlFor="dock-pull-custom" label={t('docker.ui.imageCustom')} required>
-                    <input
-                      id="dock-pull-custom"
-                      value={pullCustom}
-                      spellCheck={false}
-                      onChange={(e) => setPullCustom(e.target.value)}
-                    />
-                  </Field>
-                ) : null}
-                <FormActions>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={!engineInstalled || busy || !resolvedPull}
-                    title={!engineInstalled ? needEngine : undefined}
-                  >
-                    {t('docker.actions.pull')}
-                  </Button>
-                </FormActions>
-              </Form>
-            </Card>
-            <DataTable<DockerImageRow>
-              rowKey={(row) => `${row.repository}:${row.tag}:${row.id}`}
-              empty={<EmptyState title={t('docker.empty.images')} />}
-              columns={[
-                {
-                  key: 'ref',
-                  header: t('docker.col.image'),
-                  render: (row) => imageRef(row),
-                },
-                { key: 'size', header: t('docker.col.size'), render: (row) => row.size },
-              ]}
-              rows={images}
-              rowActions={(row) => (
-                <Button
-                  size="sm"
-                  variant="danger"
-                  disabled={!engineInstalled || busy}
-                  onClick={() => void run(() => dockerApi.removeImage(row.id || imageRef(row)))}
-                >
-                  {t('docker.actions.remove')}
-                </Button>
-              )}
-            />
-          </div>
+                {t('docker.actions.pull')}
+              </Button>
+            }
+            empty={<EmptyState title={t('docker.empty.images')} />}
+            columns={[
+              {
+                key: 'ref',
+                header: t('docker.col.image'),
+                render: (row) => imageRef(row),
+              },
+              { key: 'size', header: t('docker.col.size'), render: (row) => row.size },
+            ]}
+            rows={images}
+            rowActions={(row) => (
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={!engineInstalled || busy}
+                onClick={() =>
+                  setPendingDelete({
+                    kind: 'image',
+                    token: imageRef(row),
+                    id: row.id || imageRef(row),
+                  })
+                }
+              >
+                {t('docker.actions.remove')}
+              </Button>
+            )}
+          />
         ) : null}
 
         {tab === 'compose' ? (
-          <div className="dock-stack">
-            <Card>
-              <CardHeader title={t('docker.tab.compose')} description={t('docker.empty.composeDesc')} />
-              <ActionBar>
-                <Link className={buttonClassName({ variant: 'secondary', size: 'sm' })} to="/validators">
-                  {t('docker.empty.composeCta')}
-                </Link>
-              </ActionBar>
-            </Card>
-            <DataTable<DockerComposeProject>
+          <DataTable<DockerComposeProject>
               rowKey={(row) => row.name}
-              empty={<EmptyState title={t('docker.empty.compose')} />}
+              empty={
+                <EmptyState
+                  title={t('docker.empty.compose')}
+                  description={t('docker.empty.composeDesc')}
+                />
+              }
               columns={[
                 { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
                 { key: 'status', header: t('docker.col.status'), render: (row) => row.status },
@@ -719,150 +778,94 @@ export function DockerPage() {
                   >
                     {t('docker.actions.down')}
                   </Button>
-                </ActionBar>
-              )}
-            />
-          </div>
-        ) : null}
-
-        {tab === 'volumes' ? (
-          <div className="dock-stack">
-            <Card>
-              <CardHeader
-                title={t('docker.actions.createVolume')}
-                description={t('docker.ui.driverLocalOnly')}
-              />
-              <Form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!volName.trim()) return;
-                  const name = volName.trim();
-                  void run(() => dockerApi.createVolume(name));
-                  setVolName('');
-                }}
-              >
-                <Field htmlFor="dock-vol" label={t('docker.col.name')} hint={t('docker.nameHint')} required>
-                  <input
-                    id="dock-vol"
-                    value={volName}
-                    placeholder={t('docker.volPlaceholder')}
-                    spellCheck={false}
-                    onChange={(e) => setVolName(e.target.value)}
-                  />
-                </Field>
-                <Field htmlFor="dock-vol-drv" label={t('docker.ui.driver')}>
-                  <SegRadio
-                    name="dock-vol-drv"
-                    aria-label={t('docker.ui.driver')}
-                    value="local"
-                    onChange={() => undefined}
-                    options={[{ value: 'local', label: 'local' }]}
-                  />
-                </Field>
-                <FormActions>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={!engineInstalled || busy || !volName.trim()}
-                    title={!engineInstalled ? needEngine : undefined}
-                  >
-                    {t('docker.actions.createVolume')}
-                  </Button>
-                </FormActions>
-              </Form>
-            </Card>
-            <DataTable<DockerVolumeRow>
-              rowKey={(row) => row.name}
-              empty={<EmptyState title={t('docker.empty.volumes')} />}
-              columns={[
-                { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
-                { key: 'driver', header: t('docker.col.driver'), render: (row) => row.driver },
-              ]}
-              rows={volumes}
-              rowActions={(row) => (
-                <Button
-                  size="sm"
-                  variant="danger"
-                  disabled={!engineInstalled || busy}
-                  onClick={() => void run(() => dockerApi.removeVolume(row.name))}
-                >
-                  {t('docker.actions.remove')}
-                </Button>
-              )}
-            />
-          </div>
-        ) : null}
-
-        {tab === 'networks' ? (
-          <div className="dock-stack">
-            <Card>
-              <CardHeader
-                title={t('docker.actions.createNetwork')}
-                description={t('docker.ui.netDefaultDriver')}
-              />
-              <Form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!netName.trim()) return;
-                  const name = netName.trim();
-                  void run(() => dockerApi.createNetwork(name));
-                  setNetName('');
-                }}
-              >
-                <Field htmlFor="dock-net" label={t('docker.col.name')} hint={t('docker.nameHint')} required>
-                  <input
-                    id="dock-net"
-                    value={netName}
-                    placeholder={t('docker.netPlaceholder')}
-                    spellCheck={false}
-                    onChange={(e) => setNetName(e.target.value)}
-                  />
-                </Field>
-                <Field htmlFor="dock-net-drv" label={t('docker.ui.driver')}>
-                  <SegRadio
-                    name="dock-net-drv"
-                    aria-label={t('docker.ui.driver')}
-                    value="bridge"
-                    onChange={() => undefined}
-                    options={[{ value: 'bridge', label: 'bridge' }]}
-                  />
-                </Field>
-                <FormActions>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={!engineInstalled || busy || !netName.trim()}
-                    title={!engineInstalled ? needEngine : undefined}
-                  >
-                    {t('docker.actions.createNetwork')}
-                  </Button>
-                </FormActions>
-              </Form>
-            </Card>
-            <DataTable<DockerNetworkRow>
-              rowKey={(row) => row.id || row.name}
-              empty={<EmptyState title={t('docker.empty.networks')} />}
-              columns={[
-                { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
-                { key: 'driver', header: t('docker.col.driver'), render: (row) => row.driver },
-              ]}
-              rows={networks}
-              rowActions={(row) =>
-                row.protected ? (
-                  <span className="u-text-sm">{t('docker.protected')}</span>
-                ) : (
                   <Button
                     size="sm"
                     variant="danger"
                     disabled={!engineInstalled || busy}
-                    onClick={() => void run(() => dockerApi.removeNetwork(row.name || row.id))}
+                    onClick={() =>
+                      setPendingDelete({
+                        kind: 'compose',
+                        token: row.validatorId ?? row.name,
+                        project: row.name,
+                        validatorId: row.validatorId,
+                      })
+                    }
                   >
                     {t('docker.actions.remove')}
                   </Button>
-                )
-              }
+                </ActionBar>
+              )}
             />
-          </div>
+        ) : null}
+
+        {tab === 'volumes' ? (
+          <DataTable<DockerVolumeRow>
+            rowKey={(row) => row.name}
+            toolbar={
+              <Button
+                variant="primary"
+                disabled={!engineInstalled || busy}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => setVolOpen(true)}
+              >
+                {t('docker.actions.createVolume')}
+              </Button>
+            }
+            empty={<EmptyState title={t('docker.empty.volumes')} />}
+            columns={[
+              { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
+              { key: 'driver', header: t('docker.col.driver'), render: (row) => row.driver },
+            ]}
+            rows={volumes}
+            rowActions={(row) => (
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={!engineInstalled || busy}
+                onClick={() => setPendingDelete({ kind: 'volume', token: row.name })}
+              >
+                {t('docker.actions.remove')}
+              </Button>
+            )}
+          />
+        ) : null}
+
+        {tab === 'networks' ? (
+          <DataTable<DockerNetworkRow>
+            rowKey={(row) => row.id || row.name}
+            toolbar={
+              <Button
+                variant="primary"
+                disabled={!engineInstalled || busy}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => setNetOpen(true)}
+              >
+                {t('docker.actions.createNetwork')}
+              </Button>
+            }
+            empty={<EmptyState title={t('docker.empty.networks')} />}
+            columns={[
+              { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
+              { key: 'driver', header: t('docker.col.driver'), render: (row) => row.driver },
+            ]}
+            rows={networks}
+            rowActions={(row) =>
+              row.protected ? (
+                <span className="u-text-sm">{t('docker.protected')}</span>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={!engineInstalled || busy}
+                  onClick={() =>
+                    setPendingDelete({ kind: 'network', token: row.name || row.id })
+                  }
+                >
+                  {t('docker.actions.remove')}
+                </Button>
+              )
+            }
+          />
         ) : null}
 
         {tab === 'prune' ? (
@@ -870,7 +873,11 @@ export function DockerPage() {
             <DataTable<DockerDfRow>
               rowKey={(row) => row.type}
               columns={[
-                { key: 'type', header: t('docker.col.type'), render: (row) => row.type },
+                {
+                  key: 'type',
+                  header: t('docker.col.type'),
+                  render: (row) => t(`docker.df.${dockerDfTypeKey(row.type)}`),
+                },
                 { key: 'size', header: t('docker.col.size'), render: (row) => row.size },
                 {
                   key: 'reclaim',
@@ -898,28 +905,12 @@ export function DockerPage() {
                     ]}
                   />
                 </Field>
-                <CheckboxField
-                  id="dock-prune-ack"
-                  label={t('docker.ui.pruneAck')}
-                  description={t('docker.ui.pruneAckDesc')}
-                  checked={pruneAck}
-                  onChange={setPruneAck}
-                />
                 <FormActions>
                   <Button
                     variant="danger"
-                    disabled={!engineInstalled || busy || !pruneAck}
-                    title={
-                      !engineInstalled ? needEngine : !pruneAck ? t('docker.ui.needAck') : undefined
-                    }
-                    onClick={() =>
-                      void run(
-                        () => dockerApi.prune(pruneScope, 'PRUNE'),
-                        t('docker.ui.pruneNow'),
-                        '/api/v1/docker/prune',
-                        { scope: pruneScope, confirm: 'PRUNE', execute: true },
-                      )
-                    }
+                    disabled={!engineInstalled || busy}
+                    title={!engineInstalled ? needEngine : undefined}
+                    onClick={() => setPendingPrune(true)}
                   >
                     {t('docker.ui.pruneNow')}
                   </Button>
@@ -1061,18 +1052,39 @@ export function DockerPage() {
               ]}
             />
           </Field>
-          <Field htmlFor="dock-run-net" label={t('docker.runNetwork')}>
+          <Field htmlFor="dock-run-net-kind" label={t('docker.runNetwork')}>
             <SegRadio
-              name="dock-run-net"
+              name="dock-run-net-kind"
               aria-label={t('docker.runNetwork')}
-              value={runNetwork}
-              onChange={setRunNetwork}
+              value={runNetKind}
+              onChange={(v) => {
+                const kind = v === 'bridge' ? 'bridge' : 'default';
+                setRunNetKind(kind);
+                if (kind === 'default') {
+                  setRunNetwork('');
+                } else {
+                  setRunNetwork((cur) =>
+                    bridgeNets.some((n) => n.name === cur) ? cur : (bridgeNets[0]?.name ?? 'bridge'),
+                  );
+                }
+              }}
               options={[
-                { value: '', label: t('docker.ui.defaultNet') },
-                ...userNetworks.map((n) => ({ value: n.name, label: n.name })),
+                { value: 'default', label: t('docker.ui.defaultNet') },
+                { value: 'bridge', label: 'bridge' },
               ]}
             />
           </Field>
+          {runNetKind === 'bridge' ? (
+            <Field htmlFor="dock-run-net" label={t('docker.ui.pickBridge')}>
+              <SegRadio
+                name="dock-run-net"
+                aria-label={t('docker.ui.pickBridge')}
+                value={runNetwork || 'bridge'}
+                onChange={setRunNetwork}
+                options={bridgeNets.map((n) => ({ value: n.name, label: n.name }))}
+              />
+            </Field>
+          ) : null}
           <CheckboxField
             id="dock-run-pub"
             label={t('docker.ui.publishPorts')}
@@ -1106,28 +1118,32 @@ export function DockerPage() {
               </Field>
               {runCustomPort ? (
                 <Form layoutOnly columns={2}>
-                  <Field htmlFor="dock-port-h" label={t('docker.ui.customPortHost')}>
-                    <SegRadio
-                      name="dock-port-h"
-                      aria-label={t('docker.ui.customPortHost')}
+                  <Field
+                    htmlFor="dock-port-h"
+                    label={t('docker.ui.customPortHost')}
+                    hint={t('docker.ui.customPortHint')}
+                  >
+                    <input
+                      id="dock-port-h"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={65535}
                       value={runHostPort}
-                      onChange={setRunHostPort}
-                      options={['80', '443', '8080', '3000', '5173', '8443'].map((n) => ({
-                        value: n,
-                        label: n,
-                      }))}
+                      placeholder="8080"
+                      onChange={(e) => setRunHostPort(e.target.value)}
                     />
                   </Field>
                   <Field htmlFor="dock-port-c" label={t('docker.ui.customPortContainer')}>
-                    <SegRadio
-                      name="dock-port-c"
-                      aria-label={t('docker.ui.customPortContainer')}
+                    <input
+                      id="dock-port-c"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={65535}
                       value={runCtrPort}
-                      onChange={setRunCtrPort}
-                      options={['80', '443', '8080', '3000', '5173'].map((n) => ({
-                        value: n,
-                        label: n,
-                      }))}
+                      placeholder="80"
+                      onChange={(e) => setRunCtrPort(e.target.value)}
                     />
                   </Field>
                 </Form>
@@ -1199,6 +1215,224 @@ export function DockerPage() {
         </Form>
       </Modal>
 
+      <Modal
+        open={pullOpen}
+        onClose={() => setPullOpen(false)}
+        title={t('docker.actions.pull')}
+        description={t('docker.ui.imagePickHint')}
+        footer={
+          <>
+            <Button onClick={() => setPullOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              type="submit"
+              form="dock-pull-form"
+              variant="primary"
+              disabled={!engineInstalled || busy || !resolvedPull}
+              title={!engineInstalled ? needEngine : undefined}
+            >
+              {t('docker.actions.pull')}
+            </Button>
+          </>
+        }
+      >
+        <Form
+          id="dock-pull-form"
+          className="dock-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!resolvedPull) return;
+            setPullOpen(false);
+            void run(
+              () => dockerApi.pull(resolvedPull),
+              t('docker.actions.pull'),
+              '/api/v1/docker/images/pull',
+              { image: resolvedPull, execute: true },
+            );
+          }}
+        >
+          <Field htmlFor="dock-pull" label={t('docker.col.image')}>
+            <SegRadio
+              name="dock-pull"
+              aria-label={t('docker.col.image')}
+              value={pullValue}
+              onChange={(v) => setPullImage(v === CUSTOM ? CUSTOM : v)}
+              options={imageOptions}
+            />
+          </Field>
+          {pullValue === CUSTOM ? (
+            <Field htmlFor="dock-pull-custom" label={t('docker.ui.imageCustom')} required>
+              <input
+                id="dock-pull-custom"
+                value={pullCustom}
+                spellCheck={false}
+                onChange={(e) => setPullCustom(e.target.value)}
+              />
+            </Field>
+          ) : null}
+        </Form>
+      </Modal>
+
+      <Modal
+        open={volOpen}
+        onClose={() => setVolOpen(false)}
+        title={t('docker.actions.createVolume')}
+        description={t('docker.ui.driverLocalOnly')}
+        footer={
+          <>
+            <Button onClick={() => setVolOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              type="submit"
+              form="dock-vol-form"
+              variant="primary"
+              disabled={!engineInstalled || busy || !volName.trim()}
+              title={!engineInstalled ? needEngine : undefined}
+            >
+              {t('docker.actions.createVolume')}
+            </Button>
+          </>
+        }
+      >
+        <Form
+          id="dock-vol-form"
+          className="dock-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!volName.trim()) return;
+            const name = volName.trim();
+            setVolOpen(false);
+            setVolName('');
+            void run(() => dockerApi.createVolume(name));
+          }}
+        >
+          <Field htmlFor="dock-vol" label={t('docker.col.name')} hint={t('docker.nameHint')} required>
+            <input
+              id="dock-vol"
+              value={volName}
+              placeholder={t('docker.volPlaceholder')}
+              spellCheck={false}
+              onChange={(e) => setVolName(e.target.value)}
+            />
+          </Field>
+          <Field htmlFor="dock-vol-drv" label={t('docker.ui.driver')}>
+            <p id="dock-vol-drv" className="muted u-text-sm u-mb-0">
+              local — {t('docker.ui.driverLocalOnly')}
+            </p>
+          </Field>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={netOpen}
+        onClose={() => setNetOpen(false)}
+        title={t('docker.actions.createNetwork')}
+        description={t('docker.ui.netDefaultDriver')}
+        footer={
+          <>
+            <Button onClick={() => setNetOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              type="submit"
+              form="dock-net-form"
+              variant="primary"
+              disabled={!engineInstalled || busy || !netName.trim()}
+              title={!engineInstalled ? needEngine : undefined}
+            >
+              {t('docker.actions.createNetwork')}
+            </Button>
+          </>
+        }
+      >
+        <Form
+          id="dock-net-form"
+          className="dock-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!netName.trim()) return;
+            const name = netName.trim();
+            setNetOpen(false);
+            setNetName('');
+            void run(() => dockerApi.createNetwork(name));
+          }}
+        >
+          <Field htmlFor="dock-net" label={t('docker.col.name')} hint={t('docker.nameHint')} required>
+            <input
+              id="dock-net"
+              value={netName}
+              placeholder={t('docker.netPlaceholder')}
+              spellCheck={false}
+              onChange={(e) => setNetName(e.target.value)}
+            />
+          </Field>
+          <Field htmlFor="dock-net-drv" label={t('docker.ui.driver')}>
+            <p id="dock-net-drv" className="muted u-text-sm u-mb-0">
+              bridge — {t('docker.ui.netDefaultDriver')}
+            </p>
+          </Field>
+        </Form>
+      </Modal>
+
+      <ConfirmDialog
+        open={pendingPrune}
+        onClose={() => setPendingPrune(false)}
+        title={t('docker.pruneTitle')}
+        description={t('docker.pruneDesc')}
+        confirmText="PRUNE"
+        confirmLabel={t('docker.ui.pruneNow')}
+        severity="critical"
+        busy={busy}
+        consequences={[
+          t('docker.pruneC1'),
+          pruneScope === 'volumes' || pruneScope === 'system' ? t('docker.pruneC2') : t('docker.pruneC3'),
+        ]}
+        onConfirm={() => {
+          setPendingPrune(false);
+          void run(
+            () => dockerApi.prune(pruneScope, 'PRUNE'),
+            t('docker.ui.pruneNow'),
+            '/api/v1/docker/prune',
+            { scope: pruneScope, confirm: 'PRUNE', execute: true },
+          );
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        title={t('docker.deleteTitle', { id: pendingDelete?.token ?? '' })}
+        description={t('docker.deleteDesc')}
+        confirmText={pendingDelete?.token}
+        confirmLabel={t('docker.actions.remove')}
+        severity="critical"
+        busy={busy}
+        consequences={[
+          t('docker.deleteC1'),
+          ...(pendingDelete?.kind === 'container' &&
+          (pendingDelete.state === 'running' || pendingDelete.state === 'restarting')
+            ? [t('docker.deleteRunningWarn')]
+            : []),
+          ...(pendingDelete?.kind === 'compose' && pendingDelete.validatorId
+            ? [t('docker.deleteComposeVal')]
+            : []),
+        ]}
+        onConfirm={() => {
+          const p = pendingDelete;
+          if (!p) return;
+          setPendingDelete(null);
+          if (p.kind === 'container') {
+            void run(() => dockerApi.containerAction(p.token, 'remove'));
+          } else if (p.kind === 'image') {
+            void run(() => dockerApi.removeImage(p.id));
+          } else if (p.kind === 'volume') {
+            void run(() => dockerApi.removeVolume(p.token));
+          } else if (p.kind === 'network') {
+            void run(() => dockerApi.removeNetwork(p.token));
+          } else if (p.validatorId) {
+            void run(() => validatorsApi.remove(p.validatorId!, p.validatorId!));
+          } else {
+            void run(() => dockerApi.composeAction(p.project, 'rm'));
+          }
+        }}
+      />
+
       <ConfirmDialog
         open={daemonConfirm}
         onClose={() => setDaemonConfirm(false)}
@@ -1227,11 +1461,36 @@ export function DockerPage() {
         onClose={() => {
           setLogTitle('');
           setInspectText('');
+          setLogId('');
+          setLogFollow(false);
         }}
         title={logTitle}
         size="lg"
       >
-        <pre className="code-block">{inspectText || logs.join('\n') || t('docker.logs.empty')}</pre>
+        {inspectText ? (
+          <pre className="code-block">{inspectText}</pre>
+        ) : (
+          <div className="stack">
+            <ActionBar size="sm">
+              <Button
+                size="sm"
+                disabled={!logId || busy}
+                onClick={() => logId && void fetchLogs(logId)}
+              >
+                {t('common.refresh')}
+              </Button>
+              <CheckboxField
+                id="dock-log-follow"
+                label={t('docker.logs.follow')}
+                checked={logFollow}
+                onChange={setLogFollow}
+              />
+            </ActionBar>
+            <pre className="code-block">
+              {logs.length ? logs.join('\n') : t('docker.logs.empty')}
+            </pre>
+          </div>
+        )}
       </Modal>
     </FeaturePageLayout>
   );

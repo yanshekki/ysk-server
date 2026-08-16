@@ -36,5 +36,6 @@
   "roleImap": "IMAP/POP3 사서함",
   "serviceNotInstalled": "이 서비스는 설치되지 않았으므로 방화벽 규칙이 적용되지 않습니다.",
   "openButStopped": "포트가 열려 있음 - 서비스가 실행되고 있지 않음",
-  "openNoTenants": "테넌트가 없는 공용 포트"
+  "openNoTenants": "테넌트가 없는 공용 포트",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

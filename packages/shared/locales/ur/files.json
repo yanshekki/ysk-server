@@ -352,5 +352,8 @@
   "webdavDisableFailed": "WebDAV کو غیر فعال کرنے کے بعد بھی فعال کیا جاتا ہے - ہو سکتا ہے تحریر برقرار نہ رہی ہو۔ دوبارہ کوشش کریں۔",
   "dirNamedLikeFile": "(بقیہ فولڈر؛ نام فائل جیسا ہے)",
   "webdavAfterEnable": "WebDAV فعال کر کے ٹوکن جاری کرنے کے بعد دستیاب۔",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

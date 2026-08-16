@@ -245,5 +245,7 @@
   "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔",
   "rememberNeedPassword": "پہلے پاس ورڈ درج کریں۔",
   "settingsNeedStack": "یہ ڈیفالٹس اس وقت لاگو ہوتے ہیں جب TigerVNC (اور XFCE اگر منتخب کیا جاتا ہے) انسٹال ہوتا ہے۔ انہیں پہلے انسٹال ٹیب پر انسٹال کریں۔",
-  "clientNeedNovnc": "براؤزر میں کھولیں noVNC کی ضرورت ہے۔ ریموٹ کو شامل کرنے سے پہلے اسے انسٹال ٹیب پر انسٹال کریں جس کی آپ یہاں کھلنے کی توقع رکھتے ہیں۔"
+  "clientNeedNovnc": "براؤزر میں کھولیں noVNC کی ضرورت ہے۔ ریموٹ کو شامل کرنے سے پہلے اسے انسٹال ٹیب پر انسٹال کریں جس کی آپ یہاں کھلنے کی توقع رکھتے ہیں۔",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

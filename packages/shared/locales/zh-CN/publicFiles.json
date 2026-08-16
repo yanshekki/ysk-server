@@ -38,5 +38,7 @@
   "publicRootNote": "公开根目录：{{path}}",
   "applyConfirmTitle": "套用公开文件站点？",
   "applyConfirmDesc": "写入 Nginx server_name {{name}} 并重载 Nginx。",
-  "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。"
+  "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

@@ -508,5 +508,6 @@
   "deliverabilityScore": "حزمة قابلية التسليم",
   "opendkimNoReload": "OpenDKIM لا يدعم إعادة التحميل — استخدم إعادة التشغيل بعد تغيير المفاتيح أو الجداول.",
   "opendkimNoReloadTitle": "systemctl reload opendkim غير مدعوم في هذه الحزمة",
-  "tlsRequestLeFor": "Request LE for {{host}}"
+  "tlsRequestLeFor": "Request LE for {{host}}",
+  "deliverabilityChecks": "Checks"
 }

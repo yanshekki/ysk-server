@@ -182,7 +182,13 @@ export function ServiceLifecycleBar({
           size={size}
           loading={busy}
           disabled={!canAct || running === false}
-          title={danger === 'panel' ? t('services.stopConfirmPanelDesc') : undefined}
+          title={
+            running === false
+              ? t('services.needRunning', { label })
+              : danger === 'panel'
+                ? t('services.stopConfirmPanelDesc')
+                : undefined
+          }
           onClick={() => setPendingStop(true)}
         >
           {t('services.action.stop')}

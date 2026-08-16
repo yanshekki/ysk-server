@@ -9,10 +9,7 @@
   },
   "empty": {
     "title": "バリデーターノードはまだありません",
-    "desc": "ウィザードでテストネットノードを作成できます。",
-    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-    "copyCli": "Copy command",
-    "copied": "Copied"
+    "desc": "ウィザードでテストネットノードを作成できます。"
   },
   "refresh": "更新",
   "disk": {
@@ -24,7 +21,9 @@
     "warn": "ディスク使用率が高い（70% 以上）",
     "danger": "ディスク使用率が危険（85% 以上）",
     "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+    "autoClearConfirmTitle": "Enable auto-clear?",
+    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
   },
   "chain": {
     "eth": "Ethereum",
@@ -50,7 +49,8 @@
   },
   "networkKind": {
     "testnet": "テストネット",
-    "mainnet": "メインネット"
+    "mainnet": "メインネット",
+    "mixed": "Mainnet + testnet"
   },
   "profile": {
     "minimal": "最小",
@@ -131,7 +131,9 @@
     "snapshotEthEl": "ethPandaOps の EL アーカイブを復元し、CL を checkpoint sync 用にリセットしました",
     "snapshotEthCl": "CL データをリセットし、公式 checkpoint sync を使います",
     "snapshotNear": "NEAR データを消去しました。compose は公式 genesis と epoch sync で再初期化します",
-    "nativePrune": "クライアントネイティブのプルーニングを実行しました"
+    "nativePrune": "クライアントネイティブのプルーニングを実行しました",
+    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "deleted": "Node deleted"
   },
   "create": "ノードを作成",
   "wizard": {
@@ -156,7 +158,11 @@
     "diskShort": "Not enough free disk for this chain / network / profile",
     "limitNone": "No limit",
     "rpcDefault": "Default",
-    "customPath": "Use a custom data path"
+    "customPath": "Use a custom data path",
+    "installConfirmTitle": "Install this node?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+    "installC1": "Several gigabytes of images may be downloaded.",
+    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
   },
   "actions": {
     "detail": "詳細",
@@ -169,7 +175,21 @@
     "prune": "イメージを削除",
     "switchNetwork": "ネットワーク切替",
     "removeUnit": "compose／インスタンス記録も削除",
-    "restoreAfter": "消去後にスナップショットを復元"
+    "restoreAfter": "消去後にスナップショットを復元",
+    "delete": "Delete",
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This removes the node from the panel.",
+    "deleteC1": "Docker Compose is stopped and removed",
+    "deleteC2": "Chain data on disk is deleted",
+    "deleteC3": "The instance record is removed",
+    "pruneTitle": "Prune unused images",
+    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+    "pruneC1": "Unused images labelled for this Compose project are deleted.",
+    "clearTitle": "Clear {{id}}",
+    "clearC1": "Chain data on disk is deleted.",
+    "clearC2": "The instance stays in the panel, stopped and empty.",
+    "switchTitle": "Switch network",
+    "switchC1": "The node is stopped and chain data is wiped before the new network is written."
   },
   "policy": {
     "label": "アップグレード方針",
@@ -219,5 +239,28 @@
     "dockerTitle": "バリデーターノード用 Docker",
     "dockerOk": "バリデーターインスタンス {{count}} 件。Docker は導入済みです",
     "dockerMissing": "バリデーターインスタンスがありますが、docker コマンドが見つかりません"
+  },
+  "detail": {
+    "status": "Status",
+    "sync": "Sync",
+    "peers": "Peers",
+    "version": "Version",
+    "access": "Access",
+    "upgrade": "Updates",
+    "upgradeHint": "How this node tracks client versions.",
+    "network": "Network",
+    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+    "maintain": "Maintenance",
+    "danger": "Clear data",
+    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "compose": "Compose",
+    "logs": "Logs"
+  },
+  "state": {
+    "unknown": "Unknown",
+    "stopped": "Stopped",
+    "running": "Running",
+    "syncing": "Syncing",
+    "error": "Error"
   }
 }

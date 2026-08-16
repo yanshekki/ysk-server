@@ -112,7 +112,7 @@
   "import": "Import",
   "importOk": "Import complete",
   "importFailed": "Import failed",
-  "deleteDbTitle": "Delete database registration?",
+  "deleteDbTitle": "Remove control-plane registration (does not DROP the server database)",
   "deleteDbDesc": "Removes control-plane record only; does not DROP the server database.",
   "deleteUserTitle": "Delete user registration?",
   "deleteUserDesc": "Removes control-plane record only.",
@@ -143,6 +143,7 @@
   "cluster": {
     "title": "Cluster",
     "description": "Plan → write management files → apply → probe → distribute to peers / fleet. Default is dry-run (no host restart).",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
     "kindGalera": "Simple Galera",
     "kindMysqlReplica": "MySQL primary/replica",
     "kindPgReplica": "PostgreSQL streaming replica",

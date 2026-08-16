@@ -74,6 +74,7 @@ ysk-server validators list --json
 ysk-server validators create --chain eth --network hoodi --profile minimal --json
 ysk-server validators create --chain near --network testnet --profile minimal --json
 ysk-server validators create --chain ada --network preview --profile minimal --json
+YSK_EXECUTE=1 ysk-server validators delete --id eth-hoodi-1 --confirm --execute --json
 ysk-server docker status --json
 YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
 ysk-server defense status --json   # or protection — use docs if flag differs

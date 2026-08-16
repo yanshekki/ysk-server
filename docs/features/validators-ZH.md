@@ -32,6 +32,7 @@
 | 清理／轉網絡／快照 | `validators prune` · `switch-network` · `snapshot` | write-host | 轉網絡要先停機並確認清空 |
 | 啟動／停止／重啟 | `ysk-server validators start\|stop\|restart --id ID --execute --json` | write-host | |
 | 清空鏈資料 | `ysk-server validators clear --id ID --confirm --execute --json` | write-host | 確認為識別碼或 `CLEAR` |
+| 刪除實例 | `ysk-server validators delete --id ID --confirm --execute --json` | write-host | 停止 Compose、清空資料、刪除紀錄。確認為識別碼或 `CLEAR`。須 `validators.wipe` |
 
 風險：`read` · `write-panel` · `write-host`（見 [docs-standard-ZH.md](../docs-standard-ZH.md)）。
 
@@ -42,6 +43,8 @@ ysk-server validators list --json
 ysk-server validators chains --json
 ysk-server validators disk --json
 ysk-server validators get --id eth-hoodi-1 --json
+ysk-server validators create --chain eth --network hoodi --profile minimal --json
+YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile minimal --execute --json
 ```
 
 完整參數：[../cli/reference-ZH.md](../cli/reference-ZH.md)。

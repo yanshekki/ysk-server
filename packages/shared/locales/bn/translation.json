@@ -2707,7 +2707,8 @@
       "downloadBundleTitle": "পিয়ার কনফ বান্ডেল (.tar.gz) ডাউনলোড করুন",
       "pushPlanTitle": "প্রিভিউ পুশ টু পিয়ার (কোনও scp)",
       "fleetSyncPlanTitle": "ফ্লিট সিঙ্কের পূর্বরূপ দেখুন (চালনা নেই)",
-      "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?"
+      "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?",
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
     },
     "console": {
       "dataBrowse": "ডেটা ব্রাউজ করুন",
@@ -3082,7 +3083,16 @@
     },
     "state": {
       "up": "সক্রিয়",
-      "down": "বন্ধ"
+      "down": "বন্ধ",
+      "running": "Running",
+      "exited": "Exited",
+      "restarting": "Restarting",
+      "restartingCount": "Restarting · {{n}} times",
+      "paused": "Paused",
+      "created": "Created",
+      "dead": "Dead",
+      "removing": "Removing",
+      "unknown": "Unknown"
     },
     "actions": {
       "start": "চালু",
@@ -3117,7 +3127,8 @@
       "composeCta": "Open validator nodes"
     },
     "logs": {
-      "empty": "এখনও কোনো লগ নেই"
+      "empty": "এখনও কোনো লগ নেই",
+      "follow": "Follow"
     },
     "settings": {
       "logMaxSize": "কন্টেইনার লগ সর্বোচ্চ আকার",
@@ -3178,7 +3189,8 @@
       "compose": {
         "up": "Compose প্রকল্প চালু",
         "down": "Compose প্রকল্প থামানো",
-        "restart": "Compose প্রকল্প পুনরায় চালু"
+        "restart": "Compose প্রকল্প পুনরায় চালু",
+        "rm": "Compose project removed"
       },
       "engine": {
         "start": "docker.service চালু",
@@ -3254,8 +3266,27 @@
       "customPort": "অন্য হোস্ট পোর্ট",
       "customPortHost": "হোস্ট পোর্ট",
       "customPortContainer": "কন্টেইনার পোর্ট",
-      "pctUsed": "{{n}}% ব্যবহৃত"
-    }
+      "pctUsed": "{{n}}% ব্যবহৃত",
+      "customPortHint": "1–65535. Example: 9090 → 80.",
+      "pickBridge": "Bridge network"
+    },
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This cannot be undone.",
+    "deleteC1": "The resource is removed from this host.",
+    "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+    "pruneTitle": "Prune Docker resources",
+    "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+    "pruneC1": "Unused resources in the selected scope are deleted.",
+    "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+    "pruneC3": "Stopped containers or unused images in this scope are removed.",
+    "df": {
+      "images": "Images",
+      "containers": "Containers",
+      "volumes": "Local volumes",
+      "builder": "Build cache",
+      "other": "Other"
+    },
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
   },
   "email": {
     "title": "ইমেইল",
@@ -3767,7 +3798,8 @@
     "deliverabilityScore": "ডেলিভারেবিলিটি প্যাক",
     "opendkimNoReload": "OpenDKIM রিলোড সমর্থন করে না — কী বা টেবিল বদলের পর রিস্টার্ট ব্যবহার করুন।",
     "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়",
-    "tlsRequestLeFor": "Request LE for {{host}}"
+    "tlsRequestLeFor": "Request LE for {{host}}",
+    "deliverabilityChecks": "Checks"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "অননুমোদিত",
@@ -4292,7 +4324,10 @@
     "webdavDisableFailed": "নিষ্ক্রিয় করার পরেও WebDAV সক্রিয় আছে — লেখাটি স্থায়ী নাও থাকতে পারে। আবার চেষ্টা করুন",
     "dirNamedLikeFile": "(ফোল্ডার অবশিষ্ট; নাম ফাইলের মতো)",
     "webdavAfterEnable": "WebDAV চালু করে টোকেন ইস্যু করার পরে উপলব্ধ।",
-    "webdavAlreadyOff": "WebDAV is already off"
+    "webdavAlreadyOff": "WebDAV is already off",
+    "deleteMore": " and {{n}} more",
+    "unshareTitle": "Revoke this share?",
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
   },
   "firewall": {
     "profiles": {
@@ -4552,7 +4587,8 @@
     "detectPublicIp": "পাবলিক আইপি সনাক্ত করুন",
     "detectPublicIpTitle": "এই হোস্ট থেকে প্রথম নন-লুপব্যাক IPv4 পূরণ করুন",
     "pasvIpRequired": "প্রয়োগের আগে PASV পাবলিক IP দিন (NAT/ক্লাউড)। শনাক্ত করুন বা ঠিকানা লিখুন।",
-    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+    "stateFailed": "Failed to start"
   },
   "geo": {
     "continents": {
@@ -5554,7 +5590,14 @@
     "defaultRouteDownNeedName": "এটি ডিফল্ট রুট প্রস্থান. নিশ্চিত করতে ইন্টারফেসের নাম টাইপ করুন — প্যানেল সংযোগ বিচ্ছিন্ন হতে পারে।",
     "linkDownDefault": "Down default route",
     "loopbackImmutable": "Loopback cannot be changed",
-    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+    "statUp": "Up",
+    "oper": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "other": "Other"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} সাইট(গুলি)",
@@ -8653,7 +8696,8 @@
       "desktopNeedsStart": "ডেস্কটপ প্রোফাইল {{desktop}} xstartup-এ লেখা। আবেদন করার জন্য সেশন শুরু করুন।",
       "passwordNeedTiger": "vncpasswd পাওয়া যায়নি। একটি পাসওয়ার্ড সেট করার আগে TigerVNC (tigervnc-standalone-server) ইনস্টল করুন।",
       "linuxUserRolledBack": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো হয়েছে৷",
-      "linuxUserOrphan": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো যায়নি।"
+      "linuxUserOrphan": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো যায়নি।",
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
     },
     "apache": {
       "needServerName": "সার্ভার নাম প্রয়োজন",
@@ -9480,14 +9524,14 @@
     "netPublishMaint": "রক্ষণাবেক্ষণ",
     "sslNeedDomain": "Nginx/SSL প্রকাশ করার আগে একটি ডোমেন সেট করুন।",
     "createTemplateMissing": "{{v0}} ；「— —」।",
-    "deleteDialogDesc": "\"{{v0}}\"...",
+    "deleteDialogDesc": "\"{{name}}\"...",
     "deleteWillStop": "systemd/PM2/",
     "deleteWillWeb": "Nginx conf、PHP-FPM পুল、Apache vhost（）",
     "deleteWillOs": "লিনাক্স হোম ()",
     "deleteKeepOs": "হোম লিনাক্স ()",
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "বাতিল,",
-    "deleteTypeNameHint": "「{{v0}}」",
+    "deleteTypeNameHint": "「{{name}}」",
     "deleteDnsWarn": "DNS জোন / ডোমেইন।",
     "manageInNginx": "Nginx এ পরিচালনা করুন",
     "advFtpHomeApp": "সাইট app ডিরেক্টরি",
@@ -10035,7 +10079,9 @@
     "publicRootNote": "পাবলিক রুট: {{path}}",
     "applyConfirmTitle": "পাবলিক-ফাইল সাইট প্রয়োগ করবেন?",
     "applyConfirmDesc": "Nginx server_name {{name}} লিখে Nginx রিলোড করুন।",
-    "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।"
+    "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।",
+    "executeFlag": "Execute",
+    "asRoot": "Root"
   },
   "rbac": {
     "permissions": "অনুমতি",
@@ -11448,7 +11494,8 @@
     "roleImap": "IMAP/POP3 মেলবক্স",
     "serviceNotInstalled": "এই পরিষেবাটি ইনস্টল করা নেই, তাই ফায়ারওয়াল নিয়ম প্রযোজ্য নয়৷",
     "openButStopped": "পোর্ট খোলা - পরিষেবা চলছে না",
-    "openNoTenants": "কোন ভাড়াটে ছাড়া পাবলিক পোর্ট"
+    "openNoTenants": "কোন ভাড়াটে ছাড়া পাবলিক পোর্ট",
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
   },
   "services": {
     "enabledBoot": "বুট উপর",
@@ -11530,7 +11577,8 @@
     "unitNotFound": "Unit not installed",
     "unitNa": "Not applicable",
     "unitStatic": "static",
-    "unitIndirect": "indirect"
+    "unitIndirect": "indirect",
+    "needRunning": "{{label}} is not running"
   },
   "software": {
     "title": "সফটওয়্যার",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "এখনও কোনো ভ্যালিডেটর নোড নেই",
-      "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "Copy command",
-      "copied": "Copied"
+      "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।"
     },
     "refresh": "রিফ্রেশ",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "ডিস্ক ব্যবহার বেশি (৭০%+)",
       "danger": "ডিস্ক ব্যবহার সংকটজনক (৮৫%+)",
       "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)",
-      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+      "autoClearConfirmTitle": "Enable auto-clear?",
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "টেস্টনেট",
-      "mainnet": "মেইননেট"
+      "mainnet": "মেইননেট",
+      "mixed": "Mainnet + testnet"
     },
     "profile": {
       "minimal": "ন্যূনতম",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "ethPandaOps EL আর্কাইভ পুনরুদ্ধার ও checkpoint sync-এর জন্য CL রিসেট",
       "snapshotEthCl": "অফিসিয়াল checkpoint sync-এর জন্য CL ডেটা রিসেট",
       "snapshotNear": "NEAR ডেটা মুছেছে; compose অফিসিয়াল genesis ও epoch sync দিয়ে আবার শুরু করবে",
-      "nativePrune": "ক্লায়েন্ট-নেটিভ পরিষ্কার কমান্ড চালানো হয়েছে"
+      "nativePrune": "ক্লায়েন্ট-নেটিভ পরিষ্কার কমান্ড চালানো হয়েছে",
+      "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "deleted": "Node deleted"
     },
     "create": "নোড তৈরি",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "diskShort": "Not enough free disk for this chain / network / profile",
       "limitNone": "No limit",
       "rpcDefault": "Default",
-      "customPath": "Use a custom data path"
+      "customPath": "Use a custom data path",
+      "installConfirmTitle": "Install this node?",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+      "installC1": "Several gigabytes of images may be downloaded.",
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
     },
     "actions": {
       "detail": "বিস্তারিত",
@@ -13132,7 +13186,21 @@
       "prune": "ইমেজ পরিষ্কার",
       "switchNetwork": "নেটওয়ার্ক বদলান",
       "removeUnit": "compose / ইনস্ট্যান্স রেকর্ডও মুছুন",
-      "restoreAfter": "খালি করার পর স্ন্যাপশট পুনরুদ্ধার"
+      "restoreAfter": "খালি করার পর স্ন্যাপশট পুনরুদ্ধার",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{id}}",
+      "deleteDesc": "This removes the node from the panel.",
+      "deleteC1": "Docker Compose is stopped and removed",
+      "deleteC2": "Chain data on disk is deleted",
+      "deleteC3": "The instance record is removed",
+      "pruneTitle": "Prune unused images",
+      "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+      "pruneC1": "Unused images labelled for this Compose project are deleted.",
+      "clearTitle": "Clear {{id}}",
+      "clearC1": "Chain data on disk is deleted.",
+      "clearC2": "The instance stays in the panel, stopped and empty.",
+      "switchTitle": "Switch network",
+      "switchC1": "The node is stopped and chain data is wiped before the new network is written."
     },
     "policy": {
       "label": "আপগ্রেড নীতি",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "ভ্যালিডেটর নোডের জন্য Docker",
       "dockerOk": "{{count}}টি ভ্যালিডেটর ইনস্ট্যান্স; Docker স্থাপিত",
       "dockerMissing": "ভ্যালিডেটর ইনস্ট্যান্স আছে কিন্তু docker কমান্ড পাওয়া যায়নি"
+    },
+    "detail": {
+      "status": "Status",
+      "sync": "Sync",
+      "peers": "Peers",
+      "version": "Version",
+      "access": "Access",
+      "upgrade": "Updates",
+      "upgradeHint": "How this node tracks client versions.",
+      "network": "Network",
+      "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+      "maintain": "Maintenance",
+      "danger": "Clear data",
+      "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+      "compose": "Compose",
+      "logs": "Logs"
+    },
+    "state": {
+      "unknown": "Unknown",
+      "stopped": "Stopped",
+      "running": "Running",
+      "syncing": "Syncing",
+      "error": "Error"
     }
   },
   "vnc": {
@@ -13431,7 +13522,9 @@
     "clientUpdated": "ক্লায়েন্ট প্রোফাইল আপডেট করা হয়েছে",
     "rememberNeedPassword": "প্রথমে একটি পাসওয়ার্ড দিন।",
     "settingsNeedStack": "TigerVNC (এবং XFCE নির্বাচিত হলে) ইনস্টল করা হলে এই ডিফল্টগুলি প্রযোজ্য হবে। প্রথমে ইন্সটল ট্যাবে এগুলি ইনস্টল করুন।",
-    "clientNeedNovnc": "ব্রাউজারে খুলুন noVNC প্রয়োজন। আপনি এখানে খুলতে চান এমন রিমোট যোগ করার আগে এটি ইনস্টল ট্যাবে ইনস্টল করুন।"
+    "clientNeedNovnc": "ব্রাউজারে খুলুন noVNC প্রয়োজন। আপনি এখানে খুলতে চান এমন রিমোট যোগ করার আগে এটি ইনস্টল ট্যাবে ইনস্টল করুন।",
+    "needXfceFirst": "Install XFCE first",
+    "needSessionRunning": "Session is not running — start it first"
   },
   "vpn": {
     "pageDesc": "ভিপিএন সার্ভার এবং ক্লায়েন্ট",
@@ -13570,6 +13663,13 @@
       "51820": "ডিফল্ট ওয়্যারগার্ড লিসেন পোর্ট",
       "51821": "বিকল্প ওয়্যারগার্ড শোনার পোর্ট",
       "51822": "দ্বিতীয় বিকল্প ওয়্যারগার্ড লিসেন পোর্ট"
-    }
+    },
+    "needServerRunning": "{{engine}} is not running — apply the server first",
+    "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+    "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+    "showPrivateKey": "Show private key",
+    "hidePrivateKey": "Hide private key",
+    "deletePeerTitle": "Delete peer {{name}}?",
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
   }
 }

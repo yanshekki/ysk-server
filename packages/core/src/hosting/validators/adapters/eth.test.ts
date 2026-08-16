@@ -33,6 +33,9 @@ describe('eth adapter', () => {
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(y).toContain('--disable-deposit-contract-sync');
+    expect(y).not.toMatch(/":\//);
+    expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/data/reth:/data/reth"');
+    expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/jwt.hex:/jwt/jwt.hex:ro"');
   });
 
   it('covers EL×CL combinations with jwt and localhost rpc', () => {
@@ -56,6 +59,7 @@ describe('eth adapter', () => {
         expect(y).toContain('127.0.0.1:8545:8545');
         expect(y).toContain('jwt.hex');
         expect(y).not.toMatch(/mnemonic|private.?key|keystore/i);
+        expect(y).not.toMatch(/":\//);
         n += 1;
       }
     }

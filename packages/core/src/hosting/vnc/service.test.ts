@@ -18,7 +18,7 @@ describe('VncService accounts (no execute)', () => {
       password: 'secret99',
       desktop: 'terminal',
     });
-    expect(created.ok).toBe(true);
+    expect(created.ok).toBe(false);
     expect(created.blocked).toBe(true);
     expect(created.account?.linuxUser).toMatch(/^yskvnc_/);
     expect(created.account?.display).toBe(1);

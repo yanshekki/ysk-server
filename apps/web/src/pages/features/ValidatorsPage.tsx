@@ -4,13 +4,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
+  CardSection,
+  CheckboxField,
+  ConfirmDialog,
   DataTable,
+  DescriptionList,
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormActions,
   FormLayout,
   Modal,
   OpsResultPanel,
@@ -18,12 +24,17 @@ import {
   PageTabs,
   SegRadio,
   SoftwareInstallBanner,
+  StructuredFacts,
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { validatorChainLabel, validatorNetworkLabel } from 'ysk-server-shared';
+import {
+  isValidatorUpgradePolicy,
+  validatorChainLabel,
+  validatorNetworkLabel,
+} from 'ysk-server-shared';
 import { dockerApi } from '../../features/docker';
 import {
   streamValidatorAction,
@@ -43,6 +54,31 @@ function profileLabel(id: string, t: (k: string) => string): string {
   if (id === 'rpc') return 'RPC';
   if (id === 'pruned') return 'Pruned';
   return t(`validators.profile.${id}`);
+}
+
+const RUNTIME_STATES = ['unknown', 'stopped', 'running', 'syncing', 'error'] as const;
+
+function runtimeStateLabel(code: string | undefined, t: (k: string) => string): string {
+  if (!code) return '—';
+  return (RUNTIME_STATES as readonly string[]).includes(code)
+    ? t(`validators.state.${code}`)
+    : code;
+}
+
+function networkDisplay(
+  network: string,
+  t: (k: string) => string,
+): { name: string; kind: 'mainnet' | 'testnet'; kindLabel: string; showName: boolean } {
+  const proper = validatorNetworkLabel(network);
+  const named = proper ?? t(`validators.network.${network}`);
+  const kind = network === 'mainnet' ? 'mainnet' : 'testnet';
+  const kindLabel = t(`validators.networkKind.${kind}`);
+  return {
+    name: named,
+    kind,
+    kindLabel,
+    showName: Boolean(proper) || named !== kindLabel,
+  };
 }
 
 function formatBytes(n: number | null | undefined): string {
@@ -89,14 +125,19 @@ export function ValidatorsPage() {
   const [switchNet, setSwitchNet] = useState('');
   const [removeUnit, setRemoveUnit] = useState(false);
   const [restoreAfter, setRestoreAfter] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<ValidatorInstanceDto | null>(null);
+  const [pendingPruneId, setPendingPruneId] = useState<string | null>(null);
+  const [pendingClear, setPendingClear] = useState(false);
+  const [pendingSwitch, setPendingSwitch] = useState(false);
+  const [pendingInstall, setPendingInstall] = useState(false);
+  const [pendingAutoClear, setPendingAutoClear] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
   const [detail, setDetail] = useState<ValidatorInstanceDto | null>(null);
   const [status, setStatus] = useState<ValidatorStatusResponse | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
-  const [clearText, setClearText] = useState('');
+
   const [dockerInstalled, setDockerInstalled] = useState<boolean | null>(null);
-  const [copiedCli, setCopiedCli] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -238,7 +279,6 @@ export function ValidatorsPage() {
 
   const openDetail = async (row: ValidatorInstanceDto) => {
     setDetail(row);
-    setClearText('');
     setLogs([]);
     setComposeText('');
     setStats([]);
@@ -313,23 +353,6 @@ export function ValidatorsPage() {
               <EmptyState
                 title={t('validators.empty.title')}
                 description={t('validators.empty.desc')}
-                action={
-                  <div>
-                    <pre className="code-block u-mt-2">{t('validators.empty.cli')}</pre>
-                    <Button
-                      size="sm"
-                      className="u-mt-2"
-                      onClick={() => {
-                        void navigator.clipboard?.writeText(t('validators.empty.cli')).then(() => {
-                          setCopiedCli(true);
-                          window.setTimeout(() => setCopiedCli(false), 2000);
-                        });
-                      }}
-                    >
-                      {copiedCli ? t('validators.empty.copied') : t('validators.empty.copyCli')}
-                    </Button>
-                  </div>
-                }
               />
             }
             columns={[
@@ -342,16 +365,15 @@ export function ValidatorsPage() {
               {
                 key: 'network',
                 header: t('validators.col.network'),
-                render: (row) => (
-                  <span>
-                    {validatorNetworkLabel(row.network) ?? t(`validators.network.${row.network}`)}{' '}
-                    <Badge tone={row.network === 'mainnet' ? 'warn' : 'ok'}>
-                      {row.network === 'mainnet'
-                        ? t('validators.networkKind.mainnet')
-                        : t('validators.networkKind.testnet')}
-                    </Badge>
-                  </span>
-                ),
+                render: (row) => {
+                  const net = networkDisplay(row.network, t);
+                  return (
+                    <span>
+                      {net.showName ? <>{net.name} </> : null}
+                      <Badge tone={net.kind === 'mainnet' ? 'warn' : 'ok'}>{net.kindLabel}</Badge>
+                    </span>
+                  );
+                },
               },
               {
                 key: 'profile',
@@ -363,7 +385,10 @@ export function ValidatorsPage() {
                 header: t('validators.col.status'),
                 render: (row) => {
                   const s = summaries[row.id];
-                  const label = s?.status ?? row.lastStatus?.status ?? row.desiredState;
+                  const label = runtimeStateLabel(
+                    s?.status ?? row.lastStatus?.status ?? row.desiredState,
+                    t,
+                  );
                   return (
                     <span>
                       <Badge
@@ -405,6 +430,9 @@ export function ValidatorsPage() {
                 <Button size="sm" onClick={() => void runAction(() => validatorsApi.stop(row.id))}>
                   {t('validators.actions.stop')}
                 </Button>
+                <Button size="sm" variant="danger" onClick={() => setPendingDelete(row)}>
+                  {t('validators.actions.delete')}
+                </Button>
               </>
             )}
           />
@@ -425,38 +453,41 @@ export function ValidatorsPage() {
                 checked={autoClear}
                 onChange={(e) => {
                   const on = e.target.checked;
-                  setAutoClear(on);
-                  void validatorsApi.saveSettings(on);
+                  if (on) {
+                    setPendingAutoClear(true);
+                    return;
+                  }
+                  setAutoClear(false);
+                  void validatorsApi.saveSettings(false);
                 }}
               />
             </Field>
-            <dl className="desc-list">
-              <div>
-                <dt>{t('validators.disk.root')}</dt>
-                <dd>
-                  <code>
-                    {disk?.rootPath ||
-                      disk?.instances[0]?.dataPath ||
-                      '—'}
-                  </code>
-                </dd>
-              </div>
-              <div>
-                <dt>{t('validators.disk.used')}</dt>
-                <dd>
-                  {formatBytes(
+            <DescriptionList
+              columns={1}
+              items={[
+                {
+                  label: t('validators.disk.root'),
+                  value: (
+                    <code>
+                      {disk?.rootPath || disk?.instances[0]?.dataPath || '—'}
+                    </code>
+                  ),
+                },
+                {
+                  label: t('validators.disk.used'),
+                  value: formatBytes(
                     disk?.usedBytes ??
                       (disk?.totalBytes != null && disk.availBytes != null
                         ? disk.totalBytes - disk.availBytes
                         : null),
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('validators.disk.free')}</dt>
-                <dd>{formatBytes(disk?.availBytes)}</dd>
-              </div>
-            </dl>
+                  ),
+                },
+                {
+                  label: t('validators.disk.free'),
+                  value: formatBytes(disk?.availBytes),
+                },
+              ]}
+            />
             {disk?.instances.length ? (
               <DataTable<ValidatorDiskInstance>
                 rowKey={(row) => row.id}
@@ -518,7 +549,7 @@ export function ValidatorsPage() {
                       ? t('validators.wizard.diskShort')
                       : undefined
                 }
-                onClick={() => void create(true)}
+                onClick={() => setPendingInstall(true)}
               >
                 {t('validators.wizard.install')}
               </Button>
@@ -552,10 +583,21 @@ export function ValidatorsPage() {
                     { id: 'dot' },
                     { id: 'sol' },
                   ]
-              ).map((c) => ({
-                value: c.id,
-                label: validatorChainLabel(c.id),
-              }))}
+              ).map((c) => {
+                const spec = chains.find((x) => x.id === c.id);
+                const hasMain = spec?.networks.some((n) => n.kind === 'mainnet');
+                const hasTest = spec?.networks.some((n) => n.kind !== 'mainnet');
+                const kind =
+                  hasMain && hasTest
+                    ? t('validators.networkKind.mixed')
+                    : hasMain
+                      ? t('validators.networkKind.mainnet')
+                      : t('validators.networkKind.testnet');
+                return {
+                  value: c.id,
+                  label: `${validatorChainLabel(c.id)} · ${kind}`,
+                };
+              })}
             />
             {chainSpec?.heavy ? <Alert variant="warn">{t('validators.wizard.heavyWarn')}</Alert> : null}
             {dockerInstalled === false ? (
@@ -572,9 +614,21 @@ export function ValidatorsPage() {
               onChange={setNetwork}
               options={(chainSpec?.networks ?? []).map((n) => ({
                 value: n.id,
-                label: validatorNetworkLabel(n.id) ?? t(`validators.network.${n.id}`),
+                label: `${validatorNetworkLabel(n.id) ?? t(`validators.network.${n.id}`)} · ${
+                  n.kind === 'mainnet'
+                    ? t('validators.networkKind.mainnet')
+                    : t('validators.networkKind.testnet')
+                }`,
               }))}
             />
+            {needBytes != null ? (
+              <Alert variant={diskShort ? 'error' : 'info'}>
+                {t(diskShort ? 'validators.wizard.diskShort' : 'validators.wizard.diskNeed', {
+                  need: formatBytes(needBytes),
+                  free: formatBytes(disk?.availBytes),
+                })}
+              </Alert>
+            ) : null}
             {netSpec?.kind === 'mainnet' ? (
               <>
                 <Alert variant="warn">{t('validators.wizard.mainnetWarn')}</Alert>
@@ -618,7 +672,7 @@ export function ValidatorsPage() {
                     aria-label={t('validators.clients.el')}
                     value={el}
                     onChange={setEl}
-                    options={(chainSpec?.clients.filter((c) => c.role === 'el') ?? []).map((c) => ({
+                    options={(chainSpec?.clients?.filter((c) => c.role === 'el') ?? []).map((c) => ({
                       value: c.id,
                       label: c.id,
                     }))}
@@ -630,7 +684,7 @@ export function ValidatorsPage() {
                     aria-label={t('validators.clients.cl')}
                     value={cl}
                     onChange={setCl}
-                    options={(chainSpec?.clients.filter((c) => c.role === 'cl') ?? []).map((c) => ({
+                    options={(chainSpec?.clients?.filter((c) => c.role === 'cl') ?? []).map((c) => ({
                       value: c.id,
                       label: c.id,
                     }))}
@@ -719,20 +773,63 @@ export function ValidatorsPage() {
           </>
         ) : null}
         {step === 3 ? (
-          <dl className="desc-list">
-            <div>
-              <dt>{t('validators.col.chain')}</dt>
-              <dd>{validatorChainLabel(chain, chainSpec?.title)}</dd>
-            </div>
-            <div>
-              <dt>{t('validators.col.network')}</dt>
-              <dd>{validatorNetworkLabel(network) ?? t(`validators.network.${network}`)}</dd>
-            </div>
-            <div>
-              <dt>{t('validators.col.profile')}</dt>
-              <dd>{profileLabel(profile, t)}</dd>
-            </div>
-          </dl>
+          <>
+            <StructuredFacts
+              items={[
+                {
+                  label: t('validators.col.chain'),
+                  value: validatorChainLabel(chain, chainSpec?.title),
+                },
+                {
+                  label: t('validators.col.network'),
+                  value:
+                    validatorNetworkLabel(network) ?? t(`validators.network.${network}`),
+                  hint:
+                    netSpec?.kind === 'mainnet'
+                      ? t('validators.networkKind.mainnet')
+                      : t('validators.networkKind.testnet'),
+                },
+                {
+                  label: t('validators.col.profile'),
+                  value: profileLabel(profile, t),
+                },
+              ]}
+            />
+            <DescriptionList
+              columns={1}
+              items={[
+                ...(chain === 'eth'
+                  ? [
+                      { label: t('validators.clients.el'), value: el },
+                      { label: t('validators.clients.cl'), value: cl },
+                    ]
+                  : []),
+                ...(chain === 'ada'
+                  ? [
+                      {
+                        label: t('validators.mithril.label'),
+                        value: mithril ? t('common.yes') : t('common.no'),
+                      },
+                    ]
+                  : []),
+                {
+                  label: t('validators.wizard.memory'),
+                  value: memory || t('validators.wizard.limitNone'),
+                },
+                {
+                  label: t('validators.wizard.cpus'),
+                  value: cpus || t('validators.wizard.limitNone'),
+                },
+                {
+                  label: t('validators.wizard.rpcPort'),
+                  value: rpcPort || t('validators.wizard.rpcDefault'),
+                },
+                ...(customPath && dataPath
+                  ? [{ label: t('validators.wizard.dataPath'), value: dataPath }]
+                  : []),
+              ]}
+            />
+          </>
         ) : null}
         </div>
       </Modal>
@@ -741,211 +838,402 @@ export function ValidatorsPage() {
         open={Boolean(detail)}
         onClose={() => setDetail(null)}
         title={detail?.id ?? ''}
-        size="lg"
+        description={
+          detail
+            ? `${validatorChainLabel(detail.chain)} · ${
+                validatorNetworkLabel(detail.network) ?? t(`validators.network.${detail.network}`)
+              } · ${profileLabel(detail.profile, t)}`
+            : undefined
+        }
+        size="xl"
         footer={
           detail ? (
             <>
+              {status?.running || status?.status === 'running' ? (
+                <Button onClick={() => void runAction(() => validatorsApi.stop(detail.id))}>
+                  {t('validators.actions.stop')}
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={() => void runAction(() => validatorsApi.start(detail.id))}
+                >
+                  {t('validators.actions.start')}
+                </Button>
+              )}
               <Button onClick={() => void runAction(() => validatorsApi.restart(detail.id))}>
                 {t('validators.actions.restart')}
               </Button>
-              <Button
-                onClick={() =>
-                  void runAction(
-                    () => validatorsApi.upgrade(detail.id),
-                    t('validators.actions.upgrade'),
-                    { id: detail.id, action: 'update', body: { execute: true } },
-                  )
-                }
-                disabled={!status?.upgrade}
-              >
-                {t('validators.actions.upgrade')}
-              </Button>
-              <Button onClick={() => void runAction(() => validatorsApi.prune(detail.id))}>
-                {t('validators.actions.prune')}
-              </Button>
-              {detail.chain === 'ada' ? (
-                <Button
-                  onClick={() =>
-                    void runAction(
-                      () => validatorsApi.mithril(detail.id, detail.id),
-                      t('validators.mithril.action'),
-                      {
-                        id: detail.id,
-                        action: 'mithril',
-                        body: { confirm: detail.id, execute: true },
-                      },
-                    )
-                  }
-                >
-                  {t('validators.mithril.action')}
-                </Button>
-              ) : null}
-              <Button
-                onClick={() =>
-                  void runAction(
-                    () => validatorsApi.snapshot(detail.id, detail.id),
-                    t('validators.snapshot.action'),
-                    {
-                      id: detail.id,
-                      action: 'snapshot',
-                      body: { confirm: detail.id, execute: true },
-                    },
-                  )
-                }
-              >
-                {t('validators.snapshot.action')}
-              </Button>
-              <Button
-                variant="danger"
-                disabled={clearText !== detail.id && clearText.toUpperCase() !== 'CLEAR'}
-                onClick={() =>
-                  void runAction(() =>
-                    validatorsApi.clearFull(detail.id, clearText, {
-                      removeUnit,
-                      restoreSnapshot: restoreAfter,
-                    }),
-                  ).then(() => setDetail(null))
-                }
-              >
-                {t('validators.actions.clear')}
-              </Button>
+              <Button onClick={() => setDetail(null)}>{t('common.close')}</Button>
             </>
           ) : null
         }
       >
         {detail ? (
-          <>
-            <p className="u-text-sm">
-              {status?.status ?? '—'} · {t('validators.col.disk')}{' '}
-              {status?.syncProgress != null
-                ? `${Math.round(status.syncProgress * 100)}%`
-                : '—'}
-            </p>
-            <ServiceAccessStrip
-              serviceId={`val-${detail.id}`.slice(0, 48)}
-              heading={detail.id}
-              ports={[
-                ...(detail.ports.p2p
-                  ? [{ role: 'p2p', port: String(detail.ports.p2p), proto: 'tcp' }]
-                  : []),
-                ...(detail.ports.rpc
-                  ? [{ role: 'rpc', port: String(detail.ports.rpc), proto: 'tcp' }]
-                  : []),
-              ]}
-              compact
-            />
-            {status?.upgrade ? (
-              <Alert variant="info">
-                {status.upgrade.clientId} {status.upgrade.currentTag} → {status.upgrade.nextTag}
-                {status.upgrade.changelogUrl ? (
-                  <>
-                    {' '}
-                    <a href={status.upgrade.changelogUrl} target="_blank" rel="noreferrer">
-                      {t('validators.upgrade.changelog')}
-                    </a>
-                  </>
-                ) : null}
-              </Alert>
-            ) : null}
-            <Field htmlFor="val-policy" label={t('validators.policy.label')}>
-              <select
-                id="val-policy"
-                value={detail.upgradePolicy}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  void validatorsApi.policy(detail.id, v).then(() => load());
-                }}
-              >
-                {['manual', 'notify', 'auto-safe', 'auto-all'].map((p) => (
-                  <option key={p} value={p}>
-                    {t(`validators.policy.${p}`)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field htmlFor="val-clear" label={t('validators.actions.clearConfirm')}>
-              <input
-                id="val-clear"
-                value={clearText}
-                onChange={(e) => setClearText(e.target.value)}
+          <div className="stack val-detail">
+            <CardSection title={t('validators.detail.status')}>
+              <StructuredFacts
+                items={[
+                  { label: t('validators.col.status'), value: runtimeStateLabel(status?.status, t) },
+                  {
+                    label: t('validators.detail.sync'),
+                    value:
+                      status?.syncProgress != null
+                        ? `${Math.round(status.syncProgress * 100)}%`
+                        : '—',
+                  },
+                  {
+                    label: t('validators.detail.peers'),
+                    value: status?.peers != null ? String(status.peers) : '—',
+                  },
+                  { label: t('validators.detail.version'), value: status?.version ?? '—' },
+                ]}
               />
-            </Field>
-            <label className="u-flex u-gap-2">
-              <input type="checkbox" checked={removeUnit} onChange={(e) => setRemoveUnit(e.target.checked)} />
-              {t('validators.actions.removeUnit')}
-            </label>
-            <label className="u-flex u-gap-2">
-              <input type="checkbox" checked={restoreAfter} onChange={(e) => setRestoreAfter(e.target.checked)} />
-              {t('validators.actions.restoreAfter')}
-            </label>
-            <Field htmlFor="val-switch" label={t('validators.actions.switchNetwork')}>
-              <input id="val-switch" value={switchNet} onChange={(e) => setSwitchNet(e.target.value)} />
-            </Field>
-            <Button
-              size="sm"
-              onClick={() =>
-                void runAction(() =>
-                  validatorsApi.switchNetwork(detail.id, switchNet, clearText || detail.id),
-                )
-              }
+              {status?.lastError ? <Alert variant="error">{status.lastError}</Alert> : null}
+              {stats.length ? (
+                <DescriptionList
+                  columns={1}
+                  items={stats.map((s) => ({
+                    label: String(s.Name ?? s.ID ?? t('validators.col.id')),
+                    value: `CPU ${s.CPUPerc ?? '—'} · MEM ${s.MemUsage ?? '—'}`,
+                  }))}
+                />
+              ) : null}
+            </CardSection>
+
+            <CardSection title={t('validators.detail.access')}>
+              <ServiceAccessStrip
+                serviceId={`val-${detail.id}`.slice(0, 48)}
+                heading={detail.id}
+                ports={[
+                  ...(detail.ports.p2p
+                    ? [{ role: 'p2p', port: String(detail.ports.p2p), proto: 'tcp' }]
+                    : []),
+                  ...(detail.ports.rpc
+                    ? [{ role: 'rpc', port: String(detail.ports.rpc), proto: 'tcp' }]
+                    : []),
+                ]}
+                compact
+              />
+            </CardSection>
+
+            <CardSection
+              title={t('validators.detail.upgrade')}
+              description={t('validators.detail.upgradeHint')}
             >
-              {t('validators.actions.switchNetwork')}
-            </Button>
-            {stats.length ? (
-              <pre className="code-block">
-                {stats
-                  .map((s) => `${s.Name ?? s.ID ?? ''} CPU ${s.CPUPerc ?? '—'} MEM ${s.MemUsage ?? '—'}`)
-                  .join('\n')}
-              </pre>
-            ) : null}
+              {status?.upgrade ? (
+                <Alert variant="info">
+                  {status.upgrade.clientId} {status.upgrade.currentTag} → {status.upgrade.nextTag}
+                  {status.upgrade.changelogUrl ? (
+                    <>
+                      {' '}
+                      <a href={status.upgrade.changelogUrl} target="_blank" rel="noreferrer">
+                        {t('validators.upgrade.changelog')}
+                      </a>
+                    </>
+                  ) : null}
+                </Alert>
+              ) : null}
+              <Field htmlFor="val-policy" label={t('validators.policy.label')}>
+                <SegRadio
+                  name="val-policy"
+                  aria-label={t('validators.policy.label')}
+                  value={detail.upgradePolicy}
+                  onChange={(v) => {
+                    if (!isValidatorUpgradePolicy(v)) return;
+                    void validatorsApi.policy(detail.id, v).then(() => {
+                      setDetail((d) => (d ? { ...d, upgradePolicy: v } : d));
+                      void load();
+                    });
+                  }}
+                  options={['manual', 'notify', 'auto-safe', 'auto-all'].map((p) => ({
+                    value: p,
+                    label: t(`validators.policy.${p}`),
+                  }))}
+                />
+              </Field>
+              <ActionBar>
+                <Button
+                  disabled={!status?.upgrade}
+                  onClick={() =>
+                    void runAction(
+                      () => validatorsApi.upgrade(detail.id),
+                      t('validators.actions.upgrade'),
+                      { id: detail.id, action: 'update', body: { execute: true } },
+                    )
+                  }
+                >
+                  {t('validators.actions.upgrade')}
+                </Button>
+              </ActionBar>
+            </CardSection>
+
+            <CardSection
+              title={t('validators.detail.network')}
+              description={t('validators.detail.networkHint')}
+            >
+              <Field htmlFor="val-switch" label={t('validators.actions.switchNetwork')}>
+                <SegRadio
+                  name="val-switch"
+                  aria-label={t('validators.actions.switchNetwork')}
+                  value={switchNet || detail.network}
+                  onChange={setSwitchNet}
+                  options={(chains.find((c) => c.id === detail.chain)?.networks ?? []).map((n) => ({
+                    value: n.id,
+                    label: validatorNetworkLabel(n.id) ?? t(`validators.network.${n.id}`),
+                  }))}
+                />
+              </Field>
+              <ActionBar>
+                <Button
+                  disabled={!switchNet || switchNet === detail.network}
+                  onClick={() => setPendingSwitch(true)}
+                >
+                  {t('validators.actions.switchNetwork')}
+                </Button>
+              </ActionBar>
+            </CardSection>
+
+            <CardSection title={t('validators.detail.maintain')}>
+              <ActionBar>
+                <Button onClick={() => setPendingPruneId(detail.id)}>
+                  {t('validators.actions.prune')}
+                </Button>
+                {detail.chain === 'ada' ? (
+                  <Button
+                    onClick={() =>
+                      void runAction(
+                        () => validatorsApi.mithril(detail.id, detail.id),
+                        t('validators.mithril.action'),
+                        {
+                          id: detail.id,
+                          action: 'mithril',
+                          body: { confirm: detail.id, execute: true },
+                        },
+                      )
+                    }
+                  >
+                    {t('validators.mithril.action')}
+                  </Button>
+                ) : null}
+                <Button
+                  onClick={() =>
+                    void runAction(
+                      () => validatorsApi.snapshot(detail.id, detail.id),
+                      t('validators.snapshot.action'),
+                      {
+                        id: detail.id,
+                        action: 'snapshot',
+                        body: { confirm: detail.id, execute: true },
+                      },
+                    )
+                  }
+                >
+                  {t('validators.snapshot.action')}
+                </Button>
+              </ActionBar>
+            </CardSection>
+
+            <div className="danger-zone">
+              <h3 className="danger-zone__title">{t('validators.detail.danger')}</h3>
+              <p className="danger-zone__desc">{t('validators.detail.dangerHint')}</p>
+              <FormLayout>
+                <CheckboxField
+                  id="val-remove-unit"
+                  label={t('validators.actions.removeUnit')}
+                  checked={removeUnit}
+                  onChange={setRemoveUnit}
+                />
+                <CheckboxField
+                  id="val-restore-after"
+                  label={t('validators.actions.restoreAfter')}
+                  checked={restoreAfter}
+                  onChange={setRestoreAfter}
+                />
+              </FormLayout>
+              <FormActions>
+                <Button variant="danger" onClick={() => setPendingClear(true)}>
+                  {t('validators.actions.clear')}
+                </Button>
+              </FormActions>
+            </div>
+
             {checklist ? (
-              <>
-                <p className="u-text-sm">{t('validators.stake.title')}</p>
-                <ul>
+              <CardSection title={t('validators.stake.title')}>
+                <ul className="list-plain">
                   {checklist.items.map((it) => (
                     <li key={it}>{it}</li>
                   ))}
                 </ul>
-                {checklist.links.map((l) => (
-                  <p key={l.href}>
-                    <a href={l.href} target="_blank" rel="noreferrer">
-                      {l.label}
-                    </a>
-                  </p>
-                ))}
+                {checklist.links.length ? (
+                  <ul className="list-plain">
+                    {checklist.links.map((l) => (
+                      <li key={l.href}>
+                        <a href={l.href} target="_blank" rel="noreferrer">
+                          {l.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {checklist.snapshot?.notes?.length ? (
                   <Alert variant="info">{checklist.snapshot.notes.join(' ')}</Alert>
                 ) : null}
-              </>
+              </CardSection>
             ) : null}
-            <Field htmlFor="val-compose" label={t('validators.compose.label')}>
-              <textarea
-                id="val-compose"
-                rows={8}
-                value={composeText}
-                onChange={(e) => setComposeText(e.target.value)}
-              />
-            </Field>
-            <Button
-              size="sm"
-              onClick={() =>
-                void runAction(() => validatorsApi.saveCompose(detail.id, composeText))
-              }
-            >
-              {t('validators.compose.save')}
-            </Button>
-            <label className="u-flex u-gap-2">
-              <input
-                type="checkbox"
+
+            <CardSection title={t('validators.detail.compose')}>
+              <Field htmlFor="val-compose" label={t('validators.compose.label')}>
+                <textarea
+                  id="val-compose"
+                  rows={8}
+                  value={composeText}
+                  onChange={(e) => setComposeText(e.target.value)}
+                  spellCheck={false}
+                />
+              </Field>
+              <ActionBar>
+                <Button
+                  onClick={() =>
+                    void runAction(() => validatorsApi.saveCompose(detail.id, composeText))
+                  }
+                >
+                  {t('validators.compose.save')}
+                </Button>
+              </ActionBar>
+            </CardSection>
+
+            <CardSection title={t('validators.detail.logs')}>
+              <CheckboxField
+                id="val-follow-logs"
+                label={t('validators.logs.follow')}
                 checked={followLogs}
-                onChange={(e) => setFollowLogs(e.target.checked)}
+                onChange={setFollowLogs}
               />
-              {t('validators.logs.follow')}
-            </label>
-            <pre className="code-block">{logs.join('\n') || t('validators.logs.empty')}</pre>
-          </>
+              <pre className="code-block">{logs.join('\n') || t('validators.logs.empty')}</pre>
+            </CardSection>
+          </div>
         ) : null}
       </Modal>
+      <ConfirmDialog
+        open={Boolean(pendingPruneId)}
+        onClose={() => setPendingPruneId(null)}
+        title={t('validators.actions.pruneTitle')}
+        description={t('validators.actions.pruneDesc')}
+        confirmText={pendingPruneId ?? undefined}
+        confirmLabel={t('validators.actions.prune')}
+        severity="critical"
+        busy={busy}
+        consequences={[t('validators.actions.pruneC1')]}
+        onConfirm={() => {
+          const id = pendingPruneId;
+          if (!id) return;
+          setPendingPruneId(null);
+          void runAction(() => validatorsApi.prune(id));
+        }}
+      />
+      <ConfirmDialog
+        open={pendingClear && Boolean(detail)}
+        onClose={() => setPendingClear(false)}
+        title={t('validators.actions.clearTitle', { id: detail?.id ?? '' })}
+        description={t('validators.detail.dangerHint')}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.actions.clear')}
+        severity="critical"
+        busy={busy}
+        consequences={[
+          t('validators.actions.clearC1'),
+          removeUnit ? t('validators.actions.deleteC3') : t('validators.actions.clearC2'),
+        ]}
+        onConfirm={() => {
+          if (!detail) return;
+          const id = detail.id;
+          setPendingClear(false);
+          void runAction(() =>
+            validatorsApi.clearFull(id, id, {
+              removeUnit,
+              restoreSnapshot: restoreAfter,
+            }),
+          ).then(() => setDetail(null));
+        }}
+      />
+      <ConfirmDialog
+        open={pendingSwitch && Boolean(detail)}
+        onClose={() => setPendingSwitch(false)}
+        title={t('validators.actions.switchTitle')}
+        description={t('validators.detail.networkHint')}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.actions.switchNetwork')}
+        severity="critical"
+        busy={busy}
+        consequences={[t('validators.actions.switchC1')]}
+        onConfirm={() => {
+          if (!detail || !switchNet) return;
+          setPendingSwitch(false);
+          void runAction(() => validatorsApi.switchNetwork(detail.id, switchNet, detail.id));
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        title={t('validators.actions.deleteTitle', { id: pendingDelete?.id ?? '' })}
+        description={t('validators.actions.deleteDesc')}
+        confirmText={pendingDelete?.id}
+        confirmLabel={t('validators.actions.delete')}
+        severity="critical"
+        busy={busy}
+        consequences={[
+          t('validators.actions.deleteC1'),
+          t('validators.actions.deleteC2'),
+          t('validators.actions.deleteC3'),
+        ]}
+        onConfirm={() => {
+          if (!pendingDelete) return;
+          const id = pendingDelete.id;
+          void runAction(() => validatorsApi.remove(id, id)).then(() => {
+            setPendingDelete(null);
+            if (detail?.id === id) setDetail(null);
+          });
+        }}
+      />
+      <ConfirmDialog
+        open={pendingInstall}
+        onClose={() => setPendingInstall(false)}
+        title={t('validators.wizard.installConfirmTitle')}
+        description={t('validators.wizard.installConfirmDesc', {
+          chain: validatorChainLabel(chain, chainSpec?.title),
+          network: validatorNetworkLabel(network) ?? network,
+          profile: profileLabel(profile, t),
+          disk: needBytes != null ? formatBytes(needBytes) : '—',
+        })}
+        confirmLabel={t('validators.wizard.install')}
+        severity="destructive"
+        busy={busy}
+        consequences={[
+          t('validators.wizard.installC1'),
+          t('validators.wizard.installC2'),
+        ]}
+        onConfirm={() => {
+          setPendingInstall(false);
+          setWizard(false);
+          void create(true);
+        }}
+      />
+      <ConfirmDialog
+        open={pendingAutoClear}
+        onClose={() => setPendingAutoClear(false)}
+        title={t('validators.disk.autoClearConfirmTitle')}
+        description={t('validators.disk.autoClearRisk')}
+        confirmText="AUTO-CLEAR"
+        confirmLabel={t('common.confirm')}
+        severity="critical"
+        consequences={[t('validators.disk.autoClearC1')]}
+        onConfirm={() => {
+          setPendingAutoClear(false);
+          setAutoClear(true);
+          void validatorsApi.saveSettings(true);
+        }}
+      />
     </FeaturePageLayout>
   );
 }

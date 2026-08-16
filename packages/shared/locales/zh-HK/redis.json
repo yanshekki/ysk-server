@@ -39,7 +39,7 @@
   "addStringKey": "新增字串鍵",
   "writeToDb": "寫入 Redis 資料庫 {{db}}（即時生效，請謹慎）",
   "keyName": "鍵名",
-  "keyNameHint": "建議用冒號分層，例如 工作階段:用戶:1",
+  "keyNameHint": "建議用冒號分層，例如 session:user:1",
   "ttlLabel": "過期時間（秒）",
   "ttlHint": "可留空表示永不過期",
   "m1": "1 分",

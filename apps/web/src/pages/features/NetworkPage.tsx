@@ -56,10 +56,19 @@ export function operTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   return 'warn';
 }
 
+export function operLabelKey(s: string): 'up' | 'down' | 'unknown' | 'other' {
+  const u = String(s ?? '').toUpperCase();
+  if (u === 'UP') return 'up';
+  if (u === 'DOWN') return 'down';
+  if (u === 'UNKNOWN') return 'unknown';
+  return 'other';
+}
+
 export function isUp(iface: NetInterface): boolean {
-  return (
-    iface.operstate.toUpperCase() === 'UP' || iface.flags.includes('UP')
-  );
+  const oper = String(iface.operstate ?? '').trim().toUpperCase();
+  if (oper === 'UP') return true;
+  if (oper === 'DOWN') return false;
+  return iface.flags.includes('UP');
 }
 
 export function cidrOf(a: { local: string; prefixlen: number }): string {
@@ -310,7 +319,7 @@ export function NetworkPage() {
                 tone: snap.caps.canMutate ? 'ok' : 'warn' },
               items: [
                 { label: t('network.statIfaces'), value: snap.interfaces.length },
-                { label: 'UP', value: upCount, tone: 'ok' as const },
+                { label: t('network.statUp'), value: upCount, tone: 'ok' as const },
                 {
                   label: t('network.statGateway'),
                   value: snap.defaultGateway
@@ -414,7 +423,9 @@ export function NetworkPage() {
                               : r.operstate
                           }
                         >
-                          {r.operstate}
+                          <span title={r.operstate}>
+                            {t(`network.oper.${operLabelKey(r.operstate)}`)}
+                          </span>
                         </Badge>
                       ),
                     },
@@ -1321,7 +1332,10 @@ export function NetworkPage() {
             <DescriptionList
               columns={2}
               items={[
-                { label: t('network.colStatus'), value: detail.operstate },
+                {
+                  label: t('network.colStatus'),
+                  value: t(`network.oper.${operLabelKey(detail.operstate)}`),
+                },
                 { label: 'ifindex', value: detail.ifindex },
                 { label: 'MAC', value: detail.mac ?? '—' },
                 { label: 'MTU', value: detail.mtu ?? '—' },

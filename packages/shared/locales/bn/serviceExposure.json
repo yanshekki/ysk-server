@@ -36,5 +36,6 @@
   "roleImap": "IMAP/POP3 মেলবক্স",
   "serviceNotInstalled": "এই পরিষেবাটি ইনস্টল করা নেই, তাই ফায়ারওয়াল নিয়ম প্রযোজ্য নয়৷",
   "openButStopped": "পোর্ট খোলা - পরিষেবা চলছে না",
-  "openNoTenants": "কোন ভাড়াটে ছাড়া পাবলিক পোর্ট"
+  "openNoTenants": "কোন ভাড়াটে ছাড়া পাবলিক পোর্ট",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

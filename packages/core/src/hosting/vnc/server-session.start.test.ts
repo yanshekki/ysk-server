@@ -39,4 +39,13 @@ describe('classifyVncStartFailure', () => {
     });
     expect(n).toMatch(/5901|:1/);
   });
+
+  it('maps hostname resolution failure', () => {
+    const n = classifyVncStartFailure({
+      display: 1,
+      port: 5901,
+      detail: 'hostname: Name or service not known',
+    });
+    expect(n.toLowerCase()).toMatch(/hostname|hosts|resolve|解析/);
+  });
 });

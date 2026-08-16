@@ -2999,6 +2999,7 @@
     "xstartupWritten": "已寫入 {{path}}",
     "sessionStartBlocked": "無權限啟動 VNC session（需 root + YSK_EXECUTE）",
     "sessionStartFailed": "啟動 display :{{display}} 失敗：{{detail}}",
+    "sessionStartHostname": "啟動 display :{{display}} 失敗：此主機無法解析自己的主機名。請把主機名寫入 /etc/hosts（或修正 DNS）後再啟動工作階段。",
     "sessionStarted": "已為 {{user}} 啟動 :{{display}}（埠 {{port}}）",
     "sessionStartUnverified": "啟動命令成功但 RFB 埠尚未監聽",
     "sessionAlreadyRunning": "{{user}} 的 VNC 已在運行（:{{display}} / 埠 {{port}}）",

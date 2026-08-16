@@ -4,6 +4,7 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
+import { composeBind } from '../compose-runner.js';
 
 export function buildAvaxComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('avax')[0];
@@ -29,7 +30,7 @@ services:
       - "127.0.0.1:${rpc}:9650"
       - "0.0.0.0:${p2p}:9651"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 

@@ -36,5 +36,6 @@
   "roleImap": "Boîte aux lettres IMAP/POP3",
   "serviceNotInstalled": "Ce service n'est pas installé, les règles de pare-feu ne s'appliquent donc pas.",
   "openButStopped": "Ports ouverts – le service ne fonctionne pas",
-  "openNoTenants": "Ports publics sans locataires"
+  "openNoTenants": "Ports publics sans locataires",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

@@ -244,7 +244,8 @@
     "downloadBundleTitle": "पीयर कॉन्फ बंडल डाउनलोड करें (.tar.gz)",
     "pushPlanTitle": "सहकर्मी को पूर्वावलोकन पुश (कोई एससीपी नहीं)",
     "fleetSyncPlanTitle": "फ़्लीट सिंक का पूर्वावलोकन करें (कोई निष्पादन नहीं)",
-    "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?"
+    "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
   },
   "console": {
     "dataBrowse": "डेटा ब्राउज़ करें",

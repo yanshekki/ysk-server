@@ -2,6 +2,7 @@
  * Ethereum EL × CL compose fragments. JWT + localhost RPC on every combo.
  */
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
+import { composeBind } from '../compose-runner.js';
 
 export const ETH_CHECKPOINT: Record<string, string> = {
   hoodi: 'https://checkpoint-sync.hoodi.ethpandaops.io',
@@ -40,7 +41,7 @@ export function buildElService(spec: ValidatorInstanceDto, jwt: string): string 
   const { id, image } = elImage(spec);
   const rpc = spec.ports.rpc ?? 8545;
   const p2p = spec.ports.p2p ?? 30303;
-  const data = JSON.stringify(`${spec.dataPath}/${id}`);
+  const jwtVol = composeBind(jwtHost(spec), jwt, 'ro');
   if (id === 'geth') {
     const netFlag = net === 'mainnet' ? [] : [`      - --${net}`];
     return `  el:
@@ -69,8 +70,8 @@ ${netFlag.join('\n')}
       - "127.0.0.1:${rpc}:8545"
       - "0.0.0.0:${p2p}:30303"
     volumes:
-      - ${data}:/data/geth
-      - ${JSON.stringify(jwtHost(spec))}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/geth')}
+      - ${jwtVol}`;
   }
   if (id === 'nethermind') {
     return `  el:
@@ -97,8 +98,8 @@ ${netFlag.join('\n')}
       - "127.0.0.1:${rpc}:8545"
       - "0.0.0.0:${p2p}:30303"
     volumes:
-      - ${data}:/data/nethermind
-      - ${JSON.stringify(jwtHost(spec))}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/nethermind')}
+      - ${jwtVol}`;
   }
   return `  el:
     image: ${image}
@@ -128,8 +129,8 @@ ${netFlag.join('\n')}
       - "127.0.0.1:${rpc}:8545"
       - "0.0.0.0:${p2p}:30303"
     volumes:
-      - ${data}:/data/reth
-      - ${JSON.stringify(jwtHost(spec))}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/reth')}
+      - ${jwtVol}`;
 }
 
 export function jwtHost(spec: ValidatorInstanceDto): string {
@@ -145,8 +146,7 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
   const p2pCl = spec.ports.p2pCl ?? 9000;
   const beacon = spec.ports.beacon ?? 5052;
   const cp = ETH_CHECKPOINT[net] ?? ETH_CHECKPOINT.hoodi;
-  const data = JSON.stringify(`${spec.dataPath}/${id}`);
-  const jwtBind = JSON.stringify(jwtHost(spec));
+  const jwtVol = composeBind(jwtHost(spec), jwt, 'ro');
   if (id === 'prysm') {
     return `  cl:
     image: ${image}
@@ -174,8 +174,8 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "127.0.0.1:${beacon}:3500"
       - "0.0.0.0:${p2pCl}:9000"
     volumes:
-      - ${data}:/data/prysm
-      - ${jwtBind}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/prysm')}
+      - ${jwtVol}`;
   }
   if (id === 'teku') {
     return `  cl:
@@ -197,8 +197,8 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "127.0.0.1:${beacon}:5051"
       - "0.0.0.0:${p2pCl}:9000"
     volumes:
-      - ${data}:/data/teku
-      - ${jwtBind}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/teku')}
+      - ${jwtVol}`;
   }
   if (id === 'nimbus') {
     return `  cl:
@@ -221,8 +221,8 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "127.0.0.1:${beacon}:5052"
       - "0.0.0.0:${p2pCl}:9000"
     volumes:
-      - ${data}:/data/nimbus
-      - ${jwtBind}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/nimbus')}
+      - ${jwtVol}`;
   }
   return `  cl:
     image: ${image}
@@ -254,6 +254,6 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "127.0.0.1:${beacon}:5052"
       - "0.0.0.0:${p2pCl}:9000"
     volumes:
-      - ${data}:/data/lighthouse
-      - ${jwtBind}:${jwt}:ro`;
+      - ${composeBind(`${spec.dataPath}/${id}`, '/data/lighthouse')}
+      - ${jwtVol}`;
 }

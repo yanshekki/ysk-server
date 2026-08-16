@@ -20,6 +20,7 @@
   "lifecycleTitle": "{{label}} 服務控制",
   "startedOk": "已啟動 {{label}}",
   "stoppedOk": "已停止 {{label}}",
+  "needRunning": "{{label}} 未運行",
   "restartedOk": "已重啟 {{label}}",
   "reloadedOk": "已重載 {{label}}",
   "stopNeedConfirm": "需確認",

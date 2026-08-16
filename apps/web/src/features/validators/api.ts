@@ -87,6 +87,8 @@ export const validatorsApi = {
     postAction(id, 'snapshot', { confirm, execute }),
   switchNetwork: (id: string, network: string, confirm: string, execute = true) =>
     postAction(id, 'switch-network', { network, confirm, execute }),
+  remove: (id: string, confirm: string, execute = true) =>
+    postAction(id, 'delete', { confirm, execute }),
   clearFull: (
     id: string,
     confirm: string,

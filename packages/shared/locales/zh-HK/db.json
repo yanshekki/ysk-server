@@ -112,7 +112,7 @@
   "import": "匯入",
   "importOk": "匯入完成",
   "importFailed": "匯入失敗",
-  "deleteDbTitle": "刪除資料庫登記？",
+  "deleteDbTitle": "移除控制面登記（不會 DROP 伺服器上的資料庫）",
   "deleteDbDesc": "僅移除控制面紀錄，不會自動刪除伺服器上的資料庫。",
   "deleteUserTitle": "刪除用戶登記？",
   "deleteUserDesc": "僅移除控制面紀錄。",
@@ -143,6 +143,7 @@
   "cluster": {
     "title": "叢集",
     "description": "計劃 → 寫管理檔 → 套用 → 探測 → 分發到對等節點／機群。預設預覽試行（不會重啟引擎）。",
+    "redirectedFromCluster": "你由 /cluster 轉到此處。這是資料庫叢集分頁。",
     "kindGalera": "簡易 Galera",
     "kindMysqlReplica": "MySQL 主從複製",
     "kindPgReplica": "PostgreSQL 串流複製",

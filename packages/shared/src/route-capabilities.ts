@@ -74,13 +74,25 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
     note: 'wipe chain data',
   },
   {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/validators\/[^/]+\/delete$/,
+    cap: 'validators.wipe',
+    note: 'delete instance + data',
+  },
+  {
+    methods: ['DELETE'],
+    pattern: /^\/api\/v1\/validators\/[^/]+$/,
+    cap: 'validators.wipe',
+    note: 'delete instance + data',
+  },
+  {
     methods: ['POST', 'PATCH', 'PUT', 'DELETE'],
     pattern: /^\/api\/v1\/validators(\/|$)/,
     cap: 'validators.manage',
   },
   {
     methods: ['POST'],
-    pattern: /^\/api\/v1\/docker\/(prune|volumes\/[^/]+\/remove|images\/remove|containers\/[^/]+\/remove)$/,
+    pattern: /^\/api\/v1\/docker\/(prune|volumes\/[^/]+\/remove|images\/remove|containers\/[^/]+\/remove|compose\/[^/]+\/rm)$/,
     cap: 'docker.wipe',
     note: 'docker destructive prune / remove',
   },

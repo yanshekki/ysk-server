@@ -245,5 +245,7 @@
   "clientUpdated": "Profil client mis à jour",
   "rememberNeedPassword": "Entrez d'abord un mot de passe.",
   "settingsNeedStack": "Ces valeurs par défaut s'appliquent lorsque TigerVNC (et XFCE si sélectionné) sont installés. Installez-les d'abord dans l'onglet Installer.",
-  "clientNeedNovnc": "Ouvrir dans le navigateur nécessite noVNC. Installez-le dans l'onglet Installer avant d'ajouter les télécommandes que vous prévoyez d'ouvrir ici."
+  "clientNeedNovnc": "Ouvrir dans le navigateur nécessite noVNC. Installez-le dans l'onglet Installer avant d'ajouter les télécommandes que vous prévoyez d'ouvrir ici.",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

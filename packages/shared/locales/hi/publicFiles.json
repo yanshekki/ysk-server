@@ -38,5 +38,7 @@
   "publicRootNote": "सार्वजनिक रूट: {{path}}",
   "applyConfirmTitle": "सार्वजनिक फ़ाइल साइट लागू करें?",
   "applyConfirmDesc": "Nginx server_name {{name}} लिखें और Nginx रीलोड करें।",
-  "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।"
+  "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

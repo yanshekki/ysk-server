@@ -245,5 +245,7 @@
   "clientUpdated": "ग्राहक प्रोफ़ाइल अपडेट की गई",
   "rememberNeedPassword": "सबसे पहले एक पासवर्ड डालें.",
   "settingsNeedStack": "ये डिफ़ॉल्ट तब लागू होते हैं जब TigerVNC (और यदि चयनित हो तो XFCE) स्थापित होते हैं। पहले उन्हें इंस्टॉल टैब पर इंस्टॉल करें।",
-  "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।"
+  "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

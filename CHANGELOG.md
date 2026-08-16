@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+### Feature
+- Validators list can delete a node (type the instance id). CLI: `ysk-server validators delete --id … --confirm --execute`
+- Docker compose stacks have Delete; container / image / volume / network delete asks for the name first. Validator stacks also remove the validator instance
+- Delete and prune on Validators / Docker require typing a confirm token (`PRUNE` or the instance id) before they run
+- Docker Compose tab is just the project table — no “open validators / no YAML upload” card
+- Docker pull / create volume / create network open as modals, same as Run container
+
+### Fix
+- Validator compose bind mounts are one quoted YAML scalar (`"/host:/data"`). Quoting only the host path broke `docker compose` (`did not find expected '-' indicator`)
+- Docker run “Never” restart policy is sent as `--restart no` (it no longer falls back to `unless-stopped`)
+- Restarting containers show Stop, a localized status badge, and a restart count
+- VPN / VNC one-click install refreshes the page probe (no more stuck “not installed”)
+- Project delete dialog interpolates the project name (`{{name}}`, not raw `{{v0}}`)
+- Email deliverability pack persists health checks and shows score as `n/100`, not “pack 20”
+- Network UP count uses operstate (docker0 DOWN is not counted as UP)
+- SSL header cert count matches the table (panel TLS stays a separate hint)
+- VNC create is partial when the account is saved but display start fails; hostname errors are readable
+- FTP `failed` is localized; vsftpd failed badge is “啟動失敗”
+
+### Improve
+- Validators empty state is copy only — CLI lives in the feature / CLI docs, not a “copy command” block on the page
+- Validator list: network named testnet/mainnet is not shown twice; runtime status uses locale strings (Stopped / 已停止)
+- Validator detail modal is sectioned (status, access, updates, network, maintenance, danger) with real padding; network/policy use chips, not a raw text box
+- Review sheets (wizard summary, DescriptionList, fact cards, system/ops/SSH facts) are a white row/card layout — no more gray dump boxes
+- Docker prune type column, logs empty copy + follow, compose empty description, single-option volume/network driver as read-only
+- Confirm before deleting a VPN peer, installing a validator, enabling auto-clear, revoking a file share, and removing a DB registration (still no DROP)
+- WireGuard client private key is masked until shown; timestamps can show UTC offset
+- VNC: XFCE disabled until installed; browse/connect disabled when stopped; extra actions in More
+- `/cluster` still toasts and now lands with a banner on the MySQL cluster tab
+
 ## 1.1.3 — 2026-08-16
 
 ### Improve

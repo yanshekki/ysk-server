@@ -119,6 +119,8 @@
   },
   "installHint": "TigerVNC → noVNC；XFCE 可選",
   "needTigerVnc": "需 TigerVNC",
+  "needXfceFirst": "需先安裝 XFCE",
+  "needSessionRunning": "工作階段未運行 — 請先啟動",
   "needNovnc": "需 noVNC",
   "needXfce": "XFCE（可選）",
   "needViewer": "Viewer（可選）",

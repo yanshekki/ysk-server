@@ -1200,10 +1200,11 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusySet(
+                    onClick={bindBusyLiveReload(
                       withBusy,
                       () => emailApi.deliverability(domain.id),
                       setDeliverability,
+                      load,
                     )}
                   >
                     {t('email.runDeliverabilityPack')}
@@ -1364,10 +1365,11 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusySet(
+                    onClick={bindBusyLiveReload(
                       withBusy,
                       () => emailApi.deliverability(domain.id),
                       setDeliverability,
+                      load,
                     )}
                   >
                     {t('email.runDeliverabilityPack')}
@@ -1389,9 +1391,13 @@ export function EmailDomainPage() {
                   <SummaryStrip
                     items={[
                       {
-                        label: t('email.deliverabilityScore'),
-                        value: String(deliverability.score),
+                        label: t('email.healthScore'),
+                        value: `${deliverability.score}/100`,
                         tone: healthScoreTone(deliverability.score),
+                      },
+                      {
+                        label: t('email.deliverabilityChecks'),
+                        value: String(deliverability.items.length),
                       },
                       {
                         label: t('email.panelReady'),

@@ -145,5 +145,6 @@
   "detectPublicIp": "كشف IP العام",
   "detectPublicIpTitle": "املأ أول IPv4 غير الاسترجاعي من هذا المضيف",
   "pasvIpRequired": "عيّن IP عام لـ PASV قبل التطبيق (NAT/سحابة). اكتشف أو اكتب عنواناً.",
-  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+  "stateFailed": "Failed to start"
 }

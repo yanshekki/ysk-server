@@ -97,24 +97,42 @@
 
 .ssh-facts {
   display: grid;
-  gap: var(--space-3);
+  gap: 0;
   margin: var(--space-4) 0;
 }
 
 .ssh-facts > div {
   display: grid;
-  gap: 0.2rem;
+  grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ssh-facts > div:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 560px) {
+  .ssh-facts > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
 }
 
 .ssh-facts dt {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: 0.02em;
 }
 
 .ssh-facts dd {
   margin: 0;
   color: var(--text-main);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .ssh-detail-actions {

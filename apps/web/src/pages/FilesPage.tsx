@@ -415,8 +415,12 @@ export function togglePathInSet(prev: Set<string>, p: string): Set<string> {
 
 /** Format mtime cell for table (ISO → local-ish short). */
 export function formatMtimeCell(mtime: string | null | undefined): string {
-  const s = (mtime ?? '').toString().slice(0, 19).replace('T', ' ');
-  return s || '—';
+  return formatDateTime(mtime, { withOffset: true });
+}
+
+export function displayBrowsePath(path: string | null | undefined): string {
+  const p = String(path ?? '').trim();
+  return !p || p === '.' ? '/' : p;
 }
 
 /** Whether entry is a directory. */
@@ -559,6 +563,7 @@ export function FilesPage() {
   /** direct | bt | both */
   const [shareMode, setShareMode] = useState<'direct' | 'bt' | 'both'>('direct');
   const [shareResultMeta, setShareResultMeta] = useState<FileShare | null>(null);
+  const [pendingUnshare, setPendingUnshare] = useState<FileShare | null>(null);
   const [shareBtStats, setShareBtStats] = useState<
     Record<string, import('ysk-server-shared').BtShareStats>
   >({});
@@ -2085,7 +2090,7 @@ export function FilesPage() {
                       mobile: 'meta',
                       render: (s) =>
                         s.expiresAt
-                          ? formatDateTime(s.expiresAt)
+                          ? formatDateTime(s.expiresAt, { withOffset: true })
                           : t('files.shareExpireNever'),
                     },
                     {
@@ -2109,13 +2114,13 @@ export function FilesPage() {
                         let modeShort: string;
                         let modeFull: string;
                         if (modes.includes('direct') && modes.includes('bt')) {
-                          modeShort = 'Direct+BT';
+                          modeShort = t('files.shareModeBoth');
                           modeFull = t('files.shareModeBoth');
                         } else if (modes.includes('bt')) {
-                          modeShort = 'BT';
+                          modeShort = t('files.shareModeBt');
                           modeFull = t('files.shareModeBt');
                         } else {
-                          modeShort = 'Direct';
+                          modeShort = t('files.shareModeDirect');
                           modeFull = t('files.shareModeDirect');
                         }
 
@@ -2216,11 +2221,7 @@ export function FilesPage() {
                           variant="danger"
                           size="sm"
                           loading={busy}
-                          onClick={() =>
-                            void run(async () => {
-                              await filesApi.deleteShare(root, s.id);
-                            }, t('files.unshareDone'))
-                          }
+                          onClick={() => setPendingUnshare(s)}
                           title={t('files.unshare')}
                         >
                           {t('files.unshare')}
@@ -2538,7 +2539,7 @@ export function FilesPage() {
         open={mkdirOpen}
         onClose={bindSet(setMkdirOpen, false)}
         title={t('files.newFolderTitle')}
-        description={t('files.willCreateAt', { path: path || '/' })}
+        description={t('files.willCreateAt', { path: displayBrowsePath(path) })}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={bindSet(setMkdirOpen, false)}>
@@ -2595,7 +2596,7 @@ export function FilesPage() {
         open={newFileOpen}
         onClose={bindSet(setNewFileOpen, false)}
         title={t('files.newTextTitle')}
-        description={t('files.willCreateAt', { path: path || '/' })}
+        description={t('files.willCreateAt', { path: displayBrowsePath(path) })}
         footer={
           <>
             <Button variant="secondary" size="md" onClick={bindSet(setNewFileOpen, false)}>
@@ -2705,7 +2706,7 @@ export function FilesPage() {
                         dateTime={v.createdAt}
                         title={when.toISOString()}
                       >
-                        {formatDateTime(when)}
+                        {formatDateTime(when, { withOffset: true })}
                       </time>
                       <span className="fm-versions__size muted">
                         {formatBytes(v.bytes)}
@@ -3036,6 +3037,12 @@ export function FilesPage() {
                       toast.ok(r.notes.slice(0, 2).join(' · '));
                     } else {
                       toast.ok(t('files.shareCreatedToast'));
+                    }
+                    try {
+                      const listed = await filesApi.listShares(root);
+                      setShares(listed.items);
+                    } catch {
+                      /* keep last */
                     }
                   })
                 }
@@ -3418,8 +3425,40 @@ export function FilesPage() {
           }, t('files.movedToTrash'))
         }
         title={t('files.moveToTrashTitle')}
-        description={t('files.moveToTrashDesc', { count: delPaths?.length ?? 0 })}
+        description={(() => {
+          const names = (delPaths ?? []).map((p) => p.split('/').pop() || p);
+          const shown = names.slice(0, 5).join('、');
+          const extra = names.length > 5 ? t('files.deleteMore', { n: names.length - 5 }) : '';
+          return `${t('files.moveToTrashDesc', { count: names.length })}${shown ? `：${shown}${extra}` : ''}`;
+        })()}
         confirmLabel={t('files.delete')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingUnshare)}
+        onClose={() => setPendingUnshare(null)}
+        onConfirm={() =>
+          void run(async () => {
+            if (!pendingUnshare) return;
+            await filesApi.deleteShare(root, pendingUnshare.id);
+            setPendingUnshare(null);
+            try {
+              const listed = await filesApi.listShares(root);
+              setShares(listed.items);
+            } catch {
+              /* keep last */
+            }
+          }, t('files.unshareDone'))
+        }
+        title={t('files.unshareTitle')}
+        description={t('files.unshareDesc', {
+          name: pendingUnshare?.path?.split('/').pop() || pendingUnshare?.path || '',
+          url: pendingUnshare?.token ? `/share/${pendingUnshare.token}` : '',
+        })}
+        confirmLabel={t('files.unshare')}
         cancelLabel={t('common.cancel')}
         danger
         busy={busy}

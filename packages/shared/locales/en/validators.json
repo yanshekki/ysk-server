@@ -9,10 +9,7 @@
   },
   "empty": {
     "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks.",
-    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-    "copyCli": "Copy command",
-    "copied": "Copied"
+    "desc": "Create a testnet node in a few clicks."
   },
   "refresh": "Refresh",
   "disk": {
@@ -24,7 +21,9 @@
     "warn": "Disk usage is high (70%+)",
     "danger": "Disk usage is critical (85%+)",
     "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+    "autoClearConfirmTitle": "Enable auto-clear?",
+    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
   },
   "chain": {
     "eth": "Ethereum",
@@ -50,7 +49,8 @@
   },
   "networkKind": {
     "testnet": "Testnet",
-    "mainnet": "Mainnet"
+    "mainnet": "Mainnet",
+    "mixed": "Mainnet + testnet"
   },
   "profile": {
     "minimal": "Minimal",
@@ -131,7 +131,9 @@
     "snapshotEthEl": "Restored ethPandaOps EL archive and reset CL for checkpoint sync",
     "snapshotEthCl": "Reset CL data for official checkpoint sync",
     "snapshotNear": "Wiped NEAR data; compose will re-init official genesis and epoch sync",
-    "nativePrune": "Ran the client-native prune command"
+    "nativePrune": "Ran the client-native prune command",
+    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "deleted": "Node deleted"
   },
   "create": "Create node",
   "wizard": {
@@ -156,7 +158,11 @@
     "rpcPort": "RPC port",
     "limitNone": "No limit",
     "rpcDefault": "Default",
-    "customPath": "Use a custom data path"
+    "customPath": "Use a custom data path",
+    "installConfirmTitle": "Install this node?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+    "installC1": "Several gigabytes of images may be downloaded.",
+    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
   },
   "actions": {
     "detail": "Details",
@@ -169,7 +175,21 @@
     "prune": "Prune",
     "switchNetwork": "Switch network",
     "removeUnit": "Also remove compose / instance record",
-    "restoreAfter": "Restore snapshot after clear"
+    "restoreAfter": "Restore snapshot after clear",
+    "delete": "Delete",
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This removes the node from the panel.",
+    "deleteC1": "Docker Compose is stopped and removed",
+    "deleteC2": "Chain data on disk is deleted",
+    "deleteC3": "The instance record is removed",
+    "pruneTitle": "Prune unused images",
+    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+    "pruneC1": "Unused images labelled for this Compose project are deleted.",
+    "clearTitle": "Clear {{id}}",
+    "clearC1": "Chain data on disk is deleted.",
+    "clearC2": "The instance stays in the panel, stopped and empty.",
+    "switchTitle": "Switch network",
+    "switchC1": "The node is stopped and chain data is wiped before the new network is written."
   },
   "policy": {
     "label": "Upgrade policy",
@@ -219,5 +239,28 @@
     "dockerTitle": "Docker for validator nodes",
     "dockerOk": "{{count}} validator instance(s); Docker is installed",
     "dockerMissing": "Validator instances exist but the docker binary was not found"
+  },
+  "detail": {
+    "status": "Status",
+    "sync": "Sync",
+    "peers": "Peers",
+    "version": "Version",
+    "access": "Access",
+    "upgrade": "Updates",
+    "upgradeHint": "How this node tracks client versions.",
+    "network": "Network",
+    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+    "maintain": "Maintenance",
+    "danger": "Clear data",
+    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "compose": "Compose",
+    "logs": "Logs"
+  },
+  "state": {
+    "unknown": "Unknown",
+    "stopped": "Stopped",
+    "running": "Running",
+    "syncing": "Syncing",
+    "error": "Error"
   }
 }

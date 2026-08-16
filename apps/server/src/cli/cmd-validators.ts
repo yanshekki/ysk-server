@@ -3,6 +3,7 @@
  */
 import {
   clearValidatorInstance,
+  removeValidatorInstance,
   collectValidatorDisk,
   createValidatorInstance,
   getValidatorInstance,
@@ -237,6 +238,23 @@ export async function runValidatorsCommand(
       return 2;
     }
     const result = await restoreAdaMithril({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      confirm: h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? id : undefined),
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'delete' || sub === 'rm') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await removeValidatorInstance({
       dataDir: ctx.dataDir,
       host: ctx.host,
       execute,

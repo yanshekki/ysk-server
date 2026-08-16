@@ -4,6 +4,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   clearValidatorInstance,
+  removeValidatorInstance,
   collectValidatorDisk,
   createValidatorInstance,
   getValidatorInstance,
@@ -56,8 +57,13 @@ export async function handleValidatorsRoutes(
   try {
     user = ctx.auth.authenticate(getBearer(req));
     if (method === 'GET') requireAnyCap(ctx, user, READ_CAPS);
-    else if (url.pathname.endsWith('/clear')) requireCap(ctx, user, 'validators.wipe');
-    else requireCap(ctx, user, 'validators.manage');
+    else if (
+      method === 'DELETE' ||
+      url.pathname.endsWith('/clear') ||
+      url.pathname.endsWith('/delete')
+    ) {
+      requireCap(ctx, user, 'validators.wipe');
+    } else requireCap(ctx, user, 'validators.manage');
   } catch (e) {
     const err = e as { httpStatus?: number; code?: string; message?: string };
     sendJson(res, err.httpStatus ?? 403, {
@@ -228,6 +234,26 @@ export async function handleValidatorsRoutes(
       return true;
     }
 
+    if (id && isValidatorInstanceId(id) && method === 'DELETE' && !action) {
+      const raw = await readBody(req);
+      const body = JSON.parse(raw || '{}') as Record<string, unknown>;
+      const result = await removeValidatorInstance({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        execute: wantsExecute(ctx, body),
+        id,
+        confirm: body.confirm != null ? String(body.confirm) : id,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'validators.delete',
+        detail: { id, execute: wantsExecute(ctx, body) },
+        ok: result.ok,
+      });
+      sendOpsResult(res, result);
+      return true;
+    }
+
     if (id && isValidatorInstanceId(id) && action && method === 'POST') {
       const raw = await readBody(req);
       const body = JSON.parse(raw || '{}') as Record<string, unknown>;
@@ -244,6 +270,7 @@ export async function handleValidatorsRoutes(
         'snapshot',
         'mithril',
         'clear',
+        'delete',
       ]);
       if (!known.has(action)) {
         sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND, message: 'not found' });
@@ -277,6 +304,11 @@ export async function handleValidatorsRoutes(
             });
           } else if (action === 'mithril') {
             result = await restoreAdaMithril({
+              ...hooked,
+              confirm: body.confirm != null ? String(body.confirm) : undefined,
+            });
+          } else if (action === 'delete') {
+            result = await removeValidatorInstance({
               ...hooked,
               confirm: body.confirm != null ? String(body.confirm) : undefined,
             });

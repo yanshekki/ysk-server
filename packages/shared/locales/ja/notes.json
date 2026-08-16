@@ -3005,7 +3005,8 @@
     "desktopNeedsStart": "デスクトップ プロファイル {{desktop}} が xstartup に書き込まれます。セッションを開始して適用します。",
     "passwordNeedTiger": "vncpasswd が見つかりません。パスワードを設定する前に、TigerVNC (tigervnc-standalone-server) をインストールしてください。",
     "linuxUserRolledBack": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除しました。",
-    "linuxUserOrphan": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除できませんでした。"
+    "linuxUserOrphan": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除できませんでした。",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
   },
   "apache": {
     "needServerName": "サーバー名は必須です",

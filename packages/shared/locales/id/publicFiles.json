@@ -38,5 +38,7 @@
   "publicRootNote": "Akar publik: {{path}}",
   "applyConfirmTitle": "Terapkan situs file publik?",
   "applyConfirmDesc": "Tulis Nginx server_name {{name}} dan muat ulang Nginx.",
-  "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti."
+  "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti.",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

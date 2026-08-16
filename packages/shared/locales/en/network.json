@@ -3,6 +3,13 @@
   "canMutate": "Mutable",
   "readOnlyBlocked": "Read-only / blocked",
   "statIfaces": "Interfaces",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  },
   "statGateway": "Gateway",
   "pageActions": "Page actions",
   "loadingSnap": "Loading network snapshot…",

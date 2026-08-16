@@ -2999,6 +2999,7 @@
     "xstartupWritten": "Wrote {{path}}",
     "sessionStartBlocked": "Cannot start VNC session without root + YSK_EXECUTE",
     "sessionStartFailed": "Failed to start display :{{display}}: {{detail}}",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
     "sessionStarted": "Started VNC for {{user}} on :{{display}} (port {{port}})",
     "sessionStartUnverified": "Start command returned OK but RFB port not yet listening",
     "sessionAlreadyRunning": "VNC already running for {{user}} on :{{display}} (port {{port}})",

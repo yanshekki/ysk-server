@@ -27,6 +27,7 @@ ysk-server docker status --json
 ysk-server docker ps --json
 ysk-server docker images --json
 ysk-server docker compose ls --json
+YSK_EXECUTE=1 ysk-server docker compose rm --project yskval-eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
 YSK_EXECUTE=1 ysk-server docker engine start --execute --json
 ```

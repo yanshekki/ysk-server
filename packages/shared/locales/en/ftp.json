@@ -145,5 +145,6 @@
   "clearProjectFilter": "Show all accounts",
   "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+  "stateFailed": "Failed to start",
   "tabService": "Service"
 }

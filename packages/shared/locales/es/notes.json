@@ -3005,7 +3005,8 @@
     "desktopNeedsStart": "Perfil de escritorio {{desktop}} escrito en xstartup. Inicie la sesión para postularse.",
     "passwordNeedTiger": "Vncpasswd no encontrado. Instale TigerVNC (tigervnc-standalone-server) antes de establecer una contraseña.",
     "linuxUserRolledBack": "Se eliminó el usuario restante de Linux {{user}} después de que falló la contraseña de VNC.",
-    "linuxUserOrphan": "No se pudo eliminar el usuario de Linux restante {{user}} después de que falló la contraseña de VNC."
+    "linuxUserOrphan": "No se pudo eliminar el usuario de Linux restante {{user}} después de que falló la contraseña de VNC.",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
   },
   "apache": {
     "needServerName": "Nombre del servidor requerido",

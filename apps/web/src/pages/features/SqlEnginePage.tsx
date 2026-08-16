@@ -1221,6 +1221,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         onConfirm={bindRemoveIf(delDb, dbs.remove, setDelDb)}
         title={t('db.deleteDbTitle')}
         description={t('db.deleteDbDesc')}
+        confirmText={
+          String(
+            dbs.items.find((x) => String((x as { id?: string }).id) === delDb)?.name ??
+              delDb ??
+              '',
+          )
+        }
         severity="destructive"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

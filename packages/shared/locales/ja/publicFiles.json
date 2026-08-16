@@ -38,5 +38,7 @@
   "publicRootNote": "公開ルート: {{path}}",
   "applyConfirmTitle": "公開ファイルサイトを適用しますか？",
   "applyConfirmDesc": "Nginx server_name {{name}} を書き込み、Nginx を再読込します。",
-  "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。"
+  "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

@@ -39,7 +39,16 @@
   },
   "state": {
     "up": "运行中",
-    "down": "已停止"
+    "down": "已停止",
+    "running": "Running",
+    "exited": "Exited",
+    "restarting": "Restarting",
+    "restartingCount": "Restarting · {{n}} times",
+    "paused": "Paused",
+    "created": "Created",
+    "dead": "Dead",
+    "removing": "Removing",
+    "unknown": "Unknown"
   },
   "actions": {
     "start": "启动",
@@ -74,7 +83,8 @@
     "composeCta": "Open validator nodes"
   },
   "logs": {
-    "empty": "没有日志"
+    "empty": "没有日志",
+    "follow": "Follow"
   },
   "settings": {
     "logMaxSize": "容器日志上限",
@@ -135,7 +145,8 @@
     "compose": {
       "up": "已启动 Compose 项目",
       "down": "已停止 Compose 项目",
-      "restart": "已重启 Compose 项目"
+      "restart": "已重启 Compose 项目",
+      "rm": "已删除 Compose 项目"
     },
     "engine": {
       "start": "已启动 docker.service",
@@ -211,6 +222,25 @@
     "customPort": "其他主机端口",
     "customPortHost": "主机端口",
     "customPortContainer": "容器端口",
-    "pctUsed": "已用 {{n}}%"
-  }
+    "pctUsed": "已用 {{n}}%",
+    "customPortHint": "1–65535。例如 9090 → 80。",
+    "pickBridge": "选择 bridge 网络"
+  },
+  "deleteTitle": "删除 {{id}}",
+  "deleteDesc": "此操作无法复原。",
+  "deleteC1": "会从这台主机移除该资源。",
+  "deleteComposeVal": "这是验证者堆栈 — 验证者实例会一并删除。",
+  "pruneTitle": "清理 Docker 资源",
+  "pruneDesc": "输入 PRUNE 以确认。已删除的数据无法复原。",
+  "pruneC1": "会删除所选范围内未使用的资源。",
+  "pruneC2": "Volume 与系统清理会永久删除未使用的数据卷。",
+  "pruneC3": "会移除此范围内已停止的容器或未使用映像。",
+  "df": {
+    "images": "Images",
+    "containers": "Containers",
+    "volumes": "Local volumes",
+    "builder": "Build cache",
+    "other": "Other"
+  },
+  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
 }

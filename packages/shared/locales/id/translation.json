@@ -2707,7 +2707,8 @@
       "downloadBundleTitle": "Unduh paket peer conf (.tar.gz)",
       "pushPlanTitle": "Pratinjau push to peer (tanpa scp)",
       "fleetSyncPlanTitle": "Pratinjau sinkronisasi armada (tidak ada eksekusi)",
-      "fleetApplyTitle": "Enqueue berlaku untuk anggota armada?"
+      "fleetApplyTitle": "Enqueue berlaku untuk anggota armada?",
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
     },
     "console": {
       "dataBrowse": "Telusuri data",
@@ -3082,7 +3083,16 @@
     },
     "state": {
       "up": "Aktif",
-      "down": "Berhenti"
+      "down": "Berhenti",
+      "running": "Running",
+      "exited": "Exited",
+      "restarting": "Restarting",
+      "restartingCount": "Restarting · {{n}} times",
+      "paused": "Paused",
+      "created": "Created",
+      "dead": "Dead",
+      "removing": "Removing",
+      "unknown": "Unknown"
     },
     "actions": {
       "start": "Mulai",
@@ -3117,7 +3127,8 @@
       "composeCta": "Open validator nodes"
     },
     "logs": {
-      "empty": "Belum ada log"
+      "empty": "Belum ada log",
+      "follow": "Follow"
     },
     "settings": {
       "logMaxSize": "Batas log kontainer",
@@ -3178,7 +3189,8 @@
       "compose": {
         "up": "Proyek Compose dimulai",
         "down": "Proyek Compose dihentikan",
-        "restart": "Proyek Compose dimulai ulang"
+        "restart": "Proyek Compose dimulai ulang",
+        "rm": "Compose project removed"
       },
       "engine": {
         "start": "docker.service dimulai",
@@ -3254,8 +3266,27 @@
       "customPort": "Porta hos lain",
       "customPortHost": "Porta hos",
       "customPortContainer": "Porta kontainer",
-      "pctUsed": "{{n}}% terpakai"
-    }
+      "pctUsed": "{{n}}% terpakai",
+      "customPortHint": "1–65535. Example: 9090 → 80.",
+      "pickBridge": "Bridge network"
+    },
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This cannot be undone.",
+    "deleteC1": "The resource is removed from this host.",
+    "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+    "pruneTitle": "Prune Docker resources",
+    "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+    "pruneC1": "Unused resources in the selected scope are deleted.",
+    "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+    "pruneC3": "Stopped containers or unused images in this scope are removed.",
+    "df": {
+      "images": "Images",
+      "containers": "Containers",
+      "volumes": "Local volumes",
+      "builder": "Build cache",
+      "other": "Other"
+    },
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
   },
   "email": {
     "title": "E-mail",
@@ -3767,7 +3798,8 @@
     "deliverabilityScore": "Paket keterkiriman",
     "opendkimNoReload": "OpenDKIM tidak mendukung reload — gunakan restart setelah mengubah kunci atau tabel.",
     "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini",
-    "tlsRequestLeFor": "Request LE for {{host}}"
+    "tlsRequestLeFor": "Request LE for {{host}}",
+    "deliverabilityChecks": "Checks"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Tidak sah",
@@ -4292,7 +4324,10 @@
     "webdavDisableFailed": "WebDAV masih aktif setelah dinonaktifkan — penulisan mungkin tidak berlanjut. Coba lagi.",
     "dirNamedLikeFile": "(sisa folder; nama terlihat seperti berkas)",
     "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan.",
-    "webdavAlreadyOff": "WebDAV is already off"
+    "webdavAlreadyOff": "WebDAV is already off",
+    "deleteMore": " and {{n}} more",
+    "unshareTitle": "Revoke this share?",
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
   },
   "firewall": {
     "profiles": {
@@ -4552,7 +4587,8 @@
     "detectPublicIp": "Deteksi IP publik",
     "detectPublicIpTitle": "Isi IPv4 non-loopback pertama dari host ini",
     "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat.",
-    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+    "stateFailed": "Failed to start"
   },
   "geo": {
     "continents": {
@@ -5554,7 +5590,14 @@
     "defaultRouteDownNeedName": "Ini adalah rute keluar default. Ketikkan nama antarmuka untuk mengonfirmasi — panel mungkin terputus.",
     "linkDownDefault": "Down default route",
     "loopbackImmutable": "Loopback cannot be changed",
-    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+    "statUp": "Up",
+    "oper": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "other": "Other"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} situs",
@@ -8653,7 +8696,8 @@
       "desktopNeedsStart": "Profil desktop {{desktop}} ditulis ke xstartup. Mulai sesi untuk melamar.",
       "passwordNeedTiger": "vncpasswd tidak ditemukan. Instal TigerVNC (tigervnc-standalone-server) sebelum mengatur kata sandi.",
       "linuxUserRolledBack": "Menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
-      "linuxUserOrphan": "Tidak dapat menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal."
+      "linuxUserOrphan": "Tidak dapat menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
     },
     "apache": {
       "needServerName": "Nama server diperlukan",
@@ -9480,14 +9524,14 @@
     "netPublishMaint": "Pemeliharaan",
     "sslNeedDomain": "Tetapkan domain sebelum menerbitkan Nginx / SSL.",
     "createTemplateMissing": "{{v0}} ； 「— —」。",
-    "deleteDialogDesc": "「{{v0}}」。。",
+    "deleteDialogDesc": "「{{name}}」。。",
     "deleteWillStop": "sistemd / PM2 /",
     "deleteWillWeb": "Nginx conf, kumpulan PHP-FPM, Apache vhost （）",
     "deleteWillOs": "Linux rumah （）",
     "deleteKeepOs": "rumah Linux （）",
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "Membatalkan,",
-    "deleteTypeNameHint": "「{{v0}}」",
+    "deleteTypeNameHint": "「{{name}}」",
     "deleteDnsWarn": "Zona / domain DNS 。",
     "manageInNginx": "Kelola di Nginx",
     "advFtpHomeApp": "Direktori app situs",
@@ -10035,7 +10079,9 @@
     "publicRootNote": "Akar publik: {{path}}",
     "applyConfirmTitle": "Terapkan situs file publik?",
     "applyConfirmDesc": "Tulis Nginx server_name {{name}} dan muat ulang Nginx.",
-    "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti."
+    "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti.",
+    "executeFlag": "Execute",
+    "asRoot": "Root"
   },
   "rbac": {
     "permissions": "Izin",
@@ -11448,7 +11494,8 @@
     "roleImap": "Kotak surat IMAP/POP3",
     "serviceNotInstalled": "Layanan ini tidak diinstal, sehingga aturan firewall tidak berlaku.",
     "openButStopped": "Port terbuka — layanan tidak berjalan",
-    "openNoTenants": "Pelabuhan umum tanpa penyewa"
+    "openNoTenants": "Pelabuhan umum tanpa penyewa",
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
   },
   "services": {
     "enabledBoot": "Saat boot",
@@ -11530,7 +11577,8 @@
     "unitNotFound": "Unit not installed",
     "unitNa": "Not applicable",
     "unitStatic": "static",
-    "unitIndirect": "indirect"
+    "unitIndirect": "indirect",
+    "needRunning": "{{label}} is not running"
   },
   "software": {
     "title": "Perangkat lunak",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "Belum ada node validator",
-      "desc": "Buat node testnet dalam beberapa klik.",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "Copy command",
-      "copied": "Copied"
+      "desc": "Buat node testnet dalam beberapa klik."
     },
     "refresh": "Segarkan",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "Pemakaian disk tinggi (70%+)",
       "danger": "Pemakaian disk kritis (85%+)",
       "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)",
-      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+      "autoClearConfirmTitle": "Enable auto-clear?",
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "Jaringan uji",
-      "mainnet": "Jaringan utama"
+      "mainnet": "Jaringan utama",
+      "mixed": "Mainnet + testnet"
     },
     "profile": {
       "minimal": "Paling kecil",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "Arsip EL ethPandaOps dipulihkan dan CL diatur ulang untuk checkpoint sync",
       "snapshotEthCl": "Data CL diatur ulang untuk checkpoint sync resmi",
       "snapshotNear": "Data NEAR dihapus; compose akan inisialisasi ulang dengan genesis resmi dan epoch sync",
-      "nativePrune": "Perintah pangkas native klien dijalankan"
+      "nativePrune": "Perintah pangkas native klien dijalankan",
+      "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "deleted": "Node deleted"
     },
     "create": "Buat node",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "diskShort": "Not enough free disk for this chain / network / profile",
       "limitNone": "No limit",
       "rpcDefault": "Default",
-      "customPath": "Use a custom data path"
+      "customPath": "Use a custom data path",
+      "installConfirmTitle": "Install this node?",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+      "installC1": "Several gigabytes of images may be downloaded.",
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
     },
     "actions": {
       "detail": "Rincian",
@@ -13132,7 +13186,21 @@
       "prune": "Bersihkan citra",
       "switchNetwork": "Ganti jaringan",
       "removeUnit": "Hapus juga compose / catatan instans",
-      "restoreAfter": "Pulihkan snapshot setelah mengosongkan"
+      "restoreAfter": "Pulihkan snapshot setelah mengosongkan",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{id}}",
+      "deleteDesc": "This removes the node from the panel.",
+      "deleteC1": "Docker Compose is stopped and removed",
+      "deleteC2": "Chain data on disk is deleted",
+      "deleteC3": "The instance record is removed",
+      "pruneTitle": "Prune unused images",
+      "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+      "pruneC1": "Unused images labelled for this Compose project are deleted.",
+      "clearTitle": "Clear {{id}}",
+      "clearC1": "Chain data on disk is deleted.",
+      "clearC2": "The instance stays in the panel, stopped and empty.",
+      "switchTitle": "Switch network",
+      "switchC1": "The node is stopped and chain data is wiped before the new network is written."
     },
     "policy": {
       "label": "Kebijakan peningkatan",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "Docker untuk node validator",
       "dockerOk": "{{count}} instans validator; Docker terpasang",
       "dockerMissing": "Ada instans validator tetapi perintah docker tidak ditemukan"
+    },
+    "detail": {
+      "status": "Status",
+      "sync": "Sync",
+      "peers": "Peers",
+      "version": "Version",
+      "access": "Access",
+      "upgrade": "Updates",
+      "upgradeHint": "How this node tracks client versions.",
+      "network": "Network",
+      "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+      "maintain": "Maintenance",
+      "danger": "Clear data",
+      "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+      "compose": "Compose",
+      "logs": "Logs"
+    },
+    "state": {
+      "unknown": "Unknown",
+      "stopped": "Stopped",
+      "running": "Running",
+      "syncing": "Syncing",
+      "error": "Error"
     }
   },
   "vnc": {
@@ -13431,7 +13522,9 @@
     "clientUpdated": "Profil klien diperbarui",
     "rememberNeedPassword": "Masukkan kata sandi terlebih dahulu.",
     "settingsNeedStack": "Default ini berlaku ketika TigerVNC (dan XFCE jika dipilih) diinstal. Instal terlebih dahulu di tab Instal.",
-    "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini."
+    "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini.",
+    "needXfceFirst": "Install XFCE first",
+    "needSessionRunning": "Session is not running — start it first"
   },
   "vpn": {
     "pageDesc": "Server & klien VPN",
@@ -13570,6 +13663,13 @@
       "51820": "Port mendengarkan WireGuard default",
       "51821": "Port mendengarkan WireGuard alternatif",
       "51822": "Port mendengarkan WireGuard alternatif kedua"
-    }
+    },
+    "needServerRunning": "{{engine}} is not running — apply the server first",
+    "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+    "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+    "showPrivateKey": "Show private key",
+    "hidePrivateKey": "Hide private key",
+    "deletePeerTitle": "Delete peer {{name}}?",
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
   }
 }

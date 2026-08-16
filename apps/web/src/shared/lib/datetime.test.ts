@@ -22,4 +22,9 @@ describe('formatDateTime', () => {
     expect(out).toBe('2026-08-15 03:18:24');
     expect(out).not.toMatch(/AM|PM|上午|下午/i);
   });
+
+  it('treats naive timestamps as UTC and can append an offset', () => {
+    const out = formatDateTime('2026-08-16 03:14:01', { timeZone: 'UTC', withOffset: true });
+    expect(out).toBe('2026-08-16 03:14:01 UTC');
+  });
 });

@@ -244,7 +244,8 @@
     "downloadBundleTitle": "Descargar paquete de configuración de pares (.tar.gz)",
     "pushPlanTitle": "Vista previa push to peer (sin scp)",
     "fleetSyncPlanTitle": "Vista previa de sincronización de flota (sin ejecución)",
-    "fleetApplyTitle": "¿Se aplica la cola a los miembros de la flota?"
+    "fleetApplyTitle": "¿Se aplica la cola a los miembros de la flota?",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
   },
   "console": {
     "dataBrowse": "Explorar datos",

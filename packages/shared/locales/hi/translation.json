@@ -2707,7 +2707,8 @@
       "downloadBundleTitle": "पीयर कॉन्फ बंडल डाउनलोड करें (.tar.gz)",
       "pushPlanTitle": "सहकर्मी को पूर्वावलोकन पुश (कोई एससीपी नहीं)",
       "fleetSyncPlanTitle": "फ़्लीट सिंक का पूर्वावलोकन करें (कोई निष्पादन नहीं)",
-      "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?"
+      "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?",
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
     },
     "console": {
       "dataBrowse": "डेटा ब्राउज़ करें",
@@ -3082,7 +3083,16 @@
     },
     "state": {
       "up": "सक्रिय",
-      "down": "रुका"
+      "down": "रुका",
+      "running": "Running",
+      "exited": "Exited",
+      "restarting": "Restarting",
+      "restartingCount": "Restarting · {{n}} times",
+      "paused": "Paused",
+      "created": "Created",
+      "dead": "Dead",
+      "removing": "Removing",
+      "unknown": "Unknown"
     },
     "actions": {
       "start": "चालू",
@@ -3117,7 +3127,8 @@
       "composeCta": "Open validator nodes"
     },
     "logs": {
-      "empty": "अभी कोई लॉग नहीं"
+      "empty": "अभी कोई लॉग नहीं",
+      "follow": "Follow"
     },
     "settings": {
       "logMaxSize": "कंटेनर लॉग अधिकतम आकार",
@@ -3178,7 +3189,8 @@
       "compose": {
         "up": "Compose प्रोजेक्ट चालू हुआ",
         "down": "Compose प्रोजेक्ट रुका",
-        "restart": "Compose प्रोजेक्ट पुनः चालू हुआ"
+        "restart": "Compose प्रोजेक्ट पुनः चालू हुआ",
+        "rm": "Compose project removed"
       },
       "engine": {
         "start": "docker.service चालू हुआ",
@@ -3254,8 +3266,27 @@
       "customPort": "अन्य होस्ट पोर्ट",
       "customPortHost": "होस्ट पोर्ट",
       "customPortContainer": "कंटेनर पोर्ट",
-      "pctUsed": "{{n}}% प्रयुक्त"
-    }
+      "pctUsed": "{{n}}% प्रयुक्त",
+      "customPortHint": "1–65535. Example: 9090 → 80.",
+      "pickBridge": "Bridge network"
+    },
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This cannot be undone.",
+    "deleteC1": "The resource is removed from this host.",
+    "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+    "pruneTitle": "Prune Docker resources",
+    "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+    "pruneC1": "Unused resources in the selected scope are deleted.",
+    "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+    "pruneC3": "Stopped containers or unused images in this scope are removed.",
+    "df": {
+      "images": "Images",
+      "containers": "Containers",
+      "volumes": "Local volumes",
+      "builder": "Build cache",
+      "other": "Other"
+    },
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
   },
   "email": {
     "title": "ईमेल",
@@ -3767,7 +3798,8 @@
     "deliverabilityScore": "डिलिवरेबिलिटी पैक",
     "opendkimNoReload": "OpenDKIM रीलोड नहीं करता — कुंजी या तालिका बदलने के बाद रीस्टार्ट करें।",
     "opendkimNoReloadTitle": "इस स्टैक पर systemctl reload opendkim समर्थित नहीं",
-    "tlsRequestLeFor": "Request LE for {{host}}"
+    "tlsRequestLeFor": "Request LE for {{host}}",
+    "deliverabilityChecks": "Checks"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "अनधिकृत",
@@ -4292,7 +4324,10 @@
     "webdavDisableFailed": "अक्षम करने के बाद भी WebDAV सक्षम है - लेखन जारी नहीं रह सकता है। पुनः प्रयास करें।",
     "dirNamedLikeFile": "(फ़ोल्डर अवशेष; नाम फ़ाइल जैसा है)",
     "webdavAfterEnable": "WebDAV सक्षम कर टोकन जारी करने के बाद उपलब्ध।",
-    "webdavAlreadyOff": "WebDAV is already off"
+    "webdavAlreadyOff": "WebDAV is already off",
+    "deleteMore": " and {{n}} more",
+    "unshareTitle": "Revoke this share?",
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
   },
   "firewall": {
     "profiles": {
@@ -4552,7 +4587,8 @@
     "detectPublicIp": "सार्वजनिक आईपी का पता लगाएं",
     "detectPublicIpTitle": "इस होस्ट से पहला गैर-लूपबैक IPv4 भरें",
     "pasvIpRequired": "लागू करने से पहले PASV सार्वजनिक IP भरें (NAT/क्लाउड)। पता लगाएँ या लिखें।",
-    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+    "stateFailed": "Failed to start"
   },
   "geo": {
     "continents": {
@@ -5554,7 +5590,14 @@
     "defaultRouteDownNeedName": "यह निकास का डिफ़ॉल्ट मार्ग है. पुष्टि करने के लिए इंटरफ़ेस नाम टाइप करें - पैनल डिस्कनेक्ट हो सकता है।",
     "linkDownDefault": "Down default route",
     "loopbackImmutable": "Loopback cannot be changed",
-    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+    "statUp": "Up",
+    "oper": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "other": "Other"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} साइट(साइटें)",
@@ -8653,7 +8696,8 @@
       "desktopNeedsStart": "डेस्कटॉप प्रोफ़ाइल {{desktop}} xstartup को लिखी गई। आवेदन करने के लिए सत्र प्रारंभ करें.",
       "passwordNeedTiger": "vncpasswd नहीं मिला. पासवर्ड सेट करने से पहले TigerVNC (tigervnc-standalone-server) इंस्टॉल करें।",
       "linuxUserRolledBack": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को हटा दिया गया।",
-      "linuxUserOrphan": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को नहीं हटाया जा सका।"
+      "linuxUserOrphan": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को नहीं हटाया जा सका।",
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
     },
     "apache": {
       "needServerName": "सर्वर नाम आवश्यक है",
@@ -9480,14 +9524,14 @@
     "netPublishMaint": "रखरखाव",
     "sslNeedDomain": "Nginx/SSL प्रकाशित करने से पहले एक डोमेन सेट करें।",
     "createTemplateMissing": "{{v0}} ；「— —」。",
-    "deleteDialogDesc": "「{{v0}}」。。",
+    "deleteDialogDesc": "「{{name}}」。。",
     "deleteWillStop": "सिस्टमडी/पीएम2/",
     "deleteWillWeb": "Nginx conf, PHP-FPM पूल, अपाचे vhost（）",
     "deleteWillOs": "लिनक्स होम ()",
     "deleteKeepOs": "होम लिनक्स ()",
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "रद्द करना,",
-    "deleteTypeNameHint": "「{{v0}}」",
+    "deleteTypeNameHint": "「{{name}}」",
     "deleteDnsWarn": "डीएनएस जोन/डोमेन 。",
     "manageInNginx": "Nginx में प्रबंधित करें",
     "advFtpHomeApp": "साइट app निर्देशिका",
@@ -10035,7 +10079,9 @@
     "publicRootNote": "सार्वजनिक रूट: {{path}}",
     "applyConfirmTitle": "सार्वजनिक फ़ाइल साइट लागू करें?",
     "applyConfirmDesc": "Nginx server_name {{name}} लिखें और Nginx रीलोड करें।",
-    "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।"
+    "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।",
+    "executeFlag": "Execute",
+    "asRoot": "Root"
   },
   "rbac": {
     "permissions": "अनुमतियां",
@@ -11448,7 +11494,8 @@
     "roleImap": "IMAP/POP3 मेलबॉक्स",
     "serviceNotInstalled": "यह सेवा स्थापित नहीं है, इसलिए फ़ायरवॉल नियम लागू नहीं होते हैं।",
     "openButStopped": "पोर्ट खुले हैं - सेवा नहीं चल रही है",
-    "openNoTenants": "बिना किरायेदारों वाले सार्वजनिक बंदरगाह"
+    "openNoTenants": "बिना किरायेदारों वाले सार्वजनिक बंदरगाह",
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
   },
   "services": {
     "enabledBoot": "बूट पर",
@@ -11530,7 +11577,8 @@
     "unitNotFound": "Unit not installed",
     "unitNa": "Not applicable",
     "unitStatic": "static",
-    "unitIndirect": "indirect"
+    "unitIndirect": "indirect",
+    "needRunning": "{{label}} is not running"
   },
   "software": {
     "title": "सॉफ़्टवेयर",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "अभी कोई वैलिडेटर नोड नहीं",
-      "desc": "कुछ क्लिक में टेस्टनेट नोड बनाएँ।",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "Copy command",
-      "copied": "Copied"
+      "desc": "कुछ क्लिक में टेस्टनेट नोड बनाएँ।"
     },
     "refresh": "ताज़ा करें",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "डिस्क उपयोग अधिक है (70%+)",
       "danger": "डिस्क उपयोग गंभीर है (85%+)",
       "autoClear": "डिस्क गंभीर होने पर सबसे बड़े रुके इंस्टेंस को स्वतः साफ़ करें (डिफ़ॉल्ट बंद)",
-      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+      "autoClearConfirmTitle": "Enable auto-clear?",
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "परीक्षण नेट",
-      "mainnet": "मुख्य नेट"
+      "mainnet": "मुख्य नेट",
+      "mixed": "Mainnet + testnet"
     },
     "profile": {
       "minimal": "न्यूनतम",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "ethPandaOps EL संग्रह पुनर्स्थापित और checkpoint sync के लिए CL रीसेट",
       "snapshotEthCl": "आधिकारिक checkpoint sync के लिए CL डेटा रीसेट",
       "snapshotNear": "NEAR डेटा मिटाया; compose आधिकारिक genesis और epoch sync से फिर आरंभ करेगा",
-      "nativePrune": "क्लाइंट-नेटिव सफ़ाई आदेश चला"
+      "nativePrune": "क्लाइंट-नेटिव सफ़ाई आदेश चला",
+      "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "deleted": "Node deleted"
     },
     "create": "नोड बनाएँ",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "diskShort": "Not enough free disk for this chain / network / profile",
       "limitNone": "No limit",
       "rpcDefault": "Default",
-      "customPath": "Use a custom data path"
+      "customPath": "Use a custom data path",
+      "installConfirmTitle": "Install this node?",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+      "installC1": "Several gigabytes of images may be downloaded.",
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
     },
     "actions": {
       "detail": "विवरण",
@@ -13132,7 +13186,21 @@
       "prune": "छवियाँ साफ़ करें",
       "switchNetwork": "नेटवर्क बदलें",
       "removeUnit": "compose / इंस्टेंस रिकॉर्ड भी हटाएँ",
-      "restoreAfter": "साफ़ करने के बाद स्नैपशॉट पुनर्स्थापित करें"
+      "restoreAfter": "साफ़ करने के बाद स्नैपशॉट पुनर्स्थापित करें",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{id}}",
+      "deleteDesc": "This removes the node from the panel.",
+      "deleteC1": "Docker Compose is stopped and removed",
+      "deleteC2": "Chain data on disk is deleted",
+      "deleteC3": "The instance record is removed",
+      "pruneTitle": "Prune unused images",
+      "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+      "pruneC1": "Unused images labelled for this Compose project are deleted.",
+      "clearTitle": "Clear {{id}}",
+      "clearC1": "Chain data on disk is deleted.",
+      "clearC2": "The instance stays in the panel, stopped and empty.",
+      "switchTitle": "Switch network",
+      "switchC1": "The node is stopped and chain data is wiped before the new network is written."
     },
     "policy": {
       "label": "उन्नयन नीति",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "वैलिडेटर नोड के लिए Docker",
       "dockerOk": "{{count}} वैलिडेटर इंस्टेंस; Docker स्थापित है",
       "dockerMissing": "वैलिडेटर इंस्टेंस हैं लेकिन docker आदेश नहीं मिला"
+    },
+    "detail": {
+      "status": "Status",
+      "sync": "Sync",
+      "peers": "Peers",
+      "version": "Version",
+      "access": "Access",
+      "upgrade": "Updates",
+      "upgradeHint": "How this node tracks client versions.",
+      "network": "Network",
+      "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+      "maintain": "Maintenance",
+      "danger": "Clear data",
+      "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+      "compose": "Compose",
+      "logs": "Logs"
+    },
+    "state": {
+      "unknown": "Unknown",
+      "stopped": "Stopped",
+      "running": "Running",
+      "syncing": "Syncing",
+      "error": "Error"
     }
   },
   "vnc": {
@@ -13431,7 +13522,9 @@
     "clientUpdated": "ग्राहक प्रोफ़ाइल अपडेट की गई",
     "rememberNeedPassword": "सबसे पहले एक पासवर्ड डालें.",
     "settingsNeedStack": "ये डिफ़ॉल्ट तब लागू होते हैं जब TigerVNC (और यदि चयनित हो तो XFCE) स्थापित होते हैं। पहले उन्हें इंस्टॉल टैब पर इंस्टॉल करें।",
-    "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।"
+    "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।",
+    "needXfceFirst": "Install XFCE first",
+    "needSessionRunning": "Session is not running — start it first"
   },
   "vpn": {
     "pageDesc": "वीपीएन सर्वर और क्लाइंट",
@@ -13570,6 +13663,13 @@
       "51820": "डिफ़ॉल्ट वायरगार्ड श्रवण पोर्ट",
       "51821": "वैकल्पिक वायरगार्ड श्रवण पोर्ट",
       "51822": "दूसरा वैकल्पिक वायरगार्ड श्रवण पोर्ट"
-    }
+    },
+    "needServerRunning": "{{engine}} is not running — apply the server first",
+    "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+    "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+    "showPrivateKey": "Show private key",
+    "hidePrivateKey": "Hide private key",
+    "deletePeerTitle": "Delete peer {{name}}?",
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
   }
 }

@@ -39,7 +39,16 @@
   },
   "state": {
     "up": "نشط",
-    "down": "متوقف"
+    "down": "متوقف",
+    "running": "Running",
+    "exited": "Exited",
+    "restarting": "Restarting",
+    "restartingCount": "Restarting · {{n}} times",
+    "paused": "Paused",
+    "created": "Created",
+    "dead": "Dead",
+    "removing": "Removing",
+    "unknown": "Unknown"
   },
   "actions": {
     "start": "بدء",
@@ -74,7 +83,8 @@
     "composeCta": "Open validator nodes"
   },
   "logs": {
-    "empty": "لا سجلات بعد"
+    "empty": "لا سجلات بعد",
+    "follow": "Follow"
   },
   "settings": {
     "logMaxSize": "الحد الأقصى لسجل الحاوية",
@@ -135,7 +145,8 @@
     "compose": {
       "up": "بدأ مشروع Compose",
       "down": "توقف مشروع Compose",
-      "restart": "أُعيد تشغيل مشروع Compose"
+      "restart": "أُعيد تشغيل مشروع Compose",
+      "rm": "Compose project removed"
     },
     "engine": {
       "start": "بدأ docker.service",
@@ -211,6 +222,25 @@
     "customPort": "منفذ مضيف آخر",
     "customPortHost": "منفذ المضيف",
     "customPortContainer": "منفذ الحاوية",
-    "pctUsed": "مستخدم {{n}}%"
-  }
+    "pctUsed": "مستخدم {{n}}%",
+    "customPortHint": "1–65535. Example: 9090 → 80.",
+    "pickBridge": "Bridge network"
+  },
+  "deleteTitle": "Delete {{id}}",
+  "deleteDesc": "This cannot be undone.",
+  "deleteC1": "The resource is removed from this host.",
+  "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+  "pruneTitle": "Prune Docker resources",
+  "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+  "pruneC1": "Unused resources in the selected scope are deleted.",
+  "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+  "pruneC3": "Stopped containers or unused images in this scope are removed.",
+  "df": {
+    "images": "Images",
+    "containers": "Containers",
+    "volumes": "Local volumes",
+    "builder": "Build cache",
+    "other": "Other"
+  },
+  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
 }

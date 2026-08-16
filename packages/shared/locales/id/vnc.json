@@ -245,5 +245,7 @@
   "clientUpdated": "Profil klien diperbarui",
   "rememberNeedPassword": "Masukkan kata sandi terlebih dahulu.",
   "settingsNeedStack": "Default ini berlaku ketika TigerVNC (dan XFCE jika dipilih) diinstal. Instal terlebih dahulu di tab Instal.",
-  "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini."
+  "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini.",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

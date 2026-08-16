@@ -267,6 +267,15 @@ export function classifyVncStartFailure(input: {
       display: String(input.display),
     });
   }
+  if (
+    /name or service not known|temporary failure in name resolution|unknown host|could not resolve/i.test(
+      d,
+    )
+  ) {
+    return tl('notes.vnc.sessionStartHostname', {
+      display: String(input.display),
+    });
+  }
   const short = input.detail
     .split('\n')
     .map((l) => l.trim())

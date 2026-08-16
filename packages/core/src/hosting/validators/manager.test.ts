@@ -7,6 +7,7 @@ import {
   clearValidatorInstance,
   createValidatorInstance,
   isClearConfirm,
+  removeValidatorInstance,
   startValidatorInstance,
 } from './manager.js';
 import { getValidatorInstance } from './store.js';
@@ -191,6 +192,16 @@ describe('validator manager', () => {
     });
     expect(cleared.ok).toBe(true);
     expect(cleared.apply_status).toBe('applied');
+
+    const removed = await removeValidatorInstance({
+      dataDir,
+      host: mockHost({ execute: true }),
+      execute: true,
+      id: 'eth-hoodi-1',
+      confirm: 'eth-hoodi-1',
+    });
+    expect(removed.ok).toBe(true);
+    expect(getValidatorInstance(dataDir, 'eth-hoodi-1')).toBeUndefined();
   });
 
   it('isClearConfirm accepts id or CLEAR', () => {

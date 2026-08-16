@@ -38,5 +38,7 @@
   "publicRootNote": "পাবলিক রুট: {{path}}",
   "applyConfirmTitle": "পাবলিক-ফাইল সাইট প্রয়োগ করবেন?",
   "applyConfirmDesc": "Nginx server_name {{name}} লিখে Nginx রিলোড করুন।",
-  "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।"
+  "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

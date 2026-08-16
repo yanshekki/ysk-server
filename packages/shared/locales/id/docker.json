@@ -39,7 +39,16 @@
   },
   "state": {
     "up": "Aktif",
-    "down": "Berhenti"
+    "down": "Berhenti",
+    "running": "Running",
+    "exited": "Exited",
+    "restarting": "Restarting",
+    "restartingCount": "Restarting · {{n}} times",
+    "paused": "Paused",
+    "created": "Created",
+    "dead": "Dead",
+    "removing": "Removing",
+    "unknown": "Unknown"
   },
   "actions": {
     "start": "Mulai",
@@ -74,7 +83,8 @@
     "composeCta": "Open validator nodes"
   },
   "logs": {
-    "empty": "Belum ada log"
+    "empty": "Belum ada log",
+    "follow": "Follow"
   },
   "settings": {
     "logMaxSize": "Batas log kontainer",
@@ -135,7 +145,8 @@
     "compose": {
       "up": "Proyek Compose dimulai",
       "down": "Proyek Compose dihentikan",
-      "restart": "Proyek Compose dimulai ulang"
+      "restart": "Proyek Compose dimulai ulang",
+      "rm": "Compose project removed"
     },
     "engine": {
       "start": "docker.service dimulai",
@@ -211,6 +222,25 @@
     "customPort": "Porta hos lain",
     "customPortHost": "Porta hos",
     "customPortContainer": "Porta kontainer",
-    "pctUsed": "{{n}}% terpakai"
-  }
+    "pctUsed": "{{n}}% terpakai",
+    "customPortHint": "1–65535. Example: 9090 → 80.",
+    "pickBridge": "Bridge network"
+  },
+  "deleteTitle": "Delete {{id}}",
+  "deleteDesc": "This cannot be undone.",
+  "deleteC1": "The resource is removed from this host.",
+  "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+  "pruneTitle": "Prune Docker resources",
+  "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+  "pruneC1": "Unused resources in the selected scope are deleted.",
+  "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+  "pruneC3": "Stopped containers or unused images in this scope are removed.",
+  "df": {
+    "images": "Images",
+    "containers": "Containers",
+    "volumes": "Local volumes",
+    "builder": "Build cache",
+    "other": "Other"
+  },
+  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
 }

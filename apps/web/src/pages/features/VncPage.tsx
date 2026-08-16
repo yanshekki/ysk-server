@@ -59,6 +59,7 @@ function opsToPanel(r: VncOpsResult): OpsResultLike {
     ok: r.ok,
     notes: r.notes,
     blocked: r.blocked,
+    apply_status: r.apply_status as OpsResultLike['apply_status'],
     requiresExecute: r.requiresExecute,
     requiresRoot: r.requiresRoot,
   };
@@ -169,6 +170,7 @@ export function VncPage() {
   const [connInfo, setConnInfo] = useState<Awaited<
     ReturnType<typeof vncApi.getConnection>
   > | null>(null);
+  const [moreAccount, setMoreAccount] = useState<VncAccountSummary | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -210,8 +212,11 @@ export function VncPage() {
     try {
       const r = await fn();
       setLastOps(opsToPanel(r));
-      if (r.ok && !r.blocked) notifyOk(r.notes?.[0] || t('common.completed'));
-      else notifyWarn(r.notes?.[0] || t('common.opFailed'));
+      if (r.ok && !r.blocked && r.apply_status !== 'partial') {
+        notifyOk(r.notes?.[0] || t('common.completed'));
+      } else {
+        notifyWarn(r.notes?.[0] || t('common.partialSuccess'));
+      }
       await load();
       return r;
     } catch (e) {
@@ -222,11 +227,15 @@ export function VncPage() {
     }
   };
 
+  const xfceInstalled = vncStacks.some((s) => s.id === 'xfce' && s.installed);
+  const safeDesktop = (d: VncDesktopProfile): VncDesktopProfile =>
+    d === 'xfce' && !xfceInstalled ? 'terminal' : d;
+
   const openCreate = () => {
     setCName('');
     setCPass('');
     setCPass2('');
-    setCDesktop(desktop);
+    setCDesktop(safeDesktop(desktop));
     setCGeo(geometry);
     setCDepth(depth);
     setCBind(rfbBind);
@@ -508,10 +517,14 @@ export function VncPage() {
                 />
               }
               rowActions={(a) => (
-                <ActionBar>
+                <ActionBar size="sm">
                   <Button
                     size="sm"
                     variant="primary"
+                    disabled={a.status !== 'running'}
+                    title={
+                      a.status !== 'running' ? t('vnc.needSessionRunning') : undefined
+                    }
                     onClick={() =>
                       openViewer({
                         kind: 'account',
@@ -542,51 +555,8 @@ export function VncPage() {
                       {t('vnc.start')}
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    loading={busy}
-                    onClick={() => {
-                      setBusy(true);
-                      void vncApi
-                        .getConnection(a.id)
-                        .then((c) => {
-                          setConnTarget(a);
-                          setConnInfo(c);
-                        })
-                        .catch((e) =>
-                          setError(
-                            e instanceof Error ? e.message : t('common.loadFailed'),
-                          ),
-                        )
-                        .finally(() => setBusy(false));
-                    }}
-                  >
-                    {t('vnc.connection')}
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => openEdit(a)}>
-                    {t('common.edit')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setPwTarget(a);
-                      setPw1('');
-                      setPw2('');
-                    }}
-                  >
-                    {t('vnc.setPassword')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => {
-                      setDelTarget(a);
-                      setDelRemoveUser(false);
-                    }}
-                  >
-                    {t('common.delete')}
+                  <Button size="sm" variant="ghost" onClick={() => setMoreAccount(a)}>
+                    {t('common.more')}
                   </Button>
                 </ActionBar>
               )}
@@ -631,6 +601,7 @@ export function VncPage() {
               feature="novnc"
               title={t('vnc.needNovnc')}
               showReadyActions={false}
+              onInstalled={() => void load()}
             />
             <Alert variant="info">{t('vnc.clientNeedNovnc')}</Alert>
             <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
@@ -808,14 +779,34 @@ export function VncPage() {
         {tab === 'install' ? (
           <div className="stack">
             <Alert variant="info">{t('vnc.installHint')}</Alert>
-            <SoftwareInstallBanner feature="tigervnc" title={t('vnc.needTigerVnc')} showReadyActions={false} />
+            <SoftwareInstallBanner
+              feature="tigervnc"
+              title={t('vnc.needTigerVnc')}
+              showReadyActions={false}
+              onInstalled={() => void load()}
+            />
             <SoftwareVersionBar softwareId="tigervnc" />
-            <SoftwareInstallBanner feature="novnc" title={t('vnc.needNovnc')} showReadyActions={false} />
+            <SoftwareInstallBanner
+              feature="novnc"
+              title={t('vnc.needNovnc')}
+              showReadyActions={false}
+              onInstalled={() => void load()}
+            />
             <SoftwareVersionBar softwareId="novnc" />
-            <SoftwareInstallBanner feature="vnc-xfce" title={t('vnc.needXfce')} showReadyActions={false} />
+            <SoftwareInstallBanner
+              feature="vnc-xfce"
+              title={t('vnc.needXfce')}
+              showReadyActions={false}
+              onInstalled={() => void load()}
+            />
             <SoftwareVersionBar softwareId="vnc-desktop-xfce" />
             <Alert variant="info">{t('vnc.viewerStackOptional')}</Alert>
-            <SoftwareInstallBanner feature="vnc-viewer" title={t('vnc.needViewerOptional')} showReadyActions={false} />
+            <SoftwareInstallBanner
+              feature="vnc-viewer"
+              title={t('vnc.needViewerOptional')}
+              showReadyActions={false}
+              onInstalled={() => void load()}
+            />
             <SoftwareVersionBar softwareId="tigervnc-viewer" />
           </div>
         ) : null}
@@ -827,12 +818,14 @@ export function VncPage() {
               feature="tigervnc"
               title={t('vnc.needTigerVnc')}
               showReadyActions={false}
+              onInstalled={() => void load()}
             />
             {desktop === 'xfce' ? (
               <SoftwareInstallBanner
                 feature="vnc-xfce"
                 title={t('vnc.needXfce')}
                 showReadyActions={false}
+                onInstalled={() => void load()}
               />
             ) : null}
             <Alert variant="info">{t('vnc.settingsHint')}</Alert>
@@ -843,7 +836,10 @@ export function VncPage() {
                   value={desktop}
                   onChange={(e) => setDesktop(e.target.value as VncDesktopProfile)}
                 >
-                  <option value="xfce">{t('vnc.desktop.xfce')}</option>
+                  <option value="xfce" disabled={!xfceInstalled}>
+                    {t('vnc.desktop.xfce')}
+                    {!xfceInstalled ? ` — ${t('vnc.needXfceFirst')}` : ''}
+                  </option>
                   <option value="terminal">{t('vnc.desktop.terminal')}</option>
                 </select>
               </Field>
@@ -996,7 +992,10 @@ export function VncPage() {
               value={cDesktop}
               onChange={(e) => setCDesktop(e.target.value as VncDesktopProfile)}
             >
-              <option value="xfce">{t('vnc.desktop.xfce')}</option>
+              <option value="xfce" disabled={!xfceInstalled}>
+                {t('vnc.desktop.xfce')}
+                {!xfceInstalled ? ` — ${t('vnc.needXfceFirst')}` : ''}
+              </option>
               <option value="terminal">{t('vnc.desktop.terminal')}</option>
             </select>
           </Field>
@@ -1098,7 +1097,10 @@ export function VncPage() {
               value={eDesktop}
               onChange={(e) => setEDesktop(e.target.value as VncDesktopProfile)}
             >
-              <option value="xfce">{t('vnc.desktop.xfce')}</option>
+              <option value="xfce" disabled={!xfceInstalled}>
+                {t('vnc.desktop.xfce')}
+                {!xfceInstalled ? ` — ${t('vnc.needXfceFirst')}` : ''}
+              </option>
               <option value="terminal">{t('vnc.desktop.terminal')}</option>
             </select>
           </Field>
@@ -1203,6 +1205,77 @@ export function VncPage() {
             />
           </Field>
         </FormLayout>
+      </Modal>
+
+      <Modal
+        open={Boolean(moreAccount)}
+        onClose={() => setMoreAccount(null)}
+        title={moreAccount?.name ?? t('common.more')}
+        footer={
+          <Button variant="secondary" onClick={() => setMoreAccount(null)}>
+            {t('common.close')}
+          </Button>
+        }
+      >
+        {moreAccount ? (
+          <ActionBar>
+            <Button
+              size="sm"
+              disabled={moreAccount.status !== 'running'}
+              title={
+                moreAccount.status !== 'running' ? t('vnc.needSessionRunning') : undefined
+              }
+              onClick={() => {
+                const a = moreAccount;
+                setMoreAccount(null);
+                setBusy(true);
+                void vncApi
+                  .getConnection(a.id)
+                  .then((c) => {
+                    setConnTarget(a);
+                    setConnInfo(c);
+                  })
+                  .catch((e) =>
+                    setError(e instanceof Error ? e.message : t('common.loadFailed')),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+            >
+              {t('vnc.connection')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                openEdit(moreAccount);
+                setMoreAccount(null);
+              }}
+            >
+              {t('common.edit')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setPwTarget(moreAccount);
+                setPw1('');
+                setPw2('');
+                setMoreAccount(null);
+              }}
+            >
+              {t('vnc.setPassword')}
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => {
+                setDelTarget(moreAccount);
+                setDelRemoveUser(false);
+                setMoreAccount(null);
+              }}
+            >
+              {t('common.delete')}
+            </Button>
+          </ActionBar>
+        ) : null}
       </Modal>
 
       <ConfirmDialog

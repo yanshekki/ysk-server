@@ -135,5 +135,12 @@
     "51820": "ডিফল্ট ওয়্যারগার্ড লিসেন পোর্ট",
     "51821": "বিকল্প ওয়্যারগার্ড শোনার পোর্ট",
     "51822": "দ্বিতীয় বিকল্প ওয়্যারগার্ড লিসেন পোর্ট"
-  }
+  },
+  "needServerRunning": "{{engine}} is not running — apply the server first",
+  "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+  "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+  "showPrivateKey": "Show private key",
+  "hidePrivateKey": "Hide private key",
+  "deletePeerTitle": "Delete peer {{name}}?",
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
 }

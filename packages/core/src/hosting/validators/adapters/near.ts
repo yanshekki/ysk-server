@@ -5,6 +5,7 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
+import { composeBind } from '../compose-runner.js';
 
 export function buildNearComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('near')[0];
@@ -29,7 +30,7 @@ services:
       - "127.0.0.1:${rpc}:3030"
       - "0.0.0.0:${p2p}:24567"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 

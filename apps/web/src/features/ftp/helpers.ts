@@ -25,6 +25,7 @@ export function statusLabel(
   if (!s.installed) return { text: t('common.notInstalled'), tone: 'danger' };
   if (s.active === 'active') return { text: t('common.running'), tone: 'ok' };
   if (s.active === 'inactive') return { text: t('common.stopped'), tone: 'warn' };
+  if (s.active === 'failed') return { text: t('ftp.stateFailed'), tone: 'danger' };
   return { text: s.active || t('common.installed'), tone: 'warn' };
 }
 

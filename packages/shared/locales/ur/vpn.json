@@ -135,5 +135,12 @@
     "51820": "ڈیفالٹ وائر گارڈ سننے کا پورٹ",
     "51821": "متبادل وائر گارڈ سننے کا پورٹ",
     "51822": "دوسرا متبادل وائر گارڈ سننے کا بندرگاہ"
-  }
+  },
+  "needServerRunning": "{{engine}} is not running — apply the server first",
+  "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+  "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+  "showPrivateKey": "Show private key",
+  "hidePrivateKey": "Hide private key",
+  "deletePeerTitle": "Delete peer {{name}}?",
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
 }

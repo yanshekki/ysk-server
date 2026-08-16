@@ -30,6 +30,8 @@
   "openSite": "Open site",
   "notLiveHint": "Domain 404 usually means conf is only under dataDir, not copied to /etc/nginx/conf.d, or nginx was not reloaded. Re-apply with root + YSK_EXECUTE. Use http:// until SSL is issued for this hostname.",
   "diskRoot": "Disk root",
+  "executeFlag": "Execute",
+  "asRoot": "Root",
   "filesInRoot": "Entries",
   "managedConf": "Managed conf",
   "systemConf": "System conf.d",

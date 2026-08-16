@@ -9,10 +9,7 @@
   },
   "empty": {
     "title": "尚未建立验证者节点",
-    "desc": "用向导几步建立测试网节点。",
-    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-    "copyCli": "Copy command",
-    "copied": "Copied"
+    "desc": "用向导几步建立测试网节点。"
   },
   "refresh": "刷新",
   "disk": {
@@ -24,7 +21,9 @@
     "warn": "磁盘用量偏高（70% 或以上）",
     "danger": "磁盘用量危急（85% 或以上）",
     "autoClear": "磁盘危急时自动清空最大的已停止实例（默认关闭）",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+    "autoClearConfirmTitle": "Enable auto-clear?",
+    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
   },
   "chain": {
     "eth": "Ethereum",
@@ -50,7 +49,8 @@
   },
   "networkKind": {
     "testnet": "测试网",
-    "mainnet": "主网"
+    "mainnet": "主网",
+    "mixed": "Mainnet + testnet"
   },
   "profile": {
     "minimal": "精简",
@@ -131,7 +131,9 @@
     "snapshotEthEl": "已还原 ethPandaOps 执行层归档，并重置共识层以使用 checkpoint sync",
     "snapshotEthCl": "已重置共识层数据，使用官方 checkpoint sync",
     "snapshotNear": "已清空 NEAR 数据；compose 会重新用官方 genesis 与 epoch sync 初始化",
-    "nativePrune": "已执行客户端原生清理命令"
+    "nativePrune": "已执行客户端原生清理命令",
+    "dryDelete": "删除属预演。真正套用须 --execute 与 YSK_EXECUTE=1。",
+    "deleted": "已删除节点"
   },
   "create": "建立节点",
   "wizard": {
@@ -156,7 +158,11 @@
     "diskShort": "Not enough free disk for this chain / network / profile",
     "limitNone": "No limit",
     "rpcDefault": "Default",
-    "customPath": "Use a custom data path"
+    "customPath": "Use a custom data path",
+    "installConfirmTitle": "Install this node?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+    "installC1": "Several gigabytes of images may be downloaded.",
+    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
   },
   "actions": {
     "detail": "详情",
@@ -169,7 +175,21 @@
     "prune": "清理映像",
     "switchNetwork": "转网络",
     "removeUnit": "一并删除 compose／实例记录",
-    "restoreAfter": "清空后还原快照"
+    "restoreAfter": "清空后还原快照",
+    "delete": "删除",
+    "deleteTitle": "删除 {{id}}",
+    "deleteDesc": "此操作会从面板移除节点。",
+    "deleteC1": "会停止并移除 Docker Compose",
+    "deleteC2": "会删除磁盘上的链数据",
+    "deleteC3": "会删除实例记录",
+    "pruneTitle": "清理未用映像",
+    "pruneDesc": "输入实例标识，以清理此节点 Compose 未用映像。",
+    "pruneC1": "会删除此 Compose 项目标签下未使用的映像。",
+    "clearTitle": "清空 {{id}}",
+    "clearC1": "会删除磁盘上的链数据。",
+    "clearC2": "实例仍留在面板，状态为已停止、无数据。",
+    "switchTitle": "转网络",
+    "switchC1": "会先停机并清空链数据，再写入新网络。"
   },
   "policy": {
     "label": "升级策略",
@@ -219,5 +239,28 @@
     "dockerTitle": "验证者节点所需的 Docker",
     "dockerOk": "有 {{count}} 个验证者实例；已安装 Docker",
     "dockerMissing": "已有验证者实例，但找不到 docker 命令"
+  },
+  "detail": {
+    "status": "状态",
+    "sync": "同步",
+    "peers": "对等节点",
+    "version": "版本",
+    "access": "访问",
+    "upgrade": "升级",
+    "upgradeHint": "选择此节点如何跟进客户端版本。",
+    "network": "网络",
+    "networkHint": "转网络会停机并清空链数据。请先在「清空数据」确认。",
+    "maintain": "维护",
+    "danger": "清空数据",
+    "dangerHint": "输入实例标识或 CLEAR。此操作会删除磁盘上的链数据。",
+    "compose": "Compose",
+    "logs": "日志"
+  },
+  "state": {
+    "unknown": "未知",
+    "stopped": "已停止",
+    "running": "运行中",
+    "syncing": "同步中",
+    "error": "错误"
   }
 }

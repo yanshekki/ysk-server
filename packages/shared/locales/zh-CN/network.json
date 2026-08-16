@@ -154,5 +154,12 @@
   "defaultRouteDownNeedName": "这是默认路由出口。输入接口名称进行确认 - 面板可能会断开连接。",
   "linkDownDefault": "Down default route",
   "loopbackImmutable": "Loopback cannot be changed",
-  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  }
 }

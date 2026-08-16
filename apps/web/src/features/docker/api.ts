@@ -67,7 +67,7 @@ export const dockerApi = {
   createNetwork: (name: string, execute = true) => post('/api/v1/docker/networks', { name, execute }),
   removeNetwork: (id: string, execute = true) =>
     post(`/api/v1/docker/networks/${encodeURIComponent(id)}/remove`, { execute }),
-  composeAction: (project: string, action: 'up' | 'down' | 'restart', execute = true) =>
+  composeAction: (project: string, action: 'up' | 'down' | 'restart' | 'rm', execute = true) =>
     post(`/api/v1/docker/compose/${encodeURIComponent(project)}/${action}`, { execute }),
   composeLogs: (project: string) =>
     api.requestRaw<{ ok: boolean; lines: string[]; notes: string[] }>(

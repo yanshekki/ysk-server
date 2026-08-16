@@ -38,5 +38,7 @@
   "publicRootNote": "جذر عام: {{path}}",
   "applyConfirmTitle": "تطبيق موقع الملفات العامة؟",
   "applyConfirmDesc": "كتابة Nginx server_name {{name}} وإعادة تحميل Nginx.",
-  "serverNameMismatch": "الإعداد الحي يستخدم {{live}}؛ النموذج فيه {{draft}}. طبّق للاستبدال."
+  "serverNameMismatch": "الإعداد الحي يستخدم {{live}}؛ النموذج فيه {{draft}}. طبّق للاستبدال.",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

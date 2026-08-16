@@ -25,7 +25,7 @@ export type DockerEngineAction = (typeof DOCKER_ENGINE_ACTIONS)[number];
 export const DOCKER_CONTAINER_ACTIONS = ['start', 'stop', 'restart', 'remove'] as const;
 export type DockerContainerAction = (typeof DOCKER_CONTAINER_ACTIONS)[number];
 
-export const DOCKER_COMPOSE_ACTIONS = ['up', 'down', 'restart'] as const;
+export const DOCKER_COMPOSE_ACTIONS = ['up', 'down', 'restart', 'rm'] as const;
 export type DockerComposeAction = (typeof DOCKER_COMPOSE_ACTIONS)[number];
 
 export type DockerEngineStatus = {

@@ -243,7 +243,7 @@ describe('residual pure helpers — protection/f2b/dns/logs/sql/files/net/cdn', 
 
     expect(netFormatBytes(100)).toBeTruthy();
     expect(operTone('DOWN')).toBe('neutral');
-    expect(isUp({ operstate: 'DOWN', flags: ['UP'] } as never)).toBe(true);
+    expect(isUp({ operstate: 'DOWN', flags: ['UP'] } as never)).toBe(false);
     expect(cidrOf({ local: '10.0.0.1', prefixlen: 24 })).toContain('/');
     expect(joinCidrs([{ family: 'inet', local: '1.1.1.1', prefixlen: 32 }], 'inet')).toContain('1.1.1.1');
     expect(filterStubDns(['127.0.0.53', '1.1.1.1'])).toEqual(['1.1.1.1']);

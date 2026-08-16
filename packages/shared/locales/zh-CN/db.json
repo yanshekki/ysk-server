@@ -252,7 +252,8 @@
     "downloadBundleTitle": "下载对等配置包 (.tar.gz)",
     "pushPlanTitle": "预览推送到对等点（无 scp）",
     "fleetSyncPlanTitle": "预览队列同步（不执行）",
-    "fleetApplyTitle": "队列适用于车队成员吗？"
+    "fleetApplyTitle": "队列适用于车队成员吗？",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
   },
   "console": {
     "dataBrowse": "资料浏览",

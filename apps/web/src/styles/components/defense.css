@@ -1417,29 +1417,43 @@
 .sys-dl {
   margin: 0;
   display: grid;
-  gap: var(--space-3);
+  gap: 0;
 }
 
 .sys-dl > div {
   display: grid;
-  grid-template-columns: 4.5rem 1fr;
-  gap: var(--space-2);
-  align-items: baseline;
+  grid-template-columns: minmax(5.5rem, 10rem) minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-light);
   font-size: var(--text-sm);
+}
+
+.sys-dl > div:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 560px) {
+  .sys-dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
 }
 
 .sys-dl dt {
   margin: 0;
-  font-weight: 700;
+  font-weight: 650;
   color: var(--text-muted);
   font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .sys-dl dd {
   margin: 0;
   color: var(--text-main);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   word-break: break-all;
 }
 

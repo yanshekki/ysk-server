@@ -154,5 +154,12 @@
   "defaultRouteDownNeedName": "これはデフォルトの出力ルートです。確認のためにインターフェイス名を入力します。パネルが切断される可能性があります。",
   "linkDownDefault": "Down default route",
   "loopbackImmutable": "Loopback cannot be changed",
-  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  }
 }

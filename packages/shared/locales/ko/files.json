@@ -352,5 +352,8 @@
   "webdavDisableFailed": "WebDAV는 비활성화 후에도 여전히 활성화되어 있습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
   "dirNamedLikeFile": "(폴더 잔여물; 이름이 파일처럼 보임)",
   "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다.",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

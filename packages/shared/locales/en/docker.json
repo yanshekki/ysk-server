@@ -55,7 +55,23 @@
   },
   "state": {
     "up": "Active",
-    "down": "Stopped"
+    "down": "Stopped",
+    "running": "Running",
+    "exited": "Exited",
+    "restarting": "Restarting",
+    "restartingCount": "Restarting · {{n}} times",
+    "paused": "Paused",
+    "created": "Created",
+    "dead": "Dead",
+    "removing": "Removing",
+    "unknown": "Unknown"
+  },
+  "df": {
+    "images": "Images",
+    "containers": "Containers",
+    "volumes": "Local volumes",
+    "builder": "Build cache",
+    "other": "Other"
   },
   "actions": {
     "start": "Start",
@@ -90,8 +106,10 @@
     "networks": "No networks"
   },
   "logs": {
-    "empty": "No logs yet"
+    "empty": "This container has not written any logs yet.",
+    "follow": "Follow"
   },
+  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
   "settings": {
     "logMaxSize": "Container log max size",
     "liveRestore": "Live restore (keep containers if the daemon restarts)",
@@ -151,7 +169,8 @@
     "compose": {
       "up": "Compose project started",
       "down": "Compose project stopped",
-      "restart": "Compose project restarted"
+      "restart": "Compose project restarted",
+      "rm": "Compose project removed"
     },
     "engine": {
       "start": "docker.service started",
@@ -211,6 +230,17 @@
     "customPort": "Another host port",
     "customPortHost": "Host port",
     "customPortContainer": "Container port",
-    "pctUsed": "{{n}}% used"
-  }
+    "pctUsed": "{{n}}% used",
+    "customPortHint": "1–65535. Example: 9090 → 80.",
+    "pickBridge": "Bridge network"
+  },
+  "deleteTitle": "Delete {{id}}",
+  "deleteDesc": "This cannot be undone.",
+  "deleteC1": "The resource is removed from this host.",
+  "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+  "pruneTitle": "Prune Docker resources",
+  "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+  "pruneC1": "Unused resources in the selected scope are deleted.",
+  "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+  "pruneC3": "Stopped containers or unused images in this scope are removed."
 }

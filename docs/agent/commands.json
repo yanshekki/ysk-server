@@ -1288,6 +1288,14 @@
       "example": "YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json"
     },
     {
+      "name": "validators delete",
+      "aliases": ["validators rm"],
+      "risk": "write-host",
+      "summary": "Stop Compose, wipe data, and remove the instance record (confirm=id or CLEAR)",
+      "args": ["--id", "--confirm", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators delete --id eth-hoodi-1 --confirm --execute --json"
+    },
+    {
       "name": "validators get",
       "aliases": ["validators status"],
       "risk": "read",

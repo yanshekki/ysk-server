@@ -296,7 +296,7 @@ export function SslPage() {
         items: [
           {
             label: t('ssl.statCerts'),
-            value: items.length + (panelTls?.certExists ? 1 : 0),
+            value: items.length,
           },
           {
             label: t('ssl.statWithFiles'),

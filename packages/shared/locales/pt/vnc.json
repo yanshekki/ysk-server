@@ -245,5 +245,7 @@
   "clientUpdated": "Perfil do cliente atualizado",
   "rememberNeedPassword": "Digite uma senha primeiro.",
   "settingsNeedStack": "Esses padrões se aplicam quando TigerVNC (e XFCE, se selecionado) estão instalados. Instale-os primeiro na guia Instalar.",
-  "clientNeedNovnc": "Abrir no navegador precisa de noVNC. Instale-o na guia Instalar antes de adicionar controles remotos que você espera abrir aqui."
+  "clientNeedNovnc": "Abrir no navegador precisa de noVNC. Instale-o na guia Instalar antes de adicionar controles remotos que você espera abrir aqui.",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

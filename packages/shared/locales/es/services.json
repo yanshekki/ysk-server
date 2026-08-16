@@ -78,5 +78,6 @@
   "unitNotFound": "Unit not installed",
   "unitNa": "Not applicable",
   "unitStatic": "static",
-  "unitIndirect": "indirect"
+  "unitIndirect": "indirect",
+  "needRunning": "{{label}} is not running"
 }

@@ -110,6 +110,12 @@ describe('docker manager', () => {
       expect(ok.argv.join(' ')).toContain('127.0.0.1:8080:80');
       expect(ok.argv.join(' ')).toContain('com.ysk-server.managed=true');
       expect(ok.argv).not.toContain('--privileged');
+      expect(ok.argv[ok.argv.indexOf('--restart') + 1]).toBe('unless-stopped');
+    }
+    const never = buildDockerRunArgv({ image: 'hello-world', restart: 'no' });
+    expect(never.ok).toBe(true);
+    if (never.ok) {
+      expect(never.argv[never.argv.indexOf('--restart') + 1]).toBe('no');
     }
   });
 

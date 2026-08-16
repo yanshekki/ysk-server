@@ -274,6 +274,8 @@ export async function startValidatorInstance(
         notes: [tl('validators.errors.needDocker'), ...docker.notes],
       });
     }
+    const plan = planInstallFor(inst);
+    writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
     const up = await composeUp({
       host: input.host,
       file: composePath,
@@ -358,7 +360,7 @@ export async function clearValidatorInstance(
       return blockedValidatorOp({
         reason: 'no_execute',
         instanceId: inst.id,
-        notes: [tl('validators.notes.dryClear')],
+        notes: [input.removeUnit ? tl('validators.notes.dryDelete') : tl('validators.notes.dryClear')],
       });
     }
     await composeDown({
@@ -389,12 +391,18 @@ export async function clearValidatorInstance(
       } catch {
         /* continue */
       }
-    } else {
-      mkdirSync(inst.dataPath, { recursive: true });
-      upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'stopped' });
+      return appliedValidatorOp({ instanceId: inst.id, notes: [tl('validators.notes.deleted')] });
     }
+    mkdirSync(inst.dataPath, { recursive: true });
+    upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'stopped' });
     return appliedValidatorOp({ instanceId: inst.id, notes: [tl('validators.notes.cleared')] });
   });
+}
+
+export async function removeValidatorInstance(
+  input: ValidatorMutateOpts & { id: string; confirm?: string },
+): Promise<ValidatorOpsResult> {
+  return clearValidatorInstance({ ...input, removeUnit: true, restoreSnapshot: false });
 }
 
 async function maybeSyncExposure(

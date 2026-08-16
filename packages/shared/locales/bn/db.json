@@ -244,7 +244,8 @@
     "downloadBundleTitle": "পিয়ার কনফ বান্ডেল (.tar.gz) ডাউনলোড করুন",
     "pushPlanTitle": "প্রিভিউ পুশ টু পিয়ার (কোনও scp)",
     "fleetSyncPlanTitle": "ফ্লিট সিঙ্কের পূর্বরূপ দেখুন (চালনা নেই)",
-    "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?"
+    "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
   },
   "console": {
     "dataBrowse": "ডেটা ব্রাউজ করুন",

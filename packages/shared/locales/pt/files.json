@@ -352,5 +352,8 @@
   "webdavDisableFailed": "O WebDAV ainda está ativado após a desativação — a gravação pode não ter persistido. Tente novamente.",
   "dirNamedLikeFile": "(pasta residual; o nome parece um ficheiro)",
   "webdavAfterEnable": "Disponível depois de ativar o WebDAV e emitir um token.",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

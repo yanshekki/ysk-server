@@ -281,6 +281,47 @@ textarea:disabled {
   min-width: 0;
 }
 
+.val-detail {
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.val-detail > .section-block,
+.val-detail > .danger-zone {
+  margin-bottom: 0;
+  padding: var(--space-5);
+  gap: var(--space-4);
+}
+
+.val-detail > .section-block {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+
+.val-detail .list-plain {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.val-detail .list-plain a {
+  font-weight: 650;
+}
+
+.val-detail .code-block {
+  margin: 0;
+  max-height: 16rem;
+}
+
+.val-detail textarea {
+  min-height: 10rem;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;

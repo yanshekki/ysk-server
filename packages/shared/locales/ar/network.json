@@ -154,5 +154,12 @@
   "defaultRouteDownNeedName": "هذا هو مسار الخروج الافتراضي. اكتب اسم الواجهة للتأكيد — قد يتم قطع اتصال اللوحة.",
   "linkDownDefault": "Down default route",
   "loopbackImmutable": "Loopback cannot be changed",
-  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  }
 }

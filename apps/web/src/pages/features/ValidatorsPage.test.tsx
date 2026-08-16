@@ -20,6 +20,10 @@ describe('ValidatorsPage', () => {
               {
                 id: 'eth',
                 networks: [{ id: 'hoodi', kind: 'testnet', recommended: true }],
+                clients: [
+                  { id: 'reth', role: 'el' },
+                  { id: 'lighthouse', role: 'cl' },
+                ],
               },
             ],
           }),
@@ -79,5 +83,139 @@ describe('ValidatorsPage', () => {
       expect(screen.getByText('/tmp/ysk/validators')).toBeInTheDocument();
     });
     await user.click(screen.getByRole('tab', { name: /about/i }));
+  });
+
+  it('wizard summary reviews chain, network, and profile as facts', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create node/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /create node/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    expect(await screen.findByText('Ethereum')).toBeInTheDocument();
+    expect(screen.getByText('Hoodi')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^install$/i })).toBeInTheDocument();
+  });
+
+  it('lists a delete action that asks for the instance id', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            chains: [{ id: 'eth', networks: [{ id: 'hoodi', kind: 'testnet' }] }],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(JSON.stringify({ ok: true, disk: { instances: [] } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            instances: [
+              {
+                id: 'eth-hoodi-1',
+                chain: 'eth',
+                network: 'hoodi',
+                profile: 'minimal',
+                desiredState: 'stopped',
+                ports: { rpc: 8545, p2p: 30303 },
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /^delete$/i }));
+    expect(await screen.findByRole('heading', { name: /delete eth-hoodi-1/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('eth-hoodi-1')).toBeInTheDocument();
+  });
+
+  it('does not repeat testnet in the network column and localizes status', async () => {
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(JSON.stringify({ ok: true, chains: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(JSON.stringify({ ok: true, disk: { instances: [] } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            instances: [
+              {
+                id: 'near-testnet-1',
+                chain: 'near',
+                network: 'testnet',
+                profile: 'minimal',
+                desiredState: 'stopped',
+                ports: {},
+              },
+              {
+                id: 'eth-hoodi-1',
+                chain: 'eth',
+                network: 'hoodi',
+                profile: 'minimal',
+                desiredState: 'stopped',
+                ports: {},
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('near-testnet-1')).toBeInTheDocument();
+    });
+    expect(screen.getAllByText('Testnet')).toHaveLength(2);
+    expect(screen.getByText('Hoodi')).toBeInTheDocument();
+    expect(screen.getAllByText('Stopped').length).toBeGreaterThan(0);
+    expect(screen.queryByText('stopped')).toBeNull();
   });
 });

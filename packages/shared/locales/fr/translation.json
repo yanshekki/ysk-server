@@ -2707,7 +2707,8 @@
       "downloadBundleTitle": "Téléchargez le bundle de configuration entre pairs (.tar.gz)",
       "pushPlanTitle": "Aperçu push to peer (pas de scp)",
       "fleetSyncPlanTitle": "Aperçu de la synchronisation de la flotte (pas d'exécution)",
-      "fleetApplyTitle": "La mise en file d'attente s'applique-t-elle aux membres de la flotte ?"
+      "fleetApplyTitle": "La mise en file d'attente s'applique-t-elle aux membres de la flotte ?",
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
     },
     "console": {
       "dataBrowse": "Parcourir les données",
@@ -3082,7 +3083,16 @@
     },
     "state": {
       "up": "Actif",
-      "down": "Arrêté"
+      "down": "Arrêté",
+      "running": "Running",
+      "exited": "Exited",
+      "restarting": "Restarting",
+      "restartingCount": "Restarting · {{n}} times",
+      "paused": "Paused",
+      "created": "Created",
+      "dead": "Dead",
+      "removing": "Removing",
+      "unknown": "Unknown"
     },
     "actions": {
       "start": "Démarrer",
@@ -3117,7 +3127,8 @@
       "composeCta": "Open validator nodes"
     },
     "logs": {
-      "empty": "Pas encore de journaux"
+      "empty": "Pas encore de journaux",
+      "follow": "Follow"
     },
     "settings": {
       "logMaxSize": "Taille max. des journaux de conteneur",
@@ -3178,7 +3189,8 @@
       "compose": {
         "up": "Projet Compose démarré",
         "down": "Projet Compose arrêté",
-        "restart": "Projet Compose redémarré"
+        "restart": "Projet Compose redémarré",
+        "rm": "Compose project removed"
       },
       "engine": {
         "start": "docker.service démarré",
@@ -3254,8 +3266,27 @@
       "customPort": "Autre port hôte",
       "customPortHost": "Port hôte",
       "customPortContainer": "Port conteneur",
-      "pctUsed": "{{n}} % utilisé"
-    }
+      "pctUsed": "{{n}} % utilisé",
+      "customPortHint": "1–65535. Example: 9090 → 80.",
+      "pickBridge": "Bridge network"
+    },
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This cannot be undone.",
+    "deleteC1": "The resource is removed from this host.",
+    "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+    "pruneTitle": "Prune Docker resources",
+    "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+    "pruneC1": "Unused resources in the selected scope are deleted.",
+    "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+    "pruneC3": "Stopped containers or unused images in this scope are removed.",
+    "df": {
+      "images": "Images",
+      "containers": "Containers",
+      "volumes": "Local volumes",
+      "builder": "Build cache",
+      "other": "Other"
+    },
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
   },
   "email": {
     "title": "E-mail",
@@ -3767,7 +3798,8 @@
     "deliverabilityScore": "Pack de délivrabilité",
     "opendkimNoReload": "OpenDKIM n’a pas de reload — redémarrez après un changement de clés ou de tables.",
     "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile",
-    "tlsRequestLeFor": "Request LE for {{host}}"
+    "tlsRequestLeFor": "Request LE for {{host}}",
+    "deliverabilityChecks": "Checks"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Non autorisé",
@@ -4292,7 +4324,10 @@
     "webdavDisableFailed": "WebDAV est toujours activé après la désactivation : l'écriture n'a peut-être pas persisté. Essayer à nouveau.",
     "dirNamedLikeFile": "(dossier résiduel ; le nom ressemble à un fichier)",
     "webdavAfterEnable": "Disponible après activation de WebDAV et émission d’un jeton.",
-    "webdavAlreadyOff": "WebDAV is already off"
+    "webdavAlreadyOff": "WebDAV is already off",
+    "deleteMore": " and {{n}} more",
+    "unshareTitle": "Revoke this share?",
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
   },
   "firewall": {
     "profiles": {
@@ -4552,7 +4587,8 @@
     "detectPublicIp": "Détecter l'adresse IP publique",
     "detectPublicIpTitle": "Remplissez le premier IPv4 sans bouclage de cet hôte",
     "pasvIpRequired": "Indiquez une IP publique PASV avant d’appliquer (NAT/cloud). Détectez ou saisissez une adresse.",
-    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+    "stateFailed": "Failed to start"
   },
   "geo": {
     "continents": {
@@ -5554,7 +5590,14 @@
     "defaultRouteDownNeedName": "Il s'agit de la sortie de route par défaut. Tapez le nom de l’interface pour confirmer – le panneau peut se déconnecter.",
     "linkDownDefault": "Down default route",
     "loopbackImmutable": "Loopback cannot be changed",
-    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+    "statUp": "Up",
+    "oper": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "other": "Other"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} site(s)",
@@ -8653,7 +8696,8 @@
       "desktopNeedsStart": "Profil de bureau {{desktop}} écrit sur xstartup. Démarrez la session pour postuler.",
       "passwordNeedTiger": "vncpasswd introuvable. Installez TigerVNC (tigervnc-standalone-server) avant de définir un mot de passe.",
       "linuxUserRolledBack": "Suppression de l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
-      "linuxUserOrphan": "Impossible de supprimer l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC."
+      "linuxUserOrphan": "Impossible de supprimer l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
     },
     "apache": {
       "needServerName": "Nom du serveur requis",
@@ -9480,14 +9524,14 @@
     "netPublishMaint": "Entretien",
     "sslNeedDomain": "Définissez un domaine avant de publier Nginx / SSL.",
     "createTemplateMissing": "{{v0}} ；「— —」。",
-    "deleteDialogDesc": "「{{v0}}」。。",
+    "deleteDialogDesc": "「{{name}}」。。",
     "deleteWillStop": "systèmed / PM2 /",
     "deleteWillWeb": "Configuration Nginx、Pool PHP-FPM、Apache vhost（）",
     "deleteWillOs": "LinuxMaison（）",
     "deleteKeepOs": "AccueilLinux（）",
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "Annuler，",
-    "deleteTypeNameHint": "「{{v0}}」",
+    "deleteTypeNameHint": "「{{name}}」",
     "deleteDnsWarn": "Zone DNS / domaine 。",
     "manageInNginx": "Gérer dans Nginx",
     "advFtpHomeApp": "Répertoire app du site",
@@ -10035,7 +10079,9 @@
     "publicRootNote": "Racine publique : {{path}}",
     "applyConfirmTitle": "Appliquer le site des fichiers publics ?",
     "applyConfirmDesc": "Écrire Nginx server_name {{name}} et recharger Nginx.",
-    "serverNameMismatch": "La conf active est {{live}} ; le formulaire a {{draft}}. Appliquez pour remplacer."
+    "serverNameMismatch": "La conf active est {{live}} ; le formulaire a {{draft}}. Appliquez pour remplacer.",
+    "executeFlag": "Execute",
+    "asRoot": "Root"
   },
   "rbac": {
     "permissions": "Autorisations",
@@ -11448,7 +11494,8 @@
     "roleImap": "Boîte aux lettres IMAP/POP3",
     "serviceNotInstalled": "Ce service n'est pas installé, les règles de pare-feu ne s'appliquent donc pas.",
     "openButStopped": "Ports ouverts – le service ne fonctionne pas",
-    "openNoTenants": "Ports publics sans locataires"
+    "openNoTenants": "Ports publics sans locataires",
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
   },
   "services": {
     "enabledBoot": "Au démarrage",
@@ -11530,7 +11577,8 @@
     "unitNotFound": "Unit not installed",
     "unitNa": "Not applicable",
     "unitStatic": "static",
-    "unitIndirect": "indirect"
+    "unitIndirect": "indirect",
+    "needRunning": "{{label}} is not running"
   },
   "software": {
     "title": "Logiciels",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "Aucun nœud validateur pour l’instant",
-      "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "Copy command",
-      "copied": "Copied"
+      "desc": "Créez un nœud de testnet en quelques clics."
     },
     "refresh": "Actualiser",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "Utilisation du disque élevée (70 %+)",
       "danger": "Utilisation du disque critique (85 %+)",
       "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)",
-      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+      "autoClearConfirmTitle": "Enable auto-clear?",
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "Réseau de test",
-      "mainnet": "Réseau principal"
+      "mainnet": "Réseau principal",
+      "mixed": "Mainnet + testnet"
     },
     "profile": {
       "minimal": "Minimaliste",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "Archive EL ethPandaOps restaurée et CL réinitialisé pour le checkpoint sync",
       "snapshotEthCl": "Données CL réinitialisées pour le checkpoint sync officiel",
       "snapshotNear": "Données NEAR effacées ; compose réinitialisera avec le genesis officiel et epoch sync",
-      "nativePrune": "Commande d’élagage native du client exécutée"
+      "nativePrune": "Commande d’élagage native du client exécutée",
+      "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "deleted": "Node deleted"
     },
     "create": "Créer un nœud",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "diskShort": "Not enough free disk for this chain / network / profile",
       "limitNone": "No limit",
       "rpcDefault": "Default",
-      "customPath": "Use a custom data path"
+      "customPath": "Use a custom data path",
+      "installConfirmTitle": "Install this node?",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+      "installC1": "Several gigabytes of images may be downloaded.",
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
     },
     "actions": {
       "detail": "Détails",
@@ -13132,7 +13186,21 @@
       "prune": "Nettoyer les images",
       "switchNetwork": "Changer de réseau",
       "removeUnit": "Supprimer aussi compose / l’enregistrement d’instance",
-      "restoreAfter": "Restaurer l’instantané après vidage"
+      "restoreAfter": "Restaurer l’instantané après vidage",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{id}}",
+      "deleteDesc": "This removes the node from the panel.",
+      "deleteC1": "Docker Compose is stopped and removed",
+      "deleteC2": "Chain data on disk is deleted",
+      "deleteC3": "The instance record is removed",
+      "pruneTitle": "Prune unused images",
+      "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+      "pruneC1": "Unused images labelled for this Compose project are deleted.",
+      "clearTitle": "Clear {{id}}",
+      "clearC1": "Chain data on disk is deleted.",
+      "clearC2": "The instance stays in the panel, stopped and empty.",
+      "switchTitle": "Switch network",
+      "switchC1": "The node is stopped and chain data is wiped before the new network is written."
     },
     "policy": {
       "label": "Politique de mise à jour",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "Docker pour les nœuds validateurs",
       "dockerOk": "{{count}} instance(s) de validateur ; Docker est installé",
       "dockerMissing": "Des instances de validateur existent mais la commande docker est introuvable"
+    },
+    "detail": {
+      "status": "Status",
+      "sync": "Sync",
+      "peers": "Peers",
+      "version": "Version",
+      "access": "Access",
+      "upgrade": "Updates",
+      "upgradeHint": "How this node tracks client versions.",
+      "network": "Network",
+      "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+      "maintain": "Maintenance",
+      "danger": "Clear data",
+      "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+      "compose": "Compose",
+      "logs": "Logs"
+    },
+    "state": {
+      "unknown": "Unknown",
+      "stopped": "Stopped",
+      "running": "Running",
+      "syncing": "Syncing",
+      "error": "Error"
     }
   },
   "vnc": {
@@ -13431,7 +13522,9 @@
     "clientUpdated": "Profil client mis à jour",
     "rememberNeedPassword": "Entrez d'abord un mot de passe.",
     "settingsNeedStack": "Ces valeurs par défaut s'appliquent lorsque TigerVNC (et XFCE si sélectionné) sont installés. Installez-les d'abord dans l'onglet Installer.",
-    "clientNeedNovnc": "Ouvrir dans le navigateur nécessite noVNC. Installez-le dans l'onglet Installer avant d'ajouter les télécommandes que vous prévoyez d'ouvrir ici."
+    "clientNeedNovnc": "Ouvrir dans le navigateur nécessite noVNC. Installez-le dans l'onglet Installer avant d'ajouter les télécommandes que vous prévoyez d'ouvrir ici.",
+    "needXfceFirst": "Install XFCE first",
+    "needSessionRunning": "Session is not running — start it first"
   },
   "vpn": {
     "pageDesc": "Serveur et client VPN",
@@ -13570,6 +13663,13 @@
       "51820": "Port d'écoute WireGuard par défaut",
       "51821": "Port d'écoute WireGuard alternatif",
       "51822": "Deuxième port d'écoute WireGuard alternatif"
-    }
+    },
+    "needServerRunning": "{{engine}} is not running — apply the server first",
+    "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+    "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+    "showPrivateKey": "Show private key",
+    "hidePrivateKey": "Hide private key",
+    "deletePeerTitle": "Delete peer {{name}}?",
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
   }
 }

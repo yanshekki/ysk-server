@@ -38,5 +38,7 @@
   "publicRootNote": "공개 루트: {{path}}",
   "applyConfirmTitle": "공개 파일 사이트를 적용할까요?",
   "applyConfirmDesc": "Nginx server_name {{name}}을(를) 쓰고 Nginx를 다시 로드합니다.",
-  "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다."
+  "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다.",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

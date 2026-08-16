@@ -222,6 +222,9 @@ describe('Email / FTPS / SSL helpers', () => {
     expect(
       ftpsStatusLabel({ installed: true, active: 'activating' } as never, t).tone,
     ).toBe('warn');
+    expect(
+      ftpsStatusLabel({ installed: true, active: 'failed' } as never, t).tone,
+    ).toBe('danger');
   });
 
   it('ssl statusBadge variants', () => {

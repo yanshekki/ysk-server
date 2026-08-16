@@ -55,7 +55,23 @@
   },
   "state": {
     "up": "運行中",
-    "down": "已停止"
+    "down": "已停止",
+    "running": "運行中",
+    "exited": "已結束",
+    "restarting": "重啟中",
+    "restartingCount": "重啟中 · {{n}} 次",
+    "paused": "已暫停",
+    "created": "已建立",
+    "dead": "已失效",
+    "removing": "刪除中",
+    "unknown": "未知"
+  },
+  "df": {
+    "images": "映像",
+    "containers": "容器",
+    "volumes": "本機 volume",
+    "builder": "建置快取",
+    "other": "其他"
   },
   "actions": {
     "start": "啟動",
@@ -90,8 +106,10 @@
     "networks": "未有網絡"
   },
   "logs": {
-    "empty": "未有日誌"
+    "empty": "此容器尚未輸出日誌。",
+    "follow": "跟隨"
   },
+  "deleteRunningWarn": "此容器仍在運行或重啟中，刪除會強制移除。",
   "settings": {
     "logMaxSize": "容器日誌上限",
     "liveRestore": "即時還原（引擎重啟時保留容器）",
@@ -151,7 +169,8 @@
     "compose": {
       "up": "已啟動 Compose 專案",
       "down": "已停止 Compose 專案",
-      "restart": "已重啟 Compose 專案"
+      "restart": "已重啟 Compose 專案",
+      "rm": "已刪除 Compose 專案"
     },
     "engine": {
       "start": "已啟動 docker.service",
@@ -211,6 +230,17 @@
     "customPort": "其他主機埠",
     "customPortHost": "主機埠",
     "customPortContainer": "容器埠",
-    "pctUsed": "已用 {{n}}%"
-  }
+    "pctUsed": "已用 {{n}}%",
+    "customPortHint": "1–65535。例如 9090 → 80。",
+    "pickBridge": "選擇 bridge 網絡"
+  },
+  "deleteTitle": "刪除 {{id}}",
+  "deleteDesc": "此動作無法復原。",
+  "deleteC1": "會從這部主機移除該資源。",
+  "deleteComposeVal": "這是驗證者堆疊 — 驗證者實例會一併刪除。",
+  "pruneTitle": "清理 Docker 資源",
+  "pruneDesc": "輸入 PRUNE 以確認。已刪除的資料無法復原。",
+  "pruneC1": "會刪除所選範圍內未使用的資源。",
+  "pruneC2": "Volume 與系統清理會永久刪除未使用的資料卷。",
+  "pruneC3": "會移除呢個範圍內已停止的容器或未使用映像。"
 }

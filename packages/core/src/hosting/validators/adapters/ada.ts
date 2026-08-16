@@ -5,6 +5,7 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
+import { composeBind } from '../compose-runner.js';
 
 export function cardanoNetworkEnv(network: string): 'preview' | 'preprod' | 'mainnet' {
   if (network === 'mainnet' || network === 'preprod') return network;
@@ -29,7 +30,7 @@ services:
       - "0.0.0.0:${p2p}:3001"
       - "127.0.0.1:${metrics}:12798"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 

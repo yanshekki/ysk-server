@@ -3005,7 +3005,8 @@
     "desktopNeedsStart": "ملف تعريف سطح المكتب {{desktop}} مكتوب على xstartup. ابدأ الجلسة للتقديم.",
     "passwordNeedTiger": "لم يتم العثور على vncpasswd. قم بتثبيت TigerVNC (خادم Tigervnc المستقل) قبل تعيين كلمة المرور.",
     "linuxUserRolledBack": "تمت إزالة مستخدم Linux المتبقي {{user}} بعد فشل كلمة مرور VNC.",
-    "linuxUserOrphan": "تعذرت إزالة مستخدم Linux المتبقي {{user}} بعد فشل كلمة مرور VNC."
+    "linuxUserOrphan": "تعذرت إزالة مستخدم Linux المتبقي {{user}} بعد فشل كلمة مرور VNC.",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
   },
   "apache": {
     "needServerName": "اسم الخادم مطلوب",

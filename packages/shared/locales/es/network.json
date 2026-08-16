@@ -154,5 +154,12 @@
   "defaultRouteDownNeedName": "Esta es la ruta de salida predeterminada. Escriba el nombre de la interfaz para confirmar; el panel puede desconectarse.",
   "linkDownDefault": "Down default route",
   "loopbackImmutable": "Loopback cannot be changed",
-  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  }
 }

@@ -85,11 +85,20 @@ describe('matchMutatingRouteCap', () => {
     expect(matchMutatingRouteCap('POST', '/api/v1/validators/eth-hoodi-1/start')).toBe(
       'validators.manage',
     );
+    expect(matchMutatingRouteCap('POST', '/api/v1/validators/eth-hoodi-1/delete')).toBe(
+      'validators.wipe',
+    );
+    expect(matchMutatingRouteCap('DELETE', '/api/v1/validators/eth-hoodi-1')).toBe(
+      'validators.wipe',
+    );
   });
 
   it('gates docker mutations by wipe vs manage', () => {
     expect(matchMutatingRouteCap('POST', '/api/v1/docker/prune')).toBe('docker.wipe');
     expect(matchMutatingRouteCap('POST', '/api/v1/docker/engine/start')).toBe('docker.manage');
+    expect(matchMutatingRouteCap('POST', '/api/v1/docker/compose/yskval-eth-hoodi-1/rm')).toBe(
+      'docker.wipe',
+    );
     expect(matchGetRouteCaps('/api/v1/docker')).toEqual(expect.arrayContaining(['docker.read']));
   });
 

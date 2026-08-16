@@ -3005,7 +3005,8 @@
     "desktopNeedsStart": "Profil desktop {{desktop}} ditulis ke xstartup. Mulai sesi untuk melamar.",
     "passwordNeedTiger": "vncpasswd tidak ditemukan. Instal TigerVNC (tigervnc-standalone-server) sebelum mengatur kata sandi.",
     "linuxUserRolledBack": "Menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
-    "linuxUserOrphan": "Tidak dapat menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal."
+    "linuxUserOrphan": "Tidak dapat menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
   },
   "apache": {
     "needServerName": "Nama server diperlukan",

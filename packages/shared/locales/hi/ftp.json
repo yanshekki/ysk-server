@@ -145,5 +145,6 @@
   "detectPublicIp": "सार्वजनिक आईपी का पता लगाएं",
   "detectPublicIpTitle": "इस होस्ट से पहला गैर-लूपबैक IPv4 भरें",
   "pasvIpRequired": "लागू करने से पहले PASV सार्वजनिक IP भरें (NAT/क्लाउड)। पता लगाएँ या लिखें।",
-  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+  "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+  "stateFailed": "Failed to start"
 }

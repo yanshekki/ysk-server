@@ -508,5 +508,6 @@
   "deliverabilityScore": "Paquete de entregabilidad",
   "opendkimNoReload": "OpenDKIM no admite recarga — use reinicio tras cambiar claves o tablas.",
   "opendkimNoReloadTitle": "systemctl reload opendkim no está soportado en este conjunto",
-  "tlsRequestLeFor": "Request LE for {{host}}"
+  "tlsRequestLeFor": "Request LE for {{host}}",
+  "deliverabilityChecks": "Checks"
 }

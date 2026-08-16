@@ -77,6 +77,7 @@ export type VncOpsResult = {
   blocked?: boolean;
   requiresExecute?: boolean;
   requiresRoot?: boolean;
+  apply_status?: string;
   account?: VncAccountSummary;
   written?: string[];
 };
@@ -505,6 +506,7 @@ export class VncService {
     let requiresExecute = userR.requiresExecute;
     let requiresRoot = userR.requiresRoot;
 
+    let startFailed = false;
     if (input.start) {
       const st = await startVncSession({
         host: this.host,
@@ -521,11 +523,13 @@ export class VncService {
         requiresExecute = st.requiresExecute ?? requiresExecute;
         requiresRoot = st.requiresRoot ?? requiresRoot;
       }
+      if (!st.ok && !st.blocked) startFailed = true;
     }
 
     const status = await this.resolveStatus(rec);
     return {
-      ok: true,
+      ok: !startFailed && !blocked,
+      apply_status: startFailed ? 'partial' : blocked ? 'blocked' : 'applied',
       notes,
       blocked,
       requiresExecute,

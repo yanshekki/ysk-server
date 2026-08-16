@@ -3,7 +3,7 @@
  * MariaDB Galera + MySQL primary/replica. Mounted in ServiceConsole «叢集» tab.
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ActionBar,
   Alert,
   Badge,
@@ -85,6 +85,8 @@ export function DbClusterPanel({
   engineInstalled?: boolean;
 }) {
   const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const fromClusterPath = params.get('from') === 'cluster';
   const [items, setItems] = useState<DbCluster[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [wizOpen, setWizOpen] = useState(false);
@@ -338,6 +340,9 @@ export function DbClusterPanel({
 
   return (
     <div className="stack-gap">
+      {fromClusterPath ? (
+        <Alert variant="info">{t('db.cluster.redirectedFromCluster')}</Alert>
+      ) : null}
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {msg ? (

@@ -9,10 +9,7 @@
   },
   "empty": {
     "title": "尚未建立驗證者節點",
-    "desc": "用精靈幾步建立測試網節點。",
-    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-    "copyCli": "複製指令",
-    "copied": "已複製"
+    "desc": "用建立精靈幾個步驟即可建立測試網節點。"
   },
   "refresh": "重新整理",
   "disk": {
@@ -24,7 +21,9 @@
     "warn": "磁碟用量偏高（70% 或以上）",
     "danger": "磁碟用量危急（85% 或以上）",
     "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）",
-    "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。"
+    "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。",
+    "autoClearConfirmTitle": "啟用自動清空？",
+    "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。"
   },
   "chain": {
     "eth": "Ethereum",
@@ -50,7 +49,8 @@
   },
   "networkKind": {
     "testnet": "測試網",
-    "mainnet": "主網"
+    "mainnet": "主網",
+    "mixed": "主網＋測試網"
   },
   "profile": {
     "minimal": "精簡",
@@ -131,7 +131,9 @@
     "snapshotEthEl": "已還原 ethPandaOps 執行層封存，並重設共識層以用 checkpoint sync",
     "snapshotEthCl": "已重設共識層資料，使用官方 checkpoint sync",
     "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
-    "nativePrune": "已執行客戶端原生清理指令"
+    "nativePrune": "已執行客戶端原生清理指令",
+    "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
+    "deleted": "已刪除節點"
   },
   "create": "建立節點",
   "wizard": {
@@ -156,7 +158,11 @@
     "rpcPort": "RPC 埠",
     "limitNone": "不限",
     "rpcDefault": "預設",
-    "customPath": "使用自訂資料路徑"
+    "customPath": "使用自訂資料路徑",
+    "installConfirmTitle": "安裝此節點？",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}。約需 {{disk}} 磁碟。拉取映像可能需時頗長。",
+    "installC1": "可能下載數 GiB 映像。",
+    "installC2": "可取消面板任務；已拉取的映像不會自動刪除。"
   },
   "actions": {
     "detail": "詳情",
@@ -169,7 +175,21 @@
     "prune": "清理映像",
     "switchNetwork": "轉網絡",
     "removeUnit": "一併刪除 compose／實例紀錄",
-    "restoreAfter": "清空後還原快照"
+    "restoreAfter": "清空後還原快照",
+    "delete": "刪除",
+    "deleteTitle": "刪除 {{id}}",
+    "deleteDesc": "此動作會從面板移除節點。",
+    "deleteC1": "會停止並移除 Docker Compose",
+    "deleteC2": "會刪除磁碟上的鏈資料",
+    "deleteC3": "會刪除實例紀錄",
+    "pruneTitle": "清理未用映像",
+    "pruneDesc": "輸入實例識別碼，以清理此節點 Compose 未用映像。",
+    "pruneC1": "會刪除此 Compose 專案標籤下未使用的映像。",
+    "clearTitle": "清空 {{id}}",
+    "clearC1": "會刪除磁碟上的鏈資料。",
+    "clearC2": "實例仍留在面板，狀態為已停止、無資料。",
+    "switchTitle": "轉網絡",
+    "switchC1": "會先停機並清空鏈資料，再寫入新網絡。"
   },
   "policy": {
     "label": "升級政策",
@@ -219,5 +239,28 @@
     "dockerTitle": "驗證者節點所需的 Docker",
     "dockerOk": "有 {{count}} 個驗證者實例；已安裝 Docker",
     "dockerMissing": "已有驗證者實例，但找不到 docker 指令"
+  },
+  "detail": {
+    "status": "狀態",
+    "sync": "同步",
+    "peers": "對等節點",
+    "version": "版本",
+    "access": "存取",
+    "upgrade": "升級",
+    "upgradeHint": "選擇此節點如何跟進客戶端版本。",
+    "network": "網絡",
+    "networkHint": "轉網絡會停機並清空鏈資料。請先在「清空資料」確認。",
+    "maintain": "維護",
+    "danger": "清空資料",
+    "dangerHint": "輸入實例識別碼或 CLEAR。此動作會刪除磁碟上的鏈資料。",
+    "compose": "Compose",
+    "logs": "日誌"
+  },
+  "state": {
+    "unknown": "未知",
+    "stopped": "已停止",
+    "running": "運行中",
+    "syncing": "同步中",
+    "error": "錯誤"
   }
 }

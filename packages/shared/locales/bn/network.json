@@ -154,5 +154,12 @@
   "defaultRouteDownNeedName": "এটি ডিফল্ট রুট প্রস্থান. নিশ্চিত করতে ইন্টারফেসের নাম টাইপ করুন — প্যানেল সংযোগ বিচ্ছিন্ন হতে পারে।",
   "linkDownDefault": "Down default route",
   "loopbackImmutable": "Loopback cannot be changed",
-  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+  "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+  "statUp": "Up",
+  "oper": {
+    "up": "Up",
+    "down": "Down",
+    "unknown": "Unknown",
+    "other": "Other"
+  }
 }

@@ -332,6 +332,7 @@ ysk-server docker status --json
 ysk-server docker ps --json
 ysk-server docker images --json
 ysk-server docker compose ls --json
+YSK_EXECUTE=1 ysk-server docker compose rm --project yskval-eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
 YSK_EXECUTE=1 ysk-server docker engine start --execute --json
 ```
@@ -352,6 +353,7 @@ YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile
 YSK_EXECUTE=1 ysk-server validators start --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators stop --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json
+YSK_EXECUTE=1 ysk-server validators delete --id eth-hoodi-1 --confirm --execute --json
 ysk-server validators logs --id eth-hoodi-1 --json
 ysk-server validators policy --id eth-hoodi-1 --upgrade notify --json
 YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json

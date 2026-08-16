@@ -244,7 +244,8 @@
     "downloadBundleTitle": "پیر conf بنڈل ڈاؤن لوڈ کریں (.tar.gz)",
     "pushPlanTitle": "پیش نظارہ پش ٹو پیئر (کوئی ایس سی پی نہیں)",
     "fleetSyncPlanTitle": "بیڑے کی مطابقت پذیری کا پیش نظارہ (کوئی عمل نہیں)",
-    "fleetApplyTitle": "بحری بیڑے کے اراکین پر قطار کا اطلاق ہوتا ہے؟"
+    "fleetApplyTitle": "بحری بیڑے کے اراکین پر قطار کا اطلاق ہوتا ہے؟",
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
   },
   "console": {
     "dataBrowse": "ڈیٹا براؤز کریں۔",

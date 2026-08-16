@@ -3005,7 +3005,8 @@
     "desktopNeedsStart": "桌面配置文件 {{desktop}} 写入 xstartup。启动会话以进行申请。",
     "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。",
     "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
-    "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。"
+    "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。",
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
   },
   "apache": {
     "needServerName": "需要域名",

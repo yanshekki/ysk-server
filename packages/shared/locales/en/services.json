@@ -20,6 +20,7 @@
   "lifecycleTitle": "{{label}} service control",
   "startedOk": "{{label}} started",
   "stoppedOk": "{{label}} stopped",
+  "needRunning": "{{label}} is not running",
   "restartedOk": "{{label}} restarted",
   "reloadedOk": "{{label}} reloaded",
   "stopNeedConfirm": "Needs confirmation",

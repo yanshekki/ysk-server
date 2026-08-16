@@ -135,5 +135,12 @@
     "51820": "Port mendengarkan WireGuard default",
     "51821": "Port mendengarkan WireGuard alternatif",
     "51822": "Port mendengarkan WireGuard alternatif kedua"
-  }
+  },
+  "needServerRunning": "{{engine}} is not running — apply the server first",
+  "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+  "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+  "showPrivateKey": "Show private key",
+  "hidePrivateKey": "Hide private key",
+  "deletePeerTitle": "Delete peer {{name}}?",
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
 }

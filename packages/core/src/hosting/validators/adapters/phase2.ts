@@ -5,6 +5,7 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
+import { composeBind } from '../compose-runner.js';
 
 type Probe = Pick<ValidatorNodeStatus, 'syncProgress' | 'peers' | 'version' | 'lastError'>;
 
@@ -49,7 +50,7 @@ services:
       - "127.0.0.1:${rpc}:${testnet ? 18332 : 8332}"
       - "0.0.0.0:${p2p}:${testnet ? 18333 : 8333}"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 
@@ -90,7 +91,7 @@ services:
       - "127.0.0.1:${rpc}:26657"
       - "0.0.0.0:${p2p}:26656"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 
@@ -126,7 +127,7 @@ services:
     ports:
       - "127.0.0.1:${rpc}:9000"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 
@@ -157,7 +158,7 @@ services:
       - "127.0.0.1:${rpc}:8080"
       - "0.0.0.0:${p2p}:6180"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 
@@ -196,7 +197,7 @@ services:
       - "127.0.0.1:${rpc}:9933"
       - "0.0.0.0:${p2p}:30333"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 
@@ -243,7 +244,7 @@ services:
     ports:
       - "127.0.0.1:${rpc}:8899"
     volumes:
-      - ${JSON.stringify(spec.dataPath)}:/data
+      - ${composeBind(spec.dataPath, '/data')}
 `;
 }
 

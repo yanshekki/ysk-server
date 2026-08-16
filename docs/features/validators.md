@@ -32,6 +32,7 @@ Install and manage **L1 validator-ready nodes** (Ethereum, Avalanche, NEAR, Card
 | Prune / switch network / snapshot | `validators prune` · `switch-network` · `snapshot` | write-host | Switch requires stop + confirm (clears data) |
 | Start / stop / restart | `ysk-server validators start\|stop\|restart --id ID --execute --json` | write-host | |
 | Clear chain data | `ysk-server validators clear --id ID --confirm --execute --json` | write-host | Confirm = id or `CLEAR` |
+| Delete instance | `ysk-server validators delete --id ID --confirm --execute --json` | write-host | Stops Compose, wipes data, removes the record. Confirm = id or `CLEAR`. Needs `validators.wipe` |
 
 Risk: `read` · `write-panel` · `write-host` (see [docs-standard.md](../docs-standard.md)).
 
@@ -42,6 +43,8 @@ ysk-server validators list --json
 ysk-server validators chains --json
 ysk-server validators disk --json
 ysk-server validators get --id eth-hoodi-1 --json
+ysk-server validators create --chain eth --network hoodi --profile minimal --json
+YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile minimal --execute --json
 ```
 
 Full argv: [../cli/reference.md](../cli/reference.md).

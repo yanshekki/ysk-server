@@ -245,5 +245,7 @@
   "clientUpdated": "クライアントプロファイルが更新されました",
   "rememberNeedPassword": "最初にパスワードを入力してください。",
   "settingsNeedStack": "これらのデフォルトは、TigerVNC (および選択されている場合は XFCE) がインストールされている場合に適用されます。まず、[インストール] タブでそれらをインストールします。",
-  "clientNeedNovnc": "ブラウザで開くには VNC は必要ありません。ここで開く予定のリモートを追加する前に、[インストール] タブにインストールしてください。"
+  "clientNeedNovnc": "ブラウザで開くには VNC は必要ありません。ここで開く予定のリモートを追加する前に、[インストール] タブにインストールしてください。",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first"
 }

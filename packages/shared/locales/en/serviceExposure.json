@@ -17,6 +17,7 @@
   "roleImap": "IMAP / POP3 mailbox",
   "summaryRestricted": "Restricted · {{count}} source(s)",
   "summaryFirewallOff": "Host firewall: {{detail}} — rules not enforced until UFW is active.",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
   "outOfSync": "Out of sync",
   "openButStopped": "Ports open — service not running",
   "openNoTenants": "Public ports with no tenants",

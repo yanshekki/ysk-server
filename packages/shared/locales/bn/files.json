@@ -352,5 +352,8 @@
   "webdavDisableFailed": "নিষ্ক্রিয় করার পরেও WebDAV সক্রিয় আছে — লেখাটি স্থায়ী নাও থাকতে পারে। আবার চেষ্টা করুন",
   "dirNamedLikeFile": "(ফোল্ডার অবশিষ্ট; নাম ফাইলের মতো)",
   "webdavAfterEnable": "WebDAV চালু করে টোকেন ইস্যু করার পরে উপলব্ধ।",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

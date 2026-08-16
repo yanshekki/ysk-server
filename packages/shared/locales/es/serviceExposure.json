@@ -36,5 +36,6 @@
   "roleImap": "Buzón IMAP/POP3",
   "serviceNotInstalled": "Este servicio no está instalado, por lo que no se aplican las reglas del firewall.",
   "openButStopped": "Puertos abiertos: el servicio no se está ejecutando",
-  "openNoTenants": "Puertos públicos sin inquilinos"
+  "openNoTenants": "Puertos públicos sin inquilinos",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

@@ -193,13 +193,7 @@ export function ServiceAccessStrip({
     if (!loaded) return t('common.loading');
     if (missingService) return t('serviceExposure.serviceNotInstalled');
     if (fwOff) {
-      return `${t('serviceExposure.summaryNotEnforced')} ${t('serviceExposure.summaryFirewallOff', {
-        detail:
-          status?.firewallActiveLabel ||
-          (status?.firewallInstalled === false
-            ? t('serviceExposure.ufwMissing')
-            : t('serviceExposure.ufwInactive')),
-      })}`;
+      return t('serviceExposure.summaryFirewallOffOnly');
     }
     if (!decided) {
       return t('serviceExposure.summaryUndecided', { suggested: modeLabel(mode, t) });
@@ -230,7 +224,11 @@ export function ServiceAccessStrip({
             {loaded && decided && !fwOff && !inSync ? (
               <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge>
             ) : null}
-            {loaded && serviceRunning === false && mode === 'public' && !missingService ? (
+            {loaded &&
+            serviceRunning === false &&
+            mode === 'public' &&
+            !missingService &&
+            !fwOff ? (
               <Badge tone="warn">{t('serviceExposure.openButStopped')}</Badge>
             ) : null}
             {loaded && tenantCount === 0 && mode === 'public' && !missingService ? (

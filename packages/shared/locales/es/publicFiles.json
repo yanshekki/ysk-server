@@ -38,5 +38,7 @@
   "publicRootNote": "Raíz pública: {{path}}",
   "applyConfirmTitle": "¿Aplicar el sitio de archivos públicos?",
   "applyConfirmDesc": "Escribir Nginx server_name {{name}} y recargar Nginx.",
-  "serverNameMismatch": "La conf. en vivo usa {{live}}; el formulario tiene {{draft}}. Aplique para reemplazar."
+  "serverNameMismatch": "La conf. en vivo usa {{live}}; el formulario tiene {{draft}}. Aplique para reemplazar.",
+  "executeFlag": "Execute",
+  "asRoot": "Root"
 }

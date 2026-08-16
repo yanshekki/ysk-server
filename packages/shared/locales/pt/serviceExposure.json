@@ -36,5 +36,6 @@
   "roleImap": "Caixa de correio IMAP/POP3",
   "serviceNotInstalled": "Este serviço não está instalado, portanto as regras de firewall não se aplicam.",
   "openButStopped": "Portas abertas – serviço não está em execução",
-  "openNoTenants": "Portos públicos sem inquilinos"
+  "openNoTenants": "Portos públicos sem inquilinos",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

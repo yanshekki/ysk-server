@@ -352,5 +352,8 @@
   "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。",
   "dirNamedLikeFile": "（文件夹残留；名称像文件）",
   "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

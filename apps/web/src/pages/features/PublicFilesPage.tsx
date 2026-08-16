@@ -178,11 +178,11 @@ export function PublicFilesPage() {
                   ),
                 },
                 {
-                  label: 'EXECUTE',
+                  label: t('publicFiles.executeFlag'),
                   value: status?.executeEnabled ? t('common.on') : t('common.off'),
                 },
                 {
-                  label: 'Root',
+                  label: t('publicFiles.asRoot'),
                   value: status?.isRoot ? t('common.yes') : t('common.no'),
                 },
               ]}

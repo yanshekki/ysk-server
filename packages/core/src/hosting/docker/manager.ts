@@ -609,7 +609,7 @@ function composeFileFor(dataDir: string, project: string): string | null {
 
 export async function dockerComposeAction(input: DockerCtx & {
   project: string;
-  action: 'up' | 'down' | 'restart';
+  action: 'up' | 'down' | 'restart' | 'rm';
 }): Promise<DockerOpsResult> {
   const project = String(input.project ?? '').trim();
   if (!isSafeDockerName(project)) {
@@ -630,7 +630,9 @@ export async function dockerComposeAction(input: DockerCtx & {
       ? ['compose', '-f', file, '-p', project, 'up', '-d']
       : input.action === 'down'
         ? ['compose', '-f', file, '-p', project, 'down']
-        : ['compose', '-f', file, '-p', project, 'restart'];
+        : input.action === 'rm'
+          ? ['compose', '-f', file, '-p', project, 'down', '--volumes', '--remove-orphans']
+          : ['compose', '-f', file, '-p', project, 'restart'];
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenDockerOp({ notes: [tl('docker.notes.dryMutate'), argv.join(' ')] });
   }

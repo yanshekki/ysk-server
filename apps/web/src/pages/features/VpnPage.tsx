@@ -10,6 +10,7 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmDialog,
   DataTable,
   EmptyState,
   FeaturePageLayout,
@@ -97,7 +98,11 @@ function engineStatus(
 }
 
 function formatWhen(iso?: string): string {
-  return formatDateTime(iso);
+  return formatDateTime(iso, { withOffset: true });
+}
+
+export function maskVpnPrivateKeys(text: string): string {
+  return String(text ?? '').replace(/^(\s*PrivateKey\s*=\s*).+$/gim, '$1••••••••');
 }
 
 export function VpnPage() {
@@ -128,6 +133,8 @@ export function VpnPage() {
   const [cfgText, setCfgText] = useState('');
   const [cfgQr, setCfgQr] = useState<string | null>(null);
   const [cfgEngine, setCfgEngine] = useState<VpnEngineTab>('wireguard');
+  const [cfgRevealKey, setCfgRevealKey] = useState(false);
+  const [pendingPeer, setPendingPeer] = useState<VpnServerPeer | null>(null);
 
   // Client import modal
   const [importOpen, setImportOpen] = useState(false);
@@ -264,6 +271,7 @@ export function VpnPage() {
     setCfgEngine(engine);
     setCfgLabel(name);
     setCfgText(text);
+    setCfgRevealKey(false);
     setCfgQr(null);
     setCfgOpen(true);
     if (engine === 'wireguard' || engine === 'outline') {
@@ -382,6 +390,17 @@ export function VpnPage() {
         : t('vpn.listenPort');
 
   const statusPill = (() => {
+    if (tab === 'software') {
+      const installed = (status?.engines ?? []).filter((e) => e.installed).length;
+      const running = (status?.engines ?? []).filter((e) => e.serverActive).length;
+      return {
+        label: t('vpn.engineSummarySoftware', { installed, running }),
+        tone: (running > 0 ? 'ok' : installed > 0 ? 'warn' : 'neutral') as
+          | 'ok'
+          | 'warn'
+          | 'neutral',
+      };
+    }
     if (!isServerTab(tab as TabId)) {
       const up = profiles.filter((p) => p.status === 'up').length;
       return {
@@ -683,22 +702,33 @@ export function VpnPage() {
               onChange={(e) => setPeerName(e.target.value)}
               placeholder={t('vpn.peerNamePlaceholder')}
               aria-label={t('vpn.peerName')}
-              disabled={!engineStatus(status, engine)?.installed}
+              disabled={
+                !engineStatus(status, engine)?.installed ||
+                !engineStatus(status, engine)?.serverActive
+              }
               title={
-                engineStatus(status, engine)?.installed
-                  ? undefined
-                  : t('vpn.installEngineFirst')
+                !engineStatus(status, engine)?.installed
+                  ? t('vpn.installEngineFirst')
+                  : !engineStatus(status, engine)?.serverActive
+                    ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
+                    : undefined
               }
             />
             <Button
               variant="primary"
               size="sm"
               loading={busy}
-              disabled={!peerName.trim() || !engineStatus(status, engine)?.installed}
+              disabled={
+                !peerName.trim() ||
+                !engineStatus(status, engine)?.installed ||
+                !engineStatus(status, engine)?.serverActive
+              }
               title={
-                engineStatus(status, engine)?.installed
-                  ? undefined
-                  : t('vpn.installEngineFirst')
+                !engineStatus(status, engine)?.installed
+                  ? t('vpn.installEngineFirst')
+                  : !engineStatus(status, engine)?.serverActive
+                    ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
+                    : undefined
               }
               onClick={() => {
                 const name = peerName.trim();
@@ -767,9 +797,7 @@ export function VpnPage() {
               size="sm"
               variant="danger"
               loading={busy}
-              onClick={() =>
-                void runOps(() => vpnApi.deletePeer(r.id), { openConfig: false })
-              }
+              onClick={() => setPendingPeer(r)}
             >
               {t('common.delete')}
             </Button>
@@ -1081,7 +1109,12 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} showReadyActions={false} />
+                <SoftwareInstallBanner
+                  feature="wireguard"
+                  title={t('vpn.needWireGuard')}
+                  showReadyActions={false}
+                  onInstalled={() => void load()}
+                />
                 <SoftwareVersionBar softwareId="wireguard" />
               </section>
               <section className="vpn-software-card" aria-label="OpenVPN">
@@ -1093,7 +1126,12 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} showReadyActions={false} />
+                <SoftwareInstallBanner
+                  feature="openvpn"
+                  title={t('vpn.needOpenVpn')}
+                  showReadyActions={false}
+                  onInstalled={() => void load()}
+                />
                 <SoftwareVersionBar softwareId="openvpn" />
               </section>
               <section className="vpn-software-card" aria-label="Shadowsocks">
@@ -1105,7 +1143,12 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} showReadyActions={false} />
+                <SoftwareInstallBanner
+                  feature="outline"
+                  title={t('vpn.needSs')}
+                  showReadyActions={false}
+                  onInstalled={() => void load()}
+                />
                 <SoftwareVersionBar softwareId="shadowsocks" />
               </section>
             </div>
@@ -1292,8 +1335,20 @@ export function VpnPage() {
                 {t('vpn.copyConf')}
               </Button>
             </div>
+            {/PrivateKey\s*=/i.test(cfgText) ? (
+              <Alert variant="warn">{t('vpn.privateKeyOnce')}</Alert>
+            ) : null}
+            {/PrivateKey\s*=/i.test(cfgText) ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setCfgRevealKey((v) => !v)}
+              >
+                {cfgRevealKey ? t('vpn.hidePrivateKey') : t('vpn.showPrivateKey')}
+              </Button>
+            ) : null}
             <pre className="vpn-conf__pre" tabIndex={0}>
-              {cfgText}
+              {cfgRevealKey ? cfgText : maskVpnPrivateKeys(cfgText)}
             </pre>
           </div>
         </div>
@@ -1390,6 +1445,24 @@ export function VpnPage() {
           </Field>
         </FormLayout>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(pendingPeer)}
+        onClose={() => setPendingPeer(null)}
+        title={t('vpn.deletePeerTitle', { name: pendingPeer?.name ?? '' })}
+        description={t('vpn.deletePeerDesc', {
+          name: pendingPeer?.name ?? '',
+          address: pendingPeer?.address || pendingPeer?.id || '—',
+        })}
+        confirmLabel={t('common.delete')}
+        severity="destructive"
+        busy={busy}
+        onConfirm={() => {
+          const id = pendingPeer?.id;
+          setPendingPeer(null);
+          if (id) void runOps(() => vpnApi.deletePeer(id), { openConfig: false });
+        }}
+      />
     </FeaturePageLayout>
   );
 }

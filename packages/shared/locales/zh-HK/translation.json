@@ -499,8 +499,8 @@
     "statsTorrents": "Torrent",
     "statsLibrary": "資料庫",
     "statsLibraryHint": "面板資料庫／檔案分享的 Torrent 列",
-    "statsTrackerLeftover": "Tracker 另計",
-    "statsTrackerLeftoverHint": "Tracker 有 announce、但不在資料庫列的雜湊",
+    "statsTrackerLeftover": "另計（非資料庫 swarm）",
+    "statsTrackerLeftoverHint": "本機 Tracker 有 announce、但不在 Torrent 資料庫列的雜湊。額外 announce URL 見 Tracker 分頁。",
     "statsPeers": "同行",
     "statsAnnounces": "Announce",
     "statsAnnouncesHint": "Tracker 行程收到的 announce 次數",
@@ -636,7 +636,7 @@
     "saveRoot": "根目錄",
     "clearFile": "清除檔案",
     "extraTrackersTitle": "額外 announce",
-    "extraTrackersEmptyTitle": "尚未加入 Tracker",
+    "extraTrackersEmptyTitle": "尚未加入額外 announce",
     "extraEnabledCount": "{{count}} 條已啟用",
     "extraApplyHint": "至少啟用一條才可套用到現有做種",
     "destMode": "此資料夾的用法",
@@ -2575,7 +2575,7 @@
     "import": "匯入",
     "importOk": "匯入完成",
     "importFailed": "匯入失敗",
-    "deleteDbTitle": "刪除資料庫登記？",
+    "deleteDbTitle": "移除控制面登記（不會 DROP 伺服器上的資料庫）",
     "deleteDbDesc": "僅移除控制面紀錄，不會自動刪除伺服器上的資料庫。",
     "deleteUserTitle": "刪除用戶登記？",
     "deleteUserDesc": "僅移除控制面紀錄。",
@@ -2606,6 +2606,7 @@
     "cluster": {
       "title": "叢集",
       "description": "計劃 → 寫管理檔 → 套用 → 探測 → 分發到對等節點／機群。預設預覽試行（不會重啟引擎）。",
+      "redirectedFromCluster": "你由 /cluster 轉到此處。這是資料庫叢集分頁。",
       "kindGalera": "簡易 Galera",
       "kindMysqlReplica": "MySQL 主從複製",
       "kindPgReplica": "PostgreSQL 串流複製",
@@ -3098,7 +3099,23 @@
     },
     "state": {
       "up": "運行中",
-      "down": "已停止"
+      "down": "已停止",
+      "running": "運行中",
+      "exited": "已結束",
+      "restarting": "重啟中",
+      "restartingCount": "重啟中 · {{n}} 次",
+      "paused": "已暫停",
+      "created": "已建立",
+      "dead": "已失效",
+      "removing": "刪除中",
+      "unknown": "未知"
+    },
+    "df": {
+      "images": "映像",
+      "containers": "容器",
+      "volumes": "本機 volume",
+      "builder": "建置快取",
+      "other": "其他"
     },
     "actions": {
       "start": "啟動",
@@ -3133,8 +3150,10 @@
       "networks": "未有網絡"
     },
     "logs": {
-      "empty": "未有日誌"
+      "empty": "此容器尚未輸出日誌。",
+      "follow": "跟隨"
     },
+    "deleteRunningWarn": "此容器仍在運行或重啟中，刪除會強制移除。",
     "settings": {
       "logMaxSize": "容器日誌上限",
       "liveRestore": "即時還原（引擎重啟時保留容器）",
@@ -3194,7 +3213,8 @@
       "compose": {
         "up": "已啟動 Compose 專案",
         "down": "已停止 Compose 專案",
-        "restart": "已重啟 Compose 專案"
+        "restart": "已重啟 Compose 專案",
+        "rm": "已刪除 Compose 專案"
       },
       "engine": {
         "start": "已啟動 docker.service",
@@ -3254,8 +3274,19 @@
       "customPort": "其他主機埠",
       "customPortHost": "主機埠",
       "customPortContainer": "容器埠",
-      "pctUsed": "已用 {{n}}%"
-    }
+      "pctUsed": "已用 {{n}}%",
+      "customPortHint": "1–65535。例如 9090 → 80。",
+      "pickBridge": "選擇 bridge 網絡"
+    },
+    "deleteTitle": "刪除 {{id}}",
+    "deleteDesc": "此動作無法復原。",
+    "deleteC1": "會從這部主機移除該資源。",
+    "deleteComposeVal": "這是驗證者堆疊 — 驗證者實例會一併刪除。",
+    "pruneTitle": "清理 Docker 資源",
+    "pruneDesc": "輸入 PRUNE 以確認。已刪除的資料無法復原。",
+    "pruneC1": "會刪除所選範圍內未使用的資源。",
+    "pruneC2": "Volume 與系統清理會永久刪除未使用的資料卷。",
+    "pruneC3": "會移除呢個範圍內已停止的容器或未使用映像。"
   },
   "email": {
     "title": "郵件",
@@ -3296,7 +3327,7 @@
     "tabStack": "軟件",
     "tabOps": "分工",
     "webmailGlobalDesc": "全面板共用一套網頁電郵；所有郵件域名的用戶都用同一個入口登入。",
-    "webmailGlobalHint": "需要系統變更權限（YSK_EXECUTE）與外網以下載 Roundcube／SnappyMail。未開權限時不會建立半成品專案。",
+    "webmailGlobalHint": "需要系統變更權限與外網以下載 Roundcube／SnappyMail。未開權限時不會建立半成品專案。",
     "webmailMovedHint": "網頁電郵已改為全站共用設定，不再按單一域名安裝。",
     "openGlobalWebmailSettings": "前往網頁電郵設定",
     "domainsTitle": "域名 ({{filtered}}/{{total}})",
@@ -3304,12 +3335,12 @@
     "emptyFilterHint": "沒有符合搜尋的域名",
     "emptyCreateHint": "用列表右上角「建立」登記域名；成功後进入詳情完成一鍵設定與 DNS。",
     "queueLocalTitle": "郵件佇列",
-    "needExecute": "YSK_EXECUTE",
+    "needExecute": "系統變更權限",
     "viewQueue": "查看佇列",
     "flushQueue": "清空佇列",
     "flushQueueEmpty": "佇列是空的",
-    "flushQueueNeedExecute": "清空佇列需要 YSK_EXECUTE（系統變更權限）",
-    "queueHint": "本機 Postfix 佇列。查看屬讀取探測；清空需 YSK_EXECUTE。",
+    "flushQueueNeedExecute": "清空佇列需要系統變更權限",
+    "queueHint": "本機 Postfix 佇列。查看屬讀取探測；清空需系統變更權限。",
     "deleteThisId": "刪除此 ID",
     "queueEmpty": "無待送郵件",
     "queueEmptyHint": "目前沒有待送郵件",
@@ -3331,7 +3362,7 @@
     "opsHost": "主機商：PTR、Port 25 出站策略",
     "opsRegistrar": "域名商：MX／SPF／DKIM／DMARC 發佈",
     "statusTitle": "狀態",
-    "statusDraft": "draft：仅面板",
+    "statusDraft": "草稿（僅面板）",
     "statusWritten": "written：已寫管理檔，未必套到系統",
     "statusApplied": "applied：曾成功套用（仍视服務 is-active）",
     "statusReputation": "國際收件匣信譽無法 100% 自動化",
@@ -3367,6 +3398,7 @@
     "copyAllRecords": "複製全部記錄",
     "openDnsPage": "開啟 DNS 頁",
     "healthScore": "健康分",
+    "deliverabilityChecks": "檢查項",
     "healthUnchecked": "尚未檢查",
     "healthUncheckedHint": "尚未實測 DNS／PTR／25 埠。",
     "deliverabilityScore": "送達能力檢查包",
@@ -3412,7 +3444,7 @@
     "enableAutoreply": "啟用自動回覆",
     "enableAutoreplyDesc": "vacation.sieve；系統套用後才會掛上 .dovecot.sieve",
     "applyToSystem": "套用到系統",
-    "applyToSystemDesc": "需 YSK_EXECUTE=1 + root；失敗不會假成功",
+    "applyToSystemDesc": "需系統變更權限與 root；失敗不會假成功",
     "subject": "主旨",
     "body": "內文",
     "saveApplyAutoreply": "儲存並套用自動回覆",
@@ -3761,7 +3793,7 @@
     "queueHeld": "已暫停",
     "queueDeferred": "延遲",
     "deleteQueueTitle": "刪除此佇列郵件？",
-    "deleteQueueDesc": "從本機 MTA 佇列移除 {{id}}。需 YSK_EXECUTE。",
+    "deleteQueueDesc": "從本機 MTA 佇列移除 {{id}}。需系統變更權限。",
     "openQueuePage": "開啟郵件佇列",
     "dovecotFailedHint": "Dovecot 服務失敗。請到軟件分頁查看單元狀態。",
     "dovecotFailedStatus": "Dovecot 狀態為 {{status}}。請到軟件分頁查看單元摘要。",
@@ -4132,6 +4164,9 @@
     "movedToTrash": "已移至回收桶",
     "moveToTrashTitle": "移至回收桶？",
     "moveToTrashDesc": "將刪除 {{count}} 個項目（可於回收桶還原）",
+    "deleteMore": "，以及另外 {{n}} 項",
+    "unshareTitle": "撤銷此分享？",
+    "unshareDesc": "撤銷 {{name}} 的連結（{{url}}）。連結會立即失效。",
     "preview": "預覽",
     "imagePreviewNeedLogin": "圖片預覽需要已登入；請改用下載",
     "pdfDownloadHint": "PDF 請按下載開啟（需授權標頭）",
@@ -4552,6 +4587,7 @@
     "clearProjectFilter": "顯示全部帳戶",
     "vsftpdFailedHint": "vsftpd 服務失敗。請到服務分頁查看設定與日誌（listen 與 listen_ipv6 不可同時為 YES）。",
     "vsftpdFailedGeneric": "vsftpd 服務失敗。請到服務分頁查看現行設定與日誌。",
+    "stateFailed": "啟動失敗",
     "tabService": "服務"
   },
   "geo": {
@@ -5403,6 +5439,13 @@
     "canMutate": "可變更",
     "readOnlyBlocked": "唯讀／受阻",
     "statIfaces": "介面",
+    "statUp": "已啟用",
+    "oper": {
+      "up": "已啟用",
+      "down": "已停用",
+      "unknown": "未知",
+      "other": "其他"
+    },
     "statGateway": "閘道",
     "pageActions": "頁面操作",
     "loadingSnap": "讀取網絡快照…",
@@ -8647,6 +8690,7 @@
       "xstartupWritten": "已寫入 {{path}}",
       "sessionStartBlocked": "無權限啟動 VNC session（需 root + YSK_EXECUTE）",
       "sessionStartFailed": "啟動 display :{{display}} 失敗：{{detail}}",
+      "sessionStartHostname": "啟動 display :{{display}} 失敗：此主機無法解析自己的主機名。請把主機名寫入 /etc/hosts（或修正 DNS）後再啟動工作階段。",
       "sessionStarted": "已為 {{user}} 啟動 :{{display}}（埠 {{port}}）",
       "sessionStartUnverified": "啟動命令成功但 RFB 埠尚未監聽",
       "sessionAlreadyRunning": "{{user}} 的 VNC 已在運行（:{{display}} / 埠 {{port}}）",
@@ -9492,14 +9536,14 @@
     "netPublishMaint": "維護",
     "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。",
     "createTemplateMissing": "未載入 {{v0}} 範本；請重新整理或選「— 無 —」空白專案。",
-    "deleteDialogDesc": "將銷毀「{{v0}}」。此操作無法還原。",
+    "deleteDialogDesc": "將銷毀「{{name}}」。此操作無法還原。",
     "deleteWillStop": "停止 systemd / PM2 / 本機進程",
     "deleteWillWeb": "移除 Nginx conf、PHP-FPM pool、Apache vhost（如有）",
     "deleteWillOs": "刪除 Linux 用戶與 home 目錄（安全路徑）",
     "deleteKeepOs": "保留 home 與 Linux 用戶（僅面板移除）",
     "deleteWillDb": "從控制面資料庫移除專案",
     "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
-    "deleteTypeNameHint": "請輸入「{{v0}}」",
+    "deleteTypeNameHint": "請輸入「{{name}}」",
     "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。",
     "manageInNginx": "在 Nginx 管理",
     "advFtpHomeApp": "網站 app 目錄",
@@ -10027,6 +10071,8 @@
     "openSite": "開啟網站",
     "notLiveHint": "域名 404 多數是 conf 只寫在 dataDir、未複製到 /etc/nginx/conf.d，或未 reload。請用 root + YSK_EXECUTE 再套用。未發 SSL 前請用 http:// 開啟。",
     "diskRoot": "磁碟根目錄",
+    "executeFlag": "執行",
+    "asRoot": "根目錄",
     "filesInRoot": "項目數",
     "managedConf": "管理 conf",
     "systemConf": "系統 conf.d",
@@ -10321,7 +10367,7 @@
     "addStringKey": "新增字串鍵",
     "writeToDb": "寫入 Redis 資料庫 {{db}}（即時生效，請謹慎）",
     "keyName": "鍵名",
-    "keyNameHint": "建議用冒號分層，例如 工作階段:用戶:1",
+    "keyNameHint": "建議用冒號分層，例如 session:user:1",
     "ttlLabel": "過期時間（秒）",
     "ttlHint": "可留空表示永不過期",
     "m1": "1 分",
@@ -11429,6 +11475,7 @@
     "roleImap": "IMAP／POP3 收件",
     "summaryRestricted": "受限 · {{count}} 個來源",
     "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則不會生效。",
+    "summaryFirewallOffOnly": "主機防火牆未啟用，埠規則不生效。",
     "outOfSync": "未同步",
     "openButStopped": "埠已開放 — 服務未運行",
     "openNoTenants": "公網埠已開但沒有租戶",
@@ -11472,6 +11519,7 @@
     "lifecycleTitle": "{{label}} 服務控制",
     "startedOk": "已啟動 {{label}}",
     "stoppedOk": "已停止 {{label}}",
+    "needRunning": "{{label}} 未運行",
     "restartedOk": "已重啟 {{label}}",
     "reloadedOk": "已重載 {{label}}",
     "stopNeedConfirm": "需確認",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "尚未建立驗證者節點",
-      "desc": "用精靈幾步建立測試網節點。",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "複製指令",
-      "copied": "已複製"
+      "desc": "用建立精靈幾個步驟即可建立測試網節點。"
     },
     "refresh": "重新整理",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "磁碟用量偏高（70% 或以上）",
       "danger": "磁碟用量危急（85% 或以上）",
       "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）",
-      "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。"
+      "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。",
+      "autoClearConfirmTitle": "啟用自動清空？",
+      "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。"
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "測試網",
-      "mainnet": "主網"
+      "mainnet": "主網",
+      "mixed": "主網＋測試網"
     },
     "profile": {
       "minimal": "精簡",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "已還原 ethPandaOps 執行層封存，並重設共識層以用 checkpoint sync",
       "snapshotEthCl": "已重設共識層資料，使用官方 checkpoint sync",
       "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
-      "nativePrune": "已執行客戶端原生清理指令"
+      "nativePrune": "已執行客戶端原生清理指令",
+      "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
+      "deleted": "已刪除節點"
     },
     "create": "建立節點",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "rpcPort": "RPC 埠",
       "limitNone": "不限",
       "rpcDefault": "預設",
-      "customPath": "使用自訂資料路徑"
+      "customPath": "使用自訂資料路徑",
+      "installConfirmTitle": "安裝此節點？",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}。約需 {{disk}} 磁碟。拉取映像可能需時頗長。",
+      "installC1": "可能下載數 GiB 映像。",
+      "installC2": "可取消面板任務；已拉取的映像不會自動刪除。"
     },
     "actions": {
       "detail": "詳情",
@@ -13132,7 +13186,21 @@
       "prune": "清理映像",
       "switchNetwork": "轉網絡",
       "removeUnit": "一併刪除 compose／實例紀錄",
-      "restoreAfter": "清空後還原快照"
+      "restoreAfter": "清空後還原快照",
+      "delete": "刪除",
+      "deleteTitle": "刪除 {{id}}",
+      "deleteDesc": "此動作會從面板移除節點。",
+      "deleteC1": "會停止並移除 Docker Compose",
+      "deleteC2": "會刪除磁碟上的鏈資料",
+      "deleteC3": "會刪除實例紀錄",
+      "pruneTitle": "清理未用映像",
+      "pruneDesc": "輸入實例識別碼，以清理此節點 Compose 未用映像。",
+      "pruneC1": "會刪除此 Compose 專案標籤下未使用的映像。",
+      "clearTitle": "清空 {{id}}",
+      "clearC1": "會刪除磁碟上的鏈資料。",
+      "clearC2": "實例仍留在面板，狀態為已停止、無資料。",
+      "switchTitle": "轉網絡",
+      "switchC1": "會先停機並清空鏈資料，再寫入新網絡。"
     },
     "policy": {
       "label": "升級政策",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "驗證者節點所需的 Docker",
       "dockerOk": "有 {{count}} 個驗證者實例；已安裝 Docker",
       "dockerMissing": "已有驗證者實例，但找不到 docker 指令"
+    },
+    "detail": {
+      "status": "狀態",
+      "sync": "同步",
+      "peers": "對等節點",
+      "version": "版本",
+      "access": "存取",
+      "upgrade": "升級",
+      "upgradeHint": "選擇此節點如何跟進客戶端版本。",
+      "network": "網絡",
+      "networkHint": "轉網絡會停機並清空鏈資料。請先在「清空資料」確認。",
+      "maintain": "維護",
+      "danger": "清空資料",
+      "dangerHint": "輸入實例識別碼或 CLEAR。此動作會刪除磁碟上的鏈資料。",
+      "compose": "Compose",
+      "logs": "日誌"
+    },
+    "state": {
+      "unknown": "未知",
+      "stopped": "已停止",
+      "running": "運行中",
+      "syncing": "同步中",
+      "error": "錯誤"
     }
   },
   "vnc": {
@@ -13305,6 +13396,8 @@
     },
     "installHint": "TigerVNC → noVNC；XFCE 可選",
     "needTigerVnc": "需 TigerVNC",
+    "needXfceFirst": "需先安裝 XFCE",
+    "needSessionRunning": "工作階段未運行 — 請先啟動",
     "needNovnc": "需 noVNC",
     "needXfce": "XFCE（可選）",
     "needViewer": "Viewer（可選）",
@@ -13502,8 +13595,8 @@
       "51822": "第二備用 WireGuard 監聽埠"
     },
     "proto": "協定",
-    "protoUdp": "UDP協定",
-    "protoTcp": "傳輸控制協定",
+    "protoUdp": "UDP",
+    "protoTcp": "TCP",
     "statusLine": "{{state}} · {{port}}/{{proto}} · {{peers}} 對等點",
     "peersTitle": "對等端",
     "peersTitleWg": "對等端",
@@ -13513,6 +13606,13 @@
     "peerNamePlaceholder": "辦公室手提電腦",
     "addPeer": "+ 新增",
     "installEngineFirst": "請先安裝 VPN 引擎",
+    "needServerRunning": "{{engine}} 服務未運行 — 請先套用伺服器",
+    "engineSummarySoftware": "{{installed}} 已安裝 · {{running}} 運行中",
+    "privateKeyOnce": "客戶端私鑰只在此顯示一次。請立即下載或複製，之後無法復原。",
+    "showPrivateKey": "顯示私鑰",
+    "hidePrivateKey": "隱藏私鑰",
+    "deletePeerTitle": "刪除對等端 {{name}}？",
+    "deletePeerDesc": "將移除 {{name}}（{{address}}）。客戶端會立即斷線，設定無法復原。",
     "addPeerWg": "+ 新增 peer",
     "addPeerOvpn": "+ 新增客戶端",
     "addPeerSs": "+ 新增金鑰",

@@ -36,5 +36,6 @@
   "roleImap": "صندوق بريد IMAP/POP3",
   "serviceNotInstalled": "لم يتم تثبيت هذه الخدمة، لذا لا يتم تطبيق قواعد جدار الحماية.",
   "openButStopped": "المنافذ مفتوحة - الخدمة لا تعمل",
-  "openNoTenants": "الموانئ العامة بدون مستأجرين"
+  "openNoTenants": "الموانئ العامة بدون مستأجرين",
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
 }

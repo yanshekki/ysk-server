@@ -1352,10 +1352,18 @@ input[type='radio'] {
 
 .fm-share-list__col-num {
   width: 7%;
+  min-width: 5.5rem;
+  white-space: nowrap;
 }
 
 .fm-share-list__col-status {
   width: 26%;
+  min-width: 7rem;
+  white-space: nowrap;
+}
+
+.fm-share-list .data-table__th {
+  white-space: nowrap;
 }
 
 .fm-share-list .data-table__actions-col,

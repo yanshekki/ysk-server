@@ -2707,7 +2707,8 @@
       "downloadBundleTitle": "피어 conf 번들(.tar.gz) 다운로드",
       "pushPlanTitle": "피어로 푸시 미리보기(SCP 없음)",
       "fleetSyncPlanTitle": "플릿 동기화 미리보기(실행 없음)",
-      "fleetApplyTitle": "함대 구성원에게 대기열을 적용하시겠습니까?"
+      "fleetApplyTitle": "함대 구성원에게 대기열을 적용하시겠습니까?",
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
     },
     "console": {
       "dataBrowse": "데이터 찾아보기",
@@ -3082,7 +3083,16 @@
     },
     "state": {
       "up": "실행 중",
-      "down": "중지됨"
+      "down": "중지됨",
+      "running": "Running",
+      "exited": "Exited",
+      "restarting": "Restarting",
+      "restartingCount": "Restarting · {{n}} times",
+      "paused": "Paused",
+      "created": "Created",
+      "dead": "Dead",
+      "removing": "Removing",
+      "unknown": "Unknown"
     },
     "actions": {
       "start": "시작",
@@ -3117,7 +3127,8 @@
       "composeCta": "Open validator nodes"
     },
     "logs": {
-      "empty": "아직 로그가 없습니다"
+      "empty": "아직 로그가 없습니다",
+      "follow": "Follow"
     },
     "settings": {
       "logMaxSize": "컨테이너 로그 한도",
@@ -3178,7 +3189,8 @@
       "compose": {
         "up": "Compose 프로젝트를 시작했습니다",
         "down": "Compose 프로젝트를 중지했습니다",
-        "restart": "Compose 프로젝트를 다시 시작했습니다"
+        "restart": "Compose 프로젝트를 다시 시작했습니다",
+        "rm": "Compose project removed"
       },
       "engine": {
         "start": "docker.service를 시작했습니다",
@@ -3254,8 +3266,27 @@
       "customPort": "다른 호스트 포트",
       "customPortHost": "호스트 포트",
       "customPortContainer": "컨테이너 포트",
-      "pctUsed": "{{n}}% 사용"
-    }
+      "pctUsed": "{{n}}% 사용",
+      "customPortHint": "1–65535. Example: 9090 → 80.",
+      "pickBridge": "Bridge network"
+    },
+    "deleteTitle": "Delete {{id}}",
+    "deleteDesc": "This cannot be undone.",
+    "deleteC1": "The resource is removed from this host.",
+    "deleteComposeVal": "This is a validator stack — the validator instance is also deleted.",
+    "pruneTitle": "Prune Docker resources",
+    "pruneDesc": "Type PRUNE to confirm. Unused data cannot be restored.",
+    "pruneC1": "Unused resources in the selected scope are deleted.",
+    "pruneC2": "Volume and system prune permanently delete unused data volumes.",
+    "pruneC3": "Stopped containers or unused images in this scope are removed.",
+    "df": {
+      "images": "Images",
+      "containers": "Containers",
+      "volumes": "Local volumes",
+      "builder": "Build cache",
+      "other": "Other"
+    },
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
   },
   "email": {
     "title": "이메일",
@@ -3767,7 +3798,8 @@
     "deliverabilityScore": "전달성 팩",
     "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
     "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다",
-    "tlsRequestLeFor": "Request LE for {{host}}"
+    "tlsRequestLeFor": "Request LE for {{host}}",
+    "deliverabilityChecks": "Checks"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -4292,7 +4324,10 @@
     "webdavDisableFailed": "WebDAV는 비활성화 후에도 여전히 활성화되어 있습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
     "dirNamedLikeFile": "(폴더 잔여물; 이름이 파일처럼 보임)",
     "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다.",
-    "webdavAlreadyOff": "WebDAV is already off"
+    "webdavAlreadyOff": "WebDAV is already off",
+    "deleteMore": " and {{n}} more",
+    "unshareTitle": "Revoke this share?",
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
   },
   "firewall": {
     "profiles": {
@@ -4552,7 +4587,8 @@
     "detectPublicIp": "공개 IP 감지",
     "detectPublicIpTitle": "이 호스트에서 첫 번째 비루프백 IPv4를 채웁니다.",
     "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다.",
-    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal."
+    "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
+    "stateFailed": "Failed to start"
   },
   "geo": {
     "continents": {
@@ -5554,7 +5590,14 @@
     "defaultRouteDownNeedName": "이는 기본 경로 송신입니다. 확인하려면 인터페이스 이름을 입력하세요. 패널 연결이 끊어질 수 있습니다.",
     "linkDownDefault": "Down default route",
     "loopbackImmutable": "Loopback cannot be changed",
-    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable."
+    "operUnknownHint": "Kernel did not report UP/DOWN (common for lo). The interface is still usable.",
+    "statUp": "Up",
+    "oper": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "other": "Other"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} 사이트",
@@ -8653,7 +8696,8 @@
       "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요.",
       "passwordNeedTiger": "vncpasswd를 찾을 수 없습니다. 비밀번호를 설정하기 전에 TigerVNC(tigervnc-standalone-server)를 설치하세요.",
       "linuxUserRolledBack": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거했습니다.",
-      "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다."
+      "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다.",
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
     },
     "apache": {
       "needServerName": "서버 이름이 필요합니다",
@@ -9480,14 +9524,14 @@
     "netPublishMaint": "유지",
     "sslNeedDomain": "Nginx/SSL을 게시하기 전에 도메인을 설정하세요.",
     "createTemplateMissing": "{{v0}} ;「— —」。",
-    "deleteDialogDesc": "「{{v0}}」。。",
+    "deleteDialogDesc": "「{{name}}」。。",
     "deleteWillStop": "시스템 / PM2 /",
     "deleteWillWeb": "Nginx conf, PHP-FPM 풀, Apache 가상 호스트()",
     "deleteWillOs": "리눅스 홈 （）",
     "deleteKeepOs": "홈 리눅스 （）",
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "취소,",
-    "deleteTypeNameHint": "「{{v0}}」",
+    "deleteTypeNameHint": "「{{name}}」",
     "deleteDnsWarn": "DNS 영역/도메인 。",
     "manageInNginx": "Nginx에서 관리",
     "advFtpHomeApp": "사이트 app 디렉터리",
@@ -10035,7 +10079,9 @@
     "publicRootNote": "공개 루트: {{path}}",
     "applyConfirmTitle": "공개 파일 사이트를 적용할까요?",
     "applyConfirmDesc": "Nginx server_name {{name}}을(를) 쓰고 Nginx를 다시 로드합니다.",
-    "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다."
+    "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다.",
+    "executeFlag": "Execute",
+    "asRoot": "Root"
   },
   "rbac": {
     "permissions": "권한",
@@ -11448,7 +11494,8 @@
     "roleImap": "IMAP/POP3 사서함",
     "serviceNotInstalled": "이 서비스는 설치되지 않았으므로 방화벽 규칙이 적용되지 않습니다.",
     "openButStopped": "포트가 열려 있음 - 서비스가 실행되고 있지 않음",
-    "openNoTenants": "테넌트가 없는 공용 포트"
+    "openNoTenants": "테넌트가 없는 공용 포트",
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
   },
   "services": {
     "enabledBoot": "부팅 시",
@@ -11530,7 +11577,8 @@
     "unitNotFound": "Unit not installed",
     "unitNa": "Not applicable",
     "unitStatic": "static",
-    "unitIndirect": "indirect"
+    "unitIndirect": "indirect",
+    "needRunning": "{{label}} is not running"
   },
   "software": {
     "title": "소프트웨어",
@@ -12972,10 +13020,7 @@
     },
     "empty": {
       "title": "아직 검증자 노드가 없습니다",
-      "desc": "마법사로 테스트넷 노드를 만드세요.",
-      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
-      "copyCli": "Copy command",
-      "copied": "Copied"
+      "desc": "마법사로 테스트넷 노드를 만드세요."
     },
     "refresh": "새로 고침",
     "disk": {
@@ -12987,7 +13032,9 @@
       "warn": "디스크 사용량이 높습니다(70% 이상)",
       "danger": "디스크 사용량이 위험합니다(85% 이상)",
       "autoClear": "디스크가 위험할 때 가장 큰 중지 인스턴스를 자동 삭제(기본 꺼짐)",
-      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
+      "autoClearConfirmTitle": "Enable auto-clear?",
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13013,7 +13060,8 @@
     },
     "networkKind": {
       "testnet": "테스트넷",
-      "mainnet": "메인넷"
+      "mainnet": "메인넷",
+      "mixed": "Mainnet + testnet"
     },
     "profile": {
       "minimal": "최소",
@@ -13094,7 +13142,9 @@
       "snapshotEthEl": "ethPandaOps EL 아카이브를 복원하고 checkpoint sync를 위해 CL을 재설정했습니다",
       "snapshotEthCl": "CL 데이터를 재설정하고 공식 checkpoint sync를 사용합니다",
       "snapshotNear": "NEAR 데이터를 지웠습니다. compose가 공식 genesis와 epoch sync로 다시 초기화합니다",
-      "nativePrune": "클라이언트 원본 정리 명령을 실행했습니다"
+      "nativePrune": "클라이언트 원본 정리 명령을 실행했습니다",
+      "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "deleted": "Node deleted"
     },
     "create": "노드 만들기",
     "wizard": {
@@ -13119,7 +13169,11 @@
       "diskShort": "Not enough free disk for this chain / network / profile",
       "limitNone": "No limit",
       "rpcDefault": "Default",
-      "customPath": "Use a custom data path"
+      "customPath": "Use a custom data path",
+      "installConfirmTitle": "Install this node?",
+      "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
+      "installC1": "Several gigabytes of images may be downloaded.",
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
     },
     "actions": {
       "detail": "자세히",
@@ -13132,7 +13186,21 @@
       "prune": "이미지 정리",
       "switchNetwork": "네트워크 전환",
       "removeUnit": "compose／인스턴스 기록도 삭제",
-      "restoreAfter": "비운 뒤 스냅샷 복원"
+      "restoreAfter": "비운 뒤 스냅샷 복원",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{id}}",
+      "deleteDesc": "This removes the node from the panel.",
+      "deleteC1": "Docker Compose is stopped and removed",
+      "deleteC2": "Chain data on disk is deleted",
+      "deleteC3": "The instance record is removed",
+      "pruneTitle": "Prune unused images",
+      "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
+      "pruneC1": "Unused images labelled for this Compose project are deleted.",
+      "clearTitle": "Clear {{id}}",
+      "clearC1": "Chain data on disk is deleted.",
+      "clearC2": "The instance stays in the panel, stopped and empty.",
+      "switchTitle": "Switch network",
+      "switchC1": "The node is stopped and chain data is wiped before the new network is written."
     },
     "policy": {
       "label": "업그레이드 정책",
@@ -13182,6 +13250,29 @@
       "dockerTitle": "검증자 노드용 Docker",
       "dockerOk": "검증자 인스턴스 {{count}}개; Docker가 설치되어 있습니다",
       "dockerMissing": "검증자 인스턴스가 있지만 docker 명령을 찾을 수 없습니다"
+    },
+    "detail": {
+      "status": "Status",
+      "sync": "Sync",
+      "peers": "Peers",
+      "version": "Version",
+      "access": "Access",
+      "upgrade": "Updates",
+      "upgradeHint": "How this node tracks client versions.",
+      "network": "Network",
+      "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
+      "maintain": "Maintenance",
+      "danger": "Clear data",
+      "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+      "compose": "Compose",
+      "logs": "Logs"
+    },
+    "state": {
+      "unknown": "Unknown",
+      "stopped": "Stopped",
+      "running": "Running",
+      "syncing": "Syncing",
+      "error": "Error"
     }
   },
   "vnc": {
@@ -13431,7 +13522,9 @@
     "clientUpdated": "클라이언트 프로필이 업데이트되었습니다.",
     "rememberNeedPassword": "먼저 비밀번호를 입력하세요.",
     "settingsNeedStack": "이러한 기본값은 TigerVNC(선택한 경우 XFCE)가 설치된 경우 적용됩니다. 먼저 설치 탭에서 설치하세요.",
-    "clientNeedNovnc": "브라우저에서 열려면 noVNC가 필요합니다. 여기에서 열 것으로 예상되는 리모컨을 추가하기 전에 설치 탭에서 설치하세요."
+    "clientNeedNovnc": "브라우저에서 열려면 noVNC가 필요합니다. 여기에서 열 것으로 예상되는 리모컨을 추가하기 전에 설치 탭에서 설치하세요.",
+    "needXfceFirst": "Install XFCE first",
+    "needSessionRunning": "Session is not running — start it first"
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",
@@ -13570,6 +13663,13 @@
       "51820": "기본 WireGuard 수신 포트",
       "51821": "대체 WireGuard 수신 포트",
       "51822": "두 번째 대체 WireGuard 수신 포트"
-    }
+    },
+    "needServerRunning": "{{engine}} is not running — apply the server first",
+    "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+    "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+    "showPrivateKey": "Show private key",
+    "hidePrivateKey": "Hide private key",
+    "deletePeerTitle": "Delete peer {{name}}?",
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
   }
 }

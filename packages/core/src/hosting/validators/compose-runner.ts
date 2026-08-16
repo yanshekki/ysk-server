@@ -16,6 +16,16 @@ export function composeFilePath(instanceDirPath: string): string {
   return `${instanceDirPath.replace(/\/+$/, '')}/compose.yml`;
 }
 
+/**
+ * Compose short-bind as one YAML scalar.
+ * Quoting only the host path (`"/host":/data`) is invalid YAML — go-yaml then
+ * reports "did not find expected '-' indicator" on the volumes key.
+ */
+export function composeBind(hostPath: string, containerPath: string, mode?: 'ro' | 'rw'): string {
+  const spec = mode ? `${hostPath}:${containerPath}:${mode}` : `${hostPath}:${containerPath}`;
+  return JSON.stringify(spec);
+}
+
 export async function probeDockerCompose(host: HostExecutor): Promise<{
   ok: boolean;
   version?: string;
@@ -60,7 +70,7 @@ export function stubComposeYaml(inst: ValidatorInstanceDto): string {
               `    restart: unless-stopped`,
               `    network_mode: bridge`,
               `    volumes:`,
-              `      - ${JSON.stringify(inst.dataPath)}:/data`,
+              `      - ${composeBind(inst.dataPath, '/data')}`,
             ].join('\n');
           })
           .join('\n')
@@ -70,7 +80,7 @@ export function stubComposeYaml(inst: ValidatorInstanceDto): string {
           `    command: ['sleep', 'infinity']`,
           `    restart: unless-stopped`,
           `    volumes:`,
-          `      - ${JSON.stringify(inst.dataPath)}:/data`,
+          `      - ${composeBind(inst.dataPath, '/data')}`,
         ].join('\n');
   return `# ysk-server validators — generated, do not edit\nservices:\n${services}\n`;
 }

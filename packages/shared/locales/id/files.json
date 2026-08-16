@@ -352,5 +352,8 @@
   "webdavDisableFailed": "WebDAV masih aktif setelah dinonaktifkan — penulisan mungkin tidak berlanjut. Coba lagi.",
   "dirNamedLikeFile": "(sisa folder; nama terlihat seperti berkas)",
   "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan.",
-  "webdavAlreadyOff": "WebDAV is already off"
+  "webdavAlreadyOff": "WebDAV is already off",
+  "deleteMore": " and {{n}} more",
+  "unshareTitle": "Revoke this share?",
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
 }

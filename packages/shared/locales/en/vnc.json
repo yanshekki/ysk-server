@@ -119,6 +119,8 @@
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",
+  "needXfceFirst": "Install XFCE first",
+  "needSessionRunning": "Session is not running — start it first",
   "needNovnc": "noVNC required",
   "needXfce": "XFCE (optional)",
   "needViewer": "Viewer (optional)",

@@ -135,5 +135,12 @@
     "51820": "Puerto de escucha WireGuard predeterminado",
     "51821": "Puerto de escucha alternativo de WireGuard",
     "51822": "Segundo puerto de escucha alternativo de WireGuard"
-  }
+  },
+  "needServerRunning": "{{engine}} is not running — apply the server first",
+  "engineSummarySoftware": "{{installed}} installed · {{running}} running",
+  "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
+  "showPrivateKey": "Show private key",
+  "hidePrivateKey": "Hide private key",
+  "deletePeerTitle": "Delete peer {{name}}?",
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
 }

@@ -31,7 +31,7 @@ export async function handleEmailDomainsDeliverabilityRoutes(
     method === 'GET' &&
     url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/deliverability$/)
   ) {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
     const row = ctx.email.get(id);
     const { buildDeliverabilityReport } = await import('ysk-server-core');
@@ -47,6 +47,20 @@ export async function handleEmailDomainsDeliverabilityRoutes(
       dnsApplied: row.dns_applied ?? undefined,
       dmarcPresent: row.dmarc_present ?? undefined,
     });
+    try {
+      ctx.email.updateChecks(
+        id,
+        {
+          dnsApplied: report.live.mx.ok && report.live.spf.ok && report.live.dkim.ok,
+          dmarcPresent: report.live.dmarc.ok,
+          ptrOk: report.live.ptr.ok,
+          port25Open: report.live.port25.ok,
+        },
+        user.username,
+      );
+    } catch {
+      /* non-fatal — report still returned */
+    }
     sendJson(res, 200, report);
     return true;
   }
