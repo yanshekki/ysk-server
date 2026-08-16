@@ -755,29 +755,20 @@ export function CronPage() {
                     <dd>{status?.managedLines ?? '—'}</dd>
                   </div>
                   <div>
-                    <dt>{t('cron.hostCounts')}</dt>
+                    <dt>{t('cron.panelLines')}</dt>
                     <dd>
-                      <table className="u-text-sm">
-                        <tbody>
-                          <tr>
-                            <th scope="row">{t('cron.panelLines')}</th>
-                            <td>
-                              {status?.hostHasYskEntries
-                                ? t('cron.hostYskYes')
-                                : t('cron.hostYskNo')}
-                            </td>
-                          </tr>
-                          <tr>
-                            <th scope="row">{t('cron.otherLines')}</th>
-                            <td>{status?.hostOtherLines ?? 0}</td>
-                          </tr>
-                          <tr>
-                            <th scope="row">{t('cron.totalLines')}</th>
-                            <td>{status?.hostTotalLines ?? 0}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                      {status?.hostHasYskEntries
+                        ? t('cron.hostYskYes')
+                        : t('cron.hostYskNo')}
                     </dd>
+                  </div>
+                  <div>
+                    <dt>{t('cron.otherLines')}</dt>
+                    <dd>{status?.hostOtherLines ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt>{t('cron.totalLines')}</dt>
+                    <dd>{status?.hostTotalLines ?? 0}</dd>
                   </div>
                   <div>
                     <dt>{t('cron.lastInstall')}</dt>
