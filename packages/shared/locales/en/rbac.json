@@ -102,6 +102,7 @@
   "capabilitiesHint": "Toggle what this role may do",
   "enabledCount": "{{enabled}} of {{total}} enabled",
   "bandAboveMax": "Above max level",
+  "roleUnavailable": "Not available for this role",
   "dirtyHint": "Customized (differs from factory)",
   "unsaved": "Unsaved",
   "unsavedHint": "Unsaved edits on this role",

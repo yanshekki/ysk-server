@@ -462,9 +462,9 @@ export function NetworkPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        disabled={busy || r.isLoopback}
+                        disabled={busy || r.isLoopback || r.name === 'lo'}
                         title={
-                          r.isLoopback
+                          r.isLoopback || r.name === 'lo'
                             ? t('network.loopbackImmutable')
                             : t('network.addIp')
                         }
@@ -476,9 +476,9 @@ export function NetworkPage() {
                         <Button
                           variant="danger"
                           size="sm"
-                          disabled={busy || r.isLoopback}
+                          disabled={busy || r.isLoopback || r.name === 'lo'}
                           title={
-                            r.isLoopback
+                            r.isLoopback || r.name === 'lo'
                               ? t('network.loopbackImmutable')
                               : r.isDefaultEgress
                                 ? t('network.defaultRouteDownNeedName')
@@ -496,9 +496,9 @@ export function NetworkPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          disabled={busy || r.isLoopback}
+                          disabled={busy || r.isLoopback || r.name === 'lo'}
                           title={
-                            r.isLoopback
+                            r.isLoopback || r.name === 'lo'
                               ? t('network.loopbackImmutable')
                               : t('network.linkUp')
                           }

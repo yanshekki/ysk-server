@@ -66,6 +66,7 @@ export function ProjectOverviewTab({
     status4xx: number;
     status5xx: number;
   } | null>(null);
+  const [homeExists, setHomeExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     void projectsApi
@@ -87,7 +88,11 @@ export function ProjectOverviewTab({
           status5xx: r.status5xx }),
       )
       .catch(() => setWebStats(null));
-  }, [project.id, project.quotaMb]);
+    void projectsApi
+      .getOsUser(project.id)
+      .then((r) => setHomeExists(r.live.homeExists))
+      .catch(() => setHomeExists(null));
+  }, [project.id, project.quotaMb, project.homeDir, project.osProvisioned]);
 
   const notes = (project.lastDeployNotes ?? []).slice(0, 6);
 
@@ -193,7 +198,22 @@ export function ProjectOverviewTab({
                 value: <PathValue value={project.id} copyLabel={copy} /> },
               {
                 label: t('projects.home'),
-                value: <PathValue value={project.homeDir} copyLabel={copy} /> },
+                value: (
+                  <>
+                    <PathValue value={project.homeDir} copyLabel={copy} />
+                    {homeExists === false ? (
+                      <p className="muted u-text-sm u-mt-1">
+                        <Badge tone="danger">{t('projects.homeMissing')}</Badge>
+                        {' · '}
+                        <Link
+                          to={`/projects/${encodeURIComponent(project.id)}?tab=isolation`}
+                        >
+                          {t('projects.goIsolation')}
+                        </Link>
+                      </p>
+                    ) : null}
+                  </>
+                ) },
               {
                 label: t('projects.runtime'),
                 value: (

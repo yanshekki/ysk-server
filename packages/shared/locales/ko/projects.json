@@ -675,5 +675,7 @@
   "netNoBoundCert": "이 호스트 이름의 인증서가 디스크에 없습니다",
   "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요.",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

@@ -30,11 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
-## What's new in 1.1.4
+## What's new in 1.1.5
 
-- E2E-1113 honesty: last CDN edge locked, VNC `userdel` fail-closed, metrics TERM/KILL confirm, GeoIP stale from file mtime.
-- Host timezone clock vs browser; localized system-change / superuser / draft; restore preview uses real tar counts.
-- Docker / validators keep type-to-confirm delete; empty container logs explain a silent exit.
+- Self-update no longer toasts `Failed to fetch` after a successful apply.
+- E2E-1114 honesty: GeoIP no-db/stale/current, masked WireGuard keys, peer add/delete without restarting the server, VNC header from dpkg, no empty-state flash while loading.
+- Host-timezone clocks; dashboard warns when the panel is public and admin 2FA is off.
 
 ## Panel
 

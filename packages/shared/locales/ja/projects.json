@@ -675,5 +675,7 @@
   "netNoBoundCert": "このホスト名の証明書がディスクにありません",
   "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

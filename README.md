@@ -37,11 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
-## What's new in 1.1.4
+## What's new in 1.1.5
 
-- **Confirms and honesty** from E2E-1113: last CDN edge cannot drain/delete, VNC `userdel` fail is not success, metrics TERM/KILL ask first (KILL types `KILL`), GeoIP stale uses file mtime.
-- **Readable panel** — timezone shows host clock vs browser; EXECUTE/Root/draft/normal are localized; restore preview counts are real tar entries.
-- **Docker / validators** keep type-to-confirm delete; empty container logs say the process exited with no output.
+- **Self-update** no longer toasts `Failed to fetch` after a successful apply — restart waits until the HTTP 200 has flushed.
+- **E2E-1114 honesty:** GeoIP freshness is no-db / stale / current; WireGuard keys stay masked until reveal; peer add/delete does not restart the server; VNC header follows dpkg; loading pages do not flash empty/0.
+- **Host clocks** render in the host timezone with offset. Public listen without admin 2FA is a dashboard warning.
 
 [Full changelog](./CHANGELOG.md)
 

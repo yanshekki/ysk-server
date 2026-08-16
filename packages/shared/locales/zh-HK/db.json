@@ -276,6 +276,7 @@
     "realtime": "即時",
     "reload": "重載",
     "needRestart": "需重啟",
+    "affectsProjects": "使用此引擎的站點與服務會中斷。",
     "lifecycle": "生命週期",
     "overview": "概覽",
     "actionDone": "已{{action}}",

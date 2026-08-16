@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "مکمل ٹنل کلائنٹ کا پتہ چلا (AllowedIPs 0.0.0.0/0)۔ اپلائیڈ ہوسٹ پروٹیکٹ کریں تاکہ پینل/SSH جوابات LAN NIC پر رہیں۔",
     "clientFullTunnelHint": "اشارہ: صرف تقسیم تک رسائی کے لیے، conf میں AllowedIPs کو VPN/LAN CIDRs (0.0.0.0/0 نہیں) پر سیٹ کریں، پھر دوبارہ جڑیں۔",
     "serverStopped": "{{engine}} سرور رک گیا۔",
-    "serverStopFailed": "{{engine}} سرور کو روکا نہیں جا سکا: {{detail}}"
+    "serverStopFailed": "{{engine}} سرور کو روکا نہیں جا سکا: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "{{stack}} انسٹال کریں",

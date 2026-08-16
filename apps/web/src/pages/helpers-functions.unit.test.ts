@@ -18,7 +18,17 @@ import {
   firewallStatusChipLabel,
 } from './features/FirewallPage';
 import { fail2banStatusChipLabel } from './features/Fail2banPage';
-import { enabledLabel, actionLabel, toneFor, lifecycleDangerForUnit } from './features/ServicesPage';
+import {
+  enabledLabel,
+  actionLabel,
+  toneFor,
+  lifecycleDangerForUnit,
+  sshdNeedsBootEnable,
+  isRedisServiceRow,
+  redisConsoleLooksInsecure,
+} from './features/ServicesPage';
+import { maskVpnPrivateKeys } from './features/VpnPage';
+import { isAllInterfacesBind } from '../features/network/service-exposure';
 import { applyLabel } from './EmailPage';
 import { statusLabel as ftpsStatusLabel } from '../features/ftp';
 import {
@@ -51,7 +61,8 @@ import {
   activeLabel,
   enabledTone,
 } from './features/SystemdUnitPage';
-import { applyModeLabel, displayValue } from './features/ServiceConsolePage';
+import { applyModeLabel, displayValue, formatEngineVersion } from './features/ServiceConsolePage';
+import { fleetDisplayStatus } from './AgentsPage';
 import { formatBytes as logsFormatBytes, groupLabel } from './features/LogsPage';
 import {
   projectCommandPresets,
@@ -187,6 +198,12 @@ describe('Services helpers', () => {
     expect(enabledLabel('disabled', t as never)).toMatch(/common.no|no/i);
     expect(enabledLabel('static', t as never)).toBe('services.unitStatic');
     expect(enabledLabel('indirect', t as never)).toBe('services.unitIndirect');
+    expect(enabledLabel('alias', t as never)).toBe('services.bootNa');
+    expect(formatEngineVersion('10.11.14-MariaDB,').short).toBe('10.11.14-MariaDB');
+    expect(formatEngineVersion('psql (PostgreSQL) 16.14 (Ubuntu)').short).toBe('16.14');
+    expect(
+      fleetDisplayStatus('stale', new Date(Date.now() - 27 * 3600_000).toISOString()),
+    ).toBe('disconnected');
     expect(enabledLabel('', t as never)).toMatch(/noneSelected|common/);
 
     for (const a of ['start', 'stop', 'restart', 'reload', 'enable'] as const) {
@@ -204,6 +221,53 @@ describe('Services helpers', () => {
     expect(lifecycleDangerForUnit('nginx')).toBe('edge');
     expect(lifecycleDangerForUnit('apache2')).toBe('edge');
     expect(lifecycleDangerForUnit('redis')).toBe('normal');
+    expect(
+      sshdNeedsBootEnable({ unit: 'sshd', installed: true, enabled: 'disabled' }),
+    ).toBe(true);
+    expect(
+      sshdNeedsBootEnable({ unit: 'sshd', installed: true, enabled: 'enabled' }),
+    ).toBe(false);
+    expect(
+      sshdNeedsBootEnable({ unit: 'nginx', installed: true, enabled: 'disabled' }),
+    ).toBe(false);
+    expect(isRedisServiceRow({ id: 'redis', unit: 'redis-server' })).toBe(true);
+    expect(isRedisServiceRow({ id: 'nginx', unit: 'nginx' })).toBe(false);
+  });
+});
+
+describe('VPN / Redis honesty helpers', () => {
+  it('maskVpnPrivateKeys hides PrivateKey until reveal', () => {
+    const raw = '[Interface]\nPrivateKey = abcdef\nAddress = 10.0.0.2/32\n';
+    expect(maskVpnPrivateKeys(raw)).toContain('PrivateKey = ••••••••');
+    expect(maskVpnPrivateKeys(raw)).not.toContain('abcdef');
+    expect(maskVpnPrivateKeys(raw)).toContain('Address = 10.0.0.2/32');
+  });
+
+  it('redisConsoleLooksInsecure when protected-mode is on and pass empty', () => {
+    expect(
+      redisConsoleLooksInsecure([
+        {
+          settings: [
+            { key: 'protected-mode', liveValue: 'yes' },
+            { key: 'requirepass', liveValue: '' },
+          ],
+        },
+      ]),
+    ).toBe(true);
+    expect(
+      redisConsoleLooksInsecure([
+        {
+          settings: [
+            { key: 'protected-mode', liveValue: 'yes' },
+            { key: 'requirepass', liveValue: 'secret' },
+          ],
+        },
+      ]),
+    ).toBe(false);
+    expect(redisConsoleLooksInsecure([])).toBe(false);
+    expect(isAllInterfacesBind('0.0.0.0')).toBe(true);
+    expect(isAllInterfacesBind('127.0.0.1')).toBe(false);
+    expect(isAllInterfacesBind('::')).toBe(true);
   });
 });
 
@@ -505,6 +569,13 @@ describe('Protection / Readiness / SqlEngine helpers', () => {
       'readiness.notOsProvisioned',
     );
     expect(localizeReadinessCopy('遷移到 /主目錄/app', t).display).toContain('/home/');
+    expect(
+      localizeReadinessCopy('Home directory missing or not under project isolation layout', t)
+        .display,
+    ).toContain('readiness.notOsProvisioned');
+    expect(
+      localizeReadinessCopy('System user not created for this project', t).display,
+    ).toContain('readiness.notOsProvisioned');
     expect(classifyManagedNginxName('public-files-qa35web-example-com.conf')).toBe(
       'leftover',
     );

@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { updatesApi, type AdviceRow, type UpdateHubEntry } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
-import { isPanelRestartDisconnect, waitForPanelAfterRestart } from './self-apply';
+import {
+  isPanelRestartDisconnect,
+  shouldToastUpdateError,
+  waitForPanelAfterRestart,
+} from './self-apply';
 
 export function useUpdates() {
   const { t } = useTranslation();
@@ -18,12 +22,14 @@ export function useUpdates() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const applySelfLock = useRef(false);
 
   const load = useCallback(async (
     refresh = false,
     osv = false,
     listQuery?: { q?: string; risk?: string; upgradable?: string; approval?: string },
   ) => {
+    if (applySelfLock.current) return;
     setError(null);
     if (refresh) setBusy(true);
     try {
@@ -102,9 +108,10 @@ export function useUpdates() {
         /* optional */
       }
     } catch (e) {
-      const m = e instanceof Error ? e.message : t('common.loadFailed');
       setError(null);
-      toast.error(m);
+      if (shouldToastUpdateError(e)) {
+        toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+      }
     } finally {
       setBusy(false);
     }
@@ -191,9 +198,10 @@ export function useUpdates() {
       }
       return r;
     } catch (e) {
-      const m = e instanceof Error ? e.message : t('updates.updateFailed');
       setError(null);
-      toast.error(m);
+      if (shouldToastUpdateError(e)) {
+        toast.error(e instanceof Error ? e.message : t('updates.updateFailed'));
+      }
       throw e;
     } finally {
       setBusy(false);
@@ -324,7 +332,11 @@ export function useUpdates() {
           } catch (e) {
             fail.push({
               pkg: row.packageName,
-              message: e instanceof Error ? e.message : t('updates.updateFailed') });
+              message: shouldToastUpdateError(e)
+                ? e instanceof Error
+                  ? e.message
+                  : t('updates.updateFailed')
+                : t('updates.updateFailed') });
           }
         }
         if (ok.length) {
@@ -365,8 +377,6 @@ export function useUpdates() {
     },
     [t, rescanInventoryQuiet],
   );
-
-  const applySelfLock = useRef(false);
 
   const finishSelfAfterRestart = useCallback(
     async (expectVersion?: string) => {
@@ -452,7 +462,9 @@ export function useUpdates() {
           ? t('notes.auto.selfUpgradeHint')
           : raw;
       setError(null);
-      toast.error(m);
+      if (shouldToastUpdateError(e)) {
+        toast.error(m);
+      }
       throw e;
     } finally {
       applySelfLock.current = false;

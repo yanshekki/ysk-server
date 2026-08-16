@@ -242,5 +242,6 @@
     "builder": "Build cache",
     "other": "Other"
   },
-  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+  "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+  "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
 }

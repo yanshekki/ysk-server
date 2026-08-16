@@ -288,7 +288,8 @@
     "disableBoot": "Désactiver au démarrage",
     "needRights": "Nécessite des droits de modification système et admin. Les échecs affichent les raisons — jamais de faux succès.",
     "noneFetched": "— aucun —",
-    "disableBootConfirm": "Le moteur ne démarrera pas après le redémarrage tant que vous ne l'aurez pas réactivé."
+    "disableBootConfirm": "Le moteur ne démarrera pas après le redémarrage tant que vous ne l'aurez pas réactivé.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "Expire",
   "importEntry": "Entrée : {{url}}",

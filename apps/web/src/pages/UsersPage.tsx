@@ -38,7 +38,8 @@ import {
   SegRadio,
   buttonClassName } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
-import { formatDateTimeLocale } from '../shared/lib/format-date';
+import { formatDateTime } from '../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../shared/lib/host-timezone';
 import { RolePermissionsPanel, sameCapSet } from '../features/users/RolePermissionsPanel';
 import { ApiError, api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
@@ -779,7 +780,10 @@ export function UsersPage() {
                   nowrap: true,
                   render: (u) =>
                     u.lastSeenAt
-                      ? formatDateTimeLocale(u.lastSeenAt, i18n.language)
+                      ? formatDateTime(u.lastSeenAt, {
+                          locale: i18n.language,
+                          ...hostTimeZoneOpts({ withOffset: true }),
+                        })
                       : t('users.neverSeen') },
               ]}
               rows={users}

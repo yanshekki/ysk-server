@@ -287,17 +287,39 @@ describe('self-update resolve and apply honesty', () => {
 
   it('applySelfUpdateFromGit without .git does not claim applied', async () => {
     const { applySelfUpdateFromGit } = await import('./self-update-apply.js');
-    const host = new LocalHostExecutor({ executeEnabled: true });
-    // force non-git root via env
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => false,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }),
+      runCommand: async (argv: string[]) => {
+        const joined = argv.join(' ');
+        if (joined.includes('.git')) {
+          return { stdout: 'no\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return {
+          stdout: '',
+          stderr: 'curl: (6) Could not resolve host',
+          exitCode: 1,
+          argv,
+          dryRun: false,
+        };
+      },
+    };
     const prev = process.env.YSK_SOURCE_ROOT;
     process.env.YSK_SOURCE_ROOT = '/tmp/ysk-not-a-git-repo-xyz';
     try {
       const r = await applySelfUpdateFromGit({
-        host,
+        host: host as never,
         latest: '9.9.9',
         repo: 'yanshekki/ysk-server',
       });
-      // may try curl+tar; either way applied must be false without successful full path
       expect(r.applied).toBe(false);
       expect(r.notes.length).toBeGreaterThan(0);
       expect(r.commandResults.length).toBeGreaterThan(0);
@@ -305,7 +327,7 @@ describe('self-update resolve and apply honesty', () => {
       if (prev === undefined) delete process.env.YSK_SOURCE_ROOT;
       else process.env.YSK_SOURCE_ROOT = prev;
     }
-  }, 30_000);
+  });
 
   it('runSelfUpdate apply with execute runs npm path mock via host that fails install', async () => {
     const cmds: string[][] = [];

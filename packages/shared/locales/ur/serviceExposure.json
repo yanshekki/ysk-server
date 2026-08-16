@@ -37,5 +37,7 @@
   "serviceNotInstalled": "یہ سروس انسٹال نہیں ہے، اس لیے فائر وال کے اصول لاگو نہیں ہوتے ہیں۔",
   "openButStopped": "بندرگاہیں کھلی ہیں - سروس نہیں چل رہی ہے۔",
   "openNoTenants": "عوامی بندرگاہیں بغیر کرایہ دار کے",
-  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+  "modePublicLive": "Public (live bind)",
+  "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
 }

@@ -2917,6 +2917,7 @@
     "peerCreated": "Client «{{name}}» created.",
     "peerNotFound": "Client not found.",
     "peerRemoved": "Client removed.",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface.",
     "setEndpointHint": "Set public endpoint (host:port) so mobile clients can reach this server.",
     "invalidConf": "Conf must include [Interface] and PrivateKey.",
     "clientImported": "Profile «{{name}}» imported.",

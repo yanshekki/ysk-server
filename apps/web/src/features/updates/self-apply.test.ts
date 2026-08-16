@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isPanelRestartDisconnect, waitForPanelAfterRestart } from './self-apply';
+import {
+  isPanelRestartDisconnect,
+  shouldToastUpdateError,
+  waitForPanelAfterRestart,
+} from './self-apply';
 
 describe('isPanelRestartDisconnect', () => {
   it('treats browser fetch drops as expected restart', () => {
@@ -15,6 +19,15 @@ describe('isPanelRestartDisconnect', () => {
     expect(isPanelRestartDisconnect(new Error('Host execute is off'))).toBe(false);
     expect(isPanelRestartDisconnect(new Error('YSK_EXECUTE'))).toBe(false);
     expect(isPanelRestartDisconnect('')).toBe(false);
+  });
+
+  it('treats abort / empty TypeError as restart drop', () => {
+    const abort = new Error('The user aborted a request.');
+    abort.name = 'AbortError';
+    expect(isPanelRestartDisconnect(abort)).toBe(true);
+    expect(isPanelRestartDisconnect(new TypeError(''))).toBe(true);
+    expect(shouldToastUpdateError(new TypeError('Failed to fetch'))).toBe(false);
+    expect(shouldToastUpdateError(new Error('Host execute is off'))).toBe(true);
   });
 });
 

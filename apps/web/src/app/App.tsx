@@ -312,10 +312,7 @@ export function App() {
             <Route
               path="cluster"
               element={
-                <RedirectWithToast
-                  from="/cluster"
-                  to="/databases/mysql/service?tab=cluster&from=cluster"
-                />
+                <Navigate to="/databases/mysql/service?tab=cluster&from=cluster" replace />
               }
             />
             <Route

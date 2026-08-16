@@ -288,7 +288,8 @@
     "disableBoot": "تعطيل عند التمهيد",
     "needRights": "يحتاج إلى حقوق تغيير النظام والمسؤول. الفشل يظهر الأسباب - لا تتظاهر بالنجاح أبدًا.",
     "noneFetched": "- لا أحد -",
-    "disableBootConfirm": "لن يبدأ المحرك بعد إعادة التشغيل حتى تقوم بتمكينه مرة أخرى."
+    "disableBootConfirm": "لن يبدأ المحرك بعد إعادة التشغيل حتى تقوم بتمكينه مرة أخرى.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "تنتهي",
   "importEntry": "الدخول: {{url}}",

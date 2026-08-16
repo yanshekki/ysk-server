@@ -14,6 +14,7 @@
   "highRiskN": "{{count}} 項高風險",
   "panelUpdate": "面板有更新",
   "riskOk": "風險可控",
+  "riskUnevaluated": "未評估 — 請先掃描 + OSV",
   "pendingScan": "待掃描",
   "packages": "套件",
   "highRisk": "高風險",

@@ -84,7 +84,7 @@
   "showPrivateKey": "Show private key",
   "hidePrivateKey": "Hide private key",
   "deletePeerTitle": "Delete peer {{name}}?",
-  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored.",
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored. The WireGuard server stays up.",
   "addPeerWg": "+ Add peer",
   "addPeerOvpn": "+ Add client",
   "addPeerSs": "+ Add key",

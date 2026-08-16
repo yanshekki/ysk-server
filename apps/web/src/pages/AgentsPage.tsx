@@ -77,6 +77,19 @@ export function staleAgeLabel(iso: string | undefined, now = Date.now()): string
   return `${Math.floor(hours / 24)}d`;
 }
 
+export function fleetDisplayStatus(
+  status: string | undefined,
+  lastSeenAt?: string,
+  now = Date.now(),
+): string {
+  const s = status ?? '';
+  if (s === 'stale' && lastSeenAt) {
+    const t = Date.parse(lastSeenAt);
+    if (Number.isFinite(t) && now - t > 5 * 60_000) return 'disconnected';
+  }
+  return s;
+}
+
 export function statusLabel(status: string | undefined, tr: (k: string) => string): string {
   if (status === 'running') return tr('agents.status.running');
   if (status === 'connected') return tr('agents.status.connected');
@@ -247,7 +260,9 @@ export function AgentsPage() {
   const runtimeList = runtimes;
   const running = runtimeList.filter((r) => r.status === 'running').length;
   const unitActive = runtimeList.filter((r) => r.unitActive === 'active').length;
-  const liveAgents = agents.filter((a) => a.status === 'connected').length;
+  const liveAgents = agents.filter(
+    (a) => fleetDisplayStatus(a.status, a.last_seen_at) === 'connected',
+  ).length;
   const worstStatus = worstFleetStatus(agents);
   const worstTone = statusTone(worstStatus);
   const pillTone: 'ok' | 'warn' | 'danger' | 'neutral' =
@@ -506,11 +521,12 @@ export function AgentsPage() {
                 header: t('agents.colStatus'),
                 nowrap: true,
                 render: (a) => {
+                  const shown = fleetDisplayStatus(a.status, a.last_seen_at);
                   const age = staleAgeLabel(a.last_seen_at);
                   return (
                     <span title={age ? t('agents.staleFor', { age }) : undefined}>
-                      <Badge tone={statusTone(a.status)}>
-                        {statusLabel(a.status, t)}
+                      <Badge tone={statusTone(shown)}>
+                        {statusLabel(shown, t)}
                       </Badge>
                       {age ? (
                         <span className="muted u-text-sm"> · {t('agents.staleFor', { age })}</span>

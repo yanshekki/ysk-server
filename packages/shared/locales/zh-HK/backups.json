@@ -14,6 +14,7 @@
   "backupFiles": "備份檔",
   "projects": "專案",
   "lastAll": "上次全部",
+  "latestFile": "最新備份檔",
   "remote": "遠端",
   "withBackups": "有備份專案",
   "ops": "操作",
@@ -145,6 +146,7 @@
   "identityHint": "優先使用。與 /security SSH 同一金鑰庫。密碼需 sshpass。",
   "identityNone": "無 — 用密碼或本機預設金鑰",
   "skippedListHint": "以下專案被略過：",
+  "skippedPendingOs": "已略過 — 待建立系統用戶（主目錄不存在）",
   "goLogs": "開啟日誌",
   "goAbout": "備份說明"
 }

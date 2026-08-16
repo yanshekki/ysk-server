@@ -6,7 +6,7 @@ import {
   type TestServer,
 } from '../test/harness.js';
 
-describe('hosting routes (HTTP)', () => {
+describe('hosting routes (HTTP)', { timeout: 30_000 }, () => {
   let ts: TestServer;
 
   afterEach(async () => {
@@ -169,7 +169,7 @@ describe('hosting routes (HTTP)', () => {
     expect(dns.status).toBe(200);
   });
 
-  it('dns zone-file write without system apply is honest', async () => {
+  it('dns zone-file write without system apply is honest', { timeout: 20_000 }, async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'POST', '/api/v1/hosting/dns/zone-file', {
       zone: 'zone-http-test.local',

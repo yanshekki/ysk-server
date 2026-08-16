@@ -8,6 +8,8 @@
   "modePublic": "公網",
   "modeRestricted": "受限",
   "modeUndecided": "尚未設定",
+  "modePublicLive": "公網（實際監聽）",
+  "summaryPublicLive": "正在聽 {{bind}} — 全部介面可達。請確認存取模式；這不是僅本機。",
   "modeLoading": "載入中",
   "summaryPrivate": "未對外開放防火牆埠。",
   "summaryPublic": "公網開放 · {{ports}}",

@@ -9,10 +9,10 @@ import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
 import { shellBinExists } from '../hosting/software-probe/index.js';
 import {
   applyNpmOverlayToDest,
+  canScheduleYskServerRestart,
   classifyCliPath,
   isSafeOverlayDest,
   resolveOverlayDest,
-  scheduleYskServerRestart,
   versionFileContains,
 } from './self-update-overlay.js';
 
@@ -664,9 +664,9 @@ export async function runSelfUpdate(input: {
     }
 
     if (applied) {
-      // Delay systemd restart so the HTTP 200 can flush. A synchronous
-      // try-restart here kills the process and the panel shows Failed to fetch.
-      restarted = scheduleYskServerRestart();
+      // Do not start the systemd timer here — leftover probe + HTTP 200 must
+      // finish first. Callers schedule after they flush (panel sendJson / CLI).
+      restarted = canScheduleYskServerRestart();
       if (!restarted) notes.push(tl('notes.auto.n1219'));
       try {
         const { collectStaleCliNotes, probeHostLeftovers } = await import(

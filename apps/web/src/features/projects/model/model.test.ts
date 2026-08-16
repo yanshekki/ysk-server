@@ -177,6 +177,12 @@ describe('project model/status', () => {
       'pending_os',
     );
     expect(deriveProjectStatus({ ...base, status: 'failed' }).tone).toBe('danger');
+    expect(
+      deriveProjectStatus({ ...base, status: 'active', osProvisioned: false }).bucket,
+    ).toBe('pending_os');
+    expect(
+      deriveProjectStatus({ ...base, processStatus: 'running', osProvisioned: false }).bucket,
+    ).toBe('running');
   });
 });
 

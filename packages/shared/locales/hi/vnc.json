@@ -247,5 +247,9 @@
   "settingsNeedStack": "ये डिफ़ॉल्ट तब लागू होते हैं जब TigerVNC (और यदि चयनित हो तो XFCE) स्थापित होते हैं। पहले उन्हें इंस्टॉल टैब पर इंस्टॉल करें।",
   "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।",
   "needXfceFirst": "Install XFCE first",
-  "needSessionRunning": "Session is not running — start it first"
+  "needSessionRunning": "Session is not running — start it first",
+  "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+  "bindRfbLine": "RFB {{bind}} :{{port}}",
+  "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+  "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
 }

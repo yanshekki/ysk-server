@@ -10,6 +10,7 @@ import {
   getServiceMatrix,
   lifecycleServiceUnit,
   runSelfUpdate,
+  scheduleYskServerRestart,
 } from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { VERSION } from '../version.js';
@@ -17,6 +18,7 @@ import {
   getBearer,
   readBody,
   sendJson,
+  sendJsonAndWait,
   sendOpsResult,
 } from '../http/util.js';
 
@@ -134,8 +136,12 @@ export async function handleSystemApplyServicesRoutes(
       },
       ok: result.ok,
     });
-    // Honest HTTP: do not 200 when apply failed or channel check failed
-    sendJson(res, result.ok ? 200 : result.checked === false ? 502 : 422, result);
+    // Honest HTTP: do not 200 when apply failed or channel check failed.
+    // Flush first, then bounce systemd — otherwise the browser sees Failed to fetch.
+    await sendJsonAndWait(res, result.ok ? 200 : result.checked === false ? 502 : 422, result);
+    if (result.applied && result.restarting) {
+      scheduleYskServerRestart();
+    }
     return true;
   }
 

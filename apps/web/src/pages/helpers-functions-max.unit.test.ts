@@ -224,7 +224,7 @@ describe('LogsPage helpers', () => {
     expect(resolveLogTab('maintain')).toBe('ops');
     expect(resolveLogTab('bogus')).toBeNull();
     expect(resolveLogTab(null)).toBeNull();
-    expect(initialSourceFromParams(() => null)).toBe('journal:nginx.service');
+    expect(initialSourceFromParams(() => null)).toBe('');
     expect(initialSourceFromParams((k) => (k === 'source' ? 'custom' : null))).toBe('custom');
     expect(initialSourceFromParams((k) => (k === 'unit' ? 'sshd' : null))).toBe(
       'journal:sshd',

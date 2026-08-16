@@ -23,6 +23,7 @@
   "appliedOk": "Public files site applied",
   "applyReload": "Apply and reload Nginx",
   "statusLive": "Live on nginx",
+  "statusDraft": "Draft / not applied",
   "statusManagedOnly": "Managed only",
   "statusNotApplied": "Not applied",
   "nginxLive": "in conf.d",

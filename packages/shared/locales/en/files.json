@@ -1,5 +1,7 @@
 {
   "pillFiles": "{{count}} files",
+  "pillTrash": "{{count}} in trash",
+  "pillSpace": "{{used}} used",
   "statFiles": "Files",
   "statFolders": "Folders",
   "statUsage": "Usage",
@@ -101,6 +103,7 @@
   "webdavOn": "Enabled",
   "webdavOff": "Disabled",
   "webdavTokenId": "Token #{{id}}",
+  "webdavTokenInactive": "Disabled — token #{{id}} is not active",
   "webdavUpdated": "Updated {{at}}",
   "webdavTokenOnceTitle": "Copy the password now",
   "webdavTokenOnceHint": "This password is shown only once; it cannot be retrieved after you leave this page.",

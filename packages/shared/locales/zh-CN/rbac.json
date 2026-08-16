@@ -108,5 +108,6 @@
   "nothingToSave": "没有要储存的变更",
   "saveRole": "储存「{{role}}」政策",
   "discardTitle": "放弃未储存政策？",
-  "discardDesc": "转到另一个角色会丢弃未储存的权限变更。"
+  "discardDesc": "转到另一个角色会丢弃未储存的权限变更。",
+  "roleUnavailable": "Not available for this role"
 }

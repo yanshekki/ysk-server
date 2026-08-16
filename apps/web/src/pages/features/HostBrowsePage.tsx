@@ -24,6 +24,8 @@ import {
   SoftwareVersionBar,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import { api, ApiError } from '../../shared/services/api';
 import {
   hostBrowseApi,
@@ -1228,8 +1230,14 @@ export function HostBrowsePage() {
               {resumeSnap && resumeSnap.tabs.length > 0 && !session ? (
                 <div className="hb-resume">
                   <Alert variant="info">
-                    {t('hostBrowse.resumeHint', {
+                    {t('hostBrowse.resumeHintDetail', {
                       count: resumeSnap.tabs.length,
+                      url: resumeSnap.tabs[0]?.url || '—',
+                      when: resumeSnap.updatedAt
+                        ? formatDateTime(resumeSnap.updatedAt, {
+                            ...hostTimeZoneOpts({ withOffset: true }),
+                          })
+                        : '—',
                     })}
                   </Alert>
                   <div className="hb-resume__btns">

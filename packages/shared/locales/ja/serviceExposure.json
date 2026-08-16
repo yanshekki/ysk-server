@@ -37,5 +37,7 @@
   "serviceNotInstalled": "このサービスはインストールされていないため、ファイアウォール ルールは適用されません。",
   "openButStopped": "ポートが開いています - サービスが実行されていません",
   "openNoTenants": "テナントのいない公共港",
-  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+  "modePublicLive": "Public (live bind)",
+  "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
 }

@@ -885,5 +885,6 @@ export const systemApi = {
       isRoot: boolean;
       notes: string[];
       likelyLive: boolean;
+      liveServerName?: string;
     }>('/api/v1/hosting/files/status'),
 };

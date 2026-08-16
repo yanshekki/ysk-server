@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "पूर्ण-सुरंग क्लाइंट का पता चला (अनुमतIPs 0.0.0.0/0)। एप्लाइड होस्ट प्रोटेक्ट ताकि पैनल/एसएसएच उत्तर लैन एनआईसी पर बने रहें।",
     "clientFullTunnelHint": "युक्ति: केवल स्प्लिट एक्सेस के लिए, कॉन्फ़ में अनुमत आईपी को वीपीएन/लैन सीआईडीआर (0.0.0.0/0 नहीं) पर सेट करें, फिर पुनः कनेक्ट करें।",
     "serverStopped": "{{engine}} सर्वर बंद हो गया.",
-    "serverStopFailed": "{{engine}} सर्वर को रोका नहीं जा सका: {{detail}}"
+    "serverStopFailed": "{{engine}} सर्वर को रोका नहीं जा सका: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "इंस्टॉल करें {{stack}}",

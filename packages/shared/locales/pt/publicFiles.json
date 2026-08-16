@@ -40,5 +40,6 @@
   "applyConfirmDesc": "Escrever Nginx server_name {{name}} e recarregar o Nginx.",
   "serverNameMismatch": "A conf. em direto usa {{live}}; o formulário tem {{draft}}. Aplique para substituir.",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

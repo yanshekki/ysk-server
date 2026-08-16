@@ -40,5 +40,6 @@
   "applyConfirmDesc": "Nginx server_name {{name}} লিখে Nginx রিলোড করুন।",
   "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

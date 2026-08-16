@@ -40,5 +40,6 @@
   "applyConfirmDesc": "Tulis Nginx server_name {{name}} dan muat ulang Nginx.",
   "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti.",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

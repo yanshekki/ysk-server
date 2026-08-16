@@ -296,7 +296,8 @@
     "disableBoot": "取消自启",
     "needRights": "需要系统变更权限与管理员身分。失败会显示原因，不会假装成功。",
     "noneFetched": "— 未取得 —",
-    "disableBootConfirm": "重新启动后引擎将不会启动，直到您再次启用它。"
+    "disableBootConfirm": "重新启动后引擎将不会启动，直到您再次启用它。",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "到期",
   "importEntry": "入口: {{url}}",

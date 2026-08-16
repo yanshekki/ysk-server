@@ -1,7 +1,7 @@
 /**
  * Defense Center — SOC-simple command UI for DDoS / attack response.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
@@ -43,7 +43,7 @@ import {
 } from '../../shared/lib/self-ip';
 import { formatDateTime } from '../../shared/lib/datetime';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
-import { bindAppendUniqueStr, bindBanAndClear, bindBanOne, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
+import { bindAppendUniqueStr, bindBanAndClear, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
 
 import {
   GEO_ASN_PROVIDERS,
@@ -524,6 +524,9 @@ export function ProtectionPage() {
   const [presetConfirmId, setPresetConfirmId] = useState<string | null>(null);
   const [emergencyPromptOpen, setEmergencyPromptOpen] = useState(false);
   const [pendingBan, setPendingBan] = useState<{ ip: string; reason?: string } | null>(null);
+  const [pendingBatchBan, setPendingBatchBan] = useState(false);
+  const [wlUndo, setWlUndo] = useState<string | null>(null);
+  const wlUndoTimer = useRef<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showMech, setShowMech] = useState(true);
   const [automation, setAutomation] = useState<DefenseAutomation | null>(null);
@@ -1830,7 +1833,12 @@ export function ProtectionPage() {
                   <Button variant="ghost" size="sm" onClick={clearSelected}>
                     {t('common.cancel')}
                   </Button>
-                  <Button variant="danger" size="sm" loading={busy} onClick={bindVoid(banSelected)}>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => setPendingBatchBan(true)}
+                  >
                     {t('protection.banSelected')}
                   </Button>
                 </div>
@@ -2118,17 +2126,21 @@ export function ProtectionPage() {
                       type="button"
                       className="def-wl__x"
                       disabled={busy}
-                      onClick={bindDefenseWhitelistAction(
-                        run,
-                        api.requestRaw,
-                        w,
-                        'remove',
-                        refresh,
-                        t('protection.updated'),
-                        undefined,
-                        [t('protection.removeItem', { w })],
-                      )}
+                      title={t('protection.removeItem', { w })}
                       aria-label={t('protection.removeItem', { w })}
+                      onClick={() => {
+                        void run(async () => {
+                          await api.requestRaw('/api/v1/defense/whitelist', {
+                            method: 'POST',
+                            body: JSON.stringify({ ip: w, action: 'remove' }),
+                          });
+                          await refresh();
+                          if (wlUndoTimer.current) window.clearTimeout(wlUndoTimer.current);
+                          setWlUndo(w);
+                          wlUndoTimer.current = window.setTimeout(() => setWlUndo(null), 5000);
+                          return { ok: true, notes: [t('protection.wlRemovedUndo', { ip: w })] };
+                        }, t('protection.wlRemovedUndo', { ip: w }));
+                      }}
                     >
                       ×
                     </button>
@@ -2136,6 +2148,31 @@ export function ProtectionPage() {
                 ))}
                 {!ab?.whitelist?.length ? (
                   <span className="muted u-text-sm">{t('protection.notSetSuggestAdmin')}</span>
+                ) : null}
+                {wlUndo ? (
+                  <ActionBar className="u-mt-2">
+                    <span className="muted u-text-sm">{t('protection.wlRemovedUndo', { ip: wlUndo })}</span>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={busy}
+                      onClick={() => {
+                        const ip = wlUndo;
+                        setWlUndo(null);
+                        if (wlUndoTimer.current) window.clearTimeout(wlUndoTimer.current);
+                        void run(async () => {
+                          await api.requestRaw('/api/v1/defense/whitelist', {
+                            method: 'POST',
+                            body: JSON.stringify({ ip, action: 'add' }),
+                          });
+                          await refresh();
+                          return { ok: true, notes: [t('protection.whitelistPlus', { ip })] };
+                        }, t('protection.whitelistAdded'));
+                      }}
+                    >
+                      {t('protection.undo')}
+                    </Button>
+                  </ActionBar>
                 ) : null}
                 {(ab?.whitelist?.length ?? 0) > 12 ? (
                   <span className="muted u-text-sm">
@@ -2312,7 +2349,9 @@ export function ProtectionPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
-                        onClick={bindBanOne(banOne, row.ip, `top-ip score=${row.score}`)}
+                        onClick={() =>
+                          setPendingBan({ ip: row.ip, reason: `top-ip score=${row.score}` })
+                        }
                       >
                         {t('protection.ban')}
                       </Button>
@@ -2465,13 +2504,13 @@ export function ProtectionPage() {
                       {
                         label: t('protection.stale'),
                         value: !geoStatus.ready
-                          ? t('protection.freshnessNa')
+                          ? t('protection.freshnessMissing')
                           : geoStatus.stale
-                            ? t('protection.older7d')
-                            : t('protection.yes'),
+                            ? t('protection.freshnessStale')
+                            : t('protection.freshnessFresh'),
                         hint: t('protection.staleHint'),
                         tone: !geoStatus.ready
-                          ? 'default'
+                          ? 'warn'
                           : geoStatus.stale
                             ? 'warn'
                             : 'ok' },
@@ -3096,6 +3135,24 @@ export function ProtectionPage() {
           const next = pendingBan;
           setPendingBan(null);
           if (next) void banOne(next.ip, next.reason);
+        }}
+      />
+
+      <ConfirmDialog
+        open={pendingBatchBan}
+        onClose={bindCloseIfIdle(busy, () => setPendingBatchBan(false))}
+        title={t('protection.banSelectedConfirmTitle', { count: selectedIps.length })}
+        description={t('protection.banSelectedConfirmDesc', {
+          count: selectedIps.length,
+          ips: selectedIps.slice(0, 8).join(', '),
+        })}
+        confirmLabel={t('protection.banSelected')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+        onConfirm={() => {
+          setPendingBatchBan(false);
+          void banSelected();
         }}
       />
 

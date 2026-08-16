@@ -2917,6 +2917,7 @@
     "peerCreated": "已建立客戶端「{{name}}」。",
     "peerNotFound": "找不到客戶端。",
     "peerRemoved": "已移除客戶端。",
+    "peersSynced": "已在運行中的 WireGuard 介面重新載入對等端，未重啟伺服器。",
     "setEndpointHint": "請設定公開端點（host:port），手機客戶端才能連上。",
     "invalidConf": "設定檔須包含 [Interface] 與 PrivateKey。",
     "clientImported": "已匯入設定檔「{{name}}」。",

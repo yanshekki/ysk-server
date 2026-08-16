@@ -62,6 +62,7 @@
   "applyAuditBadge": "套用檢查：成功 {{ok}} · 警告 {{warn}} · 異常 {{bad}}",
   "executeBadge": "系統變更 {{state}}",
   "executeLabel": "系統變更",
+  "publicNo2fa": "面板正聽全部介面，而你的管理員帳號未開 2FA。",
   "go": "前往",
   "open": "開啟",
   "noCriticalWarn": "目前無嚴重／警告通知",

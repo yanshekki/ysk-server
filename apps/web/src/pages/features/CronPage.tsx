@@ -508,7 +508,17 @@ export function CronPage() {
           </Alert>
         ) : null}
         {needsInstallHint || (pendingManaged.length > 0 && hostNo) ? (
-          <Alert variant="info">{t('cron.pressInstall')}</Alert>
+          <Alert variant="info">
+            <p className="u-mb-2">{t('cron.pressInstall')}</p>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              onClick={() => void onInstall()}
+            >
+              {t('cron.installToSystem')}
+            </Button>
+          </Alert>
         ) : null}
 
       <PageTabs

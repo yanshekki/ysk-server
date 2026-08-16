@@ -9,6 +9,7 @@ import {
   parseUrl,
   localeFromRequest,
   sendJson,
+  sendJsonAndWait,
   sendOpsResult,
   sendError,
   readBody,
@@ -157,6 +158,12 @@ describe('sendJson / sendOpsResult / sendError / readBody', () => {
     sendJson(res, 201, { ok: true, n: 1 });
     expect(res.statusCode).toBe(201);
     expect(JSON.parse(res.body)).toEqual({ ok: true, n: 1 });
+  });
+
+  it('sendJsonAndWait resolves after end', async () => {
+    const res = mockRes();
+    await sendJsonAndWait(res, 200, { ok: true });
+    expect(JSON.parse(res.body)).toEqual({ ok: true });
     expect(String(res.headers['Content-Type'])).toMatch(/application\/json/);
   });
 

@@ -40,5 +40,6 @@
   "applyConfirmDesc": "كتابة Nginx server_name {{name}} وإعادة تحميل Nginx.",
   "serverNameMismatch": "الإعداد الحي يستخدم {{live}}؛ النموذج فيه {{draft}}. طبّق للاستبدال.",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

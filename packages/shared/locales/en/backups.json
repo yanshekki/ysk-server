@@ -14,6 +14,7 @@
   "backupFiles": "Backup files",
   "projects": "Projects",
   "lastAll": "Last all",
+  "latestFile": "Latest archive",
   "remote": "Remote",
   "withBackups": "Projects with backups",
   "ops": "Actions",
@@ -145,6 +146,7 @@
   "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
   "identityNone": "None — password or default key",
   "skippedListHint": "These projects were skipped:",
+  "skippedPendingOs": "Skipped — OS user / home not provisioned",
   "goLogs": "Open logs",
   "goAbout": "Backup notes"
 }

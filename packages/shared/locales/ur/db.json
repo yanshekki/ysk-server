@@ -288,7 +288,8 @@
     "disableBoot": "بوٹ پر غیر فعال کریں۔",
     "needRights": "نظام کی تبدیلی کے حقوق اور منتظم کی ضرورت ہے۔ ناکامیاں وجوہات دکھاتی ہیں - کبھی بھی جعلی کامیابی نہیں۔",
     "noneFetched": "- کوئی نہیں -",
-    "disableBootConfirm": "انجن ریبوٹ کے بعد شروع نہیں ہوگا جب تک کہ آپ اسے دوبارہ فعال نہ کریں۔"
+    "disableBootConfirm": "انجن ریبوٹ کے بعد شروع نہیں ہوگا جب تک کہ آپ اسے دوبارہ فعال نہ کریں۔",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "میعاد ختم",
   "importEntry": "اندراج: {{url}}",

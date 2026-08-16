@@ -288,7 +288,8 @@
     "disableBoot": "Desativar na inicialização",
     "needRights": "Precisa de direitos de alteração do sistema e administrador. Os fracassos mostram razões – nunca finja o sucesso.",
     "noneFetched": "- nenhum -",
-    "disableBootConfirm": "O mecanismo não iniciará após a reinicialização até que você o habilite novamente."
+    "disableBootConfirm": "O mecanismo não iniciará após a reinicialização até que você o habilite novamente.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "Expira",
   "importEntry": "Entrada: {{url}}",

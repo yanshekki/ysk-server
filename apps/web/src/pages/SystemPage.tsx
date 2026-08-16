@@ -28,6 +28,7 @@ import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { toast } from '../shared/stores/toast-store';
 import { formatDateTime } from '../shared/lib/datetime';
+import { setHostTimeZone } from '../shared/lib/host-timezone';
 import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
@@ -203,6 +204,7 @@ export function SystemPage() {
     setPrettyHostname(o.identity.prettyHostname ?? '');
     const current = o.identity.timezone ?? '';
     setTimezone(current);
+    setHostTimeZone(current);
     if (tz?.timezones?.length) {
       const opts = [...tz.timezones];
       if (current && !opts.includes(current)) opts.unshift(current);
@@ -811,6 +813,7 @@ export function SystemPage() {
                           serviceId="ysk-server"
                           ports={[{ role: 'panel', port: '9287', proto: 'tcp' }]}
                           compact
+                          liveBind={panelTls?.listenHost}
                         />
                       </div>
                       <label className="checkbox-field u-mt-2">

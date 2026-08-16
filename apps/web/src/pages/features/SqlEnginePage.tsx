@@ -46,6 +46,7 @@ import {
   usePrivateStartGate,
 } from '../../features/network/service-exposure';
 import { bindCall1, bindCloseIfIdle, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
+import { formatEngineVersion } from './ServiceConsolePage';
 
 export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
   text: string;
@@ -458,7 +459,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 value:
                   !installed && svc?.blockedByExclusive
                     ? '—'
-                    : (svc?.version ?? '—'),
+                    : formatEngineVersion(svc?.version).short,
               },
               {
                 label: t('db.systemChange'),

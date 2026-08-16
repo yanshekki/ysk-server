@@ -234,5 +234,6 @@
   "panelRestarted": "Panneau de retour · {{version}}",
   "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes.",
   "cveNotChecked": "Not checked",
-  "cveLabel": "CVE"
+  "cveLabel": "CVE",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV"
 }

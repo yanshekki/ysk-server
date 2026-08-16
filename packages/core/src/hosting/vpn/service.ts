@@ -388,7 +388,9 @@ export class VpnService {
         const p = parseVpnListenPort(input.listenPort);
         if (p != null) state.listenPort = p;
       }
-      if (input.endpoint != null) state.endpoint = input.endpoint.trim();
+      if (input.endpoint != null && input.endpoint.trim()) {
+        state.endpoint = input.endpoint.trim();
+      }
       if (input.dns != null) state.dns = input.dns.trim() || state.dns;
       if (input.accessMode != null) state.accessMode = parseAccessMode(input.accessMode);
       if (input.lanCidrs != null) state.lanCidrs = normalizeVpnCidrList(input.lanCidrs);
@@ -414,6 +416,15 @@ export class VpnService {
     }
 
     this.saveWgServer(state);
+    return this.writeWgConfAndApply(state, notes, 'restart');
+  }
+
+  /** Write wg0.conf. `restart` = full apply + NAT notes; `sync` = live peer reload. */
+  private async writeWgConfAndApply(
+    state: WgServerState,
+    notes: string[],
+    mode: 'restart' | 'sync',
+  ): Promise<{ ok: boolean; notes: string[] }> {
     const accessMode = parseAccessMode(state.accessMode ?? 'full');
     const customCidrs = normalizeVpnCidrList(state.customCidrs ?? []);
     const enableNat = needsInternetNat(accessMode, customCidrs);
@@ -439,22 +450,26 @@ export class VpnService {
     );
 
     const confPath = '/etc/wireguard/wg0.conf';
-    const write = await this.host.runCommand(
-      [
-        'bash',
-        '-c',
-        [
-          'mkdir -p /etc/wireguard',
-          `cat > ${JSON.stringify(confPath)} <<'YSKWG'`,
-          withNat,
-          'YSKWG',
-          'chmod 600 /etc/wireguard/wg0.conf',
-          'systemctl enable wg-quick@wg0 2>/dev/null || true',
-          'systemctl restart wg-quick@wg0',
-        ].join('\n'),
-      ],
-      { timeoutMs: 60_000 },
-    );
+    const applyCmd =
+      mode === 'sync'
+        ? [
+            'mkdir -p /etc/wireguard',
+            `cat > ${JSON.stringify(confPath)} <<'YSKWG'`,
+            withNat,
+            'YSKWG',
+            'chmod 600 /etc/wireguard/wg0.conf',
+            'if wg show wg0 >/dev/null 2>&1; then wg syncconf wg0 <(wg-quick strip /etc/wireguard/wg0.conf); else systemctl start wg-quick@wg0; fi',
+          ].join('\n')
+        : [
+            'mkdir -p /etc/wireguard',
+            `cat > ${JSON.stringify(confPath)} <<'YSKWG'`,
+            withNat,
+            'YSKWG',
+            'chmod 600 /etc/wireguard/wg0.conf',
+            'systemctl enable wg-quick@wg0 2>/dev/null || true',
+            'systemctl restart wg-quick@wg0',
+          ].join('\n');
+    const write = await this.host.runCommand(['bash', '-c', applyCmd], { timeoutMs: 60_000 });
     if (write.exitCode !== 0) {
       notes.push(
         tl('notes.vpn.applyFailed', {
@@ -463,10 +478,33 @@ export class VpnService {
       );
       return { ok: false, notes };
     }
+    if (mode === 'sync') {
+      notes.push(tl('notes.vpn.peersSynced'));
+      return { ok: true, notes };
+    }
     notes.push(tl('notes.vpn.serverActive', { port: String(state.listenPort) }));
     notes.push(enableNat ? tl('notes.vpn.accessFullNat') : tl('notes.vpn.accessLanOnly'));
     notes.push(tl('notes.vpn.accessReconnectHint'));
     return { ok: true, notes };
+  }
+
+  private async syncWireGuardPeers(): Promise<{
+    ok: boolean;
+    notes: string[];
+    blocked?: boolean;
+    requiresExecute?: boolean;
+  }> {
+    if (!this.host.executeEnabled() || !this.host.isRoot()) {
+      return {
+        ok: false,
+        blocked: true,
+        requiresExecute: !this.host.executeEnabled(),
+        notes: [tl('notes.vpn.needExecuteServer')],
+      };
+    }
+    const state = this.loadWgServer();
+    if (!state) return { ok: false, notes: [tl('notes.vpn.serverMissing')] };
+    return this.writeWgConfAndApply(state, [], 'sync');
   }
 
   listServerPeers(engine: VpnEngineId = 'wireguard'): VpnServerPeer[] {
@@ -629,14 +667,7 @@ export class VpnService {
     state.peers.push(peer);
     this.saveWgServer(state);
 
-    const reapply = await this.ensureWireGuardServer({
-      listenPort: state.listenPort,
-      endpoint: state.endpoint,
-      dns: state.dns,
-      accessMode: state.accessMode,
-      lanCidrs: state.lanCidrs,
-      customCidrs: state.customCidrs,
-    });
+    const reapply = await this.syncWireGuardPeers();
 
     const ep = parseVpnEndpoint(state.endpoint, state.listenPort);
     const endpoint = ep.ok
@@ -719,11 +750,11 @@ export class VpnService {
     }
     this.saveWgServer(state);
     if (this.host.executeEnabled() && this.host.isRoot()) {
-      await this.ensureWireGuardServer({
-        listenPort: state.listenPort,
-        endpoint: state.endpoint,
-        dns: state.dns,
-      });
+      const sync = await this.syncWireGuardPeers();
+      return {
+        ok: sync.ok,
+        notes: [tl('notes.vpn.peerRemoved'), ...sync.notes],
+      };
     }
     return { ok: true, notes: [tl('notes.vpn.peerRemoved')] };
   }

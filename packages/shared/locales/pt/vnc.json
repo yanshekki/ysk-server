@@ -247,5 +247,9 @@
   "settingsNeedStack": "Esses padrões se aplicam quando TigerVNC (e XFCE, se selecionado) estão instalados. Instale-os primeiro na guia Instalar.",
   "clientNeedNovnc": "Abrir no navegador precisa de noVNC. Instale-o na guia Instalar antes de adicionar controles remotos que você espera abrir aqui.",
   "needXfceFirst": "Install XFCE first",
-  "needSessionRunning": "Session is not running — start it first"
+  "needSessionRunning": "Session is not running — start it first",
+  "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+  "bindRfbLine": "RFB {{bind}} :{{port}}",
+  "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+  "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
 }

@@ -84,7 +84,7 @@
   "showPrivateKey": "顯示私鑰",
   "hidePrivateKey": "隱藏私鑰",
   "deletePeerTitle": "刪除對等端 {{name}}？",
-  "deletePeerDesc": "將移除 {{name}}（{{address}}）。客戶端會立即斷線，設定無法復原。",
+  "deletePeerDesc": "將移除 {{name}}（{{address}}）。客戶端會立即斷線，設定無法復原。WireGuard 伺服器保持運行。",
   "addPeerWg": "+ 新增對等端",
   "addPeerOvpn": "+ 新增客戶端",
   "addPeerSs": "+ 新增金鑰",

@@ -234,5 +234,6 @@
   "panelRestarted": "Panel kembali · {{version}}",
   "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
   "cveNotChecked": "Not checked",
-  "cveLabel": "CVE"
+  "cveLabel": "CVE",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV"
 }

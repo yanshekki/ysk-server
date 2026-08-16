@@ -37,5 +37,7 @@
   "serviceNotInstalled": "لم يتم تثبيت هذه الخدمة، لذا لا يتم تطبيق قواعد جدار الحماية.",
   "openButStopped": "المنافذ مفتوحة - الخدمة لا تعمل",
   "openNoTenants": "الموانئ العامة بدون مستأجرين",
-  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+  "modePublicLive": "Public (live bind)",
+  "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
 }

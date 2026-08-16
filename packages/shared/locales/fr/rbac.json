@@ -108,5 +108,6 @@
   "nothingToSave": "Rien à sauver",
   "saveRole": "Enregistrer la politique {{role}}",
   "discardTitle": "Supprimer la stratégie non enregistrée ?",
-  "discardDesc": "Le changement de rôle supprime les modifications de fonctionnalités non enregistrées."
+  "discardDesc": "Le changement de rôle supprime les modifications de fonctionnalités non enregistrées.",
+  "roleUnavailable": "Not available for this role"
 }

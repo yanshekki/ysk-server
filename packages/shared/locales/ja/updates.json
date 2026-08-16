@@ -234,5 +234,6 @@
   "panelRestarted": "パネルが復帰しました · {{version}}",
   "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
   "cveNotChecked": "Not checked",
-  "cveLabel": "CVE"
+  "cveLabel": "CVE",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV"
 }

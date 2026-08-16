@@ -142,11 +142,23 @@ export function ProjectAdvancedTab({
               variant="primary"
               size="md"
               loading={ftpBusy || busy}
-              disabled={ftpPass.length < 8}
+              disabled={!project.linuxUser?.trim() || ftpPass.length < 8}
+              title={
+                !project.linuxUser?.trim()
+                  ? t('projects.needOsUser')
+                  : ftpPass.length < 8
+                    ? t('projects.advFtpPassHint')
+                    : undefined
+              }
               onClick={bindVoid(createFtp)}
             >
               {t('ftp.createAccount')}
             </Button>
+            {!project.linuxUser?.trim() ? (
+              <Link to={`/projects/${encodeURIComponent(project.id)}?tab=isolation`}>
+                {t('projects.goIsolation')}
+              </Link>
+            ) : null}
             <Link to={`/ftp?project=${encodeURIComponent(project.id)}`}>
               <Button variant="secondary" size="md">
                 {t('projects.advFtpManage')}

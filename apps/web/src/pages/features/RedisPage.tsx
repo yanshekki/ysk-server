@@ -93,9 +93,12 @@ export function formatRedisDbOption(
   known: boolean,
   t: (k: string, o?: Record<string, unknown>) => string,
 ): string {
-  const name = t('redis.dbLabel', { i });
-  if (keys > 0) return `${name}${t('redis.keysInDb', { n: keys })}`;
-  if (known) return `${name}${t('redis.dbEmptyMark', { defaultValue: ' · empty' })}`;
+  const name = t('redis.dbLabel', { i }).trim();
+  if (keys > 0) {
+    const n = String(keys);
+    return t('redis.dbOptionKeys', { i, n });
+  }
+  if (known) return t('redis.dbOptionEmpty', { i });
   return name;
 }
 

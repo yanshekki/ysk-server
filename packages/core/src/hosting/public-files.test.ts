@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { applyPublicFileServer } from './public-files.js';
+import { applyPublicFileServer, parseNginxServerName } from './public-files.js';
 import { publicFilesRoot } from '../files/manager.js';
 
 function mockHost(opts: {
@@ -117,5 +117,14 @@ describe('applyPublicFileServer', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe('parseNginxServerName', () => {
+  it('reads the first server_name token', () => {
+    expect(
+      parseNginxServerName('server {\n  server_name qa35web.demo-server.ysk.hk;\n}\n'),
+    ).toBe('qa35web.demo-server.ysk.hk');
+    expect(parseNginxServerName('listen 80;')).toBeUndefined();
   });
 });

@@ -519,6 +519,17 @@
   gap: var(--space-1);
 }
 
+.ops-svc__more {
+  position: relative;
+}
+
+.ops-svc__more-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
 /* Users */
 .ops-user-list,
 .ops-pkg-list {

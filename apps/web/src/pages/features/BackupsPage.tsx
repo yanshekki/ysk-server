@@ -326,6 +326,11 @@ export function BackupsPage() {
     }
   }
 
+  const latestArchiveAt = items.reduce<string | null>((best, b) => {
+    if (!b.mtime) return best;
+    if (!best) return b.mtime;
+    return b.mtime > best ? b.mtime : best;
+  }, null);
   const lastLabel =
     lastOk === true && lastSkipped
       ? t('backups.partialSkipped')
@@ -337,7 +342,11 @@ export function BackupsPage() {
             : t('common.success')
         : lastOk === false
           ? t('backups.hasFailures')
-          : t('backups.notYet');
+          : !headerReady
+            ? '…'
+            : latestArchiveAt
+              ? formatDateTime(latestArchiveAt, { locale: i18n.language })
+              : t('backups.notYet');
   const lastTone =
     lastOk === true && lastSkipped
       ? 'warn'
@@ -375,7 +384,7 @@ export function BackupsPage() {
           { label: t('backups.backupFiles'), value: headerReady ? items.length : '…' },
           { label: t('common.project'), value: headerReady ? liveProjectCount : '…' },
           {
-            label: t('backups.lastAll'),
+            label: lastRun?.at ? t('backups.lastAll') : t('backups.latestFile'),
             value: lastLabel,
             tone:
               lastTone === 'danger'
@@ -512,21 +521,36 @@ export function BackupsPage() {
                               >
                                 {t('backups.restoreWeb')}
                               </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                loading={busy}
-                                title={t('backups.restoreFullTitle')}
-                                onClick={() => {
-                                  setRestoreMode('full');
-                                  setRestoreTarget(b);
-                                }}
-                              >
-                                {t('backups.restoreFull')}
-                              </Button>
+                              <details className="ops-svc__more">
+                                <summary className="btn btn--ghost btn--sm">{t('common.more')}</summary>
+                                <div className="ops-svc__more-panel">
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    loading={busy}
+                                    title={t('backups.restoreFullTitle')}
+                                    onClick={() => {
+                                      setRestoreMode('full');
+                                      setRestoreTarget(b);
+                                    }}
+                                  >
+                                    {t('backups.restoreFull')}
+                                  </Button>
+                                  {canRun ? (
+                                    <Button
+                                      variant="danger"
+                                      size="sm"
+                                      loading={busy}
+                                      onClick={bindSet(setDeleteTarget, b)}
+                                    >
+                                      {t('common.delete')}
+                                    </Button>
+                                  ) : null}
+                                </div>
+                              </details>
                             </>
                           ) : null}
-                          {canRun ? (
+                          {canRun && b.projectId === 'control-plane' ? (
                             <Button
                               variant="danger"
                               size="sm"
@@ -740,12 +764,26 @@ export function BackupsPage() {
                   <ul className="list-plain">
                     {lastResults
                       .filter((x) => x.skipped)
-                      .map((x) => (
-                        <li key={String(x.projectId)}>
-                          {projectNames[String(x.projectId ?? '')] ||
-                            shortProjectId(x.projectId, 12)}
+                      .map((x) => {
+                        const pid = String(x.projectId ?? '');
+                        return (
+                        <li key={pid || String(x.archivePath)}>
+                          {projectNames[pid] || shortProjectId(x.projectId, 12)}
+                          {' · '}
+                          {t('backups.skippedPendingOs')}
+                          {pid ? (
+                            <>
+                              {' · '}
+                              <Link
+                                to={`/projects/${encodeURIComponent(pid)}?tab=isolation`}
+                              >
+                                {t('projects.goIsolation')}
+                              </Link>
+                            </>
+                          ) : null}
                         </li>
-                      ))}
+                        );
+                      })}
                   </ul>
                   <p className="muted u-text-sm">
                     <Link to="/logs">{t('backups.goLogs')}</Link>
@@ -783,7 +821,23 @@ export function BackupsPage() {
                         key: 'notes',
                         header: t('common.notes'),
                         className: 'muted u-text-sm',
-                        render: (row) => (row.notes ?? []).join('；') || '—' },
+                        render: (row) => {
+                          const notes = (row.notes ?? []).join('；') || '—';
+                          if (!row.skipped || !row.projectId) return notes;
+                          return (
+                            <>
+                              {notes}
+                              {' · '}
+                              {t('backups.skippedPendingOs')}
+                              {' · '}
+                              <Link
+                                to={`/projects/${encodeURIComponent(row.projectId)}?tab=isolation`}
+                              >
+                                {t('projects.goIsolation')}
+                              </Link>
+                            </>
+                          );
+                        } },
                     ]}
                     rows={lastResults}
                     rowKey={(row, i) => String(row.projectId ?? i)}

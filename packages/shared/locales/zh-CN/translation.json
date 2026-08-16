@@ -453,7 +453,9 @@
     "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "skippedListHint": "These projects were skipped:",
     "goLogs": "Open logs",
-    "goAbout": "Backup notes"
+    "goAbout": "Backup notes",
+    "skippedPendingOs": "Skipped — OS user / home not provisioned",
+    "latestFile": "Latest archive"
   },
   "btTracker": {
     "title": "BT追踪器",
@@ -2499,7 +2501,8 @@
       "ok": "OK",
       "warn": "Warning",
       "bad": "Problem"
-    }
+    },
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
   },
   "dataTable": {
     "empty": "没有数据",
@@ -2803,7 +2806,8 @@
       "disableBoot": "取消自启",
       "needRights": "需要系统变更权限与管理员身分。失败会显示原因，不会假装成功。",
       "noneFetched": "— 未取得 —",
-      "disableBootConfirm": "重新启动后引擎将不会启动，直到您再次启用它。"
+      "disableBootConfirm": "重新启动后引擎将不会启动，直到您再次启用它。",
+      "affectsProjects": "Sites and services that use this engine will be interrupted."
     },
     "expiresLabel": "到期",
     "importEntry": "入口: {{url}}",
@@ -3332,7 +3336,8 @@
       "builder": "Build cache",
       "other": "Other"
     },
-    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+    "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
   },
   "email": {
     "title": "邮件",
@@ -4373,7 +4378,10 @@
     "webdavAlreadyOff": "WebDAV is already off",
     "deleteMore": " and {{n}} more",
     "unshareTitle": "Revoke this share?",
-    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+    "pillTrash": "{{count}} in trash",
+    "pillSpace": "{{used}} used",
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
   },
   "firewall": {
     "profiles": {
@@ -4932,7 +4940,8 @@
     "envColEffective": "生效值",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
-    "closeNoSession": "No session yet"
+    "closeNoSession": "No session yet",
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -5297,7 +5306,8 @@
     "signalFromRow": "Select this process for TERM / KILL",
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
   },
   "migrate": {
     "tabInventory": "盘点",
@@ -5390,7 +5400,9 @@
     "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
     "orphanBackupFirst": "Back up first (open Backups)",
     "expandAllWarnings": "Show all {{n}} warnings",
-    "collapseWarnings": "Show fewer"
+    "collapseWarnings": "Show fewer",
+    "inventoriedWarn": "Inventoried · {{n}} warnings",
+    "orphanMtime": "Last modified {{at}}"
   },
   "multiCheck": {
     "customPlaceholder": "自定义代码",
@@ -8661,7 +8673,8 @@
       "clientFullTunnelProtect": "检测到全隧道客户端 (AllowedIPs 0.0.0.0/0)。应用主机保护，以便面板/SSH 回复保留在 LAN NIC 上。",
       "clientFullTunnelHint": "提示：仅对于分割访问，请在conf中将AllowedIPs设置为VPN/LAN CIDR（而不是0.0.0.0/0），然后重新连接。",
       "serverStopped": "已停止 {{engine}} 伺服器。",
-      "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}"
+      "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}",
+      "peersSynced": "Peer list reloaded on the running WireGuard interface."
     },
     "vnc": {
       "needInstall": "请安装 {{stack}}",
@@ -9710,7 +9723,9 @@
     "netNoBoundCert": "此主机名磁盘上没有证书",
     "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。",
     "goIsolation": "Open Isolation tab",
-    "netHstsNeedHttps": "Turn on force HTTPS first"
+    "netHstsNeedHttps": "Turn on force HTTPS first",
+    "homeMissing": "Home directory does not exist",
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
   },
   "protection": {
     "levels": {
@@ -10113,7 +10128,14 @@
       "degraded": "Degraded",
       "ddos-protection": "DDoS protection",
       "offline": "Offline"
-    }
+    },
+    "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+    "undo": "Undo",
+    "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+    "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+    "freshnessMissing": "No database",
+    "freshnessStale": "Stale",
+    "freshnessFresh": "Current"
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -10157,7 +10179,8 @@
     "applyConfirmDesc": "写入 Nginx server_name {{name}} 并重载 Nginx。",
     "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。",
     "executeFlag": "Execute",
-    "asRoot": "Root"
+    "asRoot": "Root",
+    "statusDraft": "Draft / not applied"
   },
   "rbac": {
     "permissions": "权限",
@@ -10269,7 +10292,8 @@
     "nothingToSave": "没有要储存的变更",
     "saveRole": "储存「{{role}}」政策",
     "discardTitle": "放弃未储存政策？",
-    "discardDesc": "转到另一个角色会丢弃未储存的权限变更。"
+    "discardDesc": "转到另一个角色会丢弃未储存的权限变更。",
+    "roleUnavailable": "Not available for this role"
   },
   "readiness": {
     "cat": {
@@ -10409,7 +10433,9 @@
       "admin2fa": "Admin two-factor"
     },
     "dataDirPerms": "panel data-directory permissions",
-    "mode750": "mode 750"
+    "mode750": "mode 750",
+    "gateBlocked": "Not passed · {{n}} missing",
+    "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
   },
   "redis": {
     "neverExpire": "永不过期",
@@ -10492,7 +10518,10 @@
     "passwordUnset": "未在服务上设置",
     "passwordSetHidden": "设置（未显示）",
     "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-    "scanCapped": "Showing the first {{n}} matches."
+    "scanCapped": "Showing the first {{n}} matches.",
+    "dbOptionKeys": "DB {{i}} · {{n}} keys",
+    "dbOptionEmpty": "DB {{i}} · empty",
+    "insecureShort": "No password"
   },
   "resources": {
     "created": "已创建",
@@ -11583,7 +11612,9 @@
     "roleImap": "IMAP／POP3 收件",
     "openButStopped": "端口打开 — 服务未运行",
     "openNoTenants": "没有租户的公共港口",
-    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+    "modePublicLive": "Public (live bind)",
+    "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
   },
   "services": {
     "enabledBoot": "自启",
@@ -11680,7 +11711,8 @@
       "failed": "Failed",
       "tool": "Tool",
       "activating": "Starting"
-    }
+    },
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
   },
   "software": {
     "title": "软件中心",
@@ -12989,7 +13021,8 @@
     "panelRestarted": "面板已恢复 · {{version}}",
     "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
     "cveNotChecked": "Not checked",
-    "cveLabel": "CVE"
+    "cveLabel": "CVE",
+    "riskUnevaluated": "Not evaluated — run Scan + OSV"
   },
   "users": {
     "userCount": "{{count}} 用户",
@@ -13646,7 +13679,11 @@
     "clientUpdated": "已更新客户端配置",
     "rememberNeedPassword": "请先填密码。",
     "needXfceFirst": "Install XFCE first",
-    "needSessionRunning": "Session is not running — start it first"
+    "needSessionRunning": "Session is not running — start it first",
+    "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+    "bindRfbLine": "RFB {{bind}} :{{port}}",
+    "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
   },
   "vpn": {
     "pageDesc": "VPN 服务器／客户端",

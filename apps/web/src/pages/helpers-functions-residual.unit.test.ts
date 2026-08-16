@@ -214,7 +214,7 @@ describe('residual pure helpers — protection/f2b/dns/logs/sql/files/net/cdn', 
     expect(groupLabel('web')).toBeTruthy();
     expect(isJournalSource('journal:x')).toBe(true);
     expect(resolveLogTab('ops')).toBe('ops');
-    expect(initialSourceFromParams(() => null)).toContain('journal');
+    expect(initialSourceFromParams(() => null)).toBe('');
     expect(filterRailItems([], {}).length).toBe(0);
     expect(groupRailItems([]).length).toBe(0);
 
@@ -691,7 +691,7 @@ describe('logs dual residual', () => {
     expect(resolveLogTab('nope')).toBeNull();
     expect(initialSourceFromParams((k) => (k === 'source' ? 'file:/var/log/x' : null))).toContain('file');
     expect(initialSourceFromParams((k) => (k === 'unit' ? 'sshd.service' : null))).toContain('sshd');
-    expect(initialSourceFromParams(() => null)).toContain('nginx');
+    expect(initialSourceFromParams(() => null)).toBe('');
 
     const items = [
       { id: '1', label: 'a', group: 'web', projectId: 'p1', source: 'file:a' },

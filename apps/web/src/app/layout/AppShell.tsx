@@ -10,6 +10,8 @@ import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { buttonClassName } from '../../shared/components/ui';
 import { GlobalSearch } from '../../shared/components/GlobalSearch';
 import { api } from '../../shared/services/api';
+import { setHostTimeZone } from '../../shared/lib/host-timezone';
+import { systemApi } from '../../features/system';
 import {
   LOCALES,
   LOCALE_LABELS,
@@ -126,6 +128,12 @@ export function AppShell() {
       .health()
       .then((h) => {
         if (!cancelled && h.version) setPanelVersion(String(h.version));
+      })
+      .catch(() => undefined);
+    void systemApi
+      .hostIdentity()
+      .then((id) => {
+        if (!cancelled) setHostTimeZone(id.timezone);
       })
       .catch(() => undefined);
     return () => {

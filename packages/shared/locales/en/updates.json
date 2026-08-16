@@ -14,6 +14,7 @@
   "highRiskN": "{{count}} high-risk",
   "panelUpdate": "Panel update available",
   "riskOk": "Risk manageable",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
   "pendingScan": "Awaiting scan",
   "packages": "Packages",
   "highRisk": "High risk",

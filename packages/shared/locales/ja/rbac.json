@@ -108,5 +108,6 @@
   "nothingToSave": "保存するものは何もありません",
   "saveRole": "{{role}} ポリシーを保存",
   "discardTitle": "保存されていないポリシーを破棄しますか?",
-  "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。"
+  "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。",
+  "roleUnavailable": "Not available for this role"
 }

@@ -162,5 +162,6 @@
   "signalFromRow": "Select this process for TERM / KILL",
   "selectForSignal": "Select",
   "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+  "controlPlaneNoSignal": "The control-plane process cannot be signalled"
 }

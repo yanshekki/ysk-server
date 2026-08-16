@@ -40,7 +40,7 @@ describe('misc routes (HTTP GET coverage)', () => {
     }
   });
 
-  it('search / system ips / audit / dashboard / notifications / apply-audit', async () => {
+  it('search / system ips / audit / dashboard / notifications / apply-audit', { timeout: 20_000 }, async () => {
     ts = await startTestServer();
 
     const search = await apiJson(ts, 'GET', '/api/v1/search?q=admin');

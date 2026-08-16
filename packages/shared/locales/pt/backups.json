@@ -146,5 +146,7 @@
   "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
   "skippedListHint": "These projects were skipped:",
   "goLogs": "Open logs",
-  "goAbout": "Backup notes"
+  "goAbout": "Backup notes",
+  "skippedPendingOs": "Skipped — OS user / home not provisioned",
+  "latestFile": "Latest archive"
 }

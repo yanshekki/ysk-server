@@ -290,9 +290,7 @@ describe('LogsPage wave2 helpers', () => {
         k === 'unit' ? 'sshd.service' : null,
       ),
     ).toBe('journal:sshd.service');
-    expect(initialSourceFromParams(() => null)).toBe(
-      'journal:nginx.service',
-    );
+    expect(initialSourceFromParams(() => null)).toBe('');
   });
 
   it('filterRailItems', () => {
@@ -541,9 +539,9 @@ describe('SslPage wave2 helpers', () => {
 describe('EmailPage wave2 helpers', () => {
   it('domain counts', () => {
     const items = [
-      { apply_status: 'applied', health_score: 90 },
-      { apply_status: 'draft', health_score: 50 },
-      { apply_status: 'written', health_score: 80 },
+      { apply_status: 'applied', health_score: 90, dns_applied: true },
+      { apply_status: 'draft', health_score: 50, dns_applied: true },
+      { apply_status: 'written', health_score: 80, dns_applied: true },
       { health_score: 10 },
     ];
     expect(countAppliedDomains(items)).toBe(1);

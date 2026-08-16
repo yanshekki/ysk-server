@@ -79,5 +79,8 @@
   "passwordUnset": "لم يتم تعيينه على الخدمة",
   "passwordSetHidden": "مجموعة (غير معروضة)",
   "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-  "scanCapped": "Showing the first {{n}} matches."
+  "scanCapped": "Showing the first {{n}} matches.",
+  "dbOptionKeys": "DB {{i}} · {{n}} keys",
+  "dbOptionEmpty": "DB {{i}} · empty",
+  "insecureShort": "No password"
 }

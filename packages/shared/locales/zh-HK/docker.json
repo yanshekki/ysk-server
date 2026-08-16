@@ -6,6 +6,7 @@
   "protected": "受保護",
   "pruneConfirm": "輸入 PRUNE 以確認任何清理",
   "needEngineTitle": "請先安裝 Docker Engine",
+  "stopEngineDesc": "會停止 Docker 引擎及本機全部 {{n}} 個容器。",
   "notInstalledValue": "未安裝",
   "nameHint": "字母、數字、底線、點、連字號（最長 128）",
   "volPlaceholder": "my-data",
@@ -106,7 +107,7 @@
     "networks": "未有網絡"
   },
   "logs": {
-    "empty": "沒有日誌輸出。像 hello-world 這類即時結束的容器，通常不會寫日誌。",
+    "empty": "沒有日誌輸出。",
     "follow": "跟隨"
   },
   "deleteRunningWarn": "此容器仍在運行或重啟中，刪除會強制移除。",

@@ -62,6 +62,7 @@
   "applyAuditBadge": "Apply audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
   "executeBadge": "EXECUTE {{state}}",
   "executeLabel": "System change",
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
   "go": "Open",
   "open": "Open",
   "noCriticalWarn": "No critical or warning alerts",

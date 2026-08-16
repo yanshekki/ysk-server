@@ -32,6 +32,9 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   dash: 'dashboard',
   torrent: 'torrents',
   admission: 'geo',
+  ipacl: 'geo',
+  processes: 'live',
+  maintenance: 'ops',
 };
 
 function resolveTabId(

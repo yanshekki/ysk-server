@@ -675,5 +675,7 @@
   "netNoBoundCert": "اس میزبان نام کے لیے ڈسک پر سرٹیفکیٹ نہیں",
   "netForceHttpsNeedCert": "HTTPS مجبور کرنے سے پہلے /ssl پر اس ڈومین کا سرٹیفکیٹ جاری کریں۔",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

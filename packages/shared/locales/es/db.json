@@ -288,7 +288,8 @@
     "disableBoot": "Deshabilitar al arrancar",
     "needRights": "Necesita derechos de cambio de sistema y administrador. Los fracasos muestran razones, nunca finjas el éxito.",
     "noneFetched": "- ninguno -",
-    "disableBootConfirm": "El motor no arrancará después del reinicio hasta que lo habilite nuevamente."
+    "disableBootConfirm": "El motor no arrancará después del reinicio hasta que lo habilite nuevamente.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "Vence",
   "importEntry": "Entrada: {{url}}",

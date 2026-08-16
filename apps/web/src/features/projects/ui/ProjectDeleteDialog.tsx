@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from 'ysk-server-shared';
+import { Link } from 'react-router-dom';
 import {
   Alert,
   Badge,
@@ -37,13 +38,31 @@ export function ProjectDeleteDialog({
   const [removeFiles, setRemoveFiles] = useState(true);
   const [localBusy, setLocalBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [homeExists, setHomeExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (open) {
       setConfirmName('');
       setRemoveFiles(true);
       setError(null);
+      setHomeExists(null);
     }
+  }, [open, project?.id]);
+
+  useEffect(() => {
+    if (!open || !project?.id) return;
+    let cancelled = false;
+    void projectsApi
+      .getOsUser(project.id)
+      .then((r) => {
+        if (!cancelled) setHomeExists(r.live.homeExists);
+      })
+      .catch(() => {
+        if (!cancelled) setHomeExists(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open, project?.id]);
 
   const busy = Boolean(parentBusy || localBusy);
@@ -148,6 +167,9 @@ export function ProjectDeleteDialog({
               <span className="delete-confirm__meta-lab">home</span>
               <span className="delete-confirm__meta-val">
                 <code className="delete-confirm__code">{project.homeDir}</code>
+                {homeExists === false ? (
+                  <Badge tone="danger">{t('projects.homeMissing')}</Badge>
+                ) : null}
               </span>
             </div>
           </div>
@@ -184,6 +206,15 @@ export function ProjectDeleteDialog({
             />
           </Field>
         </section>
+
+        {homeExists === false ? (
+          <Alert variant="warn">
+            {t('projects.homeMissingHint')}{' '}
+            <Link to={`/projects/${encodeURIComponent(project.id)}?tab=isolation`}>
+              {t('projects.goIsolation')}
+            </Link>
+          </Alert>
+        ) : null}
 
         {error ? <Alert variant="error">{error}</Alert> : null}
       </div>

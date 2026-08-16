@@ -276,6 +276,7 @@
     "realtime": "Live",
     "reload": "Reload",
     "needRestart": "Restart required",
+    "affectsProjects": "Sites and services that use this engine will be interrupted.",
     "lifecycle": "Lifecycle",
     "overview": "Overview",
     "actionDone": "{{action}} done",

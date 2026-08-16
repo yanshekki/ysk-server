@@ -8,6 +8,8 @@
   "modePublic": "Public",
   "modeRestricted": "Restricted",
   "modeUndecided": "Not set",
+  "modePublicLive": "Public (live bind)",
+  "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private.",
   "modeLoading": "Loading",
   "summaryPrivate": "Not open on the public firewall.",
   "summaryPublic": "Open · {{ports}}",

@@ -93,5 +93,6 @@
     "failed": "Failed",
     "tool": "Tool",
     "activating": "Starting"
-  }
+  },
+  "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
 }

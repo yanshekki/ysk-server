@@ -125,5 +125,6 @@
     "ok": "OK",
     "warn": "Warning",
     "bad": "Problem"
-  }
+  },
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
 }

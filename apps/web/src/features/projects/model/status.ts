@@ -58,7 +58,7 @@ export function projectNeedsLiveRetry(project: ProjectDto): boolean {
  * Single display model for project status — never show raw codes as primary label.
  */
 export function deriveProjectStatus(
-  project: Pick<ProjectDto, 'processStatus' | 'status'>,
+  project: Pick<ProjectDto, 'processStatus' | 'status' | 'osProvisioned'>,
 ): ProjectDisplayStatus {
   const ps = (project.processStatus ?? '').toLowerCase();
   const st = (project.status ?? '').toLowerCase();
@@ -168,6 +168,18 @@ export function deriveProjectStatus(
       labelFallback: 'Stopped',
       tone: 'neutral',
       bucket: 'stopped',
+      raw,
+    };
+  }
+
+  if (project.osProvisioned === false) {
+    return {
+      labelKey: 'projects.status.pendingOs',
+      labelFallback: 'OS user pending',
+      tone: 'warn',
+      bucket: 'pending_os',
+      hintKey: 'projects.status.pendingOsHint',
+      hintFallback: 'System user not provisioned',
       raw,
     };
   }

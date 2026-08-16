@@ -251,13 +251,20 @@ export function versionFileContains(dest: string, latest: string): boolean {
   }
 }
 
-/**
- * Schedule systemd restart after the HTTP response can flush.
- * Never run in unit tests.
- */
-export function scheduleYskServerRestart(): boolean {
+/** True when this process may ask systemd to bounce ysk-server. */
+export function canScheduleYskServerRestart(): boolean {
   if (isTestEnv()) return false;
   if (typeof process.getuid === 'function' && process.getuid() !== 0) return false;
+  return true;
+}
+
+/**
+ * Schedule systemd restart after the HTTP/CLI caller has flushed output.
+ * Never run in unit tests. Call only after sendJson (panel) or stdout (CLI).
+ */
+export function scheduleYskServerRestart(delayMs = 2500): boolean {
+  if (!canScheduleYskServerRestart()) return false;
+  const wait = Number.isFinite(delayMs) ? Math.max(0, delayMs) : 2500;
   setTimeout(() => {
     try {
       spawnSync(
@@ -268,7 +275,7 @@ export function scheduleYskServerRestart(): boolean {
     } catch {
       /* best-effort */
     }
-  }, 1500);
+  }, wait);
   return true;
 }
 

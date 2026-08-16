@@ -453,7 +453,9 @@
     "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "skippedListHint": "These projects were skipped:",
     "goLogs": "Open logs",
-    "goAbout": "Backup notes"
+    "goAbout": "Backup notes",
+    "skippedPendingOs": "Skipped — OS user / home not provisioned",
+    "latestFile": "Latest archive"
   },
   "btTracker": {
     "title": "बीटी ट्रैकर",
@@ -2499,7 +2501,8 @@
       "ok": "OK",
       "warn": "Warning",
       "bad": "Problem"
-    }
+    },
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
   },
   "dataTable": {
     "empty": "कोई डेटा नहीं",
@@ -2795,7 +2798,8 @@
       "disableBoot": "बूट पर अक्षम करें",
       "needRights": "सिस्टम-परिवर्तन अधिकार और प्रशासन की आवश्यकता है। असफलताएँ कारण बताती हैं - कभी भी सफलता का दिखावा मत करो।",
       "noneFetched": "- कोई नहीं -",
-      "disableBootConfirm": "रिबूट के बाद इंजन तब तक चालू नहीं होगा जब तक आप इसे दोबारा सक्षम नहीं करते।"
+      "disableBootConfirm": "रिबूट के बाद इंजन तब तक चालू नहीं होगा जब तक आप इसे दोबारा सक्षम नहीं करते।",
+      "affectsProjects": "Sites and services that use this engine will be interrupted."
     },
     "expiresLabel": "समय-सीमा समाप्त",
     "importEntry": "प्रवेश: {{url}}",
@@ -3332,7 +3336,8 @@
       "builder": "Build cache",
       "other": "Other"
     },
-    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+    "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
   },
   "email": {
     "title": "ईमेल",
@@ -4373,7 +4378,10 @@
     "webdavAlreadyOff": "WebDAV is already off",
     "deleteMore": " and {{n}} more",
     "unshareTitle": "Revoke this share?",
-    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+    "pillTrash": "{{count}} in trash",
+    "pillSpace": "{{used}} used",
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
   },
   "firewall": {
     "profiles": {
@@ -4932,7 +4940,8 @@
     "envColEffective": "प्रभावी",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
-    "closeNoSession": "No session yet"
+    "closeNoSession": "No session yet",
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
   },
   "listToolbar": {
     "searchPlaceholder": "खोजना…",
@@ -5297,7 +5306,8 @@
     "signalFromRow": "Select this process for TERM / KILL",
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
   },
   "migrate": {
     "tabInventory": "भंडार",
@@ -5390,7 +5400,9 @@
     "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
     "orphanBackupFirst": "Back up first (open Backups)",
     "expandAllWarnings": "Show all {{n}} warnings",
-    "collapseWarnings": "Show fewer"
+    "collapseWarnings": "Show fewer",
+    "inventoriedWarn": "Inventoried · {{n}} warnings",
+    "orphanMtime": "Last modified {{at}}"
   },
   "multiCheck": {
     "customPlaceholder": "कस्टम कोड",
@@ -8661,7 +8673,8 @@
       "clientFullTunnelProtect": "पूर्ण-सुरंग क्लाइंट का पता चला (अनुमतIPs 0.0.0.0/0)। एप्लाइड होस्ट प्रोटेक्ट ताकि पैनल/एसएसएच उत्तर लैन एनआईसी पर बने रहें।",
       "clientFullTunnelHint": "युक्ति: केवल स्प्लिट एक्सेस के लिए, कॉन्फ़ में अनुमत आईपी को वीपीएन/लैन सीआईडीआर (0.0.0.0/0 नहीं) पर सेट करें, फिर पुनः कनेक्ट करें।",
       "serverStopped": "{{engine}} सर्वर बंद हो गया.",
-      "serverStopFailed": "{{engine}} सर्वर को रोका नहीं जा सका: {{detail}}"
+      "serverStopFailed": "{{engine}} सर्वर को रोका नहीं जा सका: {{detail}}",
+      "peersSynced": "Peer list reloaded on the running WireGuard interface."
     },
     "vnc": {
       "needInstall": "इंस्टॉल करें {{stack}}",
@@ -9710,7 +9723,9 @@
     "netNoBoundCert": "इस होस्टनाम के लिए डिस्क पर प्रमाणपत्र नहीं",
     "netForceHttpsNeedCert": "HTTPS बाध्य करने से पहले /ssl पर इस डोमेन का प्रमाणपत्र जारी करें।",
     "goIsolation": "Open Isolation tab",
-    "netHstsNeedHttps": "Turn on force HTTPS first"
+    "netHstsNeedHttps": "Turn on force HTTPS first",
+    "homeMissing": "Home directory does not exist",
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
   },
   "protection": {
     "levels": {
@@ -10113,7 +10128,14 @@
       "degraded": "Degraded",
       "ddos-protection": "DDoS protection",
       "offline": "Offline"
-    }
+    },
+    "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+    "undo": "Undo",
+    "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+    "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+    "freshnessMissing": "No database",
+    "freshnessStale": "Stale",
+    "freshnessFresh": "Current"
   },
   "publicFiles": {
     "notSet": "सेट नहीं",
@@ -10157,7 +10179,8 @@
     "applyConfirmDesc": "Nginx server_name {{name}} लिखें और Nginx रीलोड करें।",
     "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।",
     "executeFlag": "Execute",
-    "asRoot": "Root"
+    "asRoot": "Root",
+    "statusDraft": "Draft / not applied"
   },
   "rbac": {
     "permissions": "अनुमतियां",
@@ -10269,7 +10292,8 @@
     "nothingToSave": "बचाने के लिए कुछ भी नहीं",
     "saveRole": "{{role}} पॉलिसी सहेजें",
     "discardTitle": "सहेजी न गई नीति त्यागें?",
-    "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।"
+    "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।",
+    "roleUnavailable": "Not available for this role"
   },
   "readiness": {
     "cat": {
@@ -10409,7 +10433,9 @@
       "admin2fa": "Admin two-factor"
     },
     "dataDirPerms": "panel data-directory permissions",
-    "mode750": "mode 750"
+    "mode750": "mode 750",
+    "gateBlocked": "Not passed · {{n}} missing",
+    "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
   },
   "redis": {
     "neverExpire": "कभी समाप्त नहीं होता",
@@ -10492,7 +10518,10 @@
     "passwordUnset": "सेवा पर सेट नहीं है",
     "passwordSetHidden": "सेट (दिखाया नहीं गया)",
     "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-    "scanCapped": "Showing the first {{n}} matches."
+    "scanCapped": "Showing the first {{n}} matches.",
+    "dbOptionKeys": "DB {{i}} · {{n}} keys",
+    "dbOptionEmpty": "DB {{i}} · empty",
+    "insecureShort": "No password"
   },
   "resources": {
     "created": "बनाया था",
@@ -11583,7 +11612,9 @@
     "serviceNotInstalled": "यह सेवा स्थापित नहीं है, इसलिए फ़ायरवॉल नियम लागू नहीं होते हैं।",
     "openButStopped": "पोर्ट खुले हैं - सेवा नहीं चल रही है",
     "openNoTenants": "बिना किरायेदारों वाले सार्वजनिक बंदरगाह",
-    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+    "modePublicLive": "Public (live bind)",
+    "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
   },
   "services": {
     "enabledBoot": "बूट पर",
@@ -11680,7 +11711,8 @@
       "failed": "Failed",
       "tool": "Tool",
       "activating": "Starting"
-    }
+    },
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
   },
   "software": {
     "title": "सॉफ़्टवेयर",
@@ -12989,7 +13021,8 @@
     "panelRestarted": "पैनल वापस आ गया · {{version}}",
     "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।",
     "cveNotChecked": "Not checked",
-    "cveLabel": "CVE"
+    "cveLabel": "CVE",
+    "riskUnevaluated": "Not evaluated — run Scan + OSV"
   },
   "users": {
     "userCount": "{{count}} उपयोगकर्ता",
@@ -13646,7 +13679,11 @@
     "settingsNeedStack": "ये डिफ़ॉल्ट तब लागू होते हैं जब TigerVNC (और यदि चयनित हो तो XFCE) स्थापित होते हैं। पहले उन्हें इंस्टॉल टैब पर इंस्टॉल करें।",
     "clientNeedNovnc": "ब्राउज़र में खोलने के लिए noVNC की आवश्यकता है। रिमोट जोड़ने से पहले इसे इंस्टॉल टैब पर इंस्टॉल करें जिसे आप यहां खोलने की उम्मीद करते हैं।",
     "needXfceFirst": "Install XFCE first",
-    "needSessionRunning": "Session is not running — start it first"
+    "needSessionRunning": "Session is not running — start it first",
+    "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+    "bindRfbLine": "RFB {{bind}} :{{port}}",
+    "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
   },
   "vpn": {
     "pageDesc": "वीपीएन सर्वर और क्लाइंट",

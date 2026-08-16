@@ -2,7 +2,12 @@
  * ysk-server update — check npm registry + optional apply.
  */
 
-import { planSelfUpdate, runSelfUpdate, LocalHostExecutor } from 'ysk-server-core';
+import {
+  planSelfUpdate,
+  runSelfUpdate,
+  scheduleYskServerRestart,
+  LocalHostExecutor,
+} from 'ysk-server-core';
 import { PRODUCT_NAME, type StructuredResult, tl} from 'ysk-server-shared';
 import { VERSION } from '../version.js';
 
@@ -35,6 +40,9 @@ export async function runUpdate(opts: {
     }
 
     if (opts.apply) {
+      if (result.applied && result.restarting) {
+        scheduleYskServerRestart(800);
+      }
       return {
         ok: result.applied,
         code: result.applied ? 'YSK_UPDATE_APPLIED' : 'YSK_UPDATE_APPLY_FAILED',

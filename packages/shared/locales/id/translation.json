@@ -453,7 +453,9 @@
     "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "skippedListHint": "These projects were skipped:",
     "goLogs": "Open logs",
-    "goAbout": "Backup notes"
+    "goAbout": "Backup notes",
+    "skippedPendingOs": "Skipped — OS user / home not provisioned",
+    "latestFile": "Latest archive"
   },
   "btTracker": {
     "title": "Pelacak BT",
@@ -2499,7 +2501,8 @@
       "ok": "OK",
       "warn": "Warning",
       "bad": "Problem"
-    }
+    },
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
   },
   "dataTable": {
     "empty": "Tidak ada data",
@@ -2795,7 +2798,8 @@
       "disableBoot": "Nonaktifkan saat boot",
       "needRights": "Membutuhkan hak perubahan sistem dan admin. Kegagalan menunjukkan alasannya - jangan pernah memalsukan kesuksesan.",
       "noneFetched": "- tidak ada -",
-      "disableBootConfirm": "Mesin tidak akan hidup setelah reboot sampai Anda mengaktifkannya kembali."
+      "disableBootConfirm": "Mesin tidak akan hidup setelah reboot sampai Anda mengaktifkannya kembali.",
+      "affectsProjects": "Sites and services that use this engine will be interrupted."
     },
     "expiresLabel": "Kedaluwarsa",
     "importEntry": "Entri: {{url}}",
@@ -3332,7 +3336,8 @@
       "builder": "Build cache",
       "other": "Other"
     },
-    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+    "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
   },
   "email": {
     "title": "E-mail",
@@ -4373,7 +4378,10 @@
     "webdavAlreadyOff": "WebDAV is already off",
     "deleteMore": " and {{n}} more",
     "unshareTitle": "Revoke this share?",
-    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+    "pillTrash": "{{count}} in trash",
+    "pillSpace": "{{used}} used",
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
   },
   "firewall": {
     "profiles": {
@@ -4932,7 +4940,8 @@
     "envColEffective": "Berlaku",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
-    "closeNoSession": "No session yet"
+    "closeNoSession": "No session yet",
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
   },
   "listToolbar": {
     "searchPlaceholder": "Mencari…",
@@ -5297,7 +5306,8 @@
     "signalFromRow": "Select this process for TERM / KILL",
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
   },
   "migrate": {
     "tabInventory": "Inventaris",
@@ -5390,7 +5400,9 @@
     "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
     "orphanBackupFirst": "Back up first (open Backups)",
     "expandAllWarnings": "Show all {{n}} warnings",
-    "collapseWarnings": "Show fewer"
+    "collapseWarnings": "Show fewer",
+    "inventoriedWarn": "Inventoried · {{n}} warnings",
+    "orphanMtime": "Last modified {{at}}"
   },
   "multiCheck": {
     "customPlaceholder": "Kode khusus",
@@ -8661,7 +8673,8 @@
       "clientFullTunnelProtect": "Klien terowongan penuh terdeteksi (AllowedIPs 0.0.0.0/0). Perlindungan host yang diterapkan sehingga balasan panel/SSH tetap berada di LAN NIC.",
       "clientFullTunnelHint": "Tip: hanya untuk akses terpisah, atur AllowedIPs ke VPN/LAN CIDRs (bukan 0.0.0.0/0) di konfigurasi, lalu sambungkan kembali.",
       "serverStopped": "{{engine}} server berhenti.",
-      "serverStopFailed": "Tidak dapat menghentikan {{engine}} server: {{detail}}"
+      "serverStopFailed": "Tidak dapat menghentikan {{engine}} server: {{detail}}",
+      "peersSynced": "Peer list reloaded on the running WireGuard interface."
     },
     "vnc": {
       "needInstall": "Instal {{stack}}",
@@ -9710,7 +9723,9 @@
     "netNoBoundCert": "Tidak ada sertifikat di disk untuk nama host ini",
     "netForceHttpsNeedCert": "Terbitkan sertifikat di /ssl untuk domain ini sebelum memaksa HTTPS.",
     "goIsolation": "Open Isolation tab",
-    "netHstsNeedHttps": "Turn on force HTTPS first"
+    "netHstsNeedHttps": "Turn on force HTTPS first",
+    "homeMissing": "Home directory does not exist",
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
   },
   "protection": {
     "levels": {
@@ -10113,7 +10128,14 @@
       "degraded": "Degraded",
       "ddos-protection": "DDoS protection",
       "offline": "Offline"
-    }
+    },
+    "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+    "undo": "Undo",
+    "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+    "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+    "freshnessMissing": "No database",
+    "freshnessStale": "Stale",
+    "freshnessFresh": "Current"
   },
   "publicFiles": {
     "notSet": "Tidak disetel",
@@ -10157,7 +10179,8 @@
     "applyConfirmDesc": "Tulis Nginx server_name {{name}} dan muat ulang Nginx.",
     "serverNameMismatch": "Konfigurasi aktif memakai {{live}}; formulir berisi {{draft}}. Terapkan untuk mengganti.",
     "executeFlag": "Execute",
-    "asRoot": "Root"
+    "asRoot": "Root",
+    "statusDraft": "Draft / not applied"
   },
   "rbac": {
     "permissions": "Izin",
@@ -10269,7 +10292,8 @@
     "nothingToSave": "Tidak ada yang perlu disimpan",
     "saveRole": "Simpan kebijakan {{role}}",
     "discardTitle": "Hapus kebijakan yang belum disimpan?",
-    "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan."
+    "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan.",
+    "roleUnavailable": "Not available for this role"
   },
   "readiness": {
     "cat": {
@@ -10409,7 +10433,9 @@
       "admin2fa": "Admin two-factor"
     },
     "dataDirPerms": "panel data-directory permissions",
-    "mode750": "mode 750"
+    "mode750": "mode 750",
+    "gateBlocked": "Not passed · {{n}} missing",
+    "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
   },
   "redis": {
     "neverExpire": "Tidak pernah kadaluarsa",
@@ -10492,7 +10518,10 @@
     "passwordUnset": "Tidak disetel pada layanan",
     "passwordSetHidden": "Tetapkan (tidak ditampilkan)",
     "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-    "scanCapped": "Showing the first {{n}} matches."
+    "scanCapped": "Showing the first {{n}} matches.",
+    "dbOptionKeys": "DB {{i}} · {{n}} keys",
+    "dbOptionEmpty": "DB {{i}} · empty",
+    "insecureShort": "No password"
   },
   "resources": {
     "created": "Dibuat",
@@ -11583,7 +11612,9 @@
     "serviceNotInstalled": "Layanan ini tidak diinstal, sehingga aturan firewall tidak berlaku.",
     "openButStopped": "Port terbuka — layanan tidak berjalan",
     "openNoTenants": "Pelabuhan umum tanpa penyewa",
-    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+    "modePublicLive": "Public (live bind)",
+    "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
   },
   "services": {
     "enabledBoot": "Saat boot",
@@ -11680,7 +11711,8 @@
       "failed": "Failed",
       "tool": "Tool",
       "activating": "Starting"
-    }
+    },
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
   },
   "software": {
     "title": "Perangkat lunak",
@@ -12989,7 +13021,8 @@
     "panelRestarted": "Panel kembali · {{version}}",
     "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
     "cveNotChecked": "Not checked",
-    "cveLabel": "CVE"
+    "cveLabel": "CVE",
+    "riskUnevaluated": "Not evaluated — run Scan + OSV"
   },
   "users": {
     "userCount": "{{count}} pengguna",
@@ -13646,7 +13679,11 @@
     "settingsNeedStack": "Default ini berlaku ketika TigerVNC (dan XFCE jika dipilih) diinstal. Instal terlebih dahulu di tab Instal.",
     "clientNeedNovnc": "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum menambahkan remote yang ingin Anda buka di sini.",
     "needXfceFirst": "Install XFCE first",
-    "needSessionRunning": "Session is not running — start it first"
+    "needSessionRunning": "Session is not running — start it first",
+    "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+    "bindRfbLine": "RFB {{bind}} :{{port}}",
+    "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
   },
   "vpn": {
     "pageDesc": "Server & klien VPN",

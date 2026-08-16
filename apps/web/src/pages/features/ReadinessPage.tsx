@@ -191,6 +191,24 @@ export function localizeReadinessCopy(
     display = display.replace(/not yet\s*os_provisioned/gi, t('readiness.notOsProvisioned'));
     tech.push('os_provisioned');
   }
+  if (/Home directory missing/i.test(display)) {
+    display = display.replace(
+      /Home directory missing(?: or not under project isolation layout)?/gi,
+      t('readiness.notOsProvisioned'),
+    );
+    tech.push('home');
+  }
+  if (/System user not created for this project/i.test(display)) {
+    display = display.replace(
+      /System user not created for this project/gi,
+      t('readiness.notOsProvisioned'),
+    );
+    tech.push('os_provisioned');
+  }
+  if (/主目錄\s*不存在/.test(display)) {
+    display = display.replace(/主目錄\s*不存在[^；;]*/g, t('readiness.notOsProvisioned'));
+    tech.push('home');
+  }
 
   display = display.replace(/遷移到\s*\/主目錄\//g, 'migrate to /home/');
   display = display.replace(/迁移到\s*\/主目录\//g, 'migrate to /home/');
@@ -342,9 +360,23 @@ function ItemRow({
             <Link to="/users">{t('users.addBackupAdmin')}</Link>
           </p>
         ) : null}
-        {item.id.startsWith('project-isolation-') &&
-        /owner_user_id/i.test(item.detail ?? '') ? (
-          <p className="rdy-item__hint">{t('readiness.isolationOwnerDegrades')}</p>
+        {(item.id.startsWith('project-isolation-') ||
+          item.id === 'projects-isolation-summary') &&
+        item.level !== 'ready' ? (
+          <p className="rdy-item__hint">
+            {/owner_user_id/i.test(item.detail ?? '') &&
+            !/os_provisioned|Home directory missing|System user not created|主目錄/i.test(
+              item.detail ?? '',
+            )
+              ? t('readiness.isolationOwnerDegrades')
+              : t('readiness.isolationPendingOs')}
+            {item.fixHref ? (
+              <>
+                {' · '}
+                <Link to={item.fixHref}>{t('projects.goIsolation')}</Link>
+              </>
+            ) : null}
+          </p>
         ) : null}
         <div className="rdy-item__meta">
           <code className="rdy-item__id">{item.id}</code>
@@ -522,11 +554,13 @@ export function ReadinessPage() {
     return Math.round((score.ready / score.total) * 100);
   }, [score]);
 
-  const heroTone = report?.productionReady
-    ? 'ok'
-    : blockers.length
+  const missingN = score?.missing ?? 0;
+  const heroTone =
+    missingN > 0 || blockers.length
       ? 'danger'
-      : 'warn';
+      : report?.productionReady
+        ? 'ok'
+        : 'warn';
 
   async function downloadReport() {
     if (!report) return;
@@ -567,9 +601,12 @@ export function ReadinessPage() {
         report
           ? {
               pill: {
-                label: report.productionReady
-                  ? t('readiness.gatePass', { pct: scorePct })
-                  : t('readiness.gateFail', { pct: scorePct }),
+                label:
+                  missingN > 0
+                    ? t('readiness.gateBlocked', { n: missingN, pct: scorePct })
+                    : report.productionReady
+                      ? t('readiness.gatePass', { pct: scorePct })
+                      : t('readiness.gateFail', { pct: scorePct }),
                 tone: heroTone },
               items: [
                 {

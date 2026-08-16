@@ -29,6 +29,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
 import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
 import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import {
   vpnApi,
   type VpnClientProfile,
@@ -98,7 +99,7 @@ function engineStatus(
 }
 
 function formatWhen(iso?: string): string {
-  return formatDateTime(iso, { withOffset: true });
+  return formatDateTime(iso, { withOffset: true, ...hostTimeZoneOpts({ withOffset: true }) });
 }
 
 export function maskVpnPrivateKeys(text: string): string {
@@ -165,16 +166,14 @@ export function VpnPage() {
       const s = await vpnApi.status();
       setStatus(s);
       setEndpoint((prev) => {
+        const hint = (s.endpointHint || '').trim();
         const prevHost = hostFromEndpoint(prev, '');
         // Drop invalid digit-only host typos (e.g. 51820:1194)
         if (prev.trim() && !prevHost) {
-          const hint = (s.endpointHint || '').trim();
           return hint || '';
         }
-        if (prevHost) return prev;
-        const hint = (s.endpointHint || '').trim();
-        if (!hint) return prev;
-        // If hint has no port, attach default WG port
+        if (prevHost && prevHost !== 'vpn.example.com') return prev;
+        if (!hint) return prevHost === 'vpn.example.com' ? '' : prev;
         if (!/:\d+$/.test(hint) && !hint.startsWith('[')) {
           return `${hint}:51820`;
         }
@@ -274,19 +273,30 @@ export function VpnPage() {
     setCfgRevealKey(false);
     setCfgQr(null);
     setCfgOpen(true);
-    if (engine === 'wireguard' || engine === 'outline') {
-      try {
-        const url = await QRCode.toDataURL(text, {
-          errorCorrectionLevel: 'M',
-          margin: 1,
-          width: 280,
-        });
-        setCfgQr(url);
-      } catch {
-        setCfgQr(null);
-      }
-    }
   };
+
+  useEffect(() => {
+    if (!cfgOpen || !cfgRevealKey) {
+      setCfgQr(null);
+      return;
+    }
+    if (cfgEngine !== 'wireguard' && cfgEngine !== 'outline') return;
+    let cancelled = false;
+    void QRCode.toDataURL(cfgText, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 280,
+    })
+      .then((url) => {
+        if (!cancelled) setCfgQr(url);
+      })
+      .catch(() => {
+        if (!cancelled) setCfgQr(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cfgOpen, cfgRevealKey, cfgText, cfgEngine]);
 
   const runOps = async (
     fn: () => Promise<{
@@ -390,6 +400,9 @@ export function VpnPage() {
         : t('vpn.listenPort');
 
   const statusPill = (() => {
+    if (!status) {
+      return { label: '…', tone: 'neutral' as const };
+    }
     if (tab === 'software') {
       const installed = (status?.engines ?? []).filter((e) => e.installed).length;
       const running = (status?.engines ?? []).filter((e) => e.serverActive).length;
@@ -1290,7 +1303,9 @@ export function VpnPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => void copyText(cfgText)}
+              onClick={() =>
+                void copyText(cfgRevealKey ? cfgText : maskVpnPrivateKeys(cfgText))
+              }
             >
               {t('vpn.copyConf')}
             </Button>
@@ -1330,7 +1345,9 @@ export function VpnPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => void copyText(cfgText)}
+                onClick={() =>
+                  void copyText(cfgRevealKey ? cfgText : maskVpnPrivateKeys(cfgText))
+                }
               >
                 {t('vpn.copyConf')}
               </Button>

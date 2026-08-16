@@ -108,5 +108,6 @@
   "nothingToSave": "সংরক্ষণ করার কিছুই নেই",
   "saveRole": "{{role}} নীতি সংরক্ষণ করুন",
   "discardTitle": "অসংরক্ষিত নীতি বাতিল করবেন?",
-  "discardDesc": "ভূমিকা পরিবর্তন করা অসংরক্ষিত ক্ষমতা সম্পাদনা ড্রপ."
+  "discardDesc": "ভূমিকা পরিবর্তন করা অসংরক্ষিত ক্ষমতা সম্পাদনা ড্রপ.",
+  "roleUnavailable": "Not available for this role"
 }

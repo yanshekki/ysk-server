@@ -22,6 +22,7 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
+import { consoleApi } from '../../features/db-service/console-api';
 import { StackWizard } from '../../features/software/StackWizard';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -34,6 +35,7 @@ export function enabledLabel(v: string, t: TFunction): string {
   if (v === 'n/a' || v === 'na') return t('services.unitNa');
   if (v === 'static') return t('services.unitStatic');
   if (v === 'indirect') return t('services.unitIndirect');
+  if (v === 'alias') return t('services.bootNa');
   return v || t('common.noneSelectedShort');
 }
 
@@ -50,6 +52,51 @@ export function lifecycleDangerForUnit(unit: string): 'normal' | 'edge' | 'sshd'
   if (u === 'ysk-server' || u.startsWith('ysk-server')) return 'panel';
   if (u === 'nginx' || u === 'apache2' || u === 'httpd') return 'edge';
   return 'normal';
+}
+
+/** sshd installed but not enabled on boot — reboot drops the SSH rescue path. */
+export function sshdNeedsBootEnable(row: {
+  unit: string;
+  installed: boolean;
+  enabled: string;
+}): boolean {
+  if (!row.installed) return false;
+  if (lifecycleDangerForUnit(row.unit) !== 'sshd') return false;
+  return row.enabled !== 'enabled';
+}
+
+export function isRedisServiceRow(row: { id?: string; unit?: string; label?: string }): boolean {
+  const id = String(row.id ?? '').toLowerCase();
+  const unit = String(row.unit ?? '').toLowerCase();
+  const label = String(row.label ?? '').toLowerCase();
+  return id === 'redis' || unit.startsWith('redis') || label === 'redis';
+}
+
+/** Live Redis console: protected-mode on + empty/unread requirepass. */
+export function redisConsoleLooksInsecure(
+  categories:
+    | Array<{ settings?: Array<{ key: string; liveValue?: string | null }> }>
+    | null
+    | undefined,
+): boolean {
+  if (!categories?.length) return false;
+  let pm = '';
+  let sawPass = false;
+  let pass: string | null | undefined;
+  for (const cat of categories) {
+    for (const s of cat.settings ?? []) {
+      if (s.key === 'protected-mode') {
+        pm = String(s.liveValue ?? '').trim().toLowerCase();
+      }
+      if (s.key === 'requirepass') {
+        sawPass = true;
+        pass = s.liveValue;
+      }
+    }
+  }
+  if (!(pm === 'yes' || pm === 'on' || pm === '1' || pm === 'true')) return false;
+  if (!sawPass || pass == null) return true;
+  return !String(pass).trim();
 }
 
 type MatrixItem = {
@@ -113,6 +160,7 @@ export function ServicesPage() {
     label: string;
     action: 'stop' | 'restart';
   } | null>(null);
+  const [redisInsecure, setRedisInsecure] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoadError(null);
@@ -134,6 +182,17 @@ export function ServicesPage() {
             status: x.status })) });
       } catch {
         setHaOverview(null);
+      }
+      const redis = (r.items ?? []).find((i) => isRedisServiceRow(i));
+      if (!redis?.installed || redis.active === 'not-found') {
+        setRedisInsecure(false);
+      } else {
+        try {
+          const c = await consoleApi.get('redis');
+          setRedisInsecure(redisConsoleLooksInsecure(c.categories));
+        } catch {
+          setRedisInsecure(false);
+        }
       }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -161,12 +220,14 @@ export function ServicesPage() {
     }, t('services.actionDone', { action: actionLabel(action, t) }));
   }
 
-  const running = items.filter((i) => i.active === 'active').length;
+  const serviceRows = items.filter((i) => i.active !== 'tool' && Boolean(i.unit));
+  const running = serviceRows.filter((i) => i.active === 'active').length;
   const missing = items.filter((i) => !i.installed).length;
   const failed = items.filter((i) => i.active === 'failed').length;
   const canMutate = Boolean(
     meta.executeEnabled && meta.isRoot && can('services.control'),
   );
+  const sshdRow = items.find((i) => sshdNeedsBootEnable(i));
 
   const categories = useMemo(
     () => [...new Set(items.map((i) => i.category))].sort(),
@@ -203,7 +264,7 @@ export function ServicesPage() {
       showCapability={false}
       status={{
         pill: {
-          label: t('services.runningOf', { running, total: items.length }),
+          label: t('services.runningOf', { running, total: serviceRows.length }),
           tone: heroTone },
         items: [
           { label: t('common.running'), value: running, tone: 'ok' },
@@ -252,6 +313,27 @@ export function ServicesPage() {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {sshdRow ? (
+        <Alert variant="warn">
+          <p className="u-mb-2">{t('services.sshdBootOffWarn')}</p>
+          <Button
+            variant="primary"
+            size="sm"
+            loading={busy}
+            disabled={!canMutate}
+            title={!canMutate ? t('services.lifecycleLocked') : undefined}
+            onClick={() => void lifecycle(sshdRow.unit, 'enable')}
+          >
+            {t('services.action.enable')}
+          </Button>
+        </Alert>
+      ) : null}
+      {redisInsecure ? (
+        <Alert variant="warn">
+          {t('redis.noRequirepass')}{' '}
+          <Link to="/databases/redis/service">{t('redis.setRequirepass')}</Link>
+        </Alert>
+      ) : null}
       {haOverview && haOverview.count > 0 ? (
         <Alert variant="info">
           <strong>{t('services.dbHa')}</strong>：
@@ -427,6 +509,9 @@ export function ServicesPage() {
                               >
                                 {t('services.bootDisabledShort')}
                               </Badge>
+                            ) : null}
+                            {redisInsecure && isRedisServiceRow(row) ? (
+                              <Badge tone="danger">{t('redis.insecureShort')}</Badge>
                             ) : null}
                           </div>
                         </div>

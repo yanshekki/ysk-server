@@ -108,5 +108,6 @@
   "nothingToSave": "बचाने के लिए कुछ भी नहीं",
   "saveRole": "{{role}} पॉलिसी सहेजें",
   "discardTitle": "सहेजी न गई नीति त्यागें?",
-  "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।"
+  "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।",
+  "roleUnavailable": "Not available for this role"
 }

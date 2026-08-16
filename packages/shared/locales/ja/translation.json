@@ -453,7 +453,9 @@
     "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "skippedListHint": "These projects were skipped:",
     "goLogs": "Open logs",
-    "goAbout": "Backup notes"
+    "goAbout": "Backup notes",
+    "skippedPendingOs": "Skipped — OS user / home not provisioned",
+    "latestFile": "Latest archive"
   },
   "btTracker": {
     "title": "BTトラッカー",
@@ -2499,7 +2501,8 @@
       "ok": "OK",
       "warn": "Warning",
       "bad": "Problem"
-    }
+    },
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
   },
   "dataTable": {
     "empty": "データがありません",
@@ -2795,7 +2798,8 @@
       "disableBoot": "起動時に無効にする",
       "needRights": "システム変更権限と管理者が必要です。失敗には理由が示されます。決して成功を偽ってはなりません。",
       "noneFetched": "0",
-      "disableBootConfirm": "エンジンは再起動後、再度有効にするまで始動しません。"
+      "disableBootConfirm": "エンジンは再起動後、再度有効にするまで始動しません。",
+      "affectsProjects": "Sites and services that use this engine will be interrupted."
     },
     "expiresLabel": "期限",
     "importEntry": "エントリ: {{url}}",
@@ -3332,7 +3336,8 @@
       "builder": "Build cache",
       "other": "Other"
     },
-    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+    "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
   },
   "email": {
     "title": "メール",
@@ -4373,7 +4378,10 @@
     "webdavAlreadyOff": "WebDAV is already off",
     "deleteMore": " and {{n}} more",
     "unshareTitle": "Revoke this share?",
-    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+    "pillTrash": "{{count}} in trash",
+    "pillSpace": "{{used}} used",
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
   },
   "firewall": {
     "profiles": {
@@ -4932,7 +4940,8 @@
     "envColEffective": "有効値",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
-    "closeNoSession": "No session yet"
+    "closeNoSession": "No session yet",
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",
@@ -5297,7 +5306,8 @@
     "signalFromRow": "Select this process for TERM / KILL",
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
   },
   "migrate": {
     "tabInventory": "持ち物",
@@ -5390,7 +5400,9 @@
     "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
     "orphanBackupFirst": "Back up first (open Backups)",
     "expandAllWarnings": "Show all {{n}} warnings",
-    "collapseWarnings": "Show fewer"
+    "collapseWarnings": "Show fewer",
+    "inventoriedWarn": "Inventoried · {{n}} warnings",
+    "orphanMtime": "Last modified {{at}}"
   },
   "multiCheck": {
     "customPlaceholder": "カスタムコード",
@@ -8661,7 +8673,8 @@
       "clientFullTunnelProtect": "フルトンネル クライアントが検出されました (AllowedIPs 0.0.0.0/0)。ホスト保護を適用したため、パネル/SSH 応答は LAN NIC 上に留まります。",
       "clientFullTunnelHint": "ヒント: 分割アクセスのみの場合は、conf でAllowedIPs を VPN/LAN CIDR (0.0.0.0/0 ではない) に設定してから、再接続します。",
       "serverStopped": "{{engine}}サーバーが停止しました。",
-      "serverStopFailed": "{{engine}} サーバーを停止できませんでした: {{detail}}"
+      "serverStopFailed": "{{engine}} サーバーを停止できませんでした: {{detail}}",
+      "peersSynced": "Peer list reloaded on the running WireGuard interface."
     },
     "vnc": {
       "needInstall": "{{stack}}をインストール",
@@ -9710,7 +9723,9 @@
     "netNoBoundCert": "このホスト名の証明書がディスクにありません",
     "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。",
     "goIsolation": "Open Isolation tab",
-    "netHstsNeedHttps": "Turn on force HTTPS first"
+    "netHstsNeedHttps": "Turn on force HTTPS first",
+    "homeMissing": "Home directory does not exist",
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
   },
   "protection": {
     "levels": {
@@ -10113,7 +10128,14 @@
       "degraded": "Degraded",
       "ddos-protection": "DDoS protection",
       "offline": "Offline"
-    }
+    },
+    "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+    "undo": "Undo",
+    "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+    "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+    "freshnessMissing": "No database",
+    "freshnessStale": "Stale",
+    "freshnessFresh": "Current"
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -10157,7 +10179,8 @@
     "applyConfirmDesc": "Nginx server_name {{name}} を書き込み、Nginx を再読込します。",
     "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。",
     "executeFlag": "Execute",
-    "asRoot": "Root"
+    "asRoot": "Root",
+    "statusDraft": "Draft / not applied"
   },
   "rbac": {
     "permissions": "権限",
@@ -10269,7 +10292,8 @@
     "nothingToSave": "保存するものは何もありません",
     "saveRole": "{{role}} ポリシーを保存",
     "discardTitle": "保存されていないポリシーを破棄しますか?",
-    "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。"
+    "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。",
+    "roleUnavailable": "Not available for this role"
   },
   "readiness": {
     "cat": {
@@ -10409,7 +10433,9 @@
       "admin2fa": "Admin two-factor"
     },
     "dataDirPerms": "panel data-directory permissions",
-    "mode750": "mode 750"
+    "mode750": "mode 750",
+    "gateBlocked": "Not passed · {{n}} missing",
+    "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
   },
   "redis": {
     "neverExpire": "有効期限はありません",
@@ -10492,7 +10518,10 @@
     "passwordUnset": "サービスに設定されていません",
     "passwordSetHidden": "セット（図示せず）",
     "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-    "scanCapped": "Showing the first {{n}} matches."
+    "scanCapped": "Showing the first {{n}} matches.",
+    "dbOptionKeys": "DB {{i}} · {{n}} keys",
+    "dbOptionEmpty": "DB {{i}} · empty",
+    "insecureShort": "No password"
   },
   "resources": {
     "created": "作成済み",
@@ -11583,7 +11612,9 @@
     "serviceNotInstalled": "このサービスはインストールされていないため、ファイアウォール ルールは適用されません。",
     "openButStopped": "ポートが開いています - サービスが実行されていません",
     "openNoTenants": "テナントのいない公共港",
-    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+    "modePublicLive": "Public (live bind)",
+    "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
   },
   "services": {
     "enabledBoot": "起動時",
@@ -11680,7 +11711,8 @@
       "failed": "Failed",
       "tool": "Tool",
       "activating": "Starting"
-    }
+    },
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
   },
   "software": {
     "title": "ソフトウェア",
@@ -12989,7 +13021,8 @@
     "panelRestarted": "パネルが復帰しました · {{version}}",
     "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
     "cveNotChecked": "Not checked",
-    "cveLabel": "CVE"
+    "cveLabel": "CVE",
+    "riskUnevaluated": "Not evaluated — run Scan + OSV"
   },
   "users": {
     "userCount": "{{count}} ユーザー",
@@ -13646,7 +13679,11 @@
     "settingsNeedStack": "これらのデフォルトは、TigerVNC (および選択されている場合は XFCE) がインストールされている場合に適用されます。まず、[インストール] タブでそれらをインストールします。",
     "clientNeedNovnc": "ブラウザで開くには VNC は必要ありません。ここで開く予定のリモートを追加する前に、[インストール] タブにインストールしてください。",
     "needXfceFirst": "Install XFCE first",
-    "needSessionRunning": "Session is not running — start it first"
+    "needSessionRunning": "Session is not running — start it first",
+    "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+    "bindRfbLine": "RFB {{bind}} :{{port}}",
+    "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
   },
   "vpn": {
     "pageDesc": "VPNサーバーとクライアント",

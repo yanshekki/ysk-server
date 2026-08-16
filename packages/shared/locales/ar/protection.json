@@ -399,5 +399,12 @@
     "degraded": "Degraded",
     "ddos-protection": "DDoS protection",
     "offline": "Offline"
-  }
+  },
+  "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+  "undo": "Undo",
+  "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+  "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+  "freshnessMissing": "No database",
+  "freshnessStale": "Stale",
+  "freshnessFresh": "Current"
 }

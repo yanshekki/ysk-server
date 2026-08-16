@@ -88,6 +88,11 @@ export function isProtectedSignalTarget(r: {
   return false;
 }
 
+export function isControlPlaneCommand(command: string | undefined): boolean {
+  const c = String(command ?? '').toLowerCase();
+  return c.includes('ysk-server') || /node.*apps\/server/.test(c);
+}
+
 export function cpuTone(pct: number): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (!Number.isFinite(pct)) return 'neutral';
   if (pct >= 90) return 'danger';
@@ -366,10 +371,13 @@ export function MetricsPage() {
 
   const selectAllFiltered = useCallback(() => {
     setSelected((prev) => {
+      const selectable = filteredRows.filter(
+        (r) => !isControlPlaneCommand(r.command) && !isProtectedSignalTarget(r),
+      );
       const allSelected =
-        filteredRows.length > 0 && filteredRows.every((r) => prev.has(r.pid));
+        selectable.length > 0 && selectable.every((r) => prev.has(r.pid));
       if (allSelected) return new Set();
-      return new Set(filteredRows.map((r) => r.pid));
+      return new Set(selectable.map((r) => r.pid));
     });
   }, [filteredRows]);
 
@@ -1009,8 +1017,18 @@ export function MetricsPage() {
                         <input
                           type="checkbox"
                           checked={
-                            filteredRows.length > 0 &&
-                            filteredRows.every((r) => selected.has(r.pid))
+                            filteredRows.filter(
+                              (r) =>
+                                !isControlPlaneCommand(r.command) &&
+                                !isProtectedSignalTarget(r),
+                            ).length > 0 &&
+                            filteredRows
+                              .filter(
+                                (r) =>
+                                  !isControlPlaneCommand(r.command) &&
+                                  !isProtectedSignalTarget(r),
+                              )
+                              .every((r) => selected.has(r.pid))
                           }
                           onChange={selectAllFiltered}
                           aria-label={t('metrics.selectAllAria')}
@@ -1019,14 +1037,28 @@ export function MetricsPage() {
                       className: 'data-table__check',
                       nowrap: true,
                       mobile: 'check',
-                      render: (r) => (
+                      render: (r) => {
+                        const blocked =
+                          isControlPlaneRow(r) || isProtectedSignalTarget(r);
+                        return (
                         <input
                           type="checkbox"
                           checked={selected.has(r.pid)}
-                          onChange={() => toggleSelect(r.pid)}
+                          disabled={blocked}
+                          title={
+                            blocked
+                              ? isProtectedSignalTarget(r)
+                                ? t('metrics.protectedPid')
+                                : t('metrics.controlPlaneNoSignal')
+                              : t('metrics.selectPidAria', { pid: r.pid })
+                          }
+                          onChange={() => {
+                            if (!blocked) toggleSelect(r.pid);
+                          }}
                           aria-label={t('metrics.selectPidAria', { pid: r.pid })}
                         />
-                      ) },
+                        );
+                      } },
                     {
                       key: 'pid',
                       header: 'PID',

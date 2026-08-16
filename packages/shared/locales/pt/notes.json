@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "Cliente de túnel completo detectado (AllowedIPs 0.0.0.0/0). Proteção de host aplicada para que as respostas do painel/SSH permaneçam na NIC da LAN.",
     "clientFullTunnelHint": "Dica: apenas para acesso dividido, defina AllowedIPs como CIDRs VPN/LAN (não 0.0.0.0/0) no conf e reconecte.",
     "serverStopped": "{{engine}} servidor parado.",
-    "serverStopFailed": "Não foi possível parar o servidor {{engine}}: {{detail}}"
+    "serverStopFailed": "Não foi possível parar o servidor {{engine}}: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "Instalar {{stack}}",

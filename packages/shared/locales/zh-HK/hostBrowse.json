@@ -96,6 +96,7 @@
   "mediaNote": "真實瀏覽器：視訊會串流到面板。在設定啟用音訊橋接即可聽到頁面聲音（需使用者操作）。",
   "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。",
   "resumeHint": "可恢復上次瀏覽（{{count}} 個分頁）",
+  "resumeHintDetail": "可恢復上次瀏覽（{{count}} 個分頁）· {{url}} · {{when}}",
   "resume": "恢復",
   "resumeDismiss": "關閉",
   "resumeDone": "已恢復工作階段",

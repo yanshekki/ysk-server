@@ -453,7 +453,9 @@
     "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "skippedListHint": "These projects were skipped:",
     "goLogs": "Open logs",
-    "goAbout": "Backup notes"
+    "goAbout": "Backup notes",
+    "skippedPendingOs": "Skipped — OS user / home not provisioned",
+    "latestFile": "Latest archive"
   },
   "btTracker": {
     "title": "블루투스 트래커",
@@ -2499,7 +2501,8 @@
       "ok": "OK",
       "warn": "Warning",
       "bad": "Problem"
-    }
+    },
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
   },
   "dataTable": {
     "empty": "데이터 없음",
@@ -2795,7 +2798,8 @@
       "disableBoot": "부팅 시 비활성화",
       "needRights": "시스템 변경 권한과 관리자가 필요합니다. 실패는 이유를 보여줍니다. 절대 가짜 성공이 아닙니다.",
       "noneFetched": "- 없음 -",
-      "disableBootConfirm": "다시 활성화할 때까지 재부팅 후 엔진이 시작되지 않습니다."
+      "disableBootConfirm": "다시 활성화할 때까지 재부팅 후 엔진이 시작되지 않습니다.",
+      "affectsProjects": "Sites and services that use this engine will be interrupted."
     },
     "expiresLabel": "만료",
     "importEntry": "입장: {{url}}",
@@ -3332,7 +3336,8 @@
       "builder": "Build cache",
       "other": "Other"
     },
-    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed."
+    "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
+    "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host."
   },
   "email": {
     "title": "이메일",
@@ -4373,7 +4378,10 @@
     "webdavAlreadyOff": "WebDAV is already off",
     "deleteMore": " and {{n}} more",
     "unshareTitle": "Revoke this share?",
-    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+    "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+    "pillTrash": "{{count}} in trash",
+    "pillSpace": "{{used}} used",
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
   },
   "firewall": {
     "profiles": {
@@ -4932,7 +4940,8 @@
     "envColEffective": "적용값",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
-    "closeNoSession": "No session yet"
+    "closeNoSession": "No session yet",
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
   },
   "listToolbar": {
     "searchPlaceholder": "찾다…",
@@ -5297,7 +5306,8 @@
     "signalFromRow": "Select this process for TERM / KILL",
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
-    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
   },
   "migrate": {
     "tabInventory": "목록",
@@ -5390,7 +5400,9 @@
     "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
     "orphanBackupFirst": "Back up first (open Backups)",
     "expandAllWarnings": "Show all {{n}} warnings",
-    "collapseWarnings": "Show fewer"
+    "collapseWarnings": "Show fewer",
+    "inventoriedWarn": "Inventoried · {{n}} warnings",
+    "orphanMtime": "Last modified {{at}}"
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -8661,7 +8673,8 @@
       "clientFullTunnelProtect": "전체 터널 클라이언트가 감지되었습니다(AllowedIPs 0.0.0.0/0). 패널/SSH 응답이 LAN NIC에 유지되도록 호스트 보호를 적용했습니다.",
       "clientFullTunnelHint": "팁: 분할 액세스의 경우에만 conf에서 AllowedIP를 VPN/LAN CIDR(0.0.0.0/0 아님)로 설정한 다음 다시 연결하세요.",
       "serverStopped": "{{engine}} 서버가 중지되었습니다.",
-      "serverStopFailed": "중지할 수 없습니다. {{engine}} 서버: {{detail}}"
+      "serverStopFailed": "중지할 수 없습니다. {{engine}} 서버: {{detail}}",
+      "peersSynced": "Peer list reloaded on the running WireGuard interface."
     },
     "vnc": {
       "needInstall": "설치 {{stack}}",
@@ -9710,7 +9723,9 @@
     "netNoBoundCert": "이 호스트 이름의 인증서가 디스크에 없습니다",
     "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요.",
     "goIsolation": "Open Isolation tab",
-    "netHstsNeedHttps": "Turn on force HTTPS first"
+    "netHstsNeedHttps": "Turn on force HTTPS first",
+    "homeMissing": "Home directory does not exist",
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
   },
   "protection": {
     "levels": {
@@ -10113,7 +10128,14 @@
       "degraded": "Degraded",
       "ddos-protection": "DDoS protection",
       "offline": "Offline"
-    }
+    },
+    "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
+    "undo": "Undo",
+    "banSelectedConfirmTitle": "Ban {{count}} selected IPs?",
+    "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
+    "freshnessMissing": "No database",
+    "freshnessStale": "Stale",
+    "freshnessFresh": "Current"
   },
   "publicFiles": {
     "notSet": "설정되지 않음",
@@ -10157,7 +10179,8 @@
     "applyConfirmDesc": "Nginx server_name {{name}}을(를) 쓰고 Nginx를 다시 로드합니다.",
     "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다.",
     "executeFlag": "Execute",
-    "asRoot": "Root"
+    "asRoot": "Root",
+    "statusDraft": "Draft / not applied"
   },
   "rbac": {
     "permissions": "권한",
@@ -10269,7 +10292,8 @@
     "nothingToSave": "저장할 항목이 없습니다.",
     "saveRole": "{{role}} 정책 저장",
     "discardTitle": "저장되지 않은 정책을 삭제하시겠습니까?",
-    "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다."
+    "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다.",
+    "roleUnavailable": "Not available for this role"
   },
   "readiness": {
     "cat": {
@@ -10409,7 +10433,9 @@
       "admin2fa": "Admin two-factor"
     },
     "dataDirPerms": "panel data-directory permissions",
-    "mode750": "mode 750"
+    "mode750": "mode 750",
+    "gateBlocked": "Not passed · {{n}} missing",
+    "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
   },
   "redis": {
     "neverExpire": "만료되지 않음",
@@ -10492,7 +10518,10 @@
     "passwordUnset": "서비스에 설정되지 않음",
     "passwordSetHidden": "설정(표시되지 않음)",
     "scanHint": "Uses SCAN, not KEYS. Returns at most {{n}} keys — avoid * on huge databases.",
-    "scanCapped": "Showing the first {{n}} matches."
+    "scanCapped": "Showing the first {{n}} matches.",
+    "dbOptionKeys": "DB {{i}} · {{n}} keys",
+    "dbOptionEmpty": "DB {{i}} · empty",
+    "insecureShort": "No password"
   },
   "resources": {
     "created": "생성됨",
@@ -11583,7 +11612,9 @@
     "serviceNotInstalled": "이 서비스는 설치되지 않았으므로 방화벽 규칙이 적용되지 않습니다.",
     "openButStopped": "포트가 열려 있음 - 서비스가 실행되고 있지 않음",
     "openNoTenants": "테넌트가 없는 공용 포트",
-    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+    "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+    "modePublicLive": "Public (live bind)",
+    "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
   },
   "services": {
     "enabledBoot": "부팅 시",
@@ -11680,7 +11711,8 @@
       "failed": "Failed",
       "tool": "Tool",
       "activating": "Starting"
-    }
+    },
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
   },
   "software": {
     "title": "소프트웨어",
@@ -12989,7 +13021,8 @@
     "panelRestarted": "패널이 복구됨 · {{version}}",
     "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
     "cveNotChecked": "Not checked",
-    "cveLabel": "CVE"
+    "cveLabel": "CVE",
+    "riskUnevaluated": "Not evaluated — run Scan + OSV"
   },
   "users": {
     "userCount": "{{count}} 사용자",
@@ -13646,7 +13679,11 @@
     "settingsNeedStack": "이러한 기본값은 TigerVNC(선택한 경우 XFCE)가 설치된 경우 적용됩니다. 먼저 설치 탭에서 설치하세요.",
     "clientNeedNovnc": "브라우저에서 열려면 noVNC가 필요합니다. 여기에서 열 것으로 예상되는 리모컨을 추가하기 전에 설치 탭에서 설치하세요.",
     "needXfceFirst": "Install XFCE first",
-    "needSessionRunning": "Session is not running — start it first"
+    "needSessionRunning": "Session is not running — start it first",
+    "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+    "bindRfbLine": "RFB {{bind}} :{{port}}",
+    "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",

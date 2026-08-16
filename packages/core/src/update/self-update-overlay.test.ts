@@ -5,8 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   applyNpmOverlayToDest,
+  canScheduleYskServerRestart,
   classifyCliPath,
   isSafeOverlayDest,
+  scheduleYskServerRestart,
 } from './self-update-overlay.js';
 import { runSelfUpdate } from './self-update-apply.js';
 import { LocalHostExecutor } from '../host/executor.js';
@@ -35,6 +37,11 @@ function makePack(version: string): { root: string; dest: string; unpacked: stri
 }
 
 describe('self-update overlay', () => {
+  it('does not schedule systemd restart inside unit tests', () => {
+    expect(canScheduleYskServerRestart()).toBe(false);
+    expect(scheduleYskServerRestart()).toBe(false);
+  });
+
   it('classifies monorepo and npm layouts', () => {
     expect(classifyCliPath('/usr/lib/ysk-server/apps/server/dist/cli.js').kind).toBe('monorepo');
     expect(classifyCliPath('/usr/lib/node_modules/ysk-server/dist/cli.js').kind).toBe(

@@ -40,5 +40,6 @@
   "applyConfirmDesc": "写入 Nginx server_name {{name}} 并重载 Nginx。",
   "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

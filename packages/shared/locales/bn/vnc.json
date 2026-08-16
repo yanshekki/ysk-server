@@ -247,5 +247,9 @@
   "settingsNeedStack": "TigerVNC (এবং XFCE নির্বাচিত হলে) ইনস্টল করা হলে এই ডিফল্টগুলি প্রযোজ্য হবে। প্রথমে ইন্সটল ট্যাবে এগুলি ইনস্টল করুন।",
   "clientNeedNovnc": "ব্রাউজারে খুলুন noVNC প্রয়োজন। আপনি এখানে খুলতে চান এমন রিমোট যোগ করার আগে এটি ইনস্টল ট্যাবে ইনস্টল করুন।",
   "needXfceFirst": "Install XFCE first",
-  "needSessionRunning": "Session is not running — start it first"
+  "needSessionRunning": "Session is not running — start it first",
+  "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
+  "bindRfbLine": "RFB {{bind}} :{{port}}",
+  "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
+  "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
 }

@@ -355,5 +355,8 @@
   "webdavAlreadyOff": "WebDAV is already off",
   "deleteMore": " and {{n}} more",
   "unshareTitle": "Revoke this share?",
-  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately."
+  "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
+  "pillTrash": "{{count}} in trash",
+  "pillSpace": "{{used}} used",
+  "webdavTokenInactive": "Disabled — token #{{id}} is not active"
 }

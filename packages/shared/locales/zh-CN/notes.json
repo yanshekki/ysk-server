@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "检测到全隧道客户端 (AllowedIPs 0.0.0.0/0)。应用主机保护，以便面板/SSH 回复保留在 LAN NIC 上。",
     "clientFullTunnelHint": "提示：仅对于分割访问，请在conf中将AllowedIPs设置为VPN/LAN CIDR（而不是0.0.0.0/0），然后重新连接。",
     "serverStopped": "已停止 {{engine}} 伺服器。",
-    "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}"
+    "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "请安装 {{stack}}",

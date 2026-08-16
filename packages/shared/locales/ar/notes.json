@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "تم اكتشاف عميل النفق الكامل (AllowedIPs 0.0.0.0/0). يتم تطبيق حماية المضيف بحيث تظل ردود اللوحة/SSH على LAN NIC.",
     "clientFullTunnelHint": "نصيحة: للوصول المقسم فقط، قم بتعيين عناوين IP المسموح بها على VPN/LAN CIDRs (وليس 0.0.0.0/0) في ملف conf، ثم أعد الاتصال.",
     "serverStopped": "{{engine}} توقف الخادم.",
-    "serverStopFailed": "تعذر إيقاف خادم {{engine}}: {{detail}}"
+    "serverStopFailed": "تعذر إيقاف خادم {{engine}}: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "تثبيت {{stack}}",

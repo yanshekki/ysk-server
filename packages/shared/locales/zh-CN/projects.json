@@ -675,5 +675,7 @@
   "netNoBoundCert": "此主机名磁盘上没有证书",
   "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

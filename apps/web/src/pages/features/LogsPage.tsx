@@ -29,6 +29,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import {
   bindSet,
   bindInput,
@@ -52,6 +53,7 @@ const LEGACY_TAB_MAP: Record<string, (typeof TABS)[number]> = {
   files: 'explore',
   projects: 'explore',
   maintain: 'ops',
+  maintenance: 'ops',
   settings: 'settings',
   help: 'about' };
 
@@ -278,7 +280,7 @@ export function initialSourceFromParams(
   if (source) return source;
   const unit = get('unit');
   if (unit) return `journal:${unit}`;
-  return 'journal:nginx.service';
+  return '';
 }
 
 export function filterRailItems(
@@ -460,8 +462,8 @@ export function LogsPage() {
         void runQuery(deepSrc);
       }
     } else if (!deepLinkQueryKey.current) {
-      deepLinkQueryKey.current = activeSource;
-      void runQuery(activeSource);
+      deepLinkQueryKey.current = activeSource || 'none';
+      if (activeSource) void runQuery(activeSource);
     }
     if (projectId) {
       setProjectsOnly(true);
@@ -1453,7 +1455,7 @@ export function LogsPage() {
                                 row.lastAt
                                   ? formatDateTime(row.lastAt, {
                                       locale: i18n.language,
-                                      withOffset: true,
+                                      ...hostTimeZoneOpts({ withOffset: true }),
                                     })
                                   : row.rawDate || '—',
                             },

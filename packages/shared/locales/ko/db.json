@@ -288,7 +288,8 @@
     "disableBoot": "부팅 시 비활성화",
     "needRights": "시스템 변경 권한과 관리자가 필요합니다. 실패는 이유를 보여줍니다. 절대 가짜 성공이 아닙니다.",
     "noneFetched": "- 없음 -",
-    "disableBootConfirm": "다시 활성화할 때까지 재부팅 후 엔진이 시작되지 않습니다."
+    "disableBootConfirm": "다시 활성화할 때까지 재부팅 후 엔진이 시작되지 않습니다.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "만료",
   "importEntry": "입장: {{url}}",

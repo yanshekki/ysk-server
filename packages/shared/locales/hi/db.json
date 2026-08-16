@@ -288,7 +288,8 @@
     "disableBoot": "बूट पर अक्षम करें",
     "needRights": "सिस्टम-परिवर्तन अधिकार और प्रशासन की आवश्यकता है। असफलताएँ कारण बताती हैं - कभी भी सफलता का दिखावा मत करो।",
     "noneFetched": "- कोई नहीं -",
-    "disableBootConfirm": "रिबूट के बाद इंजन तब तक चालू नहीं होगा जब तक आप इसे दोबारा सक्षम नहीं करते।"
+    "disableBootConfirm": "रिबूट के बाद इंजन तब तक चालू नहीं होगा जब तक आप इसे दोबारा सक्षम नहीं करते।",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "समय-सीमा समाप्त",
   "importEntry": "प्रवेश: {{url}}",

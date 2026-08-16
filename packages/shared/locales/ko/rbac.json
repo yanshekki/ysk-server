@@ -108,5 +108,6 @@
   "nothingToSave": "저장할 항목이 없습니다.",
   "saveRole": "{{role}} 정책 저장",
   "discardTitle": "저장되지 않은 정책을 삭제하시겠습니까?",
-  "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다."
+  "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다.",
+  "roleUnavailable": "Not available for this role"
 }

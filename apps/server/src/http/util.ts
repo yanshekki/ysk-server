@@ -91,6 +91,30 @@ export function sendJson(res: ServerResponse, status: number, body: unknown): vo
   res.end(payload);
 }
 
+/** sendJson, then wait until the socket has flushed (or a short fallback). */
+export function sendJsonAndWait(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+): Promise<void> {
+  sendJson(res, status, body);
+  if (res.writableFinished || res.writableEnded) return Promise.resolve();
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    if (typeof res.once === 'function') {
+      res.once('finish', done);
+      res.once('close', done);
+      res.once('error', done);
+    }
+    setTimeout(done, 150);
+  });
+}
+
 /**
  * Honest HTTP status from ops result.
  * - ok true → 200 (includes written-only control-plane success)

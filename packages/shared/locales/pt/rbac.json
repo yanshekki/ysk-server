@@ -108,5 +108,6 @@
   "nothingToSave": "Nada para salvar",
   "saveRole": "Salvar política {{role}}",
   "discardTitle": "Descartar política não salva?",
-  "discardDesc": "A troca de funções descarta edições de recursos não salvas."
+  "discardDesc": "A troca de funções descarta edições de recursos não salvas.",
+  "roleUnavailable": "Not available for this role"
 }

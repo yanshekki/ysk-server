@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "전체 터널 클라이언트가 감지되었습니다(AllowedIPs 0.0.0.0/0). 패널/SSH 응답이 LAN NIC에 유지되도록 호스트 보호를 적용했습니다.",
     "clientFullTunnelHint": "팁: 분할 액세스의 경우에만 conf에서 AllowedIP를 VPN/LAN CIDR(0.0.0.0/0 아님)로 설정한 다음 다시 연결하세요.",
     "serverStopped": "{{engine}} 서버가 중지되었습니다.",
-    "serverStopFailed": "중지할 수 없습니다. {{engine}} 서버: {{detail}}"
+    "serverStopFailed": "중지할 수 없습니다. {{engine}} 서버: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "설치 {{stack}}",

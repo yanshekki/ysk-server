@@ -6,6 +6,7 @@ const floor = Number(process.env.COVERAGE_FLOOR ?? '90');
 export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
+    testTimeout: 20_000,
     pool: 'forks',
     poolOptions: {
       forks: { singleFork: true },

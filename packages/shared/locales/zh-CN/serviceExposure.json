@@ -37,5 +37,7 @@
   "roleImap": "IMAP／POP3 收件",
   "openButStopped": "端口打开 — 服务未运行",
   "openNoTenants": "没有租户的公共港口",
-  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced."
+  "summaryFirewallOffOnly": "Host firewall is not enabled, so port rules are not enforced.",
+  "modePublicLive": "Public (live bind)",
+  "summaryPublicLive": "Listening on {{bind}} — reachable on all interfaces. Confirm access mode; this is not private."
 }

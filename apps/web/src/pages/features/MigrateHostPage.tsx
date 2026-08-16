@@ -162,11 +162,13 @@ export function MigrateHostPage() {
           label: invLoading
             ? t('migrate.inventorying')
             : inventory?.ok
-              ? t('migrate.inventoried')
+              ? warnings.length
+                ? t('migrate.inventoriedWarn', { n: warnings.length })
+                : t('migrate.inventoried')
               : err
                 ? t('migrate.inventoryFailed')
                 : t('migrate.pendingInventory'),
-          tone: inventory?.ok ? 'ok' : err ? 'danger' : 'neutral' },
+          tone: inventory?.ok ? (warnings.length ? 'warn' : 'ok') : err ? 'danger' : 'neutral' },
         items: [
           { label: t('common.project'), value: counts.projects ?? '—' },
           { label: t('users.mailboxes'), value: counts.mailboxes ?? '—' },
@@ -325,11 +327,25 @@ export function MigrateHostPage() {
                         </p>
                         <ul className="list-plain">
                           {((inventory.manifest as { orphanHomes?: string[] }).orphanHomes ?? []).map(
-                            (p) => (
+                            (p) => {
+                              const stats = (
+                                inventory.manifest as {
+                                  orphanHomeStats?: Record<string, { mtime?: string }>;
+                                }
+                              ).orphanHomeStats?.[p];
+                              return (
                               <li key={p} className="u-flex u-justify-between u-gap-2 u-items-center">
+                                <span>
                                 <code className="inline u-text-sm u-break-all">
                                   {p}
                                 </code>
+                                {stats?.mtime ? (
+                                  <span className="muted u-text-sm">
+                                    {' '}
+                                    {t('migrate.orphanMtime', { at: stats.mtime })}
+                                  </span>
+                                ) : null}
+                                </span>
                                 <Button
                                   variant="danger"
                                   size="sm"
@@ -340,7 +356,8 @@ export function MigrateHostPage() {
                                   {t('migrate.orphanRemove')}
                                 </Button>
                               </li>
-                            ),
+                            );
+                            },
                           )}
                         </ul>
                       </div>
@@ -709,7 +726,15 @@ export function MigrateHostPage() {
             .finally(() => setBusy(false));
         }}
         title={t('migrate.orphanRemoveTitle')}
-        description={`${t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })} ${t('migrate.orphanBackupFirst')}`}
+        description={`${t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })} ${
+          (inventory?.manifest as { orphanHomeStats?: Record<string, { mtime?: string }> } | undefined)
+            ?.orphanHomeStats?.[orphanTarget ?? '']?.mtime
+            ? t('migrate.orphanMtime', {
+                at: (inventory?.manifest as { orphanHomeStats?: Record<string, { mtime?: string }> })
+                  .orphanHomeStats?.[orphanTarget ?? '']?.mtime,
+              })
+            : ''
+        } ${t('migrate.orphanBackupFirst')}`}
         confirmText={orphanTarget?.split('/').filter(Boolean).pop() || 'DELETE'}
         severity="critical"
         confirmLabel={t('migrate.orphanRemove')}

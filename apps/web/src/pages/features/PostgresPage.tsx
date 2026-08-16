@@ -35,6 +35,7 @@ import {
   usePrivateStartGate,
 } from '../../features/network/service-exposure';
 import { bindSet, bindInput } from '../bind-handlers';
+import { formatEngineVersion } from './ServiceConsolePage';
 
 export function PostgresPage() {
   const { t } = useTranslation();
@@ -175,7 +176,14 @@ export function PostgresPage() {
                     {svc?.activeLabel ?? '—'}
                   </Badge>
                 ) },
-              { label: t('common.version'), value: svc?.version ?? '—' },
+              {
+                label: t('common.version'),
+                value: (
+                  <span title={formatEngineVersion(svc?.version).full || undefined}>
+                    {formatEngineVersion(svc?.version).short}
+                  </span>
+                ),
+              },
               { label: 'unit', value: svc?.unit ?? 'postgresql' },
               {
                 label: t('db.systemChange'),

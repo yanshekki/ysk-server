@@ -121,10 +121,25 @@ export function countAppliedDomains(
 }
 
 export function countHealthyDomains(
-  items: Array<{ health_score: number }>,
+  items: Array<{
+    health_score: number;
+    dns_applied?: boolean;
+    ptr_ok?: boolean;
+    port25_open?: boolean | null;
+  }>,
   threshold = 80,
 ): number {
-  return items.filter((d) => d.health_score >= threshold).length;
+  return items.filter((d) => !emailHealthUnprobed(d) && d.health_score >= threshold).length;
+}
+
+export function anyDomainHealthChecked(
+  items: Array<{
+    dns_applied?: boolean;
+    ptr_ok?: boolean;
+    port25_open?: boolean | null;
+  }>,
+): boolean {
+  return items.some((d) => !emailHealthUnprobed(d));
 }
 
 export function countDraftDomains(
@@ -469,7 +484,7 @@ export function EmailPage() {
           { label: t('email.statDomains'), value: total },
           {
             label: t('email.statHealthy80'),
-            value: healthy,
+            value: anyDomainHealthChecked(items) ? healthy : '—',
             tone: healthy > 0 ? 'ok' : undefined },
           {
             label: t('email.statApplied'),
@@ -579,7 +594,10 @@ export function EmailPage() {
                         {
                           id: 'failed',
                           label: t('email.applyFailed'),
-                          count: facets?.status?.failed,
+                          count:
+                            facets?.status?.failed ??
+                            items.filter((d) => (d.apply_status ?? '').toLowerCase() === 'failed')
+                              .length,
                           tone: 'danger' },
                       ] },
                   ]}
@@ -722,6 +740,7 @@ export function EmailPage() {
                 <CheckboxField
                   id="g-wm-https"
                   checked={wmForceHttps && wmHasCert}
+                  disabled={!wmHasCert}
                   onChange={(c) => {
                     if (c && !wmHasCert) return;
                     setWmForceHttps(c);

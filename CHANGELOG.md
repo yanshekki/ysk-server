@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.5 — 2026-08-17
+
+### Fix
+- Panel self-update no longer toasts raw `Failed to fetch` after a successful apply. systemd restart waits until the HTTP 200 has flushed; inventory reload ignores browser disconnects during the bounce.
+- E2E-1114 (UX114-001–050): GeoIP stale yes/no, ban confirm on top-IP and batch, public-files header uses live nginx server_name, updates/readiness/migrate header tones stay honest, network link-up i18n, service alias boot label, engine version trim, Redis DB option spacing.
+- VPN peer conf stays masked until reveal; download writes the real .conf. Cron create prompts install-to-crontab. Project overview/delete probe live HOME. sshd not-on-boot header + enable. Redis no-password on /services and dashboard. Undeployed project wording unified with Isolation links.
+- E2E-1114-02 (UX114-051–078): Docker logs wait before empty copy; validators/CDN/VNC/VPN do not paint 0/empty while loading; WireGuard peer add/delete syncs without restarting the server; VNC header uses dpkg; backup header uses latest archive; GeoIP freshness is no-db/stale/current; public listen + no 2FA is a dashboard warning.
+
+### Improve
+- Tab aliases (`processes`, `ipacl`, `maintenance`); Files/Email KPIs; host-timezone clocks; backups destructive actions under More; process checkboxes skip the control plane; whitelist 5s undo; operator cap denominator is factory-grantable.
+
 ## 1.1.4 — 2026-08-16
 
 ### Feature

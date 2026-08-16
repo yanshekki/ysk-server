@@ -27,6 +27,8 @@ export type ServiceLifecycleBarProps = {
   onDone?: () => void | Promise<void>;
   /** Override host call (VPN ensure/stop, etc.) */
   onAction?: (action: ServiceLifecycleAction) => Promise<unknown>;
+  /** Extra sentence on the stop confirm (e.g. container count). */
+  stopDetail?: string;
 };
 
 const DEFAULT_ACTIONS: ServiceLifecycleAction[] = ['start', 'stop', 'restart'];
@@ -43,6 +45,7 @@ export function ServiceLifecycleBar({
   className,
   onDone,
   onAction,
+  stopDetail,
 }: ServiceLifecycleBarProps) {
   const { t } = useTranslation();
   const { busy, run } = useFeatureAction();
@@ -241,7 +244,9 @@ export function ServiceLifecycleBar({
           void fire('stop');
         }}
         title={confirmCopy.title}
-        description={confirmCopy.description}
+        description={
+          stopDetail ? `${confirmCopy.description} ${stopDetail}` : confirmCopy.description
+        }
         consequences={confirmCopy.consequences}
         confirmText={confirmCopy.confirmText}
         severity={confirmCopy.severity}

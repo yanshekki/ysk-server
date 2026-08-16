@@ -18,6 +18,7 @@ import {
   Field,
   FormActions,
   FormLayout,
+  LoadingBlock,
   Modal,
   OpsResultPanel,
   PageGuide,
@@ -319,7 +320,10 @@ export function ValidatorsPage() {
       status={{
         pill: { label: t('validators.beta'), tone: 'warn' },
         items: [
-          { label: t('validators.col.status'), value: String(instances.length) },
+          {
+            label: t('validators.col.status'),
+            value: loading ? '…' : String(instances.length),
+          },
           {
             label: t('validators.disk.free'),
             value: formatBytes(disk?.availBytes),
@@ -341,7 +345,10 @@ export function ValidatorsPage() {
         {error ? <Alert variant="error">{error}</Alert> : null}
         {ops ? <OpsResultPanel title={t('validators.title')} result={ops} /> : null}
 
-        {tab === 'nodes' ? (
+        {tab === 'nodes' && loading ? (
+          <LoadingBlock label={t('common.loading')} />
+        ) : null}
+        {tab === 'nodes' && !loading ? (
           <DataTable<ValidatorInstanceDto>
             rowKey={(row) => row.id}
             toolbar={
@@ -418,7 +425,7 @@ export function ValidatorsPage() {
                 render: (row) => formatBytes(summaries[row.id]?.diskUsedBytes ?? row.lastStatus?.diskUsedBytes),
               },
             ]}
-            rows={loading ? [] : instances}
+            rows={instances}
             rowActions={(row) => (
               <>
                 <Button size="sm" onClick={() => void openDetail(row)}>

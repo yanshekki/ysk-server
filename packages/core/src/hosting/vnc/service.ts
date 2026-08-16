@@ -82,6 +82,18 @@ export type VncOpsResult = {
   written?: string[];
 };
 
+async function dpkgOk(host: HostExecutor, pkg: string): Promise<boolean> {
+  if (!/^[a-z0-9.+-]+$/i.test(pkg)) return false;
+  try {
+    const r = await host.runCommand(['dpkg-query', '-W', `-f=\${Status}`, pkg], {
+      timeoutMs: 5_000,
+    });
+    return /install ok installed/i.test(r.stdout || '');
+  } catch {
+    return false;
+  }
+}
+
 async function anyBin(
   host: HostExecutor,
   bins: string[],
@@ -122,6 +134,7 @@ function toSummary(
     autostart: rec.autostart,
     hasPassword: rec.hasPassword,
     novncRunning,
+    novncHttpPort: 6080 + rec.display,
     createdAt: rec.createdAt,
   };
 }
@@ -834,11 +847,14 @@ export class VncService {
     const xfceBins = ['startxfce4', 'xfce4-session'];
     const viewerBins = ['vncviewer', 'xtigervncviewer'];
 
-    const [tv, nv, xf, vw] = await Promise.all([
+    const [tv, nv, xf, vw, pkgTv, pkgNv, pkgXf] = await Promise.all([
       anyBin(this.host, tigervncBins),
       anyBin(this.host, novncBins),
       anyBin(this.host, xfceBins),
       anyBin(this.host, viewerBins),
+      dpkgOk(this.host, 'tigervnc-standalone-server'),
+      dpkgOk(this.host, 'novnc'),
+      dpkgOk(this.host, 'xfce4'),
     ]);
 
     const novncAssets =
@@ -848,7 +864,7 @@ export class VncService {
       {
         id: 'tigervnc',
         title: 'TigerVNC',
-        installed: tv.installed,
+        installed: tv.installed || pkgTv,
         bins: tv.found,
         missingBins: tv.missing,
         notes: tv.installed
@@ -858,7 +874,7 @@ export class VncService {
       {
         id: 'novnc',
         title: 'noVNC / websockify',
-        installed: nv.installed || novncAssets,
+        installed: nv.installed || novncAssets || pkgNv,
         bins: nv.found,
         missingBins: nv.missing,
         notes:
@@ -871,7 +887,7 @@ export class VncService {
       {
         id: 'xfce',
         title: 'XFCE desktop',
-        installed: xf.installed,
+        installed: xf.installed || pkgXf,
         bins: xf.found,
         missingBins: xf.missing,
         notes: xf.installed

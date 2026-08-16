@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useUpdates, updatesApi } from '../features/updates';
+import { shouldToastUpdateError, useUpdates, updatesApi } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
 import {
   PageGuide,
@@ -375,7 +375,13 @@ export function UpdatesPage() {
   const selfChecked = selfUpdate?.checked !== false;
   const selfOk = selfUpdate?.ok !== false && selfChecked;
 
-  const heroTone = highRisk > 0 ? 'danger' : selfAvailable ? 'warn' : 'ok';
+  const heroTone = !osvChecked
+    ? 'neutral'
+    : highRisk > 0
+      ? 'danger'
+      : selfAvailable
+        ? 'warn'
+        : 'ok';
 
   const upgradableCount =
     summary?.packagesUpgradable ??
@@ -535,8 +541,9 @@ export function UpdatesPage() {
       showCapability={false}
       status={{
         pill: {
-          label:
-            highRisk > 0
+          label: !osvChecked
+            ? t('updates.riskUnevaluated')
+            : highRisk > 0
               ? t('updates.highRiskN', { count: highRisk })
               : selfAvailable
                 ? t('updates.panelUpdate')
@@ -1358,7 +1365,9 @@ export function UpdatesPage() {
                           toast.ok(t('updates.scheduleSaved'));
                           return refreshSummary();
                         })
-                        .catch((e: Error) => toast.error(e.message));
+                        .catch((e: Error) => {
+                          if (shouldToastUpdateError(e)) toast.error(e.message);
+                        });
                     }}
                   >
                     {t('updates.saveSchedule')}

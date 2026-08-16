@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "Client tunnel complet détecté (AllowedIPs 0.0.0.0/0). Protection de l'hôte appliquée afin que les réponses du panneau/SSH restent sur la carte réseau LAN.",
     "clientFullTunnelHint": "Astuce : pour un accès partagé uniquement, définissez AllowedIPs sur les CIDR VPN/LAN (et non 0.0.0.0/0) dans la configuration, puis reconnectez-vous.",
     "serverStopped": "{{engine}} serveur arrêté.",
-    "serverStopFailed": "Impossible d'arrêter le serveur {{engine}} : {{detail}}"
+    "serverStopFailed": "Impossible d'arrêter le serveur {{engine}} : {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "Installer {{stack}}",

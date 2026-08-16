@@ -42,6 +42,7 @@ export type VncAccountSummary = {
   autostart: boolean;
   hasPassword: boolean;
   novncRunning: boolean;
+  novncHttpPort?: number;
   createdAt: string;
 };
 

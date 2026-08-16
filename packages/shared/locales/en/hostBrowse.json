@@ -96,6 +96,7 @@
   "mediaNote": "Real browser: video is streamed into the panel. Enable audio bridge in Settings to hear page audio (requires user gesture).",
   "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user.",
   "resumeHint": "Resume previous session ({{count}} tabs)",
+  "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
   "resume": "Resume",
   "resumeDismiss": "Dismiss",
   "resumeDone": "Session resumed",

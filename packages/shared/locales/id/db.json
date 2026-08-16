@@ -288,7 +288,8 @@
     "disableBoot": "Nonaktifkan saat boot",
     "needRights": "Membutuhkan hak perubahan sistem dan admin. Kegagalan menunjukkan alasannya - jangan pernah memalsukan kesuksesan.",
     "noneFetched": "- tidak ada -",
-    "disableBootConfirm": "Mesin tidak akan hidup setelah reboot sampai Anda mengaktifkannya kembali."
+    "disableBootConfirm": "Mesin tidak akan hidup setelah reboot sampai Anda mengaktifkannya kembali.",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "Kedaluwarsa",
   "importEntry": "Entri: {{url}}",

@@ -234,5 +234,6 @@
   "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
   "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।",
   "cveNotChecked": "Not checked",
-  "cveLabel": "CVE"
+  "cveLabel": "CVE",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV"
 }

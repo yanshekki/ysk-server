@@ -675,5 +675,7 @@
   "netNoBoundCert": "No hay certificado en disco para este nombre",
   "netForceHttpsNeedCert": "Emita un certificado en /ssl para este dominio antes de forzar HTTPS.",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

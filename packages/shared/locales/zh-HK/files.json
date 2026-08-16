@@ -1,5 +1,7 @@
 {
   "pillFiles": "{{count}} 檔",
+  "pillTrash": "回收桶 {{count}} 項",
+  "pillSpace": "已用 {{used}}",
   "statFiles": "檔案",
   "statFolders": "資料夾",
   "statUsage": "用量",
@@ -101,6 +103,7 @@
   "webdavOn": "已啟用",
   "webdavOff": "已關閉",
   "webdavTokenId": "權杖 #{{id}}",
+  "webdavTokenInactive": "已停用，權杖 #{{id}} 不生效",
   "webdavUpdated": "更新於 {{at}}",
   "webdavTokenOnceTitle": "請立即複製密碼",
   "webdavTokenOnceHint": "此密碼只顯示一次；關掉此頁後無法再查看。",

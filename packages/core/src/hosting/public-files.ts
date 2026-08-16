@@ -54,10 +54,18 @@ export interface PublicFilesStatus {
   notes: string[];
   /** Likely to serve HTTP for server_name when conf is in conf.d + nginx running */
   likelyLive: boolean;
+  /** server_name from the live /etc/nginx conf (not the form / meta). */
+  liveServerName?: string;
 }
 
 function confFileName(serverName: string): string {
   return `public-files-${serverName.replace(/\./g, '-')}.conf`;
+}
+
+export function parseNginxServerName(conf: string): string | undefined {
+  const m = String(conf || '').match(/^\s*server_name\s+([^;]+);/m);
+  const raw = m?.[1]?.trim().split(/\s+/)[0];
+  return raw && raw !== '_' ? raw : undefined;
 }
 
 function ensureNginxReadable(publicRoot: string, dataDir: string, notes: string[]): void {
@@ -442,6 +450,27 @@ export function probePublicFileServer(input: {
       notes.push(tl('notes.publicFiles.confNameStale', { file: base, serverName }));
     }
   }
+
+  let liveServerName: string | undefined;
+  try {
+    const etcDir = '/etc/nginx/conf.d';
+    if (existsSync(etcDir)) {
+      const liveFiles = readdirSync(etcDir).filter(
+        (f) => f.startsWith('ysk-public-files-') && f.endsWith('.conf'),
+      );
+      const preferred =
+        (systemConf && liveFiles.find((f) => systemConf!.endsWith(f))) || liveFiles[0];
+      if (preferred) {
+        const livePath = join(etcDir, preferred);
+        if (!systemConf) {
+          systemConf = livePath;
+        }
+        liveServerName = parseNginxServerName(readFileSync(livePath, 'utf8'));
+      }
+    }
+  } catch {
+    /* live conf optional */
+  }
   notes.push(tl('notes.publicFiles.publicRoot', { path: publicRoot }));
 
   return {
@@ -453,10 +482,11 @@ export function probePublicFileServer(input: {
     managedConf,
     managedConfExists,
     systemConf,
-    systemConfExists,
+    systemConfExists: Boolean(systemConf && existsSync(systemConf)),
     executeEnabled,
     isRoot,
     notes,
-    likelyLive: systemConfExists && indexExists,
+    likelyLive: Boolean(systemConf && existsSync(systemConf) && indexExists),
+    liveServerName,
   };
 }

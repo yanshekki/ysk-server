@@ -200,12 +200,19 @@ export async function buildHostManifest(input: {
 
   // Disk homes not in store
   const orphanHomes: string[] = [];
+  const orphanHomeStats: Record<string, { mtime: string }> = {};
   for (const diskHome of globHomesOnDisk()) {
     const abs = resolve(diskHome);
     if (!homeSet.has(abs)) {
       warnings.push(tl('notes.auto.t0632', { v0: (diskHome) }));
       orphanHomes.push(abs);
       homeSet.add(abs);
+      try {
+        const st = statSync(abs);
+        orphanHomeStats[abs] = { mtime: st.mtime.toISOString() };
+      } catch {
+        /* keep path-only */
+      }
     }
   }
 
@@ -407,6 +414,7 @@ export async function buildHostManifest(input: {
     },
     fingerprints,
     orphanHomes,
+    orphanHomeStats,
     warnings,
     exclusions: [...(input.exclusions ?? [])],
     cutoverHostnames: [...cutoverHostnames].sort(),

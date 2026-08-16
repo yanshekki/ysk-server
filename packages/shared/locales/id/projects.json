@@ -675,5 +675,7 @@
   "netNoBoundCert": "Tidak ada sertifikat di disk untuk nama host ini",
   "netForceHttpsNeedCert": "Terbitkan sertifikat di /ssl untuk domain ini sebelum memaksa HTTPS.",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

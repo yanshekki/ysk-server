@@ -18,6 +18,7 @@ import {
   FormActions,
   FormHint,
   FormLayout,
+  LoadingBlock,
   Modal,
   ConfirmDialog,
   PageGuide,
@@ -844,15 +845,23 @@ export function CdnPage() {
       showCapability={false}
       status={{
         pill: {
-          label: t('cdn.statOnlineOf', {
-            n: online,
-            total: nodes.length,
-          }),
-          tone: online > 0 ? 'ok' : nodes.length ? 'warn' : 'neutral' },
+          label: nodeList.loading
+            ? '…'
+            : t('cdn.statOnlineOf', {
+                n: online,
+                total: nodes.length,
+              }),
+          tone: nodeList.loading
+            ? 'neutral'
+            : online > 0
+              ? 'ok'
+              : nodes.length
+                ? 'warn'
+                : 'neutral' },
         items: [
-          { label: t('cdn.statNodes'), value: nodes.length },
-          { label: t('cdn.statOnline'), value: online },
-          { label: t('cdn.statSites'), value: sites.length },
+          { label: t('cdn.statNodes'), value: nodeList.loading ? '…' : nodes.length },
+          { label: t('cdn.statOnline'), value: nodeList.loading ? '…' : online },
+          { label: t('cdn.statSites'), value: siteList.loading ? '…' : sites.length },
           {
             label: t('cdn.statHit'),
             value:
@@ -1014,12 +1023,18 @@ export function CdnPage() {
                       </Badge>
                       {n.status === 'offline' ? (
                         <span className="muted u-text-sm"> {t('cdn.offlineHint')}</span>
-                      ) : n.lastHealth?.at ? (
+                      ) : null}
+                      {n.lastHealth?.at ? (
                         <span className="muted u-text-sm">
                           {' '}
-                          {n.lastHealth.ok ? '' : t('cdn.lastHealthFail')}
+                          {t('cdn.lastHealthHint', {
+                            at: n.lastHealth.at,
+                            ok: n.lastHealth.ok ? t('common.ok') : t('common.failed'),
+                          })}
                         </span>
-                      ) : null}
+                      ) : (
+                        <span className="muted u-text-sm"> {t('cdn.lastHealthNever')}</span>
+                      )}
                     </span>
                   ) },
                 {
@@ -1082,12 +1097,16 @@ export function CdnPage() {
                     );
                   } },
               ]}
-              rows={nodes}
+              rows={nodeList.loading ? [] : nodes}
               empty={
-                <EmptyState
-                  title={t('cdn.emptyNodesTitle')}
-                  description={t('cdn.emptyNodesDesc')}
-                />
+                nodeList.loading ? (
+                  <LoadingBlock label={t('common.loading')} />
+                ) : (
+                  <EmptyState
+                    title={t('cdn.emptyNodesTitle')}
+                    description={t('cdn.emptyNodesDesc')}
+                  />
+                )
               }
             />
           </div>

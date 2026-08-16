@@ -83,10 +83,9 @@ export function RolePermissionsPanel({
     return init;
   });
 
-  const enabledCount = draftCaps.length;
-  const totalCount = CAPABILITY_CATALOG.filter(
-    (c) => OPERATION_LEVELS.indexOf(c.band) <= OPERATION_LEVELS.indexOf(draftMax),
-  ).length;
+  const grantable = new Set(factoryCaps);
+  const enabledCount = draftCaps.filter((id) => grantable.has(id)).length;
+  const totalCount = factoryCaps.length;
 
   const bandStats = useMemo(() => {
     return OPERATION_LEVELS.map((band) => {
@@ -251,7 +250,9 @@ export function RolePermissionsPanel({
 
               <div className="rbac-bands">
                 {bandStats.map(({ band, total, on, locked, caps }) => {
-                  const open = openBands[band] ?? !locked;
+                  const roleLocked =
+                    caps.length > 0 && caps.every((c) => !factoryCaps.includes(c.id));
+                  const open = openBands[band] ?? !(locked || roleLocked);
                   const allOn = total > 0 && on === total;
                   return (
                     <div
@@ -272,7 +273,11 @@ export function RolePermissionsPanel({
                           <Badge tone={locked ? 'neutral' : allOn ? 'ok' : on > 0 ? 'info' : 'neutral'}>
                             {on}/{total}
                           </Badge>
-                          {locked ? (
+                          {roleLocked ? (
+                            <span className="rbac-band__lock muted u-text-xs">
+                              {t('rbac.roleUnavailable')}
+                            </span>
+                          ) : locked ? (
                             <span className="rbac-band__lock muted u-text-xs">
                               {t('rbac.bandAboveMax')}
                             </span>

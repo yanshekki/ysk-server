@@ -403,7 +403,9 @@ export function ProjectDetailPage() {
             tone: project.nginxConfigPath ? 'ok' : 'neutral' },
           {
             label: 'OS',
-            value: project.osProvisioned ? t('projects.osValueReady') : t('projects.osValuePending'),
+            value: project.osProvisioned
+              ? t('projects.osValueReady')
+              : t('projects.status.pendingOs'),
             tone: project.osProvisioned ? 'ok' : 'warn' },
         ],
         note: statusHint ? <span>{statusHint}</span> : undefined }}

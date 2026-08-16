@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "সম্পূর্ণ-টানেল ক্লায়েন্ট সনাক্ত করা হয়েছে (AllowedIPs 0.0.0.0/0)। প্রয়োগকৃত হোস্ট সুরক্ষা তাই প্যানেল/SSH উত্তরগুলি LAN NIC-তে থাকে।",
     "clientFullTunnelHint": "টিপ: শুধুমাত্র বিভক্ত অ্যাক্সেসের জন্য, conf-এ VPN/LAN CIDRs (0.0.0.0/0 নয়) এ AllowedIPs সেট করুন, তারপর পুনরায় সংযোগ করুন৷",
     "serverStopped": "{{engine}} সার্ভার বন্ধ।",
-    "serverStopFailed": "{{engine}} সার্ভার বন্ধ করা যায়নি: {{detail}}"
+    "serverStopFailed": "{{engine}} সার্ভার বন্ধ করা যায়নি: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "{{stack}} ইনস্টল করুন",

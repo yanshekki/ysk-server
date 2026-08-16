@@ -40,5 +40,6 @@
   "applyConfirmDesc": "Nginx server_name {{name}} لکھیں اور Nginx ری لوڈ کریں۔",
   "serverNameMismatch": "لائیو کنف {{live}} ہے؛ فارم میں {{draft}} ہے۔ بدلنے کے لیے لاگو کریں۔",
   "executeFlag": "Execute",
-  "asRoot": "Root"
+  "asRoot": "Root",
+  "statusDraft": "Draft / not applied"
 }

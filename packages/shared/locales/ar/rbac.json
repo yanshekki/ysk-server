@@ -108,5 +108,6 @@
   "nothingToSave": "لا شيء للحفظ",
   "saveRole": "حفظ {{role}} السياسة",
   "discardTitle": "هل تريد تجاهل السياسة غير المحفوظة؟",
-  "discardDesc": "يؤدي تبديل الأدوار إلى إسقاط تعديلات الإمكانات غير المحفوظة."
+  "discardDesc": "يؤدي تبديل الأدوار إلى إسقاط تعديلات الإمكانات غير المحفوظة.",
+  "roleUnavailable": "Not available for this role"
 }

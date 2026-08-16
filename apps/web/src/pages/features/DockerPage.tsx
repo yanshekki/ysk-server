@@ -162,7 +162,7 @@ export function DockerPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<string[] | null>(null);
   const [logTitle, setLogTitle] = useState('');
   const [logId, setLogId] = useState('');
   const [logFollow, setLogFollow] = useState(false);
@@ -333,6 +333,7 @@ export function DockerPage() {
 
   const openLogs = async (id: string) => {
     setInspectText('');
+    setLogs(null);
     setLogId(id);
     setLogTitle(id);
     setLogFollow(false);
@@ -470,6 +471,7 @@ export function DockerPage() {
           installed={engineInstalled}
           running={status?.daemonActive === true}
           onDone={() => void load()}
+          stopDetail={t('docker.stopEngineDesc', { n: containers.length })}
         />
       ) : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
@@ -1486,9 +1488,13 @@ export function DockerPage() {
                 onChange={setLogFollow}
               />
             </ActionBar>
-            <pre className="code-block">
-              {logs.length ? logs.join('\n') : t('docker.logs.empty')}
-            </pre>
+            {logs == null ? (
+              <LoadingBlock label={t('common.loading')} />
+            ) : (
+              <pre className="code-block">
+                {logs.length ? logs.join('\n') : t('docker.logs.empty')}
+              </pre>
+            )}
           </div>
         )}
       </Modal>

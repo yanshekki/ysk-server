@@ -234,5 +234,6 @@
   "panelRestarted": "Painel de volta · {{version}}",
   "panelRestartWait": "Atualização aplicada. Se esta página não atualizar, recarregue após alguns segundos.",
   "cveNotChecked": "Not checked",
-  "cveLabel": "CVE"
+  "cveLabel": "CVE",
+  "riskUnevaluated": "Not evaluated — run Scan + OSV"
 }

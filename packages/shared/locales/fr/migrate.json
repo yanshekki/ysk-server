@@ -89,5 +89,7 @@
   "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
   "orphanBackupFirst": "Back up first (open Backups)",
   "expandAllWarnings": "Show all {{n}} warnings",
-  "collapseWarnings": "Show fewer"
+  "collapseWarnings": "Show fewer",
+  "inventoriedWarn": "Inventoried · {{n}} warnings",
+  "orphanMtime": "Last modified {{at}}"
 }

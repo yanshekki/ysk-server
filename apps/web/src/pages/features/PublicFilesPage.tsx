@@ -65,6 +65,10 @@ export function PublicFilesPage() {
   }, [refreshStatus]);
 
   const liveTone = status?.likelyLive ? 'ok' : status?.managedConfExists ? 'warn' : 'danger';
+  const liveName = (status?.liveServerName || status?.serverName || '').trim();
+  const draftDiffers = Boolean(
+    liveName && serverName.trim() && liveName !== serverName.trim(),
+  );
 
   return (
     <FeaturePageLayout
@@ -72,15 +76,26 @@ export function PublicFilesPage() {
       showCapability={false}
       status={{
         pill: {
-          label: status?.likelyLive
-            ? t('publicFiles.statusLive')
-            : status?.managedConfExists
-              ? t('publicFiles.statusManagedOnly')
-              : t('publicFiles.statusNotApplied'),
-          tone: liveTone,
+          label: draftDiffers
+            ? t('publicFiles.statusDraft')
+            : status?.likelyLive
+              ? t('publicFiles.statusLive')
+              : status?.managedConfExists
+                ? t('publicFiles.statusManagedOnly')
+                : t('publicFiles.statusNotApplied'),
+          tone: draftDiffers ? 'warn' : liveTone,
         },
         items: [
-          { label: t('publicFiles.serverName'), value: serverName || t('common.noneSelectedShort') },
+          {
+            label: t('publicFiles.serverName'),
+            value: liveName || t('common.noneSelectedShort'),
+            hint: draftDiffers
+              ? t('publicFiles.serverNameMismatch', {
+                  live: liveName,
+                  draft: serverName.trim(),
+                })
+              : undefined,
+          },
           {
             label: t('publicFiles.quota'),
             value: `${quotaMb || t('common.noneSelectedShort')} MiB`,

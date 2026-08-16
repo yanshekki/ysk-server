@@ -163,7 +163,8 @@ export function VncPage() {
 
   // Delete
   const [delTarget, setDelTarget] = useState<VncAccountSummary | null>(null);
-  const [delRemoveUser, setDelRemoveUser] = useState(false);
+  const [delRemoveUser, setDelRemoveUser] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   // Connection materials
   const [connTarget, setConnTarget] = useState<VncAccountSummary | null>(null);
@@ -186,8 +187,10 @@ export function VncPage() {
         setRfbBind(s.settings.defaultRfbBind);
         setAutostart(s.settings.defaultAutostart);
       }
+      setLoaded(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
+      setLoaded(true);
     }
   }, [t]);
 
@@ -287,21 +290,25 @@ export function VncPage() {
         items: [
           {
             label: t('vnc.tab.accounts'),
-            value: accounts.length,
+            value: loaded ? accounts.length : '…',
             tone: accounts.length > 0 ? 'ok' : 'neutral',
           },
           {
             label: 'TigerVNC',
-            value: vncStacks.find((s) => s.id === 'tigervnc')?.installed
-              ? t('common.installed')
-              : t('common.notInstalled'),
+            value: !loaded
+              ? '…'
+              : vncStacks.find((s) => s.id === 'tigervnc')?.installed
+                ? t('common.installed')
+                : t('common.notInstalled'),
             tone: vncStacks.find((s) => s.id === 'tigervnc')?.installed ? 'ok' : 'warn',
           },
           {
             label: 'noVNC',
-            value: vncStacks.find((s) => s.id === 'novnc')?.installed
-              ? t('common.installed')
-              : t('common.notInstalled'),
+            value: !loaded
+              ? '…'
+              : vncStacks.find((s) => s.id === 'novnc')?.installed
+                ? t('common.installed')
+                : t('common.notInstalled'),
             tone: vncStacks.find((s) => s.id === 'novnc')?.installed ? 'ok' : 'warn',
           },
         ],
@@ -503,18 +510,34 @@ export function VncPage() {
                   key: 'bind',
                   header: t('vnc.colBind'),
                   nowrap: true,
-                  render: (a) =>
-                    a.rfbBind === 'localhost'
-                      ? t('vnc.bind.localhostShort')
-                      : t('vnc.bind.allShort'),
+                  render: (a) => {
+                    const novncPort = a.novncHttpPort ?? 6080 + a.display;
+                    return (
+                      <span title={t('vnc.bindNovncHint')}>
+                        {t('vnc.bindRfbLine', {
+                          bind:
+                            a.rfbBind === 'localhost'
+                              ? t('vnc.bind.localhostShort')
+                              : t('vnc.bind.allShort'),
+                          port: a.rfbPort,
+                        })}
+                        <br />
+                        {t('vnc.bindNovncLine', { port: novncPort })}
+                      </span>
+                    );
+                  },
                 },
               ]}
-              rows={pageItems}
+              rows={loaded ? pageItems : []}
               empty={
-                <EmptyState
-                  title={t('vnc.accountsEmptyTitle')}
-                  description={t('vnc.accountsEmptyDesc')}
-                />
+                !loaded ? (
+                  <LoadingBlock label={t('common.loading')} />
+                ) : (
+                  <EmptyState
+                    title={t('vnc.accountsEmptyTitle')}
+                    description={t('vnc.accountsEmptyDesc')}
+                  />
+                )
               }
               rowActions={(a) => (
                 <ActionBar size="sm">
@@ -1268,7 +1291,7 @@ export function VncPage() {
               variant="danger"
               onClick={() => {
                 setDelTarget(moreAccount);
-                setDelRemoveUser(false);
+                setDelRemoveUser(true);
                 setMoreAccount(null);
               }}
             >
@@ -1288,6 +1311,7 @@ export function VncPage() {
           const target = delTarget;
           const remove = delRemoveUser;
           setDelTarget(null);
+          setLastOps(null);
           void runOps(() =>
             vncApi.deleteAccount(target.id, { removeLinuxUser: remove }),
           );
@@ -1314,6 +1338,9 @@ export function VncPage() {
           />
           {t('vnc.removeLinuxUser')}
         </label>
+        {!delRemoveUser ? (
+          <Alert variant="warn">{t('vnc.deleteKeepUserWarn')}</Alert>
+        ) : null}
       </ConfirmDialog>
 
       <Modal

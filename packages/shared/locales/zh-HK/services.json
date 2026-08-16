@@ -29,6 +29,7 @@
   "enabledOk": "已設定 {{label}} 開機啟動",
   "bootDisabledWarn": "{{label}} 正在運行，但重啟後不會自動啟動。請啟用開機啟動。",
   "bootDisabledShort": "未開機啟動",
+  "sshdBootOffWarn": "sshd 未開機自啟。重開機後將無法以 SSH 登入（單機面板的救援通道）。",
   "mariadbNotInstalled": "尚未安裝 MariaDB",
   "mariadbNotInstalledMysqlOk": "尚未安裝：MariaDB（MySQL 已安裝）",
   "lifecycleTitle": "{{label}} 服務控制",

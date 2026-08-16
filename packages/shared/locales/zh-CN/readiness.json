@@ -136,5 +136,7 @@
     "admin2fa": "Admin two-factor"
   },
   "dataDirPerms": "panel data-directory permissions",
-  "mode750": "mode 750"
+  "mode750": "mode 750",
+  "gateBlocked": "Not passed · {{n}} missing",
+  "isolationPendingOs": "Same as project status: OS user pending. Open Isolation to provision the system user and home."
 }

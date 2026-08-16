@@ -675,5 +675,7 @@
   "netNoBoundCert": "এই হোস্টনামের জন্য ডিস্কে সার্টিফিকেট নেই",
   "netForceHttpsNeedCert": "HTTPS বাধ্য করার আগে /ssl-এ এই ডোমেইনের সার্টিফিকেট দিন।",
   "goIsolation": "Open Isolation tab",
-  "netHstsNeedHttps": "Turn on force HTTPS first"
+  "netHstsNeedHttps": "Turn on force HTTPS first",
+  "homeMissing": "Home directory does not exist",
+  "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
 }

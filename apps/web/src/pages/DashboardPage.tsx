@@ -30,11 +30,17 @@ import {
   SegRadio,
   buttonClassName } from '../shared/components/ui';
 import { FEATURE_SECTIONS } from '../shared/nav/features';
-import { localizeServiceActive } from './features/ServicesPage';
+import {
+  isRedisServiceRow,
+  localizeServiceActive,
+  redisConsoleLooksInsecure,
+} from './features/ServicesPage';
+import { consoleApi } from '../features/db-service/console-api';
 import { api } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { formatDateTime } from '../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../shared/lib/host-timezone';
 import { bindSet, bindInput } from './bind-handlers';
 import {
   defaultRuntimeInstallVersion,
@@ -181,6 +187,8 @@ export function DashboardPage() {
   const [svcMatrix, setSvcMatrix] = useState<
     Array<{ id: string; label: string; active: string; activeLabel: string; href?: string }>
   >([]);
+  const [redisInsecure, setRedisInsecure] = useState(false);
+  const [publicNo2fa, setPublicNo2fa] = useState(false);
   const [wizName, setWizName] = useState('');
   const [wizDomain, setWizDomain] = useState('');
   const [wizRuntime, setWizRuntime] = useState<
@@ -209,6 +217,14 @@ export function DashboardPage() {
       .list()
       .then((r) => setSoftware(r.items ?? []))
       .catch(() => setSoftware([]));
+    void Promise.all([
+      api.totpStatus().catch(() => ({ enabled: true })),
+      systemApi.panelTlsStatus().catch(() => null),
+    ]).then(([totp, tls]) => {
+      const bind = String((tls as { listenHost?: string } | null)?.listenHost ?? '');
+      const allIf = bind === '0.0.0.0' || bind === '::' || bind === '*' || bind === '[::]';
+      setPublicNo2fa(allIf && !(totp as { enabled?: boolean }).enabled);
+    });
     void api
       .requestRaw<{
         items: Array<{
@@ -219,8 +235,25 @@ export function DashboardPage() {
           href?: string;
         }>;
       }>('/api/v1/system/services/matrix')
-      .then((r) => setSvcMatrix(r.items ?? []))
-      .catch(() => setSvcMatrix([]));
+      .then(async (r) => {
+        const items = r.items ?? [];
+        setSvcMatrix(items);
+        const redis = items.find((i) => isRedisServiceRow(i));
+        if (!redis || redis.active === 'not-found') {
+          setRedisInsecure(false);
+          return;
+        }
+        try {
+          const c = await consoleApi.get('redis');
+          setRedisInsecure(redisConsoleLooksInsecure(c.categories));
+        } catch {
+          setRedisInsecure(false);
+        }
+      })
+      .catch(() => {
+        setSvcMatrix([]);
+        setRedisInsecure(false);
+      });
   }, []);
 
   async function onWizard(e: FormEvent) {
@@ -437,6 +470,12 @@ export function DashboardPage() {
       }
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {publicNo2fa ? (
+        <Alert variant="warn">
+          {t('dashboard.publicNo2fa')}{' '}
+          <Link to="/security?tab=account">{t('users.enableAdmin2fa')}</Link>
+        </Alert>
+      ) : null}
       {loading ? <LoadingBlock /> : null}
       {(() => {
         const urgent = notifications.filter(
@@ -483,33 +522,45 @@ export function DashboardPage() {
             {svcMatrix.length > 0 ? (
               <Card>
                 <CardSection title={t('dashboard.serviceHealth')} description={t('dashboard.serviceHealthDesc')}>
+                  {redisInsecure ? (
+                    <Alert variant="warn">
+                      {t('redis.noRequirepass')}{' '}
+                      <Link to="/databases/redis/service">{t('redis.setRequirepass')}</Link>
+                    </Alert>
+                  ) : null}
                   <div className="chip-row">
-                    {svcMatrixOrdered.slice(0, 12).map((s) => (
+                    {svcMatrixOrdered.slice(0, 12).map((s) => {
+                      const insecure = redisInsecure && isRedisServiceRow(s);
+                      const state = insecure
+                        ? t('redis.insecureShort')
+                        : localizeServiceActive(s.active, t, s.activeLabel);
+                      return (
                       <Link
                         key={s.id}
-                        to={s.href || '/services'}
+                        to={insecure ? '/databases/redis/service' : s.href || '/services'}
                         className="badge-link"
-                        title={localizeServiceActive(s.active, t, s.activeLabel)}
+                        title={state}
                         aria-label={t('dashboard.serviceAria', {
                           name: s.label,
-                          state: localizeServiceActive(s.active, t, s.activeLabel),
+                          state,
                         })}
                       >
                         <Badge
                           tone={
-                            s.active === 'active'
-                              ? 'ok'
-                              : s.active === 'failed'
-                                ? 'danger'
+                            insecure || s.active === 'failed'
+                              ? 'danger'
+                              : s.active === 'active'
+                                ? 'ok'
                                 : 'warn'
                           }
                         >
                           {s.label}：
-                          {localizeServiceActive(s.active, t, s.activeLabel)}
-                          {s.active === 'failed' ? ` · ${t('dashboard.goFix')}` : ''}
+                          {state}
+                          {s.active === 'failed' || insecure ? ` · ${t('dashboard.goFix')}` : ''}
                         </Badge>
                       </Link>
-                    ))}
+                      );
+                    })}
                   </div>
                   <p className="muted u-text-sm u-mt-4">
                     <Link to="/services">{t('dashboard.fullServiceMatrix')}</Link>
@@ -868,7 +919,7 @@ export function DashboardPage() {
                                     a.created_at as string | number | Date | null | undefined,
                                     {
                                       locale: i18n.language,
-                                      withOffset: true,
+                                      ...hostTimeZoneOpts({ withOffset: true }),
                                     },
                                   )}
                                 </time>

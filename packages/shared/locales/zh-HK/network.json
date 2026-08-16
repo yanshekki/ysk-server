@@ -152,7 +152,7 @@
     "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。",
     "spoofWarn": "信任錯誤的 CIDR 會讓客戶端偽造 X-Forwarded-For／CDN 標頭，假裝成真實來源 IP。"
   },
-  "linkUp": "向上",
+  "linkUp": "上線",
   "linkDown": "離線",
   "linkDownDefault": "下線預設路由",
   "loopbackImmutable": "回環介面不可變更",

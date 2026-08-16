@@ -109,6 +109,7 @@
   "selectAllAria": "全選篩選結果",
   "selectPidAria": "選取 PID {{pid}}",
   "controlPlane": "控制面",
+  "controlPlaneNoSignal": "不可對控制面進程送出訊號",
   "protectedPid": "面板不可向 PID 1／init／systemd 發送訊號",
   "sigTermTitle": "發送 SIGTERM（請進程自行結束）",
   "sigKillTitle": "發送 SIGKILL（強制結束，無法攔截）",

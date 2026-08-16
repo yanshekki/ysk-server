@@ -108,5 +108,6 @@
   "nothingToSave": "Nada que salvar",
   "saveRole": "Guardar política {{role}}",
   "discardTitle": "¿Descartar la política no guardada?",
-  "discardDesc": "El cambio de roles elimina las ediciones de capacidades no guardadas."
+  "discardDesc": "El cambio de roles elimina las ediciones de capacidades no guardadas.",
+  "roleUnavailable": "Not available for this role"
 }

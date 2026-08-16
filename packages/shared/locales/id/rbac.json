@@ -108,5 +108,6 @@
   "nothingToSave": "Tidak ada yang perlu disimpan",
   "saveRole": "Simpan kebijakan {{role}}",
   "discardTitle": "Hapus kebijakan yang belum disimpan?",
-  "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan."
+  "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan.",
+  "roleUnavailable": "Not available for this role"
 }

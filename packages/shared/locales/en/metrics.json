@@ -109,6 +109,7 @@
   "selectAllAria": "Select all filtered",
   "selectPidAria": "Select PID {{pid}}",
   "controlPlane": "Control plane",
+  "controlPlaneNoSignal": "The control-plane process cannot be signalled",
   "protectedPid": "PID 1 / init / systemd cannot be signalled from the panel",
   "sigTermTitle": "Send SIGTERM (ask process to exit)",
   "sigKillTitle": "Send SIGKILL (force kill — cannot be caught)",

@@ -1276,19 +1276,18 @@ export function FilesPage() {
       title={t('nav.files')}
       status={{
         pill: {
-          label: t('files.pillFiles', { count: items.filter((i) => i.type === 'file').length }),
+          label:
+            tab === 'trash'
+              ? t('files.pillTrash', { count: trash.length })
+              : t('files.pillSpace', { used: formatBytes(usage?.bytes ?? 0) }),
           tone: 'ok' },
         items: [
           {
             label: t('files.statFiles'),
-            value: String(
-              usage?.fileCount ?? items.filter((i) => i.type === 'file').length,
-            ) },
+            value: String(usage?.fileCount ?? '—') },
           {
             label: t('files.statFolders'),
-            value: String(
-              usage?.dirCount ?? items.filter((i) => i.type === 'dir').length,
-            ) },
+            value: String(usage?.dirCount ?? '—') },
           { label: t('files.statUsage'), value: formatBytes(usage?.bytes ?? 0) },
           { label: t('files.statSelected'), value: String(selected.size) },
           { label: t('files.statTrash'), value: trash.length },
@@ -2253,8 +2252,10 @@ export function FilesPage() {
                     {webdavEnabled ? t('files.webdavOn') : t('files.webdavOff')}
                   </Badge>
                   {webdavTokenId ? (
-                    <Badge tone="info">
-                      {t('files.webdavTokenId', { id: webdavTokenId })}
+                    <Badge tone={webdavEnabled ? 'info' : 'neutral'}>
+                      {webdavEnabled
+                        ? t('files.webdavTokenId', { id: webdavTokenId })
+                        : t('files.webdavTokenInactive', { id: webdavTokenId })}
                     </Badge>
                   ) : null}
                   {webdavUpdatedAt ? (
@@ -3477,6 +3478,7 @@ export function FilesPage() {
         description={t('files.emptyTrashDesc', {
           defaultValue: t('files.trashDesc'),
         })}
+        confirmText={String(trash.length)}
         confirmLabel={t('files.emptyTrash')}
         cancelLabel={t('common.cancel')}
         danger

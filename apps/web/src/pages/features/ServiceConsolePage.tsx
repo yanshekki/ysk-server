@@ -45,6 +45,21 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindVoid, bindCall1 } from '../bind-handlers';
 
+/** Short operator-facing engine version; keep full string for title. */
+export function formatEngineVersion(raw: string | null | undefined): {
+  short: string;
+  full: string;
+} {
+  const s = String(raw ?? '').trim().replace(/[,\s;]+$/g, '');
+  if (!s) return { short: '—', full: '' };
+  const maria = s.match(/(\d+\.\d+\.\d+)\s*-?\s*MariaDB/i);
+  if (maria) return { short: `${maria[1]}-MariaDB`, full: s };
+  const pg = s.match(/PostgreSQL\)\s+(\d+(?:\.\d+)*)/i);
+  if (pg) return { short: pg[1]!, full: s };
+  if (s.length > 28) return { short: `${s.slice(0, 27)}…`, full: s };
+  return { short: s, full: s };
+}
+
 /** Console engine → exposure service id */
 function exposureServiceId(engine: DbServiceEngine): string {
   if (engine === 'postgres') return 'postgresql';
@@ -675,7 +690,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         ) },
       { label: 'systemd', value: console.unit },
       { label: t('systemd.bootEnabled'), value: enabledLabel(console.enabled ?? 'not-found', t) },
-      { label: t('common.version'), value: console.version ?? '—' },
+      {
+        label: t('common.version'),
+        value: (
+          <span title={formatEngineVersion(console.version).full || undefined}>
+            {formatEngineVersion(console.version).short}
+          </span>
+        ),
+      },
       {
         label: t('db.systemChange'),
         value: console.executeEnabled ? t('db.opened') : t('db.notOpened') },
@@ -731,9 +753,12 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                         : 'danger' },
                 {
                   label: t('common.version'),
-                  value:
-                    console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ??
-                    '—' },
+                  value: (
+                    <span title={formatEngineVersion(console.version).full || undefined}>
+                      {formatEngineVersion(console.version).short}
+                    </span>
+                  ),
+                },
                 {
                   label: t('system.executeLabel'),
                   value: console.executeEnabled ? t('common.on') : t('common.off'),
@@ -878,10 +903,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           }
           description={
             pendingLc === 'restart'
-              ? t('db.console.needRestart')
+              ? `${t('db.console.needRestart')} ${t('db.console.affectsProjects')}`
               : pendingLc === 'disable'
                 ? t('db.console.disableBootConfirm')
-                : t('services.stopConfirmDesc', { label: console?.title ?? engine })
+                : `${t('services.stopConfirmDesc', { label: console?.title ?? engine })} ${t('db.console.affectsProjects')}`
           }
           severity="destructive"
           confirmLabel={

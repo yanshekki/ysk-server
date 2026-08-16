@@ -288,7 +288,8 @@
     "disableBoot": "起動時に無効にする",
     "needRights": "システム変更権限と管理者が必要です。失敗には理由が示されます。決して成功を偽ってはなりません。",
     "noneFetched": "0",
-    "disableBootConfirm": "エンジンは再起動後、再度有効にするまで始動しません。"
+    "disableBootConfirm": "エンジンは再起動後、再度有効にするまで始動しません。",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "期限",
   "importEntry": "エントリ: {{url}}",

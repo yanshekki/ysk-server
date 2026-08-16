@@ -23,6 +23,7 @@
   "appliedOk": "已套用公開檔案站點",
   "applyReload": "套用並重載 Nginx",
   "statusLive": "Nginx 已生效",
+  "statusDraft": "草稿／待套用",
   "statusManagedOnly": "僅管理檔",
   "statusNotApplied": "未套用",
   "nginxLive": "已在 conf.d",

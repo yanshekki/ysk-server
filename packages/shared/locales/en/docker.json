@@ -6,6 +6,7 @@
   "protected": "Protected",
   "pruneConfirm": "Type PRUNE to confirm any prune",
   "needEngineTitle": "Install Docker Engine first",
+  "stopEngineDesc": "This stops the Docker engine and all {{n}} container(s) on this host.",
   "notInstalledValue": "Not installed",
   "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
   "volPlaceholder": "my-data",
@@ -106,7 +107,7 @@
     "networks": "No networks"
   },
   "logs": {
-    "empty": "No log output. Short-lived containers (for example hello-world) often exit without writing logs.",
+    "empty": "No log output.",
     "follow": "Follow"
   },
   "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",

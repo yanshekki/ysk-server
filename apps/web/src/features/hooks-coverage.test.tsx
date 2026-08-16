@@ -19,6 +19,7 @@ import { useAgents } from './agents/useAgents';
 import { useResourceCrud } from './resources/useResourceCrud';
 import { useProjectOps } from './projects/useProjectOps';
 import { SoftwareInstallBanner } from '../shared/components/ui/SoftwareInstallBanner';
+import { toast, toastStore } from '../shared/stores/toast-store';
 
 const catchAll: FetchRoute = { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } };
 
@@ -119,6 +120,25 @@ describe('feature hooks coverage', () => {
       await result.current.applySelf().catch(() => undefined);
     });
     expect(result.current.selfUpdate).toBeTruthy();
+  });
+
+  it('useUpdates load does not toast Failed to fetch', async () => {
+    installFetchMock([
+      {
+        match: (url) => url.includes('/api/v1/updates/'),
+        handler: () => {
+          throw new TypeError('Failed to fetch');
+        },
+      },
+      catchAll,
+    ]);
+    toast.clear();
+    const { result } = renderHook(() => useUpdates());
+    await act(async () => {
+      await result.current.load(false);
+    });
+    expect(toastStore.getToasts().some((x) => /Failed to fetch/i.test(x.message))).toBe(false);
+    expect(toastStore.getToasts().some((x) => x.variant === 'error')).toBe(false);
   });
 
   it('useSslCertificates upload/request/remove/retry', async () => {

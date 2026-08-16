@@ -2908,7 +2908,8 @@
     "clientFullTunnelProtect": "フルトンネル クライアントが検出されました (AllowedIPs 0.0.0.0/0)。ホスト保護を適用したため、パネル/SSH 応答は LAN NIC 上に留まります。",
     "clientFullTunnelHint": "ヒント: 分割アクセスのみの場合は、conf でAllowedIPs を VPN/LAN CIDR (0.0.0.0/0 ではない) に設定してから、再接続します。",
     "serverStopped": "{{engine}}サーバーが停止しました。",
-    "serverStopFailed": "{{engine}} サーバーを停止できませんでした: {{detail}}"
+    "serverStopFailed": "{{engine}} サーバーを停止できませんでした: {{detail}}",
+    "peersSynced": "Peer list reloaded on the running WireGuard interface."
   },
   "vnc": {
     "needInstall": "{{stack}}をインストール",

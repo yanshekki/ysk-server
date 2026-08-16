@@ -288,7 +288,8 @@
     "disableBoot": "বুটে অক্ষম করুন",
     "needRights": "সিস্টেম পরিবর্তনের অধিকার এবং প্রশাসক প্রয়োজন। ব্যর্থতা কারণ দেখায় - কখনোই নকল সাফল্য।",
     "noneFetched": "- কোনটিই -",
-    "disableBootConfirm": "ইঞ্জিনটি রিবুট করার পরে শুরু হবে না যতক্ষণ না আপনি এটি আবার সক্ষম করবেন।"
+    "disableBootConfirm": "ইঞ্জিনটি রিবুট করার পরে শুরু হবে না যতক্ষণ না আপনি এটি আবার সক্ষম করবেন।",
+    "affectsProjects": "Sites and services that use this engine will be interrupted."
   },
   "expiresLabel": "মেয়াদ শেষ",
   "importEntry": "প্রবেশ: {{url}}",

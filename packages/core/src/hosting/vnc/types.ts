@@ -58,6 +58,8 @@ export type VncAccountSummary = {
   autostart: boolean;
   hasPassword: boolean;
   novncRunning: boolean;
+  /** noVNC/websockify always binds 127.0.0.1 on this port when running. */
+  novncHttpPort?: number;
   createdAt: string;
 };
 

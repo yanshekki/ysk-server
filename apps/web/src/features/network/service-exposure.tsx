@@ -133,7 +133,14 @@ export type ServiceAccessStripProps = {
   serviceRunning?: boolean;
   /** Zero tenants + public ports is a relay / login surface. */
   tenantCount?: number;
+  /** Live listen host (e.g. 0.0.0.0) — used to show public risk when mode is still undecided. */
+  liveBind?: string;
 };
+
+export function isAllInterfacesBind(host: string | undefined | null): boolean {
+  const h = String(host ?? '').trim().toLowerCase();
+  return h === '0.0.0.0' || h === '::' || h === '*' || h === '[::]';
+}
 
 export function ServiceAccessStrip({
   serviceId,
@@ -145,6 +152,7 @@ export function ServiceAccessStrip({
   serviceInstalled,
   serviceRunning,
   tenantCount,
+  liveBind,
 }: ServiceAccessStripProps) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<ExposureStatus | null>(null);
@@ -175,18 +183,21 @@ export function ServiceAccessStrip({
     status?.firewallInstalled === false ||
     !isFirewallEnforcing(status?.firewallActive, status?.firewallInstalled);
   const missingService = serviceInstalled === false;
+  const livePublic = isAllInterfacesBind(liveBind);
   const displayModeLabel = !loaded
     ? t('serviceExposure.modeLoading')
     : missingService
       ? t('common.notInstalled')
       : fwOff
         ? t('serviceExposure.firewallOff')
-        : !decided
-          ? t('serviceExposure.modeUndecided')
-          : modeLabel(mode, t);
+        : !decided && livePublic
+          ? t('serviceExposure.modePublicLive')
+          : !decided
+            ? t('serviceExposure.modeUndecided')
+            : modeLabel(mode, t);
   const displayTone: BadgeTone = !loaded
     ? 'neutral'
-    : missingService || fwOff || !decided
+    : missingService || fwOff || (!decided && livePublic) || !decided
       ? 'warn'
       : modeTone(mode, inSync);
   const summary = useMemo(() => {
@@ -194,6 +205,9 @@ export function ServiceAccessStrip({
     if (missingService) return t('serviceExposure.serviceNotInstalled');
     if (fwOff) {
       return t('serviceExposure.summaryFirewallOffOnly');
+    }
+    if (!decided && livePublic) {
+      return t('serviceExposure.summaryPublicLive', { bind: liveBind });
     }
     if (!decided) {
       return t('serviceExposure.summaryUndecided', { suggested: modeLabel(mode, t) });
@@ -204,7 +218,7 @@ export function ServiceAccessStrip({
       return t('serviceExposure.summaryRestricted', { count: n });
     }
     return t('serviceExposure.summaryPublic', { ports: formatPorts(ports) });
-  }, [loaded, mode, ports, status, fwOff, decided, missingService, t]);
+  }, [loaded, mode, ports, status, fwOff, decided, missingService, livePublic, liveBind, t]);
 
   return (
     <>
