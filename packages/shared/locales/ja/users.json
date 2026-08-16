@@ -134,5 +134,7 @@
   "impersonateHint": "このユーザーとしてセッションを開きます。なりすましを終了するには、アカウント メニューを使用します。",
   "operatorHighRiskHint": "工場既定のオペレーターは高リスク書き込みを含みます。狭めると新規口座だけに効き、既定を変えると既存オペレーターにも影響します。",
   "cannotImpersonateSelf": "あなたはすでにこのアカウントとしてサインインしています",
-  "singleAdminNo2fa": "このホストには 1 人の管理者がおり、2FA はオフになっています。2FA を有効にしてバックアップ管理者を追加します。"
+  "singleAdminNo2fa": "このホストには 1 人の管理者がおり、2FA はオフになっています。2FA を有効にしてバックアップ管理者を追加します。",
+  "enableAdmin2fa": "Enable admin 2FA",
+  "addBackupAdmin": "Add a backup admin"
 }

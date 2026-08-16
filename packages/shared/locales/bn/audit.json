@@ -22,6 +22,9 @@
     "project.publish": "Nginx প্রকাশ করুন",
     "project.suspend": "প্রকল্প স্থগিত করুন",
     "software.install": "সফটওয়্যার ইন্সটল করুন",
-    "software.update": "সফটওয়্যার আপডেট করুন"
+    "software.update": "সফটওয়্যার আপডেট করুন",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

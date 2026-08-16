@@ -90,5 +90,7 @@
   "aboutPolicySub": "تعد كتابة القالب وتثبيت النظام خطوتين منفصلتين. تعتبر إعادة التشغيل بعد التثبيت عملية عادية، وليست خطوة مفقودة.",
   "policyInstallFull": "التثبيت والتمكين: النسخ إلى /etc/systemd/system، daemon-reload، تمكين --now. يحتاج إلى الجذر + التنفيذ.",
   "policyBlockedTitle": "محظور دون امتياز",
-  "policyNotEqualTitle": "الدول ليست متكافئة"
+  "policyNotEqualTitle": "الدول ليست متكافئة",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

@@ -153,5 +153,14 @@
   "alertsReadOnly": "Umbrales de CPU/memoria/disco integrados únicamente. Sin correo electrónico, webhook ni canal Slack.",
   "alertsGoNotifications": "Abrir centro de notificaciones",
   "lastCheck": "último control",
-  "rawTopHint": "Salida superior (1) sin traducir"
+  "rawTopHint": "Salida superior (1) sin traducir",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

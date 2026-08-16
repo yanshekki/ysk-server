@@ -461,7 +461,12 @@ export function SecurityPage() {
           },
           {
             label: t('security.statSsh'),
-            value: `${sshCounts.identities}/${sshCounts.loginKeys}` },
+            value: t('security.statSshValue', {
+              keys: sshCounts.identities,
+              auth: sshCounts.loginKeys,
+            }),
+            hint: t('security.statSshHint'),
+          },
           {
             label: t('security.statPending'),
             value: approvals.length,
@@ -475,7 +480,7 @@ export function SecurityPage() {
           {
             id: 'ssh',
             label: t('security.tabSsh'),
-            badge: sshCounts.identities + sshCounts.loginKeys || undefined },
+            badge: sshCounts.loginKeys || undefined },
           { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
           { id: 'tools', label: t('security.tabAllowlist'), badge: tools.length || undefined },
           { id: 'about', label: t('common.about') },
@@ -855,14 +860,6 @@ export function SecurityPage() {
                   >
                     {t('security.viewTrustedDevices')}
                   </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    title={t('security.revokeAllDevicesTitle')}
-                    onClick={bindSet(setRevokeDevicesOpen, true)}
-                  >
-                    {t('security.revokeAllDevices')}
-                  </Button>
                   {totpOn ? (
                   <Button
                     variant="secondary"
@@ -891,9 +888,17 @@ export function SecurityPage() {
                         .catch((e: Error) => toast.error(e.message));
                     }}
                   >
-                    {t('security.generateFail2ban', {
-                      defaultValue: 'Generate fail2ban snippets',
-                    })}
+                    {t('security.generateFail2ban')}
+                  </Button>
+                </FormActions>
+                <FormActions className="u-mt-3">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    title={t('security.revokeAllDevicesTitle')}
+                    onClick={bindSet(setRevokeDevicesOpen, true)}
+                  >
+                    {t('security.revokeAllDevices')}
                   </Button>
                 </FormActions>
               </CardSection>

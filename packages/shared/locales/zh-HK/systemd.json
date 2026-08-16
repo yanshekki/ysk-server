@@ -70,6 +70,8 @@
   "policyNotEqualFull": "寫入範本 ≠ 服務已啟用 ≠ 已在監聽端口",
   "controlPlaneUnit": "控制面服務單元",
   "kpiRuntime": "運行狀態",
+  "rawStateHint": "原始 unit 狀態見提示",
+  "bootHint": "是否開機自啟",
   "kpiBoot": "開機自啟",
   "kpiCaps": "套用能力",
   "capsReady": "可安裝到系統",

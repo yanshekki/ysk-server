@@ -2,6 +2,7 @@
  * 整機遷移 — 專業控制台：盤點 → 目標與認證 → 確認執行 → 結果 / cutover
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   PageGuide,
   ActionBar,
@@ -60,6 +61,7 @@ export function MigrateHostPage() {
   const [jobs, setJobs] = useState<MigrateJob[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [orphanTarget, setOrphanTarget] = useState<string | null>(null);
+  const [warnExpanded, setWarnExpanded] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const loadJobs = useCallback(async () => {
@@ -295,24 +297,39 @@ export function MigrateHostPage() {
                       <Alert variant="info" className="u-mt-3">
                         <strong>{t('migrate.inventoryWarnings', { count: warnings.length })}</strong>
                         <ul className="mig-warn-list">
-                          {warnings.slice(0, 6).map((w) => (
-                            <li key={w}>{w}</li>
+                          {(warnExpanded ? warnings : warnings.slice(0, 6)).map((w) => (
+                            <li key={w} className="u-break-all">
+                              {w}
+                            </li>
                           ))}
-                          {warnings.length > 6 ? (
-                            <li>{t('migrate.moreWarnings', { n: warnings.length - 6 })}</li>
-                          ) : null}
                         </ul>
+                        {warnings.length > 6 ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setWarnExpanded((v) => !v)}
+                          >
+                            {warnExpanded
+                              ? t('migrate.collapseWarnings')
+                              : t('migrate.expandAllWarnings', { n: warnings.length })}
+                          </Button>
+                        ) : null}
                       </Alert>
                     ) : null}
                     {((inventory.manifest as { orphanHomes?: string[] } | undefined)?.orphanHomes ?? [])
                       .length > 0 ? (
                       <div className="u-mt-3">
                         <p className="muted u-text-sm">{t('migrate.orphanHomesHint')}</p>
+                        <p className="muted u-text-sm">
+                          <Link to="/backups">{t('migrate.orphanBackupFirst')}</Link>
+                        </p>
                         <ul className="list-plain">
                           {((inventory.manifest as { orphanHomes?: string[] }).orphanHomes ?? []).map(
                             (p) => (
                               <li key={p} className="u-flex u-justify-between u-gap-2 u-items-center">
-                                <code className="inline u-text-sm">{p}</code>
+                                <code className="inline u-text-sm u-break-all">
+                                  {p}
+                                </code>
                                 <Button
                                   variant="danger"
                                   size="sm"
@@ -692,7 +709,7 @@ export function MigrateHostPage() {
             .finally(() => setBusy(false));
         }}
         title={t('migrate.orphanRemoveTitle')}
-        description={t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })}
+        description={`${t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })} ${t('migrate.orphanBackupFirst')}`}
         confirmText={orphanTarget?.split('/').filter(Boolean).pop() || 'DELETE'}
         severity="critical"
         confirmLabel={t('migrate.orphanRemove')}

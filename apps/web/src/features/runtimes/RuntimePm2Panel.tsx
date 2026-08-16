@@ -228,7 +228,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       <Card>
         <CardHeader
           title={t('runtime.pm2.title')}
-          description={t('runtime.pm2.desc')}
+          description={`${t('runtime.pm2.desc')} ${t('runtime.pm2.glossary')}`}
           actions={
             <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
               <label className="u-flex u-items-center u-gap-1 u-text-sm">

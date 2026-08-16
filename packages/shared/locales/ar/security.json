@@ -447,5 +447,7 @@
   "statApiSessions": "جلسات API",
   "revokeOtherTitle": "تسجيل الخروج {{n}} جلسة (جلسات) أخرى",
   "policyNeedSelf2fa": "قم بتمكين المصادقة الثنائية على هذا الحساب أولاً، ثم قم بالتأكيد باستخدام رمز TOTP",
-  "revokeAllDevicesTitle": "قم بإبطال كل جهاز تم تذكره — يجب عليك وعلى المسؤولين الآخرين التحقق من المصادقة الثنائية مرة أخرى"
+  "revokeAllDevicesTitle": "قم بإبطال كل جهاز تم تذكره — يجب عليك وعلى المسؤولين الآخرين التحقق من المصادقة الثنائية مرة أخرى",
+  "statSshValue": "{{keys}} keys · {{auth}} authorized",
+  "statSshHint": "Outbound identities / authorized login keys"
 }

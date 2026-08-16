@@ -157,5 +157,8 @@
   "logrotateVersion": "状态版本 {{v}}",
   "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
   "sourceCount": "{{shown}} shown",
-  "sourceUnavailable": "This source has not produced a log yet"
+  "sourceUnavailable": "This source has not produced a log yet",
+  "sourceNoLog": "No log yet",
+  "exportJsonl": "JSONL export",
+  "sseLive": " (live stream)"
 }

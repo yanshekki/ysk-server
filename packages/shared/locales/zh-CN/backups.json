@@ -143,5 +143,8 @@
   "restoreWebTitle": "仅从此存档恢复网站文件",
   "previewTitle": "无需写入即可预览恢复",
   "partialSkipped": "部分 — 跳过一些项目",
-  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+  "skippedListHint": "These projects were skipped:",
+  "goLogs": "Open logs",
+  "goAbout": "Backup notes"
 }

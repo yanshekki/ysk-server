@@ -34,5 +34,11 @@
   "diagCopyTitle": "复制版本、EXECUTE 与主机资料",
   "diagPreview": "预览将复制的内容",
   "diagLoading": "正在加载诊断...",
-  "diagLoadFailed": "无法加载诊断"
+  "diagLoadFailed": "无法加载诊断",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

@@ -30,7 +30,7 @@ import { bindSet, bindInput, bindCall2 } from '../bind-handlers';
 export function enabledLabel(v: string, t: TFunction): string {
   if (v === 'enabled') return t('services.enabledBoot');
   if (v === 'disabled') return t('common.no');
-  if (v === 'not-found') return t('services.unitNotFound');
+  if (v === 'not-found') return t('services.bootNa');
   if (v === 'n/a' || v === 'na') return t('services.unitNa');
   if (v === 'static') return t('services.unitStatic');
   if (v === 'indirect') return t('services.unitIndirect');
@@ -63,6 +63,18 @@ type MatrixItem = {
   enabled: string;
   activeLabel: string;
 };
+
+export function localizeServiceActive(
+  active: string | undefined,
+  t: TFunction,
+  fallback?: string,
+): string {
+  const a = String(active || '').trim();
+  if (!a) return fallback || '—';
+  const key = `services.active.${a}`;
+  const out = t(key);
+  return out === key ? fallback || a : out;
+}
 
 export function toneFor(active: string, installed: boolean): 'ok' | 'warn' | 'danger' | 'neutral' {
   if (active === 'active' || active === 'tool') return 'ok';
@@ -200,17 +212,16 @@ export function ServicesPage() {
             value: missing,
             tone: missing ? 'warn' : 'neutral' },
           {
-            label: t('dashboard.executeLabel'),
-            value: meta.executeEnabled ? t('common.on') : t('common.off'),
-            tone: meta.executeEnabled ? 'ok' : 'warn' },
-          {
-            label: 'Root',
-            value: meta.isRoot ? t('common.yes') : t('common.no'),
-            tone: meta.isRoot ? 'ok' : 'warn' },
-          {
-            label: t('services.canMutate'),
-            value: canMutate ? t('common.yes') : t('services.locked'),
-            tone: canMutate ? 'ok' : 'warn' },
+            label: t('services.permLabel'),
+            value: canMutate
+              ? t('services.permCanChange')
+              : t('services.permBlocked'),
+            tone: canMutate ? 'ok' : 'warn',
+            hint: t('services.permHint', {
+              exec: meta.executeEnabled ? t('common.on') : t('common.off'),
+              root: meta.isRoot ? t('common.yes') : t('common.no'),
+            }),
+          },
           ...(failed > 0
             ? [{ label: t('common.failed'), value: failed, tone: 'danger' as const }]
             : []),
@@ -245,43 +256,35 @@ export function ServicesPage() {
         <Alert variant="info">
           <strong>{t('services.dbHa')}</strong>：
           {t('services.clusterCount', { count: haOverview.count })} ·{' '}
-          {haOverview.items
-            .slice(0, 4)
-            .map((x) => {
-              const st = t(`db.cluster.status.${x.status}`, { defaultValue: x.status });
-              return `${x.name}(${st})`;
-            })
-            .join(' · ')}
-          {haOverview.count > 4 ? ' …' : ''}{' '}
-          {items.some((i) => i.id === 'mariadb' && i.installed) ? (
-            <Link
-              to="/databases/mariadb/service"
-              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            >
-              {t('services.mariadbCluster')}
-            </Link>
-          ) : (
-            <span
-              className="muted"
-              title={
-                items.some((i) => i.id === 'mysql' && i.installed)
-                  ? t('services.mariadbNotInstalledMysqlOk')
-                  : t('services.mariadbNotInstalled')
-              }
-            >
-              {items.some((i) => i.id === 'mysql' && i.installed)
-                ? t('services.mariadbNotInstalledMysqlOk')
-                : t('services.mariadbNotInstalled')}
-            </span>
-          )}{' '}
-          {items.some((i) => i.id === 'mysql' && i.installed) ? (
-            <Link
-              to="/databases/mysql/service"
-              className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            >
-              MySQL
-            </Link>
-          ) : null}
+          {haOverview.items.slice(0, 4).map((x, i) => {
+            const st = t(`db.cluster.status.${x.status}`);
+            const href =
+              x.engine === 'redis'
+                ? '/databases/redis/service?tab=cluster'
+                : x.engine === 'mysql'
+                  ? '/databases/mysql/service?tab=cluster'
+                  : x.engine === 'postgres'
+                    ? '/databases/postgres/service?tab=cluster'
+                    : '/databases/mariadb/service?tab=cluster';
+            const engineLabel =
+              x.engine === 'redis'
+                ? 'Redis'
+                : x.engine === 'mysql'
+                  ? 'MySQL'
+                  : x.engine === 'postgres'
+                    ? 'PostgreSQL'
+                    : 'MariaDB';
+            return (
+              <span key={x.id}>
+                {i > 0 ? ' · ' : ''}
+                <Link to={href}>
+                  {x.name}（{engineLabel} · {st === `db.cluster.status.${x.status}` ? x.status : st}）
+                </Link>
+              </span>
+            );
+          })}
+          {haOverview.count > 4 ? ' …' : ''}
+          <span className="muted u-text-sm"> · {t('services.clusterLegend')}</span>
         </Alert>
       ) : null}
 

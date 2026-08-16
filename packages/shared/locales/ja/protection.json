@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "ホストには適用されません (root + YSK_EXECUTE=1 が必要) — パネル設定に保存されます",
     "nginxWritten": "Nginx レート制限パネル ファイルを作成しました",
-    "f2bWritten": "書き込みfail2banパネル設定"
+    "f2bWritten": "書き込みfail2banパネル設定",
+    "hintDropped": "Internal protection hint omitted",
+    "nginxLimits": "Will write Nginx rate-limit snippet"
   },
   "rel": {
     "justNow": "いますぐ",
@@ -386,5 +388,16 @@
   "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
   "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
   "whitelistSyncOn": "on",
-  "whitelistSyncOff": "off (lists may differ)"
+  "whitelistSyncOff": "off (lists may differ)",
+  "draftBadge": "Draft",
+  "banIsSelf": "This IP matches the current panel source or this host.",
+  "banNotSelf": "This IP is not the current panel source.",
+  "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+  "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+  "modeValue": {
+    "normal": "Normal",
+    "degraded": "Degraded",
+    "ddos-protection": "DDoS protection",
+    "offline": "Offline"
+  }
 }

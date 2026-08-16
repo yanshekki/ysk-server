@@ -60,7 +60,32 @@
     "draining": "排空中",
     "unknown": "未知"
   },
-  "recentNotes": "最近 notes",
+  "recentNotes": "最近記錄",
+  "previewOnlyNote": "本次僅預覽，未寫入邊緣。",
+  "statByRegion": "區域：",
+  "statByApply": "套用狀態：",
+  "col": {
+    "origin": "來源站",
+    "edges": "邊緣數",
+    "apply": "套用狀態",
+    "dns": "DNS",
+    "edgesOnline": "邊緣 線上／已套用",
+    "dnsRr": "CDN DNS 記錄"
+  },
+  "mode": {
+    "origin_pull": "回源拉取",
+    "reverse_proxy": "反向代理",
+    "static_edge": "靜態邊緣"
+  },
+  "dnsStrategy": {
+    "multi_a": "多 A 記錄",
+    "cname": "CNAME",
+    "geo": "地區"
+  },
+  "edgesOnlineApplied": "線上 {{online}}/{{total}} · 已套用 {{applied}}",
+  "hitMiss": "命中 {{hits}}／未命中 {{misses}}",
+  "cacheBytes": "快取約 {{n}} B",
+  "hitRateUnknown": "找不到含快取狀態的存取日誌，也沒有快取目錄，因此無法估算命中率。",
   "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
   "tabs": {
     "nodes": "節點",
@@ -69,7 +94,8 @@
     "about": "說明"
   },
   "nodesTitle": "CDN 節點（{{count}}）",
-  "nodesDesc": "登記 control / origin / 邊緣 / dns。探活更新 狀態。",
+  "nodesDesc": "登記控制面／來源站／邊緣／DNS。探活會更新狀態。",
+  "offlineHint": "離線／探活失敗。若是測試殘留，可刪除此節點。",
   "colName": "名稱",
   "colRole": "角色",
   "colStatus": "狀態",

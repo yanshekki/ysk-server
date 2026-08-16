@@ -134,5 +134,7 @@
   "staleFor": "غیب {{age}}",
   "commandTitle": "اس سیشن کے لیے ایک کمانڈ کو قطار میں لگائیں۔",
   "historyTitleShort": "کمانڈ کی تاریخ کھولیں (صرف پڑھنے کے لیے)",
-  "expEdge": "ایک کنارے پر:"
+  "expEdge": "ایک کنارے پر:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

@@ -57,6 +57,31 @@
     "unknown": "unknown"
   },
   "recentNotes": "Recent notes",
+  "previewOnlyNote": "Preview only — nothing was written to the edges.",
+  "statByRegion": "Region: ",
+  "statByApply": "Apply status: ",
+  "col": {
+    "origin": "Origin",
+    "edges": "Edges",
+    "apply": "Apply",
+    "dns": "DNS",
+    "edgesOnline": "Edges online / applied",
+    "dnsRr": "CDN DNS records"
+  },
+  "mode": {
+    "origin_pull": "Origin pull",
+    "reverse_proxy": "Reverse proxy",
+    "static_edge": "Static edge"
+  },
+  "dnsStrategy": {
+    "multi_a": "Multiple A records",
+    "cname": "CNAME",
+    "geo": "Geo"
+  },
+  "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+  "hitMiss": "Hits {{hits}} / misses {{misses}}",
+  "cacheBytes": "Cache ≈ {{n}} B",
+  "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
   "edgeConfPreview": "Nginx edge conf preview",
   "tabs": {
     "nodes": "Nodes",
@@ -65,7 +90,8 @@
     "about": "About"
   },
   "nodesTitle": "CDN nodes ({{count}})",
-  "nodesDesc": "Register control / origin / edge / dns. Probe updates status.",
+  "nodesDesc": "Register control-plane, origin, edge, and DNS nodes. Probe refreshes status.",
+  "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
   "colName": "Name",
   "colRole": "Role",
   "colStatus": "Status",

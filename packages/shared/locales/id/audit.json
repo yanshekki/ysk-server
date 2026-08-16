@@ -22,6 +22,9 @@
     "project.publish": "Publikasikan Nginx",
     "project.suspend": "Tangguhkan proyek",
     "software.install": "Instal perangkat lunak",
-    "software.update": "Perbarui perangkat lunak"
+    "software.update": "Perbarui perangkat lunak",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

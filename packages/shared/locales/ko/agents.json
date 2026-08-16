@@ -134,5 +134,7 @@
   "staleFor": "보이지 않음 {{age}}",
   "commandTitle": "이 세션에 대한 명령을 대기열에 넣습니다.",
   "historyTitleShort": "명령 기록 열기(읽기 전용)",
-  "expEdge": "가장자리에서:"
+  "expEdge": "가장자리에서:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

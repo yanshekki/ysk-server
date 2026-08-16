@@ -2,6 +2,7 @@
  * Server-wide backups — list / run-all / restore / delete (honest ok).
  */
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   PageGuide,
@@ -147,6 +148,8 @@ export function BackupsPage() {
   const [items, setItems] = useState<BackupItem[]>([]);
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
   const [liveProjectCount, setLiveProjectCount] = useState(0);
+  const [headerReady, setHeaderReady] = useState(false);
+  const [projectNames, setProjectNames] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<BackupItem | null>(null);
   const [restoreMode, setRestoreMode] = useState<'full' | 'web' | 'dry-run'>('full');
@@ -196,6 +199,15 @@ export function BackupsPage() {
     setItems(r.items ?? []);
     setLastRun(r.lastRun ?? null);
     setLiveProjectCount(proj.items?.length ?? 0);
+    setHeaderReady(true);
+    setProjectNames(
+      Object.fromEntries(
+        (proj.items ?? []).map((p: { id?: string; name?: string }) => [
+          String(p.id ?? ''),
+          String(p.name || p.id || ''),
+        ]),
+      ),
+    );
     if (s.remote) {
       const kind =
         s.remote.kind === 'local' || s.remote.kind === 's3' ? s.remote.kind : 'sftp';
@@ -360,8 +372,8 @@ export function BackupsPage() {
                 ? 'warn'
                 : 'ok' },
         items: [
-          { label: t('backups.backupFiles'), value: items.length },
-          { label: t('common.project'), value: liveProjectCount },
+          { label: t('backups.backupFiles'), value: headerReady ? items.length : '…' },
+          { label: t('common.project'), value: headerReady ? liveProjectCount : '…' },
           {
             label: t('backups.lastAll'),
             value: lastLabel,
@@ -722,6 +734,26 @@ export function BackupsPage() {
                       : '—' },
                 ]}
               />
+              {lastSkipped ? (
+                <Alert variant="warn" className="u-mt-3">
+                  <p>{t('backups.skippedListHint')}</p>
+                  <ul className="list-plain">
+                    {lastResults
+                      .filter((x) => x.skipped)
+                      .map((x) => (
+                        <li key={String(x.projectId)}>
+                          {projectNames[String(x.projectId ?? '')] ||
+                            shortProjectId(x.projectId, 12)}
+                        </li>
+                      ))}
+                  </ul>
+                  <p className="muted u-text-sm">
+                    <Link to="/logs">{t('backups.goLogs')}</Link>
+                    {' · '}
+                    <Link to="/backups?tab=about">{t('backups.goAbout')}</Link>
+                  </p>
+                </Alert>
+              ) : null}
               {lastResults.length > 0 ? (
                 <div className="u-mt-3">
                   <DataTable
@@ -1392,6 +1424,7 @@ export function BackupsPage() {
         }}
         title={t('backups.deleteTitle')}
         description={deleteTarget ? t('backups.deleteDesc', { name: deleteTarget.name }) : ''}
+        confirmText={deleteTarget?.name}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         severity="destructive"

@@ -34,5 +34,11 @@
   "diagCopyTitle": "Copiar versão, EXECUTE e dados do anfitrião",
   "diagPreview": "Pré-visualizar o que será copiado",
   "diagLoading": "Carregando diagnóstico…",
-  "diagLoadFailed": "Não foi possível carregar o diagnóstico"
+  "diagLoadFailed": "Não foi possível carregar o diagnóstico",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

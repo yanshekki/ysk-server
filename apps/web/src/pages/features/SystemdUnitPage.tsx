@@ -202,11 +202,11 @@ export function SystemdUnitPage() {
                   value: enabledLabel(status.enabled),
                   tone: enabledTone(status.enabled) },
                 {
-                  label: 'EXECUTE',
+                  label: t('system.executeLabel'),
                   value: status.executeEnabled ? t('common.on') : t('common.off'),
                   tone: status.executeEnabled ? 'ok' : 'warn' },
                 {
-                  label: 'Root',
+                  label: t('system.rootLabel'),
                   value: status.isRoot ? t('common.yes') : t('common.no'),
                   tone: status.isRoot ? 'ok' : 'warn' },
                 {
@@ -387,14 +387,10 @@ export function SystemdUnitPage() {
                       <span className={`sdu-kpi__val sdu-kpi__val--${activeTone(active)}`}>
                         {activeLabel(active)}
                       </span>
-                      <span className="sdu-kpi__meta">
-                        <code>{active}</code>
-                        {status.show?.mainPid ? (
-                          <>
-                            {' · '}
-                            {t('systemd.pid', { pid: status.show.mainPid })}
-                          </>
-                        ) : null}
+                      <span className="sdu-kpi__meta" title={active}>
+                        {status.show?.mainPid
+                          ? t('systemd.pid', { pid: status.show.mainPid })
+                          : t('systemd.rawStateHint')}
                       </span>
                     </div>
                     <div className="sdu-kpi__card" role="listitem">
@@ -402,8 +398,8 @@ export function SystemdUnitPage() {
                       <span className={`sdu-kpi__val sdu-kpi__val--${enabledTone(status.enabled)}`}>
                         {enabledLabel(status.enabled)}
                       </span>
-                      <span className="sdu-kpi__meta">
-                        <code>{status.enabled || '—'}</code>
+                      <span className="sdu-kpi__meta" title={status.enabled || undefined}>
+                        {t('systemd.bootHint')}
                       </span>
                     </div>
                     <div className="sdu-kpi__card" role="listitem">
@@ -414,9 +410,11 @@ export function SystemdUnitPage() {
                         {canInstall ? t('systemd.capsReady') : t('systemd.capsBlocked')}
                       </span>
                       <span className="sdu-kpi__meta">
-                        EXECUTE {status.executeEnabled ? t('common.on') : t('common.off')}
+                        {t('system.executeLabel')}{' '}
+                        {status.executeEnabled ? t('common.on') : t('common.off')}
                         {' · '}
-                        Root {status.isRoot ? t('common.yes') : t('common.no')}
+                        {t('system.rootLabel')}{' '}
+                        {status.isRoot ? t('common.yes') : t('common.no')}
                       </span>
                     </div>
                   </div>

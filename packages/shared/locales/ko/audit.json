@@ -22,6 +22,9 @@
     "project.publish": "Nginx 게시",
     "project.suspend": "프로젝트 일시 중단",
     "software.install": "소프트웨어 설치",
-    "software.update": "소프트웨어 업데이트"
+    "software.update": "소프트웨어 업데이트",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

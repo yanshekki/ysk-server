@@ -1,7 +1,21 @@
 {
   "enabledBoot": "On boot",
-  "unitNotFound": "Unit not installed",
+  "unitNotFound": "Not installed",
+  "bootNa": "Not applicable",
   "unitNa": "Not applicable",
+  "permLabel": "Permission",
+  "permCanChange": "Can change the system (superuser)",
+  "permBlocked": "Cannot change the system",
+  "permHint": "System change {{exec}} · Superuser {{root}}",
+  "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+  "active": {
+    "active": "Running",
+    "inactive": "Stopped",
+    "not-found": "Not installed",
+    "failed": "Failed",
+    "tool": "Tool",
+    "activating": "Starting"
+  },
   "unitStatic": "static",
   "unitIndirect": "indirect",
   "action": {

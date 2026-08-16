@@ -35,5 +35,7 @@
   "rootConfirmDesc": "Sesi ini adalah PTY root yang tidak dibatasi pada host. Perintah diaudit.",
   "rootConfirmBody": "Lanjutkan hanya jika Anda ingin menjalankan perintah host yang memiliki hak istimewa.",
   "copyAll": "Salin semua",
-  "copyAllNeedConn": "Hubungkan dulu — buffer kosong saat terputus"
+  "copyAllNeedConn": "Hubungkan dulu — buffer kosong saat terputus",
+  "groupSystem": "System",
+  "groupProject": "Project"
 }

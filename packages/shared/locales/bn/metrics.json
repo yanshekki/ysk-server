@@ -153,5 +153,14 @@
   "alertsReadOnly": "বিল্ট-ইন সিপিইউ/মেমরি/ডিস্ক থ্রেশহোল্ড শুধুমাত্র। কোনো ইমেল, ওয়েবহুক বা স্ল্যাক চ্যানেল নেই।",
   "alertsGoNotifications": "বিজ্ঞপ্তি কেন্দ্র খুলুন",
   "lastCheck": "শেষ চেক",
-  "rawTopHint": "অনূদিত শীর্ষ(1) আউটপুট"
+  "rawTopHint": "অনূদিত শীর্ষ(1) আউটপুট",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

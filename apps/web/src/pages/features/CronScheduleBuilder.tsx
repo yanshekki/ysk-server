@@ -209,7 +209,7 @@ export interface CronScheduleBuilderProps {
 
 export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProps) {
   const { t } = useTranslation();
-  const [allHours, setAllHours] = useState(false);
+  const [allHours, setAllHours] = useState(true);
   const [hourErr, setHourErr] = useState<string | null>(null);
   const [minErr, setMinErr] = useState<string | null>(null);
   const expr = useMemo(() => buildCronExpr(value), [value]);

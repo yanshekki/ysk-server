@@ -34,12 +34,16 @@ export async function getGeoipStatus(
   const ready = listed.sources.some((s) => s.present);
   const cityReady = existsSync(join(geoipDir(dataDir), 'dbip-city-lite.mmdb'));
   let stale = false;
-  if (meta?.lastSuccessAt) {
-    stale = Date.now() - new Date(meta.lastSuccessAt).getTime() > STALE_MS;
+  const times = [
+    meta?.lastSuccessAt,
+    ...listed.sources.map((s) => s.mtime),
+  ]
+    .map((x) => (x ? new Date(x).getTime() : NaN))
+    .filter((n) => Number.isFinite(n));
+  if (times.length) {
+    stale = Date.now() - Math.max(...times) > STALE_MS;
   } else if (ready) {
-    const mt = listed.sources.find((s) => s.mtime)?.mtime;
-    if (mt) stale = Date.now() - new Date(mt).getTime() > STALE_MS;
-    else stale = true;
+    stale = true;
   }
 
   const notes: string[] = [];

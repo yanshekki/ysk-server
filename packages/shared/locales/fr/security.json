@@ -447,5 +447,7 @@
   "statApiSessions": "Sessions API",
   "revokeOtherTitle": "Déconnexion {{n}} autre(s) session(s)",
   "policyNeedSelf2fa": "Activez d'abord 2FA sur ce compte, puis confirmez avec un code TOTP",
-  "revokeAllDevicesTitle": "Révoquer tous les appareils mémorisés : vous et les autres administrateurs devez à nouveau vérifier 2FA"
+  "revokeAllDevicesTitle": "Révoquer tous les appareils mémorisés : vous et les autres administrateurs devez à nouveau vérifier 2FA",
+  "statSshValue": "{{keys}} keys · {{auth}} authorized",
+  "statSshHint": "Outbound identities / authorized login keys"
 }

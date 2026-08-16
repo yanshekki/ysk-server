@@ -70,6 +70,8 @@
   "policyNotEqualFull": "Write template ≠ service enabled ≠ listening",
   "controlPlaneUnit": "Control-plane unit",
   "kpiRuntime": "Runtime",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot",
   "kpiBoot": "Boot enable",
   "kpiCaps": "Apply capability",
   "capsReady": "Can install to system",

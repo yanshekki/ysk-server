@@ -3006,7 +3006,8 @@
     "passwordNeedTiger": "vncpasswd introuvable. Installez TigerVNC (tigervnc-standalone-server) avant de définir un mot de passe.",
     "linuxUserRolledBack": "Suppression de l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
     "linuxUserOrphan": "Impossible de supprimer l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
-    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
   },
   "apache": {
     "needServerName": "Nom du serveur requis",

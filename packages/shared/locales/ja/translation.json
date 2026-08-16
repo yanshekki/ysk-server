@@ -138,7 +138,9 @@
     "staleFor": "未見 {{age}}",
     "commandTitle": "このセッションのコマンドをキューに入れる",
     "historyTitleShort": "コマンド履歴を開く (読み取り専用)",
-    "expEdge": "端では："
+    "expEdge": "端では：",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Nginxを公開する",
       "project.suspend": "プロジェクトを一時停止する",
       "software.install": "ソフトウェアのインストール",
-      "software.update": "ソフトウェアをアップデートする"
+      "software.update": "ソフトウェアをアップデートする",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "このアーカイブからのみ Web サイト ファイルを復元します",
     "previewTitle": "書き込みなしでプレビュー復元",
     "partialSkipped": "部分的 — 一部のプロジェクトがスキップされました",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "BTトラッカー",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -2455,7 +2493,13 @@
     "notifAll": "すべて",
     "notifDismiss": "隠れる",
     "goFix": "修理",
-    "needDomainFirst": "先にドメインを入力してください"
+    "needDomainFirst": "先にドメインを入力してください",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "データがありません",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "ピアへのプレビュープッシュ (scp なし)",
       "fleetSyncPlanTitle": "フリート同期のプレビュー (実行なし)",
       "fleetApplyTitle": "フリートメンバーにエンキューを適用しますか?",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "データを閲覧する",
@@ -4885,7 +4931,8 @@
     "envColPanel": "パネル設定",
     "envColEffective": "有効値",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "ステータスバージョン {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "内蔵 CPU / メモリ / ディスクのしきい値のみ。電子メール、Webhook、または Slack チャネルはありません。",
     "alertsGoNotifications": "通知センターを開く",
     "lastCheck": "最終チェック",
-    "rawTopHint": "未翻訳の top(1) 出力"
+    "rawTopHint": "未翻訳の top(1) 出力",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "持ち物",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "確認のため DELETE と入力してください。",
     "orphanRemoveNeedConfirm": "確認が必要です",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "カスタムコード",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "vncpasswd が見つかりません。パスワードを設定する前に、TigerVNC (tigervnc-standalone-server) をインストールしてください。",
       "linuxUserRolledBack": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除しました。",
       "linuxUserOrphan": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除できませんでした。",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "サーバー名は必須です",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "ホストには適用されません (root + YSK_EXECUTE=1 が必要) — パネル設定に保存されます",
       "nginxWritten": "Nginx レート制限パネル ファイルを作成しました",
-      "f2bWritten": "書き込みfail2banパネル設定"
+      "f2bWritten": "書き込みfail2banパネル設定",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "いますぐ",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "Dovecot TLS が証明書の欠落を指摘する",
     "leftoverOther": "ホストの残り物",
     "leftoverApply": "残りの適用",
-    "isolationOwnerDegrades": "owner_user_id が欠落していると、パッケージ クォータの属性に影響します。ステータスは低下しており、準備ができていません。"
+    "isolationOwnerDegrades": "owner_user_id が欠落していると、パッケージ クォータの属性に影響します。ステータスは低下しており、準備ができていません。",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "有効期限はありません",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "記録しました {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "APIセッション",
     "revokeOtherTitle": "サインアウト {{n}} 他のセッション",
     "policyNeedSelf2fa": "まずこのアカウントで 2FA を有効にしてから、TOTP コードで確認します",
-    "revokeAllDevicesTitle": "記憶されているすべてのデバイスを取り消します - あなたと他の管理者は 2FA を再度確認する必要があります"
+    "revokeAllDevicesTitle": "記憶されているすべてのデバイスを取り消します - あなたと他の管理者は 2FA を再度確認する必要があります",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "ネットワークアクセス",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "ソフトウェア",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "バージョン、EXECUTE、ホスト情報をコピー",
     "diagPreview": "コピーされる内容をプレビュー",
     "diagLoading": "診断を読み込んでいます…",
-    "diagLoadFailed": "診断をロードできませんでした"
+    "diagLoadFailed": "診断をロードできませんでした",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "エクスポートデータのロードに失敗しました",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "標準 / catch-all conf（000-default）。操作しない限り同期に含まれます。",
     "powerUnlock": "危険地帯のロックを解除する",
     "powerLock": "ロック危険ゾーン",
-    "noScheduledPower": "再起動または電源オフはスケジュールされていません"
+    "noScheduledPower": "再起動または電源オフはスケジュールされていません",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "有効",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "テンプレートの書き込みとシステムのインストールは別の手順です。インストール後の再実行は通常の操作であり、欠落しているステップではありません。",
     "policyInstallFull": "インストールして有効にする: /etc/systemd/system にコピーし、daemon-reload、 --now を有効にします。 root + EXECUTE が必要です。",
     "policyBlockedTitle": "特権なしでブロックされました",
-    "policyNotEqualTitle": "国家は同等ではない"
+    "policyNotEqualTitle": "国家は同等ではない",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "タブを左にスクロール",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "このセッションは、ホスト上の無制限のルート PTY です。コマンドは監査されます。",
     "rootConfirmBody": "特権ホスト コマンドを実行する場合にのみ続行してください。",
     "copyAll": "すべてコピー",
-    "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です"
+    "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "ランタイム {{v0}} {{v1}}，",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "DNSBL にメールを送信する",
         "hint": "メールDNSBLチェック"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
     "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
     "panelRestarted": "パネルが復帰しました · {{version}}",
     "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} ユーザー",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "このユーザーとしてセッションを開きます。なりすましを終了するには、アカウント メニューを使用します。",
     "operatorHighRiskHint": "工場既定のオペレーターは高リスク書き込みを含みます。狭めると新規口座だけに効き、既定を変えると既存オペレーターにも影響します。",
     "cannotImpersonateSelf": "あなたはすでにこのアカウントとしてサインインしています",
-    "singleAdminNo2fa": "このホストには 1 人の管理者がおり、2FA はオフになっています。2FA を有効にしてバックアップ管理者を追加します。"
+    "singleAdminNo2fa": "このホストには 1 人の管理者がおり、2FA はオフになっています。2FA を有効にしてバックアップ管理者を追加します。",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "バリデーター (Beta)",

@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS が証明書の欠落を指摘する",
   "leftoverOther": "ホストの残り物",
   "leftoverApply": "残りの適用",
-  "isolationOwnerDegrades": "owner_user_id が欠落していると、パッケージ クォータの属性に影響します。ステータスは低下しており、準備ができていません。"
+  "isolationOwnerDegrades": "owner_user_id が欠落していると、パッケージ クォータの属性に影響します。ステータスは低下しており、準備ができていません。",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

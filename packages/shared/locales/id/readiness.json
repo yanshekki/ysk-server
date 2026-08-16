@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS menunjuk pada sertifikat yang hilang",
   "leftoverOther": "Sisa tuan rumah",
   "leftoverApply": "Sisanya berlaku",
-  "isolationOwnerDegrades": "Owner_user_id yang hilang mempengaruhi atribusi kuota paket — statusnya menurun, belum siap."
+  "isolationOwnerDegrades": "Owner_user_id yang hilang mempengaruhi atribusi kuota paket — statusnya menurun, belum siap.",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

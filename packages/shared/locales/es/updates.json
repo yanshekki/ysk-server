@@ -223,11 +223,16 @@
     "email_dnsbl": {
       "name": "Correo electrónico DNSBL",
       "hint": "Comprobación DNSBL de correo"
+    },
+    "validators_upgrade_scan": {
+      "name": "Validators upgrade scan",
+      "hint": "Check validator image / binary updates"
     }
   },
   "applyPanelAlreadyLatest": "Ya la última versión del panel.",
   "panelRestarting": "El panel se está reiniciando para cargar la nueva versión…",
   "panelRestarted": "El panel ha vuelto · {{version}}",
   "panelRestartWait": "Actualización aplicada. Si esta página no se actualiza, recarga en unos segundos.",
-  "cveNotChecked": "Not checked"
+  "cveNotChecked": "Not checked",
+  "cveLabel": "CVE"
 }

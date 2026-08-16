@@ -245,7 +245,9 @@
     "pushPlanTitle": "피어로 푸시 미리보기(SCP 없음)",
     "fleetSyncPlanTitle": "플릿 동기화 미리보기(실행 없음)",
     "fleetApplyTitle": "함대 구성원에게 대기열을 적용하시겠습니까?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "데이터 찾아보기",

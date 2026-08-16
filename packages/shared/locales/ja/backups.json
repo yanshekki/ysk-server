@@ -143,5 +143,8 @@
   "restoreWebTitle": "このアーカイブからのみ Web サイト ファイルを復元します",
   "previewTitle": "書き込みなしでプレビュー復元",
   "partialSkipped": "部分的 — 一部のプロジェクトがスキップされました",
-  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+  "skippedListHint": "These projects were skipped:",
+  "goLogs": "Open logs",
+  "goAbout": "Backup notes"
 }

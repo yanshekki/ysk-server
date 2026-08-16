@@ -105,8 +105,9 @@
   "needApprovalHint": "前往「可升級」並篩選需審批套件",
   "applyNeedConfirm": "套用前會先開確認框",
   "probeFailed": "探測失敗",
-  "notViaApt": "不經套件管理 — 無 candidate",
-  "noCandidate": "無 candidate 版本",
+  "notViaApt": "不經套件管理 — 無候選版本",
+  "noCandidate": "套件管理無候選",
+  "cveLabel": "CVE",
   "jobOpenGeo": "GeoIP 頁",
   "job": {
     "protection_probe": {
@@ -140,6 +141,10 @@
     "email_dnsbl": {
       "name": "電郵 DNSBL",
       "hint": "郵件 DNSBL 檢查"
+    },
+    "validators_upgrade_scan": {
+      "name": "驗證者升級掃描",
+      "hint": "檢查驗證者映像／二進位更新"
     }
   },
   "permPolicy": "權限",

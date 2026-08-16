@@ -90,5 +90,7 @@
   "aboutPolicySub": "ٹیمپلیٹ لکھنا اور سسٹم انسٹال کرنا الگ الگ مراحل ہیں۔ انسٹال کرنے کے بعد دوبارہ چلنا معمول کے آپریشنز ہیں، کوئی گمشدہ قدم نہیں۔",
   "policyInstallFull": "انسٹال اور فعال کریں: کاپی /etc/systemd/system، deemon-reload، enable --now۔ روٹ + EXECUTE کی ضرورت ہے۔",
   "policyBlockedTitle": "بغیر استحقاق کے بلاک کر دیا گیا۔",
-  "policyNotEqualTitle": "ریاستیں برابر نہیں ہیں۔"
+  "policyNotEqualTitle": "ریاستیں برابر نہیں ہیں۔",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

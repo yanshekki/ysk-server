@@ -205,6 +205,26 @@ export function localizeReadinessCopy(
   display = display.replace(/\bpdns-伺服器\b/gi, 'pdns-server');
   display = display.replace(/\bpdns伺服器\b/gi, 'pdns-server');
   display = display.replace(/\bDB[- ]?IP\b/gi, 'DB-IP');
+  if (/requireAdminTotp/i.test(display)) {
+    display = display.replace(/requireAdminTotp/gi, t('readiness.requireAdminTotp'));
+    tech.push('requireAdminTotp');
+  }
+  if (/\blisten-bind\b/i.test(display)) {
+    display = display.replace(/\blisten-bind\b/gi, t('readiness.listenBind'));
+    tech.push('listen-bind');
+  }
+  if (/\badmin-2fa\b/i.test(display)) {
+    display = display.replace(/\badmin-2fa\b/gi, t('readiness.item.admin2fa'));
+    tech.push('admin-2fa');
+  }
+  if (/dataDir\s*權限|dataDir\s*permissions/i.test(display)) {
+    display = display.replace(/dataDir\s*(權限|permissions)/gi, t('readiness.dataDirPerms'));
+    tech.push('dataDir');
+  }
+  if (/\bmode\s*750\b/i.test(display)) {
+    display = display.replace(/\bmode\s*750\b/gi, t('readiness.mode750'));
+    tech.push('mode 750');
+  }
 
   return { display, technical: tech.length ? [...new Set(tech)].join('\n') : undefined };
 }
@@ -313,7 +333,14 @@ function ItemRow({
           </>
         )}
         {item.fixHint && item.level !== 'ready' ? (
-          <p className="rdy-item__hint">{item.fixHint}</p>
+          <p className="rdy-item__hint">{localizeReadinessCopy(item.fixHint, t).display}</p>
+        ) : null}
+        {item.id === 'admin-2fa' && item.level !== 'ready' ? (
+          <p className="rdy-item__hint">
+            <Link to="/security?tab=account">{t('users.enableAdmin2fa')}</Link>
+            {' · '}
+            <Link to="/users">{t('users.addBackupAdmin')}</Link>
+          </p>
         ) : null}
         {item.id.startsWith('project-isolation-') &&
         /owner_user_id/i.test(item.detail ?? '') ? (
@@ -553,6 +580,11 @@ export function ReadinessPage() {
                   label: t('readiness.rootLabel'),
                   value: report.isRoot ? t('common.yes') : t('common.no'),
                   tone: report.isRoot ? 'ok' : 'warn' },
+                {
+                  label: t('readiness.totalChecks'),
+                  value: score?.total ?? 0,
+                  hint: t('readiness.totalChecksHint'),
+                },
                 { label: t('common.ready'), value: score?.ready ?? 0, tone: 'ok' },
                 {
                   label: t('common.degraded'),

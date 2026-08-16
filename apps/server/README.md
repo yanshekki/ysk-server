@@ -30,11 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
-## What's new in 1.1.3
+## What's new in 1.1.4
 
-- Docker console is install-first (no Start / Stop / Prune without Engine). Last tab matches System 說明 / About.
-- Brand names stay English. `/ssl` includes the panel Let’s Encrypt cert. Deep links load real data.
-- One 24-hour timestamp format; disabled buttons explain why; software-plan counts are OS packages, not service units.
+- E2E-1113 honesty: last CDN edge locked, VNC `userdel` fail-closed, metrics TERM/KILL confirm, GeoIP stale from file mtime.
+- Host timezone clock vs browser; localized system-change / superuser / draft; restore preview uses real tar counts.
+- Docker / validators keep type-to-confirm delete; empty container logs explain a silent exit.
 
 ## Panel
 

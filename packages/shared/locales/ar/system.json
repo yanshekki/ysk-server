@@ -203,5 +203,8 @@
   "nginxUnusedHint": "إعداد افتراضي / catch-all (000-default). يبقى في المزامنة حتى تتصرّف.",
   "powerUnlock": "فتح منطقة الخطر",
   "powerLock": "قفل منطقة الخطر",
-  "noScheduledPower": "لم تتم جدولة إعادة التشغيل أو إيقاف التشغيل"
+  "noScheduledPower": "لم تتم جدولة إعادة التشغيل أو إيقاف التشغيل",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

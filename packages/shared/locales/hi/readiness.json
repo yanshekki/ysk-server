@@ -127,5 +127,14 @@
   "leftoverDovecot": "डवकोट टीएलएस प्रमाण पत्र गायब होने की ओर इशारा करता है",
   "leftoverOther": "यजमान बचा हुआ",
   "leftoverApply": "बचे हुए आवेदन करें",
-  "isolationOwnerDegrades": "मालिक_उपयोगकर्ता_आईडी गुम होने से पैकेज कोटा एट्रिब्यूशन प्रभावित होता है - स्थिति खराब हो गई है, तैयार नहीं है।"
+  "isolationOwnerDegrades": "मालिक_उपयोगकर्ता_आईडी गुम होने से पैकेज कोटा एट्रिब्यूशन प्रभावित होता है - स्थिति खराब हो गई है, तैयार नहीं है।",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

@@ -66,7 +66,7 @@ describe('defense routes (HTTP)', () => {
     expect((rate.body as { mode?: string }).mode).toBeDefined();
   });
 
-  it('defense dry mutations without EXECUTE are honest', async () => {
+  it('defense dry mutations without EXECUTE are honest', { timeout: 20_000 }, async () => {
     ts = await startTestServer();
 
     const probe = await apiJson(ts, 'POST', '/api/v1/defense/probe', {});

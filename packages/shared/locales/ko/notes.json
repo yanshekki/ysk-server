@@ -3006,7 +3006,8 @@
     "passwordNeedTiger": "vncpasswd를 찾을 수 없습니다. 비밀번호를 설정하기 전에 TigerVNC(tigervnc-standalone-server)를 설치하세요.",
     "linuxUserRolledBack": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거했습니다.",
     "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다.",
-    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
   },
   "apache": {
     "needServerName": "서버 이름이 필요합니다",

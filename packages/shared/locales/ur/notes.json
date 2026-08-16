@@ -3006,7 +3006,8 @@
     "passwordNeedTiger": "vncpasswd نہیں ملا۔ پاس ورڈ ترتیب دینے سے پہلے TigerVNC (tigervnc-standalone-server) انسٹال کریں۔",
     "linuxUserRolledBack": "VNC پاس ورڈ ناکام ہونے کے بعد بچا ہوا لینکس صارف {{user}} ہٹا دیا گیا۔",
     "linuxUserOrphan": "VNC پاس ورڈ ناکام ہونے کے بعد بچ جانے والے لینکس صارف {{user}} کو ہٹایا نہیں جا سکا۔",
-    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
   },
   "apache": {
     "needServerName": "سرور کا نام درکار ہے۔",

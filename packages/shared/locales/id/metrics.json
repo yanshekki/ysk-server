@@ -153,5 +153,14 @@
   "alertsReadOnly": "Hanya ambang batas CPU/memori/disk bawaan. Tidak ada email, webhook, atau saluran Slack.",
   "alertsGoNotifications": "Buka pusat notifikasi",
   "lastCheck": "Pemeriksaan terakhir",
-  "rawTopHint": "Keluaran atas(1) yang tidak diterjemahkan"
+  "rawTopHint": "Keluaran atas(1) yang tidak diterjemahkan",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

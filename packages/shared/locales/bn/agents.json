@@ -134,5 +134,7 @@
   "staleFor": "অদেখা {{age}}",
   "commandTitle": "এই সেশনের জন্য একটি কমান্ড সারিবদ্ধ করুন",
   "historyTitleShort": "কমান্ড ইতিহাস খুলুন (কেবল-পঠন)",
-  "expEdge": "একটি প্রান্তে:"
+  "expEdge": "একটি প্রান্তে:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

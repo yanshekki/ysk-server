@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}：{{state}}",
+  "sev": {
+    "ok": "成功",
+    "warn": "警告",
+    "bad": "異常"
+  },
   "title": "控制台",
   "health": "健康狀態",
   "protection": "保護模式",
@@ -53,7 +59,7 @@
   "notifCount": "通知 {{count}}",
   "criticalCount": "· 嚴重 {{count}}",
   "warnCount": "· 警告 {{count}}",
-  "applyAuditBadge": "套用 audit · 成功 {{ok}} · warn {{warn}} · bad {{bad}}",
+  "applyAuditBadge": "套用檢查：成功 {{ok}} · 警告 {{warn}} · 異常 {{bad}}",
   "executeBadge": "系統變更 {{state}}",
   "executeLabel": "系統變更",
   "go": "前往",

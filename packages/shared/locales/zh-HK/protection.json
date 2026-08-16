@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "未套用到系統（需 管理員權限與系統變更權限已開啟）— 已記到管理設定",
     "nginxWritten": "已寫入 Nginx 限速管理檔",
-    "f2bWritten": "已寫入 fail2ban 管理設定"
+    "f2bWritten": "已寫入 fail2ban 管理設定",
+    "hintDropped": "已略過內部防護提示",
+    "nginxLimits": "將寫入 Nginx 限速片段"
   },
   "rel": {
     "justNow": "剛剛",
@@ -76,6 +78,12 @@
   "reapply": "重新套用",
   "nginxLimits": "Nginx 限速",
   "notWritten": "未寫",
+  "modeValue": {
+    "normal": "正常",
+    "degraded": "降級",
+    "ddos-protection": "DDoS 防護",
+    "offline": "離線"
+  },
   "mode": "模式",
   "controlPlane": "控制面",
   "canApply": "可套用",
@@ -386,5 +394,10 @@
   "signalJails": "{{n}} 個 jail",
   "dbReadyHint": "已有 MMDB 檔",
   "dbNotReadyHint": "請先下載 GeoIP 資料庫",
-  "staleHint": "上次成功更新是否已超過 7 日"
+  "staleHint": "上次成功更新是否已超過 7 日",
+  "draftBadge": "草稿",
+  "banIsSelf": "此 IP 是目前面板來源或本機。",
+  "banNotSelf": "此 IP 不是目前面板來源。",
+  "geoSourceLocal": "本機 GeoIP 庫（sapics + DB-IP）",
+  "nginxPreviewHint": "此預設會寫入的 Nginx 片段（僅預覽）："
 }

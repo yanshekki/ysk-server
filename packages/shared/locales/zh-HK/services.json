@@ -1,7 +1,21 @@
 {
   "enabledBoot": "自啟",
-  "unitNotFound": "未安裝單元",
+  "unitNotFound": "未安裝",
+  "bootNa": "不適用",
   "unitNa": "不適用",
+  "permLabel": "權限",
+  "permCanChange": "可執行系統變更（超級用戶）",
+  "permBlocked": "無法變更系統",
+  "permHint": "系統變更 {{exec}} · 超級用戶 {{root}}",
+  "clusterLegend": "已計劃＝只寫在面板，尚未套用到主機。",
+  "active": {
+    "active": "運行中",
+    "inactive": "未運行",
+    "not-found": "未安裝",
+    "failed": "失敗",
+    "tool": "工具",
+    "activating": "啟動中"
+  },
   "unitStatic": "static",
   "unitIndirect": "indirect",
   "action": {

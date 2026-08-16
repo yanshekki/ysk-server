@@ -134,5 +134,7 @@
   "impersonateHint": "Abre uma sessão como este usuário. Use o menu da conta para sair da representação.",
   "operatorHighRiskHint": "O operador de fábrica inclui escritas de alto risco. Estreitá-lo só afeta contas novas; alterar o predefinido afeta operadores existentes.",
   "cannotImpersonateSelf": "Você já está conectado como esta conta",
-  "singleAdminNo2fa": "Este host tem um único administrador e o 2FA está desativado – habilite o 2FA e adicione um administrador de backup."
+  "singleAdminNo2fa": "Este host tem um único administrador e o 2FA está desativado – habilite o 2FA e adicione um administrador de backup.",
+  "enableAdmin2fa": "Enable admin 2FA",
+  "addBackupAdmin": "Add a backup admin"
 }

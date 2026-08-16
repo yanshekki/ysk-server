@@ -51,9 +51,9 @@ import {
 const TABS = ['nodes', 'disk', 'about'] as const;
 
 function profileLabel(id: string, t: (k: string) => string): string {
-  if (id === 'rpc') return 'RPC';
-  if (id === 'pruned') return 'Pruned';
-  return t(`validators.profile.${id}`);
+  const key = `validators.profile.${id}`;
+  const out = t(key);
+  return out === key ? id : out;
 }
 
 const RUNTIME_STATES = ['unknown', 'stopped', 'running', 'syncing', 'error'] as const;
@@ -612,14 +612,13 @@ export function ValidatorsPage() {
               aria-label={t('validators.wizard.stepNetwork')}
               value={network}
               onChange={setNetwork}
-              options={(chainSpec?.networks ?? []).map((n) => ({
-                value: n.id,
-                label: `${validatorNetworkLabel(n.id) ?? t(`validators.network.${n.id}`)} · ${
-                  n.kind === 'mainnet'
-                    ? t('validators.networkKind.mainnet')
-                    : t('validators.networkKind.testnet')
-                }`,
-              }))}
+              options={(chainSpec?.networks ?? []).map((n) => {
+                const d = networkDisplay(n.id, t);
+                return {
+                  value: n.id,
+                  label: d.showName ? `${d.name} · ${d.kindLabel}` : d.kindLabel,
+                };
+              })}
             />
             {needBytes != null ? (
               <Alert variant={diskShort ? 'error' : 'info'}>

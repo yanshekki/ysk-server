@@ -134,5 +134,7 @@
   "impersonateHint": "以该用户身份打开会话。使用帐户菜单留下模拟。",
   "operatorHighRiskHint": "系统默认「操作员」含高危写入（服务控制、防火墙、套件套用、MySQL、发布 Nginx）。收窄只影响新建账户；修改默认会影响现有操作员。",
   "cannotImpersonateSelf": "您已经以此帐户登录",
-  "singleAdminNo2fa": "该主机有一个管理员，并且 2FA 已关闭 - 启用 2FA 并添加备份管理员。"
+  "singleAdminNo2fa": "该主机有一个管理员，并且 2FA 已关闭 - 启用 2FA 并添加备份管理员。",
+  "enableAdmin2fa": "Enable admin 2FA",
+  "addBackupAdmin": "Add a backup admin"
 }

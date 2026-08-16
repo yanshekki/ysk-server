@@ -160,5 +160,9 @@
   "saveJob": "儲存（僅管理）",
   "panelLines": "面板行",
   "otherLines": "非面板行",
-  "totalLines": "合計"
+  "totalLines": "合計",
+  "writtenOnHostHint": "已寫入主機 crontab 的行",
+  "registeredJobsHint": "已在面板登記的工作（含待安裝）",
+  "pendingInstallCount": "{{n}} 項待安裝",
+  "systemJobBadge": "未綁專案 · 系統用戶"
 }

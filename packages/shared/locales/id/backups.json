@@ -143,5 +143,8 @@
   "restoreWebTitle": "Pulihkan file situs web hanya dari arsip ini",
   "previewTitle": "Pratinjau pemulihan tanpa menulis",
   "partialSkipped": "Parsial — beberapa proyek dilewati",
-  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+  "skippedListHint": "These projects were skipped:",
+  "goLogs": "Open logs",
+  "goAbout": "Backup notes"
 }

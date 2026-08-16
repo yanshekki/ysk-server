@@ -119,5 +119,11 @@
   "notifAll": "تمام",
   "notifDismiss": "چھپائیں",
   "goFix": "درست کریں۔",
-  "needDomainFirst": "پہلے ڈومین بھریں"
+  "needDomainFirst": "پہلے ڈومین بھریں",
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  }
 }

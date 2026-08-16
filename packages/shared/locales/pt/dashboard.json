@@ -119,5 +119,11 @@
   "notifAll": "Todos",
   "notifDismiss": "Esconder",
   "goFix": "Consertar",
-  "needDomainFirst": "Introduza primeiro um domínio"
+  "needDomainFirst": "Introduza primeiro um domínio",
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  }
 }

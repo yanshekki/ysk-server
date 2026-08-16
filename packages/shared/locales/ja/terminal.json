@@ -35,5 +35,7 @@
   "rootConfirmDesc": "このセッションは、ホスト上の無制限のルート PTY です。コマンドは監査されます。",
   "rootConfirmBody": "特権ホスト コマンドを実行する場合にのみ続行してください。",
   "copyAll": "すべてコピー",
-  "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です"
+  "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です",
+  "groupSystem": "System",
+  "groupProject": "Project"
 }

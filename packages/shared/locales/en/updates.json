@@ -106,7 +106,8 @@
   "applyNeedConfirm": "Opens a confirm dialog before applying",
   "probeFailed": "Probe failed",
   "notViaApt": "Not managed by apt — no candidate",
-  "noCandidate": "No candidate version",
+  "noCandidate": "No candidate from package manager",
+  "cveLabel": "CVE",
   "jobOpenGeo": "GeoIP page",
   "job": {
     "protection_probe": { "name": "Protection probe", "hint": "Periodic defense signals" },
@@ -116,7 +117,8 @@
     "defense_auto_ban": { "name": "Defense auto-ban", "hint": "Apply auto-ban tick" },
     "defense_geoip_update": { "name": "GeoIP update", "hint": "Download GeoIP databases" },
     "log_auto_vacuum": { "name": "Log vacuum", "hint": "journald retention" },
-    "email_dnsbl": { "name": "Email DNSBL", "hint": "Mail DNSBL check" }
+    "email_dnsbl": { "name": "Email DNSBL", "hint": "Mail DNSBL check" },
+    "validators_upgrade_scan": { "name": "Validators upgrade scan", "hint": "Check validator image / binary updates" }
   },
   "permPolicy": "Permissions",
   "permPolicyV": "Without EXECUTE/root → blocked (no fake success)",

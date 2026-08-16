@@ -138,7 +138,9 @@
     "staleFor": "अनदेखी {{age}}",
     "commandTitle": "इस सत्र के लिए एक आदेश कतारबद्ध करें",
     "historyTitleShort": "कमांड इतिहास खोलें (केवल पढ़ने के लिए)",
-    "expEdge": "एक किनारे पर:"
+    "expEdge": "एक किनारे पर:",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Nginx प्रकाशित करें",
       "project.suspend": "प्रोजेक्ट स्थगित करें",
       "software.install": "सॉफ़्टवेयर इंस्टॉल करें",
-      "software.update": "सॉफ़्टवेयर अद्यतन करें"
+      "software.update": "सॉफ़्टवेयर अद्यतन करें",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "केवल इस संग्रह से वेबसाइट फ़ाइलें पुनर्स्थापित करें",
     "previewTitle": "बिना लिखे पूर्वावलोकन पुनर्स्थापित करें",
     "partialSkipped": "आंशिक - कुछ परियोजनाएँ छोड़ दी गईं",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "बीटी ट्रैकर",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "अज्ञात आदेश: {{command}}\n`{{cli}} सहायता` चलाएँ",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -2455,7 +2493,13 @@
     "notifAll": "सभी",
     "notifDismiss": "छिपाना",
     "goFix": "हल करना",
-    "needDomainFirst": "पहले डोमेन भरें"
+    "needDomainFirst": "पहले डोमेन भरें",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "कोई डेटा नहीं",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "सहकर्मी को पूर्वावलोकन पुश (कोई एससीपी नहीं)",
       "fleetSyncPlanTitle": "फ़्लीट सिंक का पूर्वावलोकन करें (कोई निष्पादन नहीं)",
       "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "डेटा ब्राउज़ करें",
@@ -4885,7 +4931,8 @@
     "envColPanel": "पैनल सेटिंग",
     "envColEffective": "प्रभावी",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "खोजना…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "स्थिति संस्करण {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "केवल अंतर्निहित सीपीयू/मेमोरी/डिस्क थ्रेशोल्ड। कोई ईमेल, वेबहुक या स्लैक चैनल नहीं।",
     "alertsGoNotifications": "अधिसूचना केंद्र खोलें",
     "lastCheck": "आखिरी जांच",
-    "rawTopHint": "अअनुवादित शीर्ष(1) आउटपुट"
+    "rawTopHint": "अअनुवादित शीर्ष(1) आउटपुट",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "भंडार",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "पुष्टि के लिए DELETE लिखें।",
     "orphanRemoveNeedConfirm": "पुष्टि आवश्यक",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "कस्टम कोड",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "vncpasswd नहीं मिला. पासवर्ड सेट करने से पहले TigerVNC (tigervnc-standalone-server) इंस्टॉल करें।",
       "linuxUserRolledBack": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को हटा दिया गया।",
       "linuxUserOrphan": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को नहीं हटाया जा सका।",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "सर्वर नाम आवश्यक है",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "होस्ट पर लागू नहीं किया गया (रूट + YSK_EXECUTE=1 की आवश्यकता है) - पैनल सेटिंग्स में सहेजा गया",
       "nginxWritten": "Nginx दर-सीमा पैनल फ़ाइल लिखी",
-      "f2bWritten": "fail2ban पैनल सेटिंग्स लिखीं"
+      "f2bWritten": "fail2ban पैनल सेटिंग्स लिखीं",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "बस अब",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "सेट नहीं",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "डवकोट टीएलएस प्रमाण पत्र गायब होने की ओर इशारा करता है",
     "leftoverOther": "यजमान बचा हुआ",
     "leftoverApply": "बचे हुए आवेदन करें",
-    "isolationOwnerDegrades": "मालिक_उपयोगकर्ता_आईडी गुम होने से पैकेज कोटा एट्रिब्यूशन प्रभावित होता है - स्थिति खराब हो गई है, तैयार नहीं है।"
+    "isolationOwnerDegrades": "मालिक_उपयोगकर्ता_आईडी गुम होने से पैकेज कोटा एट्रिब्यूशन प्रभावित होता है - स्थिति खराब हो गई है, तैयार नहीं है।",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "कभी समाप्त नहीं होता",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "रिकॉर्ड किया गया {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "एपीआई सत्र",
     "revokeOtherTitle": "साइन आउट करें {{n}} अन्य सत्र",
     "policyNeedSelf2fa": "पहले इस खाते पर 2FA सक्षम करें, फिर TOTP कोड से पुष्टि करें",
-    "revokeAllDevicesTitle": "प्रत्येक याद किए गए डिवाइस को रद्द करें - आपको और अन्य व्यवस्थापकों को 2FA को फिर से सत्यापित करना होगा"
+    "revokeAllDevicesTitle": "प्रत्येक याद किए गए डिवाइस को रद्द करें - आपको और अन्य व्यवस्थापकों को 2FA को फिर से सत्यापित करना होगा",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "नेटवर्क पहुंच",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "सॉफ़्टवेयर",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "संस्करण, EXECUTE और होस्ट तथ्य कॉपी करें",
     "diagPreview": "जो कॉपी होगा उसकी झलक",
     "diagLoading": "निदान लोड हो रहा है...",
-    "diagLoadFailed": "डायग्नोस्टिक लोड नहीं किया जा सका"
+    "diagLoadFailed": "डायग्नोस्टिक लोड नहीं किया जा सका",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "निर्यात डेटा लोड करने में विफल",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "स्टॉक / catch-all conf (000-default). कार्रवाई तक सिंक में रहता है।",
     "powerUnlock": "ख़तरे वाले क्षेत्र को अनलॉक करें",
     "powerLock": "खतरे वाले क्षेत्र को लॉक करें",
-    "noScheduledPower": "कोई रिबूट या पावरऑफ़ निर्धारित नहीं है"
+    "noScheduledPower": "कोई रिबूट या पावरऑफ़ निर्धारित नहीं है",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "सक्रिय",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "टेम्प्लेट लिखना और सिस्टम इंस्टॉल करना अलग-अलग चरण हैं। इंस्टॉल के बाद पुनः चलाना सामान्य प्रक्रिया है, कोई छूटा हुआ चरण नहीं।",
     "policyInstallFull": "स्थापित करें और सक्षम करें: /etc/systemd/system पर कॉपी करें, डेमॉन-रीलोड करें, सक्षम करें --अभी। रूट + निष्पादन की आवश्यकता है।",
     "policyBlockedTitle": "बिना विशेषाधिकार के ब्लॉक किया गया",
-    "policyNotEqualTitle": "राज्य समकक्ष नहीं हैं"
+    "policyNotEqualTitle": "राज्य समकक्ष नहीं हैं",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "टैब को बाईं ओर स्क्रॉल करें",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "यह सत्र होस्ट पर एक अप्रतिबंधित रूट PTY है। कमांड का ऑडिट किया जाता है.",
     "rootConfirmBody": "यदि आप विशेषाधिकार प्राप्त होस्ट कमांड चलाने का इरादा रखते हैं तो ही जारी रखें।",
     "copyAll": "सभी को कॉपी करें",
-    "copyAllNeedConn": "पहले कनेक्ट करें - डिस्कनेक्ट होने पर बफ़र खाली है"
+    "copyAllNeedConn": "पहले कनेक्ट करें - डिस्कनेक्ट होने पर बफ़र खाली है",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "रनटाइम {{v0}} {{v1}}，",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "डीएनएसबीएल को ईमेल करें",
         "hint": "मेल डीएनएसबीएल जांच"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "पहले से ही नवीनतम पैनल संस्करण",
     "panelRestarting": "नया संस्करण लोड करने के लिए पैनल पुनः आरंभ हो रहा है…",
     "panelRestarted": "पैनल वापस आ गया · {{version}}",
     "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} उपयोगकर्ता",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "इस उपयोगकर्ता के रूप में एक सत्र खोलता है. प्रतिरूपण छोड़ने के लिए खाता मेनू का उपयोग करें.",
     "operatorHighRiskHint": "फ़ैक्टरी ऑपरेटर में उच्च-जोखिम लेखन शामिल है। संकीर्ण करना केवल नए खातों पर; डिफ़ॉल्ट बदलने से मौजूदा ऑपरेटर प्रभावित होते हैं।",
     "cannotImpersonateSelf": "आप पहले से ही इस खाते के रूप में साइन इन हैं",
-    "singleAdminNo2fa": "इस होस्ट में एक ही एडमिन है और 2FA बंद है - 2FA सक्षम करें और एक बैकअप एडमिन जोड़ें।"
+    "singleAdminNo2fa": "इस होस्ट में एक ही एडमिन है और 2FA बंद है - 2FA सक्षम करें और एक बैकअप एडमिन जोड़ें।",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "वैलिडेटर (Beta)",

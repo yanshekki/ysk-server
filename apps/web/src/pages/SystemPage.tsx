@@ -119,6 +119,35 @@ export function formatNtpSyncedLabel(
   return t('system.ntpSyncedUnknown');
 }
 
+export function browserTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    return '';
+  }
+}
+
+export function timeZonesDiffer(a?: string | null, b?: string | null): boolean {
+  const x = (a ?? '').trim();
+  const y = (b ?? '').trim();
+  if (!x || !y) return false;
+  return x !== y;
+}
+
+export function formatExportDnsCerts(
+  counts: { dns_zones?: number; certificates?: number } | null | undefined,
+  t: (key: string) => string,
+): string {
+  if (!counts || (counts.dns_zones == null && counts.certificates == null)) {
+    return t('system.notExported');
+  }
+  return `${counts.dns_zones ?? 0}/${counts.certificates ?? 0}`;
+}
+
+export function isFirewallNote(n: string): boolean {
+  return /firewall|ufw|防火牆|防火墙|9287\/tcp|allow the panel port|面板埠/i.test(n);
+}
+
 export function SystemPage() {
   const { t, i18n } = useTranslation();
   const [tzQuery, setTzQuery] = useState('');
@@ -127,6 +156,7 @@ export function SystemPage() {
   const [prettyHostname, setPrettyHostname] = useState('');
   const [timezone, setTimezone] = useState('');
   const [timezoneOptions, setTimezoneOptions] = useState<string[]>([]);
+  const [nowTick, setNowTick] = useState(() => Date.now());
   const [host, setHost] = useState<HostOverviewDto | null>(null);
   const [hostLoading, setHostLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -216,6 +246,15 @@ export function SystemPage() {
   }, [refresh]);
 
   const [tab, setTab] = usePageTab(SYS_TABS, 'host');
+
+  useEffect(() => {
+    if (tab !== 'host') return;
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [tab]);
+
+  const hostTz = timezone || host?.identity?.timezone || '';
+  const browserTz = browserTimeZone();
 
   const MANAGED_PAGE_SIZE = 5;
   const managedPageCount = Math.max(1, Math.ceil(managed.length / MANAGED_PAGE_SIZE));
@@ -380,13 +419,13 @@ export function SystemPage() {
                 { label: t('common.mail'), value: counts?.email_domains ?? t('common.noneSelectedShort') },
                 {
                   label: t('system.dnsCerts'),
-                  value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}` },
+                  value: formatExportDnsCerts(counts, t) },
                 { label: t('system.managedCount'), value: managed.length },
                 {
                   label: t('system.executeLabel'),
                   value:
                     caps.executeEnabled === undefined
-                      ? '?'
+                      ? '—'
                       : caps.executeEnabled
                         ? t('common.on')
                         : t('common.off'),
@@ -589,6 +628,23 @@ export function SystemPage() {
                               </option>
                             ))}
                           </select>
+                          <p className="form-hint u-mt-1">
+                            {t('system.timezoneNow', {
+                              time: formatDateTime(nowTick, {
+                                timeZone: hostTz || undefined,
+                                withOffset: true,
+                              }),
+                              tz: hostTz || '—',
+                            })}
+                          </p>
+                          {timeZonesDiffer(hostTz, browserTz) ? (
+                            <Alert variant="warn" className="u-mt-2">
+                              {t('system.timezoneBrowserDiff', {
+                                host: hostTz,
+                                browser: browserTz,
+                              })}
+                            </Alert>
+                          ) : null}
                         </Field>
                       </FormLayout>
                       <div className="sys-panel__actions">
@@ -740,11 +796,13 @@ export function SystemPage() {
                           </div>
                         ) : null}
                       </dl>
-                      {panelTls?.notes?.length ? (
+                      {panelTls?.notes?.filter((n) => !isFirewallNote(n)).length ? (
                         <ul className="list-plain list-spaced u-mt-2 u-text-sm muted">
-                          {panelTls.notes.map((n) => (
-                            <li key={n.slice(0, 48)}>{n}</li>
-                          ))}
+                          {panelTls.notes
+                            .filter((n) => !isFirewallNote(n))
+                            .map((n) => (
+                              <li key={n.slice(0, 48)}>{n}</li>
+                            ))}
                         </ul>
                       ) : null}
                       <p className="form-hint u-mt-2">{t('system.panelTls.firewallHint')}</p>
@@ -921,9 +979,10 @@ export function SystemPage() {
                           <dt>{t('system.local')}</dt>
                           <dd>
                             <code>
-                              {formatDateTime(host?.time.utc ?? host?.time.local, {
+                              {formatDateTime(nowTick, {
                                 locale: i18n.language,
-                                timeZone: timezone || host?.identity?.timezone,
+                                timeZone: hostTz || undefined,
+                                withOffset: true,
                               })}
                             </code>
                           </dd>

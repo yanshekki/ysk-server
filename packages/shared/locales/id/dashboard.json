@@ -119,5 +119,11 @@
   "notifAll": "Semua",
   "notifDismiss": "Bersembunyi",
   "goFix": "Memperbaiki",
-  "needDomainFirst": "Isi domain dulu"
+  "needDomainFirst": "Isi domain dulu",
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  }
 }

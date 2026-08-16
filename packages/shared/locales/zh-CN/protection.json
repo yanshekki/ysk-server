@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "未套用到系统（需 root + YSK_EXECUTE=1）— 已记到管理设置",
     "nginxWritten": "已写入 Nginx 限速管理檔",
-    "f2bWritten": "已写入 fail2ban 管理設定"
+    "f2bWritten": "已写入 fail2ban 管理設定",
+    "hintDropped": "Internal protection hint omitted",
+    "nginxLimits": "Will write Nginx rate-limit snippet"
   },
   "rel": {
     "justNow": "刚刚",
@@ -386,5 +388,16 @@
   "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
   "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
   "whitelistSyncOn": "on",
-  "whitelistSyncOff": "off (lists may differ)"
+  "whitelistSyncOff": "off (lists may differ)",
+  "draftBadge": "Draft",
+  "banIsSelf": "This IP matches the current panel source or this host.",
+  "banNotSelf": "This IP is not the current panel source.",
+  "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+  "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+  "modeValue": {
+    "normal": "Normal",
+    "degraded": "Degraded",
+    "ddos-protection": "DDoS protection",
+    "offline": "Offline"
+  }
 }

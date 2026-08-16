@@ -203,5 +203,8 @@
   "nginxUnusedHint": "默认／catch-all 配置（000-default）。同步仍会一并写入，除非操作员另行处理。",
   "powerUnlock": "解锁危险区域",
   "powerLock": "锁定危险区域",
-  "noScheduledPower": "未安排重新启动或关机"
+  "noScheduledPower": "未安排重新启动或关机",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

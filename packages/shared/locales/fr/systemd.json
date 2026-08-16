@@ -90,5 +90,7 @@
   "aboutPolicySub": "L'écriture du modèle et l'installation système sont des étapes distinctes. Relancer après installation est une opération normale, pas une étape manquante.",
   "policyInstallFull": "Installer et activer : copier vers /etc/systemd/system, daemon-reload, enable --now. Nécessite root + EXECUTE.",
   "policyBlockedTitle": "Bloqué sans privilège",
-  "policyNotEqualTitle": "Les états ne sont pas équivalents"
+  "policyNotEqualTitle": "Les états ne sont pas équivalents",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

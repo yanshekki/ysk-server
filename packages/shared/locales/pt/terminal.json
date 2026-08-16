@@ -35,5 +35,7 @@
   "rootConfirmDesc": "Esta sessão é um PTY raiz irrestrito no host. Os comandos são auditados.",
   "rootConfirmBody": "Continue apenas se pretender executar comandos de host privilegiados.",
   "copyAll": "Copiar tudo",
-  "copyAllNeedConn": "Conecte primeiro – o buffer fica vazio enquanto desconectado"
+  "copyAllNeedConn": "Conecte primeiro – o buffer fica vazio enquanto desconectado",
+  "groupSystem": "System",
+  "groupProject": "Project"
 }

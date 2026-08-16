@@ -34,5 +34,11 @@
   "diagCopyTitle": "Salin versi, EXECUTE, dan fakta host",
   "diagPreview": "Pratinjau yang akan disalin",
   "diagLoading": "Memuat diagnostik…",
-  "diagLoadFailed": "Tidak dapat memuat diagnostik"
+  "diagLoadFailed": "Tidak dapat memuat diagnostik",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

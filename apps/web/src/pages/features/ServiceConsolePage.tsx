@@ -34,6 +34,7 @@ import {
   type ConsoleSetting,
   type ServiceConsole } from '../../features/db-service/console-api';
 import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
+import { enabledLabel } from './ServicesPage';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import {
   ServiceAccessStrip,
@@ -673,7 +674,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           <Badge tone={console.active === 'active' ? 'ok' : 'warn'}>{console.activeLabel}</Badge>
         ) },
       { label: 'systemd', value: console.unit },
-      { label: t('systemd.bootEnabled'), value: console.enabled ?? '—' },
+      { label: t('systemd.bootEnabled'), value: enabledLabel(console.enabled ?? 'not-found', t) },
       { label: t('common.version'), value: console.version ?? '—' },
       {
         label: t('db.systemChange'),
@@ -734,18 +735,17 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                     console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ??
                     '—' },
                 {
-                  label: 'EXECUTE',
+                  label: t('system.executeLabel'),
                   value: console.executeEnabled ? t('common.on') : t('common.off'),
                   tone: console.executeEnabled ? 'ok' : 'warn' },
                 { label: t('db.console.changes'), value: dirtyKeys.length },
                 {
-                  label: 'Root',
+                  label: t('system.rootLabel'),
                   value: console.isRoot ? t('common.yes') : t('common.no'),
                   tone: console.isRoot ? 'ok' : 'warn' },
                 {
                   label: t('systemd.bootEnabled'),
-                  value:
-                    console.enabled === 'enabled' ? t('common.yes') : console.enabled ?? '—' },
+                  value: enabledLabel(console.enabled ?? 'not-found', t) },
               ] }
           : undefined
       }

@@ -447,5 +447,7 @@
   "statApiSessions": "API 会话",
   "revokeOtherTitle": "退出 {{n}} 个其他会话",
   "policyNeedSelf2fa": "首先在此帐户上启用 2FA，然后使用 TOTP 代码进行确认",
-  "revokeAllDevicesTitle": "撤销每个记住的设备 - 您和其他管理员必须再次验证 2FA"
+  "revokeAllDevicesTitle": "撤销每个记住的设备 - 您和其他管理员必须再次验证 2FA",
+  "statSshValue": "{{keys}} keys · {{auth}} authorized",
+  "statSshHint": "Outbound identities / authorized login keys"
 }

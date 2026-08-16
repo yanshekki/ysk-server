@@ -138,7 +138,9 @@
     "staleFor": "Invisible {{age}}",
     "commandTitle": "Mettre une commande en file d'attente pour cette session",
     "historyTitleShort": "Ouvrir l'historique des commandes (lecture seule)",
-    "expEdge": "Sur un bord :"
+    "expEdge": "Sur un bord :",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Publier Nginx",
       "project.suspend": "Suspendre le projet",
       "software.install": "Installer un logiciel",
-      "software.update": "Mettre à jour un logiciel"
+      "software.update": "Mettre à jour un logiciel",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "Restaurer les fichiers du site Web uniquement à partir de cette archive",
     "previewTitle": "Aperçu de la restauration sans écrire",
     "partialSkipped": "Partiel – certains projets ignorés",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "Traqueur BT",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "Commande inconnue : {{command}}\nExécutez `{{cli}} help`",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -2455,7 +2493,13 @@
     "notifAll": "Tous",
     "notifDismiss": "Cacher",
     "goFix": "Réparer",
-    "needDomainFirst": "Saisissez d’abord un domaine"
+    "needDomainFirst": "Saisissez d’abord un domaine",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "Aucune donnée",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "Aperçu push to peer (pas de scp)",
       "fleetSyncPlanTitle": "Aperçu de la synchronisation de la flotte (pas d'exécution)",
       "fleetApplyTitle": "La mise en file d'attente s'applique-t-elle aux membres de la flotte ?",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "Parcourir les données",
@@ -4885,7 +4931,8 @@
     "envColPanel": "Réglage du panneau",
     "envColEffective": "Effectif",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "Version d'état {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "Seuils intégrés CPU/mémoire/disque uniquement. Pas de courrier électronique, de webhook ou de canal Slack.",
     "alertsGoNotifications": "Ouvrir le centre de notifications",
     "lastCheck": "Dernière vérification",
-    "rawTopHint": "Sortie top(1) non traduite"
+    "rawTopHint": "Sortie top(1) non traduite",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "Inventaire",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "Saisissez DELETE pour confirmer.",
     "orphanRemoveNeedConfirm": "Confirmation requise",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "Code personnalisé",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "vncpasswd introuvable. Installez TigerVNC (tigervnc-standalone-server) avant de définir un mot de passe.",
       "linuxUserRolledBack": "Suppression de l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
       "linuxUserOrphan": "Impossible de supprimer l'utilisateur Linux restant {{user}} après l'échec du mot de passe VNC.",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "Nom du serveur requis",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "Non appliqué sur l'hôte (nécessite root + YSK_EXECUTE=1) — enregistré dans les paramètres du panneau",
       "nginxWritten": "Fichier panneau de limitation de débit Nginx écrit",
-      "f2bWritten": "Paramètres panneau fail2ban écrits"
+      "f2bWritten": "Paramètres panneau fail2ban écrits",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "À l'instant",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "Non défini",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "Dovecot TLS indique un certificat manquant",
     "leftoverOther": "Restes d’hôte",
     "leftoverApply": "Les restes s'appliquent",
-    "isolationOwnerDegrades": "L'absence de Owner_user_id affecte l'attribution du quota de package : le statut est dégradé, pas prêt."
+    "isolationOwnerDegrades": "L'absence de Owner_user_id affecte l'attribution du quota de package : le statut est dégradé, pas prêt.",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "N'expire jamais",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "Enregistré {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "Sessions API",
     "revokeOtherTitle": "Déconnexion {{n}} autre(s) session(s)",
     "policyNeedSelf2fa": "Activez d'abord 2FA sur ce compte, puis confirmez avec un code TOTP",
-    "revokeAllDevicesTitle": "Révoquer tous les appareils mémorisés : vous et les autres administrateurs devez à nouveau vérifier 2FA"
+    "revokeAllDevicesTitle": "Révoquer tous les appareils mémorisés : vous et les autres administrateurs devez à nouveau vérifier 2FA",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "Accès au réseau",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "Logiciels",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "Copier version, EXECUTE et faits hôte",
     "diagPreview": "Aperçu de ce qui sera copié",
     "diagLoading": "Chargement du diagnostic…",
-    "diagLoadFailed": "Impossible de charger le diagnostic"
+    "diagLoadFailed": "Impossible de charger le diagnostic",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "Échec du chargement des données d'export",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "Conf stock / catch-all (000-default). Incluse dans la sync tant que vous n’agissez pas.",
     "powerUnlock": "Débloquez la zone dangereuse",
     "powerLock": "Verrouiller la zone dangereuse",
-    "noScheduledPower": "Aucun redémarrage ou mise hors tension n'est prévu"
+    "noScheduledPower": "Aucun redémarrage ou mise hors tension n'est prévu",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "Activé",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "L'écriture du modèle et l'installation système sont des étapes distinctes. Relancer après installation est une opération normale, pas une étape manquante.",
     "policyInstallFull": "Installer et activer : copier vers /etc/systemd/system, daemon-reload, enable --now. Nécessite root + EXECUTE.",
     "policyBlockedTitle": "Bloqué sans privilège",
-    "policyNotEqualTitle": "Les états ne sont pas équivalents"
+    "policyNotEqualTitle": "Les états ne sont pas équivalents",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "Faire défiler les onglets vers la gauche",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "Cette session est un PTY racine sans restriction sur l'hôte. Les commandes sont auditées.",
     "rootConfirmBody": "Continuez uniquement si vous avez l'intention d'exécuter des commandes d'hôte privilégiées.",
     "copyAll": "Copier tout",
-    "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté"
+    "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "durée d'exécution {{v0}} {{v1}}，",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "Envoyer un e-mail à DNSBL",
         "hint": "Vérification DNSBL par courrier"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
     "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
     "panelRestarted": "Panneau de retour · {{version}}",
     "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes.",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} utilisateurs",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "Ouvre une session en tant qu'utilisateur. Utilisez le menu du compte pour quitter l’usurpation d’identité.",
     "operatorHighRiskHint": "Le rôle opérateur d’usine inclut des écritures à haut risque. Le restreindre n’affecte que les nouveaux comptes ; changer le défaut affecte les opérateurs existants.",
     "cannotImpersonateSelf": "Vous êtes déjà connecté avec ce compte",
-    "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde."
+    "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde.",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "Validateurs (Beta)",

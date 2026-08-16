@@ -134,5 +134,7 @@
   "impersonateHint": "Ouvre une session en tant qu'utilisateur. Utilisez le menu du compte pour quitter l’usurpation d’identité.",
   "operatorHighRiskHint": "Le rôle opérateur d’usine inclut des écritures à haut risque. Le restreindre n’affecte que les nouveaux comptes ; changer le défaut affecte les opérateurs existants.",
   "cannotImpersonateSelf": "Vous êtes déjà connecté avec ce compte",
-  "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde."
+  "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde.",
+  "enableAdmin2fa": "Enable admin 2FA",
+  "addBackupAdmin": "Add a backup admin"
 }

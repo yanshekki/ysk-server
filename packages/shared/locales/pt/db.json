@@ -245,7 +245,9 @@
     "pushPlanTitle": "Visualizar push to peer (sem scp)",
     "fleetSyncPlanTitle": "Visualizar sincronização da frota (sem execução)",
     "fleetApplyTitle": "O enfileiramento se aplica aos membros da frota?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "Navegar pelos dados",

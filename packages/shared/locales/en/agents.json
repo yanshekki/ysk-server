@@ -134,5 +134,7 @@
   "labelStderr": "stderr",
   "labelAckCli": "ack + CLI JSON",
   "labelStdoutBody": "CLI stdout body",
-  "resultOuterHint": "Outer result is CLI --json stdout."
+  "resultOuterHint": "Outer result is CLI --json stdout.",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

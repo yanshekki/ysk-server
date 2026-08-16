@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS 指出缺少证书",
   "leftoverOther": "主机剩余物",
   "leftoverApply": "剩余的适用",
-  "isolationOwnerDegrades": "缺少owner_user_id会影响程序包配额属性 - 状态已降级，未就绪。"
+  "isolationOwnerDegrades": "缺少owner_user_id会影响程序包配额属性 - 状态已降级，未就绪。",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "होस्ट पर लागू नहीं किया गया (रूट + YSK_EXECUTE=1 की आवश्यकता है) - पैनल सेटिंग्स में सहेजा गया",
     "nginxWritten": "Nginx दर-सीमा पैनल फ़ाइल लिखी",
-    "f2bWritten": "fail2ban पैनल सेटिंग्स लिखीं"
+    "f2bWritten": "fail2ban पैनल सेटिंग्स लिखीं",
+    "hintDropped": "Internal protection hint omitted",
+    "nginxLimits": "Will write Nginx rate-limit snippet"
   },
   "rel": {
     "justNow": "बस अब",
@@ -386,5 +388,16 @@
   "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
   "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
   "whitelistSyncOn": "on",
-  "whitelistSyncOff": "off (lists may differ)"
+  "whitelistSyncOff": "off (lists may differ)",
+  "draftBadge": "Draft",
+  "banIsSelf": "This IP matches the current panel source or this host.",
+  "banNotSelf": "This IP is not the current panel source.",
+  "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+  "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+  "modeValue": {
+    "normal": "Normal",
+    "degraded": "Degraded",
+    "ddos-protection": "DDoS protection",
+    "offline": "Offline"
+  }
 }

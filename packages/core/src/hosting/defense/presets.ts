@@ -119,7 +119,7 @@ export function buildPresetActions(preset: DefensePreset): DefenseAction[] {
       id: 'nginx',
       kind: 'nginx_limits',
       title: tl('notes.auto.n0674'),
-      detail: `limit_req ${preset.nginx.reqRate} burst=${preset.nginx.burst}; conn≤${preset.nginx.connLimit}`,
+      detail: `limit_req_zone rate=${preset.nginx.reqRate}; burst=${preset.nginx.burst}; limit_conn ${preset.nginx.connLimit}`,
     },
     {
       id: 'f2b',
@@ -131,7 +131,7 @@ export function buildPresetActions(preset: DefensePreset): DefenseAction[] {
       id: 'prot',
       kind: 'protection_mode',
       title: tl('notes.auto.n1365'),
-      detail: `protectionHint=${preset.protectionHint}`,
+      detail: preset.protectionHint,
     },
     {
       id: 'ufw',

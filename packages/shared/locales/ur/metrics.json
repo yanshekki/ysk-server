@@ -153,5 +153,14 @@
   "alertsReadOnly": "بلٹ ان سی پی یو / میموری / ڈسک کی حد صرف۔ کوئی ای میل، ویب ہک، یا سلیک چینل نہیں۔",
   "alertsGoNotifications": "اطلاعی مرکز کھولیں۔",
   "lastCheck": "آخری چیک",
-  "rawTopHint": "غیر ترجمہ شدہ ٹاپ(1) آؤٹ پٹ"
+  "rawTopHint": "غیر ترجمہ شدہ ٹاپ(1) آؤٹ پٹ",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

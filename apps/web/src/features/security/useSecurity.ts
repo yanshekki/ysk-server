@@ -16,8 +16,8 @@ export function useSecurity() {
       securityApi.listTools(),
       securityApi.listApprovals(),
     ]);
-    setTools(tRes.items as Array<Record<string, unknown>>);
-    setApprovals(aRes.items as Array<Record<string, unknown>>);
+    setTools(Array.isArray(tRes.items) ? (tRes.items as Array<Record<string, unknown>>) : []);
+    setApprovals(Array.isArray(aRes.items) ? (aRes.items as Array<Record<string, unknown>>) : []);
   }, []);
 
   useEffect(() => {

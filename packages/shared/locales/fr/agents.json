@@ -134,5 +134,7 @@
   "staleFor": "Invisible {{age}}",
   "commandTitle": "Mettre une commande en file d'attente pour cette session",
   "historyTitleShort": "Ouvrir l'historique des commandes (lecture seule)",
-  "expEdge": "Sur un bord :"
+  "expEdge": "Sur un bord :",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

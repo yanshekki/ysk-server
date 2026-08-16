@@ -247,6 +247,11 @@ describe('backup-cron depth', () => {
       mode: 'dry-run',
     });
     expect(dry.ok).toBe(true);
+    const preview = dry.notes.find((n) => /Preview:|預覽試行/.test(n)) ?? dry.notes[0];
+    const nums = [...String(preview).matchAll(/\d+/g)].map((m) => Number(m[0]));
+    expect(nums.length).toBeGreaterThanOrEqual(2);
+    expect(nums[0]).toBeGreaterThanOrEqual(nums[1]);
+    expect(dry.notes.filter((n) => n.startsWith('  ')).length).toBe(nums[1]);
 
     const web = await restoreProjectBackup({
       host,

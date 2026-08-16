@@ -59,11 +59,11 @@ export function TerminalPage() {
     try {
       const r = await terminalApi.targets();
       setTargets(r);
-      const firstNonRoot = r.items.find((i) => i.id !== 'root');
-      if (targetId === 'root' && firstNonRoot) {
-        setTargetId(firstNonRoot.id);
+      const hasRoot = r.items.some((i) => i.id === 'root');
+      if (targetId === 'root' && hasRoot) {
+        /* keep system account */
       } else if (!r.items.some((i) => i.id === targetId) && r.items[0]) {
-        setTargetId(r.items[0].id);
+        setTargetId((r.items.find((i) => i.id === 'root') ?? r.items[0]).id);
       }
     } catch (e) {
       setLoadErr(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -425,12 +425,12 @@ export function TerminalPage() {
         },
         items: [
           {
-            label: 'EXECUTE',
+            label: t('system.executeLabel'),
             value: targets?.executeEnabled ? t('common.on') : t('common.off'),
             tone: targets?.executeEnabled ? 'ok' : 'warn',
           },
           {
-            label: 'Root',
+            label: t('system.rootLabel'),
             value: targets?.isRoot ? t('common.yes') : t('common.no'),
             tone: targets?.isRoot ? 'ok' : 'warn',
           },
@@ -495,28 +495,45 @@ export function TerminalPage() {
                 disabled={conn === 'connected' || conn === 'connecting'}
                 onChange={(e) => setTargetId(e.target.value)}
               >
-                {(targets?.items ?? []).map((item) => {
-                  const reason = (item.notes ?? []).filter(Boolean).join(' · ');
-                  const title =
-                    item.kind === 'project'
-                      ? [item.projectName, item.linuxUser, item.id, reason]
-                          .filter(Boolean)
-                          .join(' · ')
-                      : [item.label, item.id, reason].filter(Boolean).join(' · ');
+                {(['host', 'project'] as const).map((kind) => {
+                  const group = (targets?.items ?? []).filter((i) =>
+                    kind === 'host' ? i.kind !== 'project' : i.kind === 'project',
+                  );
+                  if (!group.length) return null;
                   return (
-                    <option
-                      key={item.id}
-                      value={item.id}
-                      disabled={!item.available}
-                      title={title}
+                    <optgroup
+                      key={kind}
+                      label={
+                        kind === 'host'
+                          ? t('terminal.groupSystem')
+                          : t('terminal.groupProject')
+                      }
                     >
-                      {item.kind === 'project'
-                        ? `${item.projectName} (${item.linuxUser || '—'})`
-                        : item.label}
-                      {!item.available
-                        ? ` (${t('terminal.unavailable')}${reason ? ` — ${reason}` : ''})`
-                        : ''}
-                    </option>
+                      {group.map((item) => {
+                        const reason = (item.notes ?? []).filter(Boolean).join(' · ');
+                        const title =
+                          item.kind === 'project'
+                            ? [item.projectName, item.linuxUser, item.id, reason]
+                                .filter(Boolean)
+                                .join(' · ')
+                            : [item.label, item.id, reason].filter(Boolean).join(' · ');
+                        return (
+                          <option
+                            key={item.id}
+                            value={item.id}
+                            disabled={!item.available}
+                            title={title}
+                          >
+                            {item.kind === 'project'
+                              ? `${item.projectName} (${item.linuxUser || '—'})`
+                              : item.label}
+                            {!item.available
+                              ? ` (${t('terminal.unavailable')}${reason ? ` — ${reason}` : ''})`
+                              : ''}
+                          </option>
+                        );
+                      })}
+                    </optgroup>
                   );
                 })}
               </select>

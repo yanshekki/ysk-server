@@ -90,5 +90,7 @@
   "aboutPolicySub": "टेम्प्लेट लिखना और सिस्टम इंस्टॉल करना अलग-अलग चरण हैं। इंस्टॉल के बाद पुनः चलाना सामान्य प्रक्रिया है, कोई छूटा हुआ चरण नहीं।",
   "policyInstallFull": "स्थापित करें और सक्षम करें: /etc/systemd/system पर कॉपी करें, डेमॉन-रीलोड करें, सक्षम करें --अभी। रूट + निष्पादन की आवश्यकता है।",
   "policyBlockedTitle": "बिना विशेषाधिकार के ब्लॉक किया गया",
-  "policyNotEqualTitle": "राज्य समकक्ष नहीं हैं"
+  "policyNotEqualTitle": "राज्य समकक्ष नहीं हैं",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS apunta al certificado faltante",
   "leftoverOther": "Restos de hostia",
   "leftoverApply": "Aplicar sobrantes",
-  "isolationOwnerDegrades": "La falta deowner_user_id afecta la atribución de cuota de paquete: el estado está degradado, no listo."
+  "isolationOwnerDegrades": "La falta deowner_user_id afecta la atribución de cuota de paquete: el estado está degradado, no listo.",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

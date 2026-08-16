@@ -22,6 +22,9 @@
     "project.publish": "發佈 Nginx",
     "project.suspend": "暫停專案",
     "software.install": "安裝軟件",
-    "software.update": "更新軟件"
+    "software.update": "更新軟件",
+    "backup.restore": "還原備份",
+    "backup.run": "執行備份",
+    "backup.delete": "刪除備份"
   }
 }

@@ -203,5 +203,8 @@
   "nginxUnusedHint": "기본 / catch-all conf(000-default). 조치하기 전까지 동기화에 포함됩니다.",
   "powerUnlock": "위험 구역 잠금 해제",
   "powerLock": "위험 구역 잠금",
-  "noScheduledPower": "재부팅이나 전원 끄기가 예약되지 않았습니다."
+  "noScheduledPower": "재부팅이나 전원 끄기가 예약되지 않았습니다.",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

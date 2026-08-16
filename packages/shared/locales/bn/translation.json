@@ -138,7 +138,9 @@
     "staleFor": "অদেখা {{age}}",
     "commandTitle": "এই সেশনের জন্য একটি কমান্ড সারিবদ্ধ করুন",
     "historyTitleShort": "কমান্ড ইতিহাস খুলুন (কেবল-পঠন)",
-    "expEdge": "একটি প্রান্তে:"
+    "expEdge": "একটি প্রান্তে:",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Nginx প্রকাশ করুন",
       "project.suspend": "প্রকল্প স্থগিত করুন",
       "software.install": "সফটওয়্যার ইন্সটল করুন",
-      "software.update": "সফটওয়্যার আপডেট করুন"
+      "software.update": "সফটওয়্যার আপডেট করুন",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "শুধুমাত্র এই সংরক্ষণাগার থেকে ওয়েবসাইট ফাইল পুনরুদ্ধার করুন",
     "previewTitle": "লেখা ছাড়াই পুনরুদ্ধারের পূর্বরূপ",
     "partialSkipped": "আংশিক — কিছু প্রকল্প এড়িয়ে গেছে",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "বিটি ট্র্যাকার",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "অজানা কমান্ড: {{command}}\n`{{cli}} help` চালান",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "ড্যাশবোর্ড",
@@ -2455,7 +2493,13 @@
     "notifAll": "সব",
     "notifDismiss": "লুকান",
     "goFix": "ঠিক করুন",
-    "needDomainFirst": "আগে ডোমেইন লিখুন"
+    "needDomainFirst": "আগে ডোমেইন লিখুন",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "কোন তথ্য নেই",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "প্রিভিউ পুশ টু পিয়ার (কোনও scp)",
       "fleetSyncPlanTitle": "ফ্লিট সিঙ্কের পূর্বরূপ দেখুন (চালনা নেই)",
       "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "ডেটা ব্রাউজ করুন",
@@ -4885,7 +4931,8 @@
     "envColPanel": "প্যানেল সেটিং",
     "envColEffective": "কার্যকর",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "অনুসন্ধান…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "স্থিতি সংস্করণ {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "বিল্ট-ইন সিপিইউ/মেমরি/ডিস্ক থ্রেশহোল্ড শুধুমাত্র। কোনো ইমেল, ওয়েবহুক বা স্ল্যাক চ্যানেল নেই।",
     "alertsGoNotifications": "বিজ্ঞপ্তি কেন্দ্র খুলুন",
     "lastCheck": "শেষ চেক",
-    "rawTopHint": "অনূদিত শীর্ষ(1) আউটপুট"
+    "rawTopHint": "অনূদিত শীর্ষ(1) আউটপুট",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "ইনভেন্টরি",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "নিশ্চিত করতে DELETE লিখুন।",
     "orphanRemoveNeedConfirm": "নিশ্চিতকরণ প্রয়োজন",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "কাস্টম কোড",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "vncpasswd পাওয়া যায়নি। একটি পাসওয়ার্ড সেট করার আগে TigerVNC (tigervnc-standalone-server) ইনস্টল করুন।",
       "linuxUserRolledBack": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো হয়েছে৷",
       "linuxUserOrphan": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো যায়নি।",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "সার্ভার নাম প্রয়োজন",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "হোস্টে প্রয়োগ করা হয়নি (রুট + YSK_EXECUTE=1 প্রয়োজন) — প্যানেল সেটিংসে সংরক্ষিত",
       "nginxWritten": "Nginx হার-সীমা প্যানেল ফাইল লিখেছেন",
-      "f2bWritten": "fail2ban প্যানেল সেটিংস লিখেছেন"
+      "f2bWritten": "fail2ban প্যানেল সেটিংস লিখেছেন",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "এইমাত্র",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "সেট করা হয়নি",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "অনুপস্থিত শংসাপত্রে Dovecot TLS পয়েন্ট",
     "leftoverOther": "হোস্ট অবশিষ্টাংশ",
     "leftoverApply": "অবশিষ্ট আবেদন",
-    "isolationOwnerDegrades": "অনুপস্থিত মালিক_ব্যবহারকারী_আইডি প্যাকেজ কোটা অ্যাট্রিবিউশনকে প্রভাবিত করে — স্থিতি অবনমিত হয়েছে, প্রস্তুত নয়।"
+    "isolationOwnerDegrades": "অনুপস্থিত মালিক_ব্যবহারকারী_আইডি প্যাকেজ কোটা অ্যাট্রিবিউশনকে প্রভাবিত করে — স্থিতি অবনমিত হয়েছে, প্রস্তুত নয়।",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "কখনই মেয়াদ শেষ হয় না",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "রেকর্ড করা {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "API সেশন",
     "revokeOtherTitle": "সাইন আউট করুন {{n}} অন্যান্য সেশন(গুলি)",
     "policyNeedSelf2fa": "প্রথমে এই অ্যাকাউন্টে 2FA সক্ষম করুন, তারপর একটি TOTP কোড দিয়ে নিশ্চিত করুন৷",
-    "revokeAllDevicesTitle": "মনে রাখা প্রতিটি ডিভাইস প্রত্যাহার করুন — আপনাকে এবং অন্যান্য প্রশাসকদের আবার 2FA যাচাই করতে হবে"
+    "revokeAllDevicesTitle": "মনে রাখা প্রতিটি ডিভাইস প্রত্যাহার করুন — আপনাকে এবং অন্যান্য প্রশাসকদের আবার 2FA যাচাই করতে হবে",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "নেটওয়ার্ক অ্যাক্সেস",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "সফটওয়্যার",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "সংস্করণ, EXECUTE ও হোস্ট তথ্য অনুলিপি",
     "diagPreview": "যা কপি হবে তার পূর্বরূপ",
     "diagLoading": "ডায়াগনস্টিক লোড হচ্ছে...",
-    "diagLoadFailed": "ডায়গনিস্টিক লোড করা যায়নি"
+    "diagLoadFailed": "ডায়গনিস্টিক লোড করা যায়নি",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "এক্সপোর্ট ডেটা লোড করতে ব্যর্থ হয়েছে৷",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "স্টক / catch-all conf (000-default)। ব্যবস্থা না নিলে সিঙ্কে থাকে।",
     "powerUnlock": "বিপদ অঞ্চল আনলক করুন",
     "powerLock": "বিপদ অঞ্চল লক করুন",
-    "noScheduledPower": "কোনো রিবুট বা পাওয়ার অফ নির্ধারিত নেই"
+    "noScheduledPower": "কোনো রিবুট বা পাওয়ার অফ নির্ধারিত নেই",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "সক্রিয়",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "টেমপ্লেট লেখা এবং সিস্টেম ইনস্টল আলাদা ধাপ। ইন্সটল করার পর পুনরায় চালানো স্বাভাবিক অপারেশন, একটি অনুপস্থিত পদক্ষেপ নয়।",
     "policyInstallFull": "ইনস্টল করুন এবং সক্রিয় করুন: /etc/systemd/system-এ অনুলিপি করুন, ডেমন-রিলোড করুন, সক্রিয় করুন --now। রুট + EXECUTE প্রয়োজন।",
     "policyBlockedTitle": "বিশেষাধিকার ছাড়া অবরুদ্ধ",
-    "policyNotEqualTitle": "রাজ্য সমতুল্য নয়"
+    "policyNotEqualTitle": "রাজ্য সমতুল্য নয়",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "স্ক্রোল ট্যাব বাম",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "এই সেশনটি হোস্টে একটি অনিয়ন্ত্রিত রুট PTY। কমান্ড নিরীক্ষিত হয়.",
     "rootConfirmBody": "আপনি যদি বিশেষাধিকারপ্রাপ্ত হোস্ট কমান্ড চালাতে চান তবেই চালিয়ে যান।",
     "copyAll": "সব কপি করুন",
-    "copyAllNeedConn": "প্রথমে সংযোগ করুন — সংযোগ বিচ্ছিন্ন হওয়ার সময় বাফারটি খালি থাকে"
+    "copyAllNeedConn": "প্রথমে সংযোগ করুন — সংযোগ বিচ্ছিন্ন হওয়ার সময় বাফারটি খালি থাকে",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "রানটাইম {{v0}} {{v1}},",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "DNSBL ইমেল করুন",
         "hint": "মেল DNSBL চেক"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ",
     "panelRestarting": "নতুন সংস্করণ লোড করতে প্যানেল পুনরায় চালু হচ্ছে…",
     "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
     "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} ব্যবহারকারী",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "এই ব্যবহারকারী হিসাবে একটি সেশন খোলে। ছদ্মবেশ ত্যাগ করতে অ্যাকাউন্ট মেনু ব্যবহার করুন।",
     "operatorHighRiskHint": "কারখানা অপারেটরে উচ্চ-ঝুঁকির লেখা আছে। সংকীর্ণ করলে শুধু নতুন অ্যাকাউন্ট; ডিফল্ট বদলালে বিদ্যমান অপারেটর প্রভাবিত।",
     "cannotImpersonateSelf": "আপনি ইতিমধ্যে এই অ্যাকাউন্ট হিসাবে সাইন ইন করেছেন",
-    "singleAdminNo2fa": "এই হোস্টের একজন একক প্রশাসক আছে এবং 2FA বন্ধ আছে — 2FA সক্ষম করুন এবং একজন ব্যাকআপ অ্যাডমিন যোগ করুন।"
+    "singleAdminNo2fa": "এই হোস্টের একজন একক প্রশাসক আছে এবং 2FA বন্ধ আছে — 2FA সক্ষম করুন এবং একজন ব্যাকআপ অ্যাডমিন যোগ করুন।",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "ভ্যালিডেটর (Beta)",

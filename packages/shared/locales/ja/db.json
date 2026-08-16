@@ -245,7 +245,9 @@
     "pushPlanTitle": "ピアへのプレビュープッシュ (scp なし)",
     "fleetSyncPlanTitle": "フリート同期のプレビュー (実行なし)",
     "fleetApplyTitle": "フリートメンバーにエンキューを適用しますか?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "データを閲覧する",

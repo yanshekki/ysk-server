@@ -106,7 +106,7 @@
     "networks": "No networks"
   },
   "logs": {
-    "empty": "This container has not written any logs yet.",
+    "empty": "No log output. Short-lived containers (for example hello-world) often exit without writing logs.",
     "follow": "Follow"
   },
   "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",

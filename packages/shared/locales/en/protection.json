@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "Not applied on host (needs root + YSK_EXECUTE=1) — saved to panel settings",
     "nginxWritten": "Wrote Nginx rate-limit panel file",
-    "f2bWritten": "Wrote fail2ban panel settings"
+    "f2bWritten": "Wrote fail2ban panel settings",
+    "hintDropped": "Internal protection hint omitted",
+    "nginxLimits": "Will write Nginx rate-limit snippet"
   },
   "rel": {
     "justNow": "Just now",
@@ -76,6 +78,12 @@
   "reapply": "Re-apply",
   "nginxLimits": "Nginx rate limits",
   "notWritten": "Not written",
+  "modeValue": {
+    "normal": "Normal",
+    "degraded": "Degraded",
+    "ddos-protection": "DDoS protection",
+    "offline": "Offline"
+  },
   "mode": "Mode",
   "controlPlane": "Control plane",
   "canApply": "Can apply",
@@ -387,5 +395,10 @@
   "signalJails": "{{n}} jail(s)",
   "dbReadyHint": "MMDB files are present",
   "dbNotReadyHint": "Download a GeoIP database first",
-  "staleHint": "Whether the last successful update is older than 7 days"
+  "staleHint": "Whether the last successful update is older than 7 days",
+  "draftBadge": "Draft",
+  "banIsSelf": "This IP matches the current panel source or this host.",
+  "banNotSelf": "This IP is not the current panel source.",
+  "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+  "nginxPreviewHint": "Nginx snippet this preset would write (preview only):"
 }

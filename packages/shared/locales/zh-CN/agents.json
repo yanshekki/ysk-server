@@ -134,5 +134,7 @@
   "staleFor": "看不见的{{年龄}}",
   "commandTitle": "为此会话排队命令",
   "historyTitleShort": "打开命令历史记录（只读）",
-  "expEdge": "在边缘："
+  "expEdge": "在边缘：",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

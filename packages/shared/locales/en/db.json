@@ -141,6 +141,8 @@
   "update": "Update",
   "alsoCreateRole": "Also create role",
   "cluster": {
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+    "roleUnassigned": "No role assigned",
     "title": "Cluster",
     "description": "Plan → write management files → apply → probe → distribute to peers / fleet. Default is dry-run (no host restart).",
     "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",

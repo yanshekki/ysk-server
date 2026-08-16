@@ -138,7 +138,9 @@
     "staleFor": "보이지 않음 {{age}}",
     "commandTitle": "이 세션에 대한 명령을 대기열에 넣습니다.",
     "historyTitleShort": "명령 기록 열기(읽기 전용)",
-    "expEdge": "가장자리에서:"
+    "expEdge": "가장자리에서:",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Nginx 게시",
       "project.suspend": "프로젝트 일시 중단",
       "software.install": "소프트웨어 설치",
-      "software.update": "소프트웨어 업데이트"
+      "software.update": "소프트웨어 업데이트",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "이 아카이브에서만 웹사이트 파일을 복원하세요.",
     "previewTitle": "쓰지 않고 복원 미리보기",
     "partialSkipped": "부분 — 일부 프로젝트를 건너뛰었습니다.",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "블루투스 트래커",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} 도움말`을 실행하세요.",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "대시보드",
@@ -2455,7 +2493,13 @@
     "notifAll": "전체",
     "notifDismiss": "숨다",
     "goFix": "고치다",
-    "needDomainFirst": "먼저 도메인을 입력하세요"
+    "needDomainFirst": "먼저 도메인을 입력하세요",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "데이터 없음",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "피어로 푸시 미리보기(SCP 없음)",
       "fleetSyncPlanTitle": "플릿 동기화 미리보기(실행 없음)",
       "fleetApplyTitle": "함대 구성원에게 대기열을 적용하시겠습니까?",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "데이터 찾아보기",
@@ -4885,7 +4931,8 @@
     "envColPanel": "패널 설정",
     "envColEffective": "적용값",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "찾다…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "상태 버전 {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "내장 CPU/메모리/디스크 임계값만 해당됩니다. 이메일, 웹훅 또는 Slack 채널이 없습니다.",
     "alertsGoNotifications": "알림 센터 열기",
     "lastCheck": "마지막 확인",
-    "rawTopHint": "번역되지 않은 top(1) 출력"
+    "rawTopHint": "번역되지 않은 top(1) 출력",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "목록",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "확인하려면 DELETE를 입력하세요.",
     "orphanRemoveNeedConfirm": "확인이 필요합니다",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "vncpasswd를 찾을 수 없습니다. 비밀번호를 설정하기 전에 TigerVNC(tigervnc-standalone-server)를 설치하세요.",
       "linuxUserRolledBack": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거했습니다.",
       "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다.",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "서버 이름이 필요합니다",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "호스트에 적용되지 않음(루트 + YSK_EXECUTE=1 필요) - 패널 설정에 저장됨",
       "nginxWritten": "Nginx 속도 제한 패널 파일 작성",
-      "f2bWritten": "fail2ban 패널 설정을 작성했습니다."
+      "f2bWritten": "fail2ban 패널 설정을 작성했습니다.",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "방금",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "설정되지 않음",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "누락된 인증서를 가리키는 Dovecot TLS",
     "leftoverOther": "호스트 남은 음식",
     "leftoverApply": "남은 적용",
-    "isolationOwnerDegrades": "owner_user_id가 누락되면 패키지 할당량 특성에 영향을 미칩니다. 상태는 저하됨, 준비되지 않음입니다."
+    "isolationOwnerDegrades": "owner_user_id가 누락되면 패키지 할당량 특성에 영향을 미칩니다. 상태는 저하됨, 준비되지 않음입니다.",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "만료되지 않음",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "녹화됨 {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "API 세션",
     "revokeOtherTitle": "로그아웃 {{n}} 다른 세션",
     "policyNeedSelf2fa": "먼저 이 계정에서 2FA를 활성화한 다음 TOTP 코드로 확인하세요.",
-    "revokeAllDevicesTitle": "기억된 모든 장치를 취소합니다. 귀하와 다른 관리자는 2FA를 다시 확인해야 합니다."
+    "revokeAllDevicesTitle": "기억된 모든 장치를 취소합니다. 귀하와 다른 관리자는 2FA를 다시 확인해야 합니다.",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "네트워크 접속",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "소프트웨어",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "버전, EXECUTE, 호스트 정보 복사",
     "diagPreview": "복사될 내용 미리보기",
     "diagLoading": "진단 로드 중…",
-    "diagLoadFailed": "진단을 로드할 수 없습니다."
+    "diagLoadFailed": "진단을 로드할 수 없습니다.",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "내보내기 데이터를 로드하지 못했습니다.",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "기본 / catch-all conf(000-default). 조치하기 전까지 동기화에 포함됩니다.",
     "powerUnlock": "위험 구역 잠금 해제",
     "powerLock": "위험 구역 잠금",
-    "noScheduledPower": "재부팅이나 전원 끄기가 예약되지 않았습니다."
+    "noScheduledPower": "재부팅이나 전원 끄기가 예약되지 않았습니다.",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "사용",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "템플릿 작성과 시스템 설치는 별도의 단계입니다. 설치 후 다시 실행하는 것은 누락된 단계가 아니라 일반적인 작업입니다.",
     "policyInstallFull": "설치 및 활성화: /etc/systemd/system에 복사하고 daemon-reload하고 --now를 활성화합니다. 루트 + EXECUTE가 필요합니다.",
     "policyBlockedTitle": "권한 없이 차단됨",
-    "policyNotEqualTitle": "상태는 동일하지 않습니다."
+    "policyNotEqualTitle": "상태는 동일하지 않습니다.",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "탭을 왼쪽으로 스크롤",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "이 세션은 호스트의 무제한 루트 PTY입니다. 명령이 감사됩니다.",
     "rootConfirmBody": "권한 있는 호스트 명령을 실행하려는 경우에만 계속하십시오.",
     "copyAll": "모두 복사",
-    "copyAllNeedConn": "먼저 연결 - 연결이 끊어진 동안 버퍼는 비어 있습니다."
+    "copyAllNeedConn": "먼저 연결 - 연결이 끊어진 동안 버퍼는 비어 있습니다.",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "런타임 {{v0}} {{v1}}，",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "이메일 DNSBL",
         "hint": "메일 DNSBL 확인"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "이미 최신 패널 버전",
     "panelRestarting": "새 버전을 불러오려고 패널을 다시 시작하는 중…",
     "panelRestarted": "패널이 복구됨 · {{version}}",
     "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} 사용자",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "이 사용자로 세션을 엽니다. 명의 도용을 종료하려면 계정 메뉴를 사용하세요.",
     "operatorHighRiskHint": "공장 기본 운영자 역할에는 고위험 쓰기가 포함됩니다. 좁히면 새 계정만, 기본을 바꾸면 기존 운영자에게도 영향을 줍니다.",
     "cannotImpersonateSelf": "이미 이 계정으로 로그인되어 있습니다.",
-    "singleAdminNo2fa": "이 호스트에는 관리자가 한 명 있고 2FA가 꺼져 있습니다. 2FA를 활성화하고 백업 관리자를 추가하세요."
+    "singleAdminNo2fa": "이 호스트에는 관리자가 한 명 있고 2FA가 꺼져 있습니다. 2FA를 활성화하고 백업 관리자를 추가하세요.",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "검증자 노드 (Beta)",

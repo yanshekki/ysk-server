@@ -90,5 +90,7 @@
   "aboutPolicySub": "টেমপ্লেট লেখা এবং সিস্টেম ইনস্টল আলাদা ধাপ। ইন্সটল করার পর পুনরায় চালানো স্বাভাবিক অপারেশন, একটি অনুপস্থিত পদক্ষেপ নয়।",
   "policyInstallFull": "ইনস্টল করুন এবং সক্রিয় করুন: /etc/systemd/system-এ অনুলিপি করুন, ডেমন-রিলোড করুন, সক্রিয় করুন --now। রুট + EXECUTE প্রয়োজন।",
   "policyBlockedTitle": "বিশেষাধিকার ছাড়া অবরুদ্ধ",
-  "policyNotEqualTitle": "রাজ্য সমতুল্য নয়"
+  "policyNotEqualTitle": "রাজ্য সমতুল্য নয়",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

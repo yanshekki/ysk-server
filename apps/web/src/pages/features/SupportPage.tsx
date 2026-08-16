@@ -43,17 +43,25 @@ export function formatSupportDiagnostic(
     'version' | 'status' | 'mode' | 'executeEnabled' | 'isRoot' | 'protectionMode'
   >,
   host: HostFacts | null,
+  tr?: (k: string) => string,
 ): string {
+  const t = tr ?? ((k: string) => k);
+  const on = t('common.on');
+  const off = t('common.off');
+  const yes = t('common.yes');
+  const no = t('common.no');
   return [
     `YSK Server ${h.version}`,
-    `status=${h.status}`,
-    `mode=${h.mode ?? '?'}`,
-    `execute=${h.executeEnabled ? 'on' : 'off'}`,
-    `root=${h.isRoot ? 'yes' : 'no'}`,
-    `protection=${h.protectionMode}`,
-    host?.identity?.hostname ? `hostname=${host.identity.hostname}` : null,
+    `${t('support.diagStatus')}: ${h.status}`,
+    `${t('support.diagMode')}: ${h.mode ?? '—'}`,
+    `${t('system.executeLabel')}: ${h.executeEnabled ? on : off}`,
+    `${t('system.rootLabel')}: ${h.isRoot ? yes : no}`,
+    `${t('support.diagProtection')}: ${h.protectionMode}`,
+    host?.identity?.hostname
+      ? `${t('support.diagHostname')}: ${host.identity.hostname}`
+      : null,
     host?.os?.platform
-      ? `os=${host.os.platform} ${host.os.kernel ?? ''}`.trim()
+      ? `${t('support.diagOs')}: ${host.os.platform} ${host.os.kernel ?? ''}`.trim()
       : null,
   ]
     .filter(Boolean)
@@ -70,7 +78,11 @@ export function SupportPage() {
     try {
       await navigator.clipboard.writeText(addr);
       setCopied(addr);
-      toast.ok(t('support.copied'));
+      toast.ok(
+        t('support.copiedAddr', {
+          addr: addr.length > 18 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr,
+        }),
+      );
       window.setTimeout(() => setCopied((c) => (c === addr ? null : c)), 1800);
     } catch {
       /* ignore — user can select manually */
@@ -88,7 +100,7 @@ export function SupportPage() {
     ])
       .then(([h, host]) => {
         if (!alive) return;
-        setDiagText(formatSupportDiagnostic(h, host));
+        setDiagText(formatSupportDiagnostic(h, host, t));
         setDiagState('ok');
       })
       .catch(() => {
@@ -99,7 +111,7 @@ export function SupportPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [t]);
 
   const copyDiagnostic = useCallback(async () => {
     if (!diagText) return;

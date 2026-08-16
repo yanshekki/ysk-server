@@ -153,5 +153,14 @@
   "alertsReadOnly": "عتبات وحدة المعالجة المركزية/الذاكرة/القرص المدمجة فقط. لا يوجد بريد إلكتروني أو خطاف ويب أو قناة Slack.",
   "alertsGoNotifications": "فتح مركز الإخطار",
   "lastCheck": "الاختيار الأخير",
-  "rawTopHint": "إخراج أعلى (1) غير مترجم"
+  "rawTopHint": "إخراج أعلى (1) غير مترجم",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

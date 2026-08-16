@@ -134,5 +134,7 @@
   "staleFor": "未見 {{age}}",
   "commandTitle": "このセッションのコマンドをキューに入れる",
   "historyTitleShort": "コマンド履歴を開く (読み取り専用)",
-  "expEdge": "端では："
+  "expEdge": "端では：",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

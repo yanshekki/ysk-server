@@ -153,5 +153,14 @@
   "alertsReadOnly": "내장 CPU/메모리/디스크 임계값만 해당됩니다. 이메일, 웹훅 또는 Slack 채널이 없습니다.",
   "alertsGoNotifications": "알림 센터 열기",
   "lastCheck": "마지막 확인",
-  "rawTopHint": "번역되지 않은 top(1) 출력"
+  "rawTopHint": "번역되지 않은 top(1) 출력",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

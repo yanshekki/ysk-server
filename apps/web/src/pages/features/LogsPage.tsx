@@ -28,6 +28,7 @@ import { authStore } from '../../shared/stores/auth-store';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
+import { formatDateTime } from '../../shared/lib/datetime';
 import {
   bindSet,
   bindInput,
@@ -444,13 +445,14 @@ export function LogsPage() {
     const s = searchParams.get('source');
     const t = searchParams.get('tab');
     const projectId = searchParams.get('project');
-    if (t) {
-      const mapped = resolveLogTab(t);
-      if (mapped) setTab(mapped);
-      if (t === 'projects') setProjectsOnly(true);
-    }
+    const mapped = t ? resolveLogTab(t) : null;
+    if (mapped) setTab(mapped);
+    if (t === 'projects') setProjectsOnly(true);
+    const stayOffExplore = mapped != null && mapped !== 'explore';
     const deepSrc = u ? `journal:${u}` : s || null;
-    if (deepSrc) {
+    if (stayOffExplore) {
+      /* settings / about / maintain — do not auto-query or rewrite tab */
+    } else if (deepSrc) {
       setActiveSource(deepSrc);
       // Auto-open: run query once per distinct deep-link target
       if (deepLinkQueryKey.current !== deepSrc) {
@@ -656,7 +658,10 @@ export function LogsPage() {
       setSearchParams(
         (prev) => {
           const n = new URLSearchParams(prev);
-          n.set('tab', 'explore');
+          const currentTab = n.get('tab');
+          if (!currentTab || currentTab === 'explore' || currentTab === 'projects') {
+            n.set('tab', 'explore');
+          }
           if (isJournalSource(src)) {
             n.set('unit', src.slice('journal:'.length));
             n.delete('source');
@@ -887,17 +892,14 @@ export function LogsPage() {
           {
             label: t('logs.groupJournal'),
             value: formatDiskMb(overview?.journalDiskMb),
-            tone: journalHigh ? 'warn' : undefined,
-            hint: t('logs.journalDiskHint') },
+            tone: journalHigh ? 'warn' : undefined },
           {
             label: t('logs.groupVarLog'),
-            value: formatDiskMb(overview?.varLogMb, true),
-            hint: t('logs.varLogDiskHint') },
+            value: formatDiskMb(overview?.varLogMb, true) },
           {
             label: t('projects.healthDetail.error'),
             value: overview?.recentErrors ?? '—',
             tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok',
-            hint: t('logs.errorsWindowHint'),
           },
           {
             label: t('logs.projectLog'),
@@ -982,10 +984,12 @@ export function LogsPage() {
             </button>
           ))}
         </div>
-        {bookmarks.length > 0 ? (
+        {bookmarks.filter((b) => !/^qa\d+/i.test(String(b.name || ''))).length > 0 ? (
           <div className="lc-strip__row">
             <span className="lc-strip__label">{t('logs.bookmark')}</span>
-            {bookmarks.map((b) => (
+            {bookmarks
+              .filter((b) => !/^qa\d+/i.test(String(b.name || '')))
+              .map((b) => (
               <button
                 key={b.id}
                 type="button"
@@ -1104,7 +1108,11 @@ export function LogsPage() {
                                     onClick={bindCall1(selectSource, item.source)}
                                   >
                                     <span className="lc-rail__item-label">{item.label}</span>
-                                    {item.meta ? (
+                                    {!item.available ? (
+                                      <span className="lc-rail__item-meta">
+                                        {t('logs.sourceNoLog')}
+                                      </span>
+                                    ) : item.meta ? (
                                       <span className="lc-rail__item-meta">{item.meta}</span>
                                     ) : null}
                                   </button>
@@ -1253,7 +1261,7 @@ export function LogsPage() {
                         title={!text ? t('logs.queryFirst') : undefined}
                         onClick={bindCall1(exportServer, 'jsonl')}
                       >
-                        JSONL
+                        {t('logs.exportJsonl')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -1288,7 +1296,11 @@ export function LogsPage() {
                   <span className="muted u-text-sm">
                     {t('logs.lines', { n: lineCount })}
                     {truncated ? t('logs.truncated') : ''}
-                    {follow ? t('logs.followingSseDyn', { sse: useSse ? ' (SSE)' : '' }) : ''}
+                    {follow
+                      ? t('logs.followingSseDyn', {
+                          sse: useSse ? t('logs.sseLive') : '',
+                        })
+                      : ''}
                   </span>
                   <span className="lc-status__notes muted u-text-sm">
                     {queryNotes.slice(0, 3).join(' · ')}
@@ -1368,14 +1380,16 @@ export function LogsPage() {
                   </Field>
                   <div className="lc-card__actions">
                     <Button
-                      variant="danger"
+                      variant={vacuumSizeNoop ? 'secondary' : 'danger'}
                       size="md"
                       loading={busy}
-                      disabled={!vacuumDays.trim()}
+                      disabled={!vacuumDays.trim() || vacuumSizeNoop}
                       title={
-                        !vacuumDays.trim()
-                          ? t('logs.vacuumNeedRetention')
-                          : t('logs.vacuumNeedConfirm')
+                        vacuumSizeNoop
+                          ? t('logs.vacuumSizeAlreadyBelow')
+                          : !vacuumDays.trim()
+                            ? t('logs.vacuumNeedRetention')
+                            : t('logs.vacuumNeedConfirm')
                       }
                       onClick={bindSet(setVacuumConfirm, 'time')}
                     >
@@ -1428,15 +1442,19 @@ export function LogsPage() {
                             {
                               key: 'path',
                               header: t('logs.logrotatePath'),
-                              render: (row) => <code>{row.path}</code>,
+                              render: (row) => (
+                                <code className="u-break-all">{row.path}</code>
+                              ),
                             },
                             {
                               key: 'last',
                               header: t('logs.logrotateLast'),
-                              nowrap: true,
                               render: (row) =>
                                 row.lastAt
-                                  ? formatDateTimeLocale(row.lastAt, i18n.language)
+                                  ? formatDateTime(row.lastAt, {
+                                      locale: i18n.language,
+                                      withOffset: true,
+                                    })
                                   : row.rawDate || '—',
                             },
                           ]}

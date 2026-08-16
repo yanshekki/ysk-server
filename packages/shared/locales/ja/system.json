@@ -203,5 +203,8 @@
   "nginxUnusedHint": "標準 / catch-all conf（000-default）。操作しない限り同期に含まれます。",
   "powerUnlock": "危険地帯のロックを解除する",
   "powerLock": "ロック危険ゾーン",
-  "noScheduledPower": "再起動または電源オフはスケジュールされていません"
+  "noScheduledPower": "再起動または電源オフはスケジュールされていません",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

@@ -3006,7 +3006,8 @@
     "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。",
     "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
     "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。",
-    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+    "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
   },
   "apache": {
     "needServerName": "需要域名",

@@ -28,11 +28,17 @@
   "copyTitle": "複製 {{address}}",
   "docsLink": "說明文件",
   "diagTitle": "診斷摘要",
-  "diagBody": "複製版本、EXECUTE 與主機資料，方便貼到電郵。這不是完整 log 包。",
+  "diagBody": "複製版本、系統變更、超級用戶與主機資料，方便貼到電郵。這不是完整 log 包。",
   "diagCopy": "複製診斷摘要",
   "diagCopied": "已複製診斷摘要",
-  "diagCopyTitle": "複製版本、EXECUTE 與主機資料",
+  "diagCopyTitle": "複製版本、系統變更與主機資料",
   "diagPreview": "預覽將會複製的內容",
   "diagLoading": "載入診斷中…",
-  "diagLoadFailed": "無法載入診斷"
+  "diagLoadFailed": "無法載入診斷",
+  "copiedAddr": "已複製 {{addr}}",
+  "diagStatus": "狀態",
+  "diagMode": "模式",
+  "diagProtection": "防護",
+  "diagHostname": "主機",
+  "diagOs": "系統"
 }

@@ -245,7 +245,9 @@
     "pushPlanTitle": "پیش نظارہ پش ٹو پیئر (کوئی ایس سی پی نہیں)",
     "fleetSyncPlanTitle": "بیڑے کی مطابقت پذیری کا پیش نظارہ (کوئی عمل نہیں)",
     "fleetApplyTitle": "بحری بیڑے کے اراکین پر قطار کا اطلاق ہوتا ہے؟",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "ڈیٹا براؤز کریں۔",

@@ -457,12 +457,12 @@ export function CronPage() {
           {
             label: t('cron.writtenOnHost'),
             value: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
-            hint: t('cron.registeredVsWritten'),
+            hint: t('cron.writtenOnHostHint'),
           },
           {
             label: t('cron.registeredJobsChip'),
             value: items.length,
-            hint: t('cron.registeredVsWritten'),
+            hint: t('cron.registeredJobsHint'),
           },
           {
             label: t('cron.usersScanned'),
@@ -757,9 +757,10 @@ export function CronPage() {
                   <div>
                     <dt>{t('cron.panelLines')}</dt>
                     <dd>
-                      {status?.hostHasYskEntries
-                        ? t('cron.hostYskYes')
-                        : t('cron.hostYskNo')}
+                      {items.length}
+                      {pendingManaged.length
+                        ? ` · ${t('cron.pendingInstallCount', { n: pendingManaged.length })}`
+                        : ''}
                     </dd>
                   </div>
                   <div>
@@ -1007,20 +1008,22 @@ export function CronPage() {
               {t('cron.noLinuxName')}
             </Alert>
           ) : null}
+          {!projectId ? (
+            <p className="u-mb-2">
+              <Badge tone="warn">{t('cron.systemJobBadge')}</Badge>
+            </p>
+          ) : null}
           <p className="form-hint u-mb-0">
             {[
               t('cron.afterCreate'),
               scheduleHuman,
-              schedule,
-              runAsUser
-                ? `${t('cron.userSuffix')} ${runAsUser}`
-                : '',
+              runAsUser ? `${t('cron.userSuffix')} ${runAsUser}` : '',
               selectedProject
                 ? t('cron.projectParen', { name: selectedProject.name })
                 : t('cron.systemParenFull'),
             ]
               .map((s) => String(s || '').trim())
-              .filter(Boolean)
+              .filter((s) => s && s !== '·')
               .join(' · ')}
           </p>
         </form>

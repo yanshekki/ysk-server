@@ -36,7 +36,13 @@ import {
   formatUptime as sysFormatUptime,
   memTone,
   classifyManagedNginxName,
+  formatExportDnsCerts,
+  timeZonesDiffer,
+  isFirewallNote,
 } from './SystemPage';
+import { summarizeOpsNotes } from './features/ProtectionPage';
+import { localizeServiceActive } from './features/ServicesPage';
+import { bilingualGeoLabel } from '../features/defense/geo-options';
 import { riskTone, riskLabel, isHighRisk, relTime as updRelTime } from './UpdatesPage';
 import { formatBytes as filesFormatBytes, iconFor, joinPath } from './FilesPage';
 import {
@@ -558,5 +564,47 @@ describe('DbCluster / Ssh2fa / ProjectDeploy helpers', () => {
       expect(envPlaceholder(r, true)).toContain('APP_ENV');
       expect(checklistItems(r).length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('E2E-1113-02 helpers', () => {
+  it('formatExportDnsCerts is honest when nothing exported', () => {
+    const tr = (k: string) => (k === 'system.notExported' ? 'Not exported yet' : k);
+    expect(formatExportDnsCerts(undefined, tr)).toBe('Not exported yet');
+    expect(formatExportDnsCerts({}, tr)).toBe('Not exported yet');
+    expect(formatExportDnsCerts({ dns_zones: 2, certificates: 1 }, tr)).toBe('2/1');
+  });
+
+  it('timeZonesDiffer and firewall note filter', () => {
+    expect(timeZonesDiffer('Europe/Vilnius', 'Asia/Hong_Kong')).toBe(true);
+    expect(timeZonesDiffer('Asia/Hong_Kong', 'Asia/Hong_Kong')).toBe(false);
+    expect(timeZonesDiffer('', 'Asia/Hong_Kong')).toBe(false);
+    expect(isFirewallNote('Allow the panel port 9287/tcp')).toBe(true);
+    expect(isFirewallNote('Certificate expires next month')).toBe(false);
+  });
+
+  it('summarizeOpsNotes drops protectionHint and localizes nginx limits', () => {
+    const tr = (k: string) => k;
+    expect(
+      summarizeOpsNotes(['• mode: protectionHint=normal', 'limit_req 10r/s burst=20'], tr),
+    ).toEqual(['protection.note.nginxLimits']);
+  });
+
+  it('localizeServiceActive maps raw unit states', () => {
+    const tr = (k: string) =>
+      k === 'services.active.not-found' ? '未安裝' : k === 'services.active.active' ? '運行中' : k;
+    expect(localizeServiceActive('not-found', tr)).toBe('未安裝');
+    expect(localizeServiceActive('active', tr)).toBe('運行中');
+    expect(localizeServiceActive('mystery', tr, 'x')).toBe('x');
+  });
+
+  it('bilingualGeoLabel appends English when localized', () => {
+    const tr = (k: string) => (k.includes('AU-NSW') ? '新南威爾士' : k);
+    expect(bilingualGeoLabel(tr, 'geo.regions.AU-NSW', 'New South Wales')).toBe(
+      '新南威爾士（New South Wales）',
+    );
+    expect(bilingualGeoLabel(undefined, 'geo.regions.AU-NSW', 'New South Wales')).toBe(
+      'New South Wales',
+    );
   });
 });

@@ -127,5 +127,14 @@
   "leftoverDovecot": "누락된 인증서를 가리키는 Dovecot TLS",
   "leftoverOther": "호스트 남은 음식",
   "leftoverApply": "남은 적용",
-  "isolationOwnerDegrades": "owner_user_id가 누락되면 패키지 할당량 특성에 영향을 미칩니다. 상태는 저하됨, 준비되지 않음입니다."
+  "isolationOwnerDegrades": "owner_user_id가 누락되면 패키지 할당량 특성에 영향을 미칩니다. 상태는 저하됨, 준비되지 않음입니다.",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

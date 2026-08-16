@@ -127,5 +127,14 @@
   "leftoverDovecot": "يشير Dovecot TLS إلى الشهادة المفقودة",
   "leftoverOther": "بقايا المضيف",
   "leftoverApply": "تنطبق بقايا",
-  "isolationOwnerDegrades": "يؤثر فقدان Owner_user_id على إسناد حصة الحزمة — الحالة متدهورة وليست جاهزة."
+  "isolationOwnerDegrades": "يؤثر فقدان Owner_user_id على إسناد حصة الحزمة — الحالة متدهورة وليست جاهزة.",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

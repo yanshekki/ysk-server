@@ -71,9 +71,12 @@
   "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
   "orphanRemove": "Remove leftover home",
   "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs superuser and system-change permission.",
   "orphanRemovePhrase": "Type DELETE to confirm.",
   "orphanRemoveNeedConfirm": "Needs confirmation",
+  "orphanBackupFirst": "Back up first (open Backups)",
+  "expandAllWarnings": "Show all {{n}} warnings",
+  "collapseWarnings": "Show fewer",
   "moreWarnings": "…and {{n}} more",
   "authPassword": "root password (switch to key after temp key install)",
   "authIdentity": "SSH identity vault identityId",
@@ -84,7 +87,7 @@
   "allowOverwriteDesc": "· Required if target already has ysk.json",
   "dryRunOnly": "Dry-run only",
   "dryRunOnlyDesc": "· Inventory + precheck only; no rsync or target writes",
-  "executeNote": "Host needs YSK_EXECUTE=1 and root API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
+  "executeNote": "Host needs system-change permission and a superuser API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
   "dnsCutover": "DNS cutover (manual)",
   "dnsCutoverDesc": "Point A/AAAA for these names to the new public IP;"
 }

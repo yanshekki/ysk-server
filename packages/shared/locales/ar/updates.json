@@ -223,11 +223,16 @@
     "email_dnsbl": {
       "name": "البريد الإلكتروني DNSBL",
       "hint": "التحقق من البريد DNSBL"
+    },
+    "validators_upgrade_scan": {
+      "name": "Validators upgrade scan",
+      "hint": "Check validator image / binary updates"
     }
   },
   "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
   "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
   "panelRestarted": "عادت اللوحة · {{version}}",
   "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
-  "cveNotChecked": "Not checked"
+  "cveNotChecked": "Not checked",
+  "cveLabel": "CVE"
 }

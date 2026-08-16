@@ -245,7 +245,9 @@
     "pushPlanTitle": "Pratinjau push to peer (tanpa scp)",
     "fleetSyncPlanTitle": "Pratinjau sinkronisasi armada (tidak ada eksekusi)",
     "fleetApplyTitle": "Enqueue berlaku untuk anggota armada?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "Telusuri data",

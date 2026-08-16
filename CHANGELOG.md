@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.4 — 2026-08-16
+
 ### Feature
 - Validators list can delete a node (type the instance id). CLI: `ysk-server validators delete --id … --confirm --execute`
 - Docker compose stacks have Delete; container / image / volume / network delete asks for the name first. Validator stacks also remove the validator instance
@@ -19,9 +21,14 @@
 - Network UP count uses operstate (docker0 DOWN is not counted as UP)
 - SSL header cert count matches the table (panel TLS stays a separate hint)
 - VNC create is partial when the account is saved but display start fails; hostname errors are readable
+- VNC delete reports failure when `userdel` leaves the Linux user
 - FTP `failed` is localized; vsftpd failed badge is “啟動失敗”
+- GeoIP “stale” uses the newer of last success and MMDB mtime
+- Backup restore preview counts are the real tar listing (shown N of total)
 
 ### Improve
+- E2E-1113 (UX113-001–150): confirms, last-edge drain/delete, timezone clock + browser-TZ warning, metrics TERM/KILL confirm, honest headers, localized EXECUTE/Root/draft/normal
+- Single-admin 2FA copy matches readiness; SSH tab badge is login keys; HA banner names the engine; PM2/SSE glossary
 - Validators empty state is copy only — CLI lives in the feature / CLI docs, not a “copy command” block on the page
 - Validator list: network named testnet/mainnet is not shown twice; runtime status uses locale strings (Stopped / 已停止)
 - Validator detail modal is sectioned (status, access, updates, network, maintenance, danger) with real padding; network/policy use chips, not a raw text box

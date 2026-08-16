@@ -22,6 +22,9 @@
     "project.publish": "نشر نجينكس",
     "project.suspend": "تعليق المشروع",
     "software.install": "تثبيت البرنامج",
-    "software.update": "تحديث البرنامج"
+    "software.update": "تحديث البرنامج",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

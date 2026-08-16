@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS indique un certificat manquant",
   "leftoverOther": "Restes d’hôte",
   "leftoverApply": "Les restes s'appliquent",
-  "isolationOwnerDegrades": "L'absence de Owner_user_id affecte l'attribution du quota de package : le statut est dégradé, pas prêt."
+  "isolationOwnerDegrades": "L'absence de Owner_user_id affecte l'attribution du quota de package : le statut est dégradé, pas prêt.",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

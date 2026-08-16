@@ -245,7 +245,9 @@
     "pushPlanTitle": "প্রিভিউ পুশ টু পিয়ার (কোনও scp)",
     "fleetSyncPlanTitle": "ফ্লিট সিঙ্কের পূর্বরূপ দেখুন (চালনা নেই)",
     "fleetApplyTitle": "সারি বহরের সদস্যদের উপর আবেদন?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "ডেটা ব্রাউজ করুন",

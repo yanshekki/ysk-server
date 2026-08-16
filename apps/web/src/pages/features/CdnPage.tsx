@@ -207,11 +207,26 @@ export function countOnlineNodes(
 /** Format `{k: n}` record as `k=n · k=n`. */
 export function formatCountMap(
   map: Record<string, number> | null | undefined,
+  label?: (key: string) => string,
 ): string {
   if (!map) return '';
   return Object.entries(map)
-    .map(([k, v]) => `${k}=${v}`)
-    .join(' · ');
+    .map(([k, v]) => (label ? `${label(k)} ${v}` : `${k}=${v}`))
+    .join(label ? '／' : ' · ');
+}
+
+export function countEdgeNodes(
+  nodes: Array<{ roles?: CdnNodeRole[] | null }>,
+): number {
+  return nodes.filter((n) => (n.roles ?? []).includes('edge')).length;
+}
+
+export function sanitizeCdnNote(note: string, preview: (s: string) => string): string {
+  const s = String(note ?? '').trim();
+  if (!s) return '';
+  if (/PR-C3|not fan-out/i.test(s)) return preview(s);
+  if (/dryRun:\s*not write|dry-run|dryRun/i.test(s)) return preview(s);
+  return s.replace(/\bPR-C3\b/gi, '').replace(/\s{2,}/g, ' ').trim();
 }
 
 /** Flatten site-op response notes (top-level + per-edge). */
@@ -791,14 +806,16 @@ export function CdnPage() {
         edges?: Array<{ name?: string; apply_status?: string; notes?: string[] }>;
         blocked?: boolean;
       };
-      setNotes(collectSiteOpNotes(r));
+      setNotes(
+        collectSiteOpNotes(r)
+          .map((n) => sanitizeCdnNote(n, () => t('cdn.previewOnlyNote')))
+          .filter(Boolean),
+      );
       if (r.conf) setConfPreview(r.conf);
       if (r.blocked) {
         setMsg(t('cdn.blocked'));
       } else if (action === 'render' && body.dryRun) {
-        setMsg(
-          t('cdn.previewRender', { status: r.apply_status ?? 'planned', hash: r.contentHash ?? '—' }),
-        );
+        setMsg(t('cdn.previewOnlyNote'));
       } else if (r.ok) {
         setMsg(
           t(siteOpSuccessI18nKey(action), { status: r.apply_status }),
@@ -817,6 +834,8 @@ export function CdnPage() {
   }
 
   const online = countOnlineNodes(nodes);
+  const edgeCount = countEdgeNodes(nodes);
+  const lastEdge = edgeCount <= 1;
   const edgeNodes = filterEdgeOriginNodes(nodes);
 
   return (
@@ -993,7 +1012,9 @@ export function CdnPage() {
                       <Badge tone={statusTone(n.status)}>
                         {t(`cdn.nodeStatus.${n.status}`, { defaultValue: n.status })}
                       </Badge>
-                      {n.lastHealth?.at ? (
+                      {n.status === 'offline' ? (
+                        <span className="muted u-text-sm"> {t('cdn.offlineHint')}</span>
+                      ) : n.lastHealth?.at ? (
                         <span className="muted u-text-sm">
                           {' '}
                           {n.lastHealth.ok ? '' : t('cdn.lastHealthFail')}
@@ -1005,7 +1026,10 @@ export function CdnPage() {
                   key: 'actions',
                   header: '',
                   mobile: 'actions',
-                  render: (n) => (
+                  render: (n) => {
+                    const lastThisEdge =
+                      lastEdge && (n.roles ?? []).includes('edge');
+                    return (
                     <ActionBar>
                       <Button
                         variant="secondary"
@@ -1022,16 +1046,17 @@ export function CdnPage() {
                         title={
                           n.status === 'draining'
                             ? t('cdn.clearDrainTitle')
-                            : nodes.length <= 1
+                            : lastThisEdge
                               ? t('cdn.drainLastTitle')
                               : t('cdn.drainTitle')
                         }
+                        disabled={n.status !== 'draining' && lastThisEdge}
                         onClick={() =>
                           setDrainTarget({
                             id: n.id,
                             name: String(n.name || n.id),
                             draining: n.status !== 'draining',
-                            last: nodes.length <= 1,
+                            last: lastThisEdge,
                           })
                         }
                       >
@@ -1042,10 +1067,11 @@ export function CdnPage() {
                         size="sm"
                         loading={busy}
                         title={
-                          nodes.length <= 1
+                          lastThisEdge
                             ? t('cdn.deleteLastNodeTitle')
                             : t('cdn.deleteNodeTitle')
                         }
+                        disabled={lastThisEdge}
                         onClick={() =>
                           setDelNode({ id: n.id, name: String(n.name || n.id) })
                         }
@@ -1053,7 +1079,8 @@ export function CdnPage() {
                         {t('common.delete')}
                       </Button>
                     </ActionBar>
-                  ) },
+                    );
+                  } },
               ]}
               rows={nodes}
               empty={
@@ -1167,10 +1194,12 @@ export function CdnPage() {
                 {
                   key: 'mode',
                   header: t('cdn.colMode'),
-                  render: (s) => s.mode },
+                  render: (s) => (
+                    <span title={s.mode}>{t(`cdn.mode.${s.mode}`)}</span>
+                  ) },
                 {
                   key: 'origin',
-                  header: 'Origin',
+                  header: t('cdn.col.origin'),
                   render: (s) => {
                     const url = s.origin?.kind === 'url' ? String(s.origin.url ?? '') : '';
                     const loopback = /127\.0\.0\.1|localhost|\[::1\]/i.test(url);
@@ -1188,25 +1217,21 @@ export function CdnPage() {
                   } },
                 {
                   key: 'edges',
-                  header: 'Edges',
+                  header: t('cdn.col.edges'),
                   render: (s) => s.edgeNodeIds?.length ?? 0 },
                 {
                   key: 'status',
-                  header: 'apply',
+                  header: t('cdn.col.apply'),
                   render: (s) => (
                     <Badge
                       tone={statusTone(s.apply_status)}
                       title={
                         s.apply_status === 'failed'
                           ? t('cdn.applyFailedHint')
-                          : t(`cdn.applyStatus.${s.apply_status}`, {
-                              defaultValue: s.apply_status,
-                            })
+                          : t(`cdn.applyStatus.${s.apply_status}`)
                       }
                     >
-                      {t(`cdn.applyStatus.${s.apply_status}`, {
-                        defaultValue: s.apply_status,
-                      })}
+                      {t(`cdn.applyStatus.${s.apply_status}`)}
                     </Badge>
                   ) },
                 {
@@ -1216,7 +1241,7 @@ export function CdnPage() {
                   render: (s) => (
                     <ActionBar className="cdn-site-ops" wrap={false}>
                       <details className="table-more">
-                        <summary>{t('common.more', { defaultValue: 'More' })}</summary>
+                        <summary>{t('common.more')}</summary>
                         <div className="table-more__menu">
                       <Button
                         variant="secondary"
@@ -1227,6 +1252,7 @@ export function CdnPage() {
                       >
                         {t('cdn.preview')}
                       </Button>
+                      <div className="table-more__sep" role="separator" />
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1418,13 +1444,16 @@ export function CdnPage() {
                     </div>
                     {Object.keys(dashboard.nodes.byRegion).length ? (
                       <p className="muted u-text-sm u-mt-2">
-                        Region：{formatCountMap(dashboard.nodes.byRegion)}
+                        {t('cdn.statByRegion')}
+                        {formatCountMap(dashboard.nodes.byRegion)}
                       </p>
                     ) : null}
                     {Object.keys(dashboard.sites.byApplyStatus).length ? (
                       <p className="muted u-text-sm">
-                        apply_status：
-                        {formatCountMap(dashboard.sites.byApplyStatus)}
+                        {t('cdn.statByApply')}
+                        {formatCountMap(dashboard.sites.byApplyStatus, (k) =>
+                          t(`cdn.applyStatus.${k}`),
+                        )}
                       </p>
                     ) : null}
                   </>
@@ -1445,35 +1474,39 @@ export function CdnPage() {
                     render: (r) => String((r as { name: string }).name) },
                   {
                     key: 'strategy',
-                    header: 'DNS',
+                    header: t('cdn.col.dns'),
                     render: (r) =>
-                      String((r as { strategy: string }).strategy) },
+                      t(`cdn.dnsStrategy.${String((r as { strategy: string }).strategy)}`) },
                   {
                     key: 'apply',
-                    header: 'apply',
+                    header: t('cdn.col.apply'),
                     render: (r) => (
                       <Badge
                         tone={statusTone(
                           String((r as { apply_status: string }).apply_status),
                         )}
                       >
-                        {String((r as { apply_status: string }).apply_status)}
+                        {t(`cdn.applyStatus.${String((r as { apply_status: string }).apply_status)}`)}
                       </Badge>
                     ) },
                   {
                     key: 'edges',
-                    header: 'edges online/applied',
+                    header: t('cdn.col.edgesOnline'),
                     render: (r) => {
                       const row = r as {
                         onlineEdges: number;
                         edgesApplied: number;
                         edgeCount: number;
                       };
-                      return `${row.onlineEdges}/${row.edgeCount} · applied ${row.edgesApplied}`;
+                      return t('cdn.edgesOnlineApplied', {
+                        online: row.onlineEdges,
+                        total: row.edgeCount,
+                        applied: row.edgesApplied,
+                      });
                     } },
                   {
                     key: 'dns',
-                    header: 'CDN DNS RR',
+                    header: t('cdn.col.dnsRr'),
                     render: (r) =>
                       String(
                         (r as { managedDnsRecords: number }).managedDnsRecords,
@@ -1498,17 +1531,19 @@ export function CdnPage() {
                         {c.hits != null ? (
                           <span className="muted u-text-sm">
                             {' '}
-                            HIT {c.hits} / MISS {c.misses ?? 0}
+                            {t('cdn.hitMiss', { hits: c.hits, misses: c.misses ?? 0 })}
                           </span>
                         ) : null}
                         {c.cacheBytes != null ? (
                           <span className="muted u-text-sm">
                             {' '}
-                            cache ≈ {c.cacheBytes} B
+                            {t('cdn.cacheBytes', { n: c.cacheBytes })}
                           </span>
                         ) : null}
                         {c.notes[0] ? (
-                          <p className="muted u-text-sm u-mb-0">{c.notes[0]}</p>
+                          <p className="muted u-text-sm u-mb-0">
+                            {sanitizeCdnNote(c.notes[0], () => t('cdn.hitRateUnknown'))}
+                          </p>
                         ) : null}
                       </li>
                     ))}

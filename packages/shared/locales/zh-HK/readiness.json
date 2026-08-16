@@ -29,6 +29,15 @@
   "executeOff": "未開",
   "blockers": "阻擋",
   "blockersHint": "「阻擋」是「缺少」中的關鍵項，不是額外檢查。",
+  "requireAdminTotp": "要求管理員雙重驗證政策",
+  "listenBind": "監聽位址",
+  "item": {
+    "admin2fa": "管理員雙重驗證"
+  },
+  "dataDirPerms": "面板資料目錄權限",
+  "mode750": "權限 750",
+  "totalChecks": "全部檢查",
+  "totalChecksHint": "就緒＋降級＋缺少＝此總數。阻擋是缺少項裡的關鍵子集。",
   "probing": "探測中…",
   "reprobe": "重新探測",
   "exportReport": "匯出報告",

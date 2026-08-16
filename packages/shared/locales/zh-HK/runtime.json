@@ -419,7 +419,8 @@
   "tabProcesses": "進程",
   "pm2": {
     "title": "PM2 程序列",
-    "desc": "唯讀 pm2 jlist（panel 用戶的 PM2_HOME）。即時 SSE 每 2 秒重新整理。",
+    "desc": "PM2 是進程管理器（本頁只讀 panel 用戶的程序清單）。即時更新用 SSE（伺服器推送事件），約每 2 秒重新整理。",
+    "glossary": "PM2＝進程管理器；SSE＝即時日誌／清單串流。",
     "live": "即時",
     "installed": "PM2 已裝",
     "version": "pm2 版本",

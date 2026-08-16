@@ -90,5 +90,7 @@
   "aboutPolicySub": "A gravação do modelo e a instalação do sistema são etapas separadas. A nova execução após a instalação é uma operação normal, não uma etapa perdida.",
   "policyInstallFull": "Instale e habilite: copie para /etc/systemd/system, daemon-reload, habilite --now. Precisa de root + EXECUTE.",
   "policyBlockedTitle": "Bloqueado sem privilégio",
-  "policyNotEqualTitle": "Estados não são equivalentes"
+  "policyNotEqualTitle": "Estados não são equivalentes",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

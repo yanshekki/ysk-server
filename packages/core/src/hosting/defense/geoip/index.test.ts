@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { JsonStore } from '../../../db/store.js';
@@ -49,6 +49,9 @@ describe('geoip/index orchestration', () => {
     mkdirSync(gdir, { recursive: true });
     writeFileSync(join(gdir, 'user-country.mmdb'), 'x'.repeat(2048));
     writeFileSync(join(gdir, 'dbip-city-lite.mmdb'), 'y'.repeat(2048));
+    const aged = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    utimesSync(join(gdir, 'user-country.mmdb'), aged, aged);
+    utimesSync(join(gdir, 'dbip-city-lite.mmdb'), aged, aged);
     saveGeoipMeta(dataDir, {
       provider: 'test',
       files: [
@@ -80,6 +83,23 @@ describe('geoip/index orchestration', () => {
     expect(st.attribution.length).toBeGreaterThan(0);
     expect(st.policy.enabled).toBe(true);
     expect(st.policy.countries).toContain('CN');
+  });
+
+  it('getGeoipStatus is not stale when files are newer than lastSuccessAt', async () => {
+    const dataDir = tmp();
+    const db = new JsonStore(join(dataDir, 'db.json'));
+    const gdir = join(dataDir, 'geoip');
+    mkdirSync(gdir, { recursive: true });
+    writeFileSync(join(gdir, 'user-country.mmdb'), 'x'.repeat(2048));
+    saveGeoipMeta(dataDir, {
+      provider: 'test',
+      files: [],
+      lastSuccessAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      attribution: 'Test DB',
+    });
+    const st = await getGeoipStatus(dataDir, db);
+    expect(st.ready).toBe(true);
+    expect(st.stale).toBe(false);
   });
 
   it('getGeoipStatus uses mtime for stale when no lastSuccessAt', async () => {

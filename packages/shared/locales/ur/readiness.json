@@ -127,5 +127,14 @@
   "leftoverDovecot": "Dovecot TLS پوائنٹس گمشدہ سرٹیفکیٹ پر",
   "leftoverOther": "میزبان بچا ہوا ہے۔",
   "leftoverApply": "بچا ہوا درخواست دیں۔",
-  "isolationOwnerDegrades": "مالک_صارف_آئی ڈی کی گمشدگی پیکیج کوٹہ کے انتساب کو متاثر کرتی ہے — اسٹیٹس کو کم کیا گیا ہے، تیار نہیں ہے۔"
+  "isolationOwnerDegrades": "مالک_صارف_آئی ڈی کی گمشدگی پیکیج کوٹہ کے انتساب کو متاثر کرتی ہے — اسٹیٹس کو کم کیا گیا ہے، تیار نہیں ہے۔",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

@@ -245,7 +245,9 @@
     "pushPlanTitle": "सहकर्मी को पूर्वावलोकन पुश (कोई एससीपी नहीं)",
     "fleetSyncPlanTitle": "फ़्लीट सिंक का पूर्वावलोकन करें (कोई निष्पादन नहीं)",
     "fleetApplyTitle": "क्या बेड़े के सदस्यों पर एनक्यू लागू होता है?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "डेटा ब्राउज़ करें",

@@ -141,6 +141,8 @@
   "update": "更新",
   "alsoCreateRole": "同時建立角色",
   "cluster": {
+    "standaloneOtherEngines": "此引擎目前是單機。其他引擎已有叢集：{{names}}。",
+    "roleUnassigned": "未指派角色",
     "title": "叢集",
     "description": "計劃 → 寫管理檔 → 套用 → 探測 → 分發到對等節點／機群。預設預覽試行（不會重啟引擎）。",
     "redirectedFromCluster": "你由 /cluster 轉到此處。這是資料庫叢集分頁。",

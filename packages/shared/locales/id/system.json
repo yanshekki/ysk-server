@@ -203,5 +203,8 @@
   "nginxUnusedHint": "Conf bawaan / catch-all (000-default). Tetap ikut sinkron sampai Anda bertindak.",
   "powerUnlock": "Buka kunci zona bahaya",
   "powerLock": "Kunci zona bahaya",
-  "noScheduledPower": "Tidak ada reboot atau mematikan yang dijadwalkan"
+  "noScheduledPower": "Tidak ada reboot atau mematikan yang dijadwalkan",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

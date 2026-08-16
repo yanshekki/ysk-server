@@ -127,5 +127,14 @@
   "leftoverDovecot": "অনুপস্থিত শংসাপত্রে Dovecot TLS পয়েন্ট",
   "leftoverOther": "হোস্ট অবশিষ্টাংশ",
   "leftoverApply": "অবশিষ্ট আবেদন",
-  "isolationOwnerDegrades": "অনুপস্থিত মালিক_ব্যবহারকারী_আইডি প্যাকেজ কোটা অ্যাট্রিবিউশনকে প্রভাবিত করে — স্থিতি অবনমিত হয়েছে, প্রস্তুত নয়।"
+  "isolationOwnerDegrades": "অনুপস্থিত মালিক_ব্যবহারকারী_আইডি প্যাকেজ কোটা অ্যাট্রিবিউশনকে প্রভাবিত করে — স্থিতি অবনমিত হয়েছে, প্রস্তুত নয়।",
+  "totalChecks": "All checks",
+  "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+  "requireAdminTotp": "require admin 2FA policy",
+  "listenBind": "listen address",
+  "item": {
+    "admin2fa": "Admin two-factor"
+  },
+  "dataDirPerms": "panel data-directory permissions",
+  "mode750": "mode 750"
 }

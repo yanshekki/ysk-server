@@ -171,6 +171,15 @@ export function humanizeOperatorNote(text: string): string | null {
   ) {
     return tr('opsResult.stepSystemdFallback');
   }
+  if (/All agent tool calls must pass YSK Allowlist/i.test(raw)) {
+    return tr('agents.noteAllowlist');
+  }
+  if (/Agent role RBAC capped at write-low/i.test(raw)) {
+    return tr('agents.noteRbacCap');
+  }
+  if (/ExecStart uses real CLI|silent placeholder/i.test(raw)) {
+    return null;
+  }
   if (/已重載 Nginx|已重载 Nginx|nginx reloaded|nginx reload/i.test(raw)) {
     return tr('notes.nginx.reloaded');
   }

@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  },
   "title": "Dashboard",
   "health": "Health",
   "protection": "Protection mode",
@@ -55,7 +61,7 @@
   "warnCount": " · warn {{count}}",
   "applyAuditBadge": "Apply audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
   "executeBadge": "EXECUTE {{state}}",
-  "executeLabel": "EXECUTE",
+  "executeLabel": "System change",
   "go": "Open",
   "open": "Open",
   "noCriticalWarn": "No critical or warning alerts",

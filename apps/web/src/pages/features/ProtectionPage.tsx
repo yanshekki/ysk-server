@@ -26,6 +26,7 @@ import {
   SoftwareVersionBar,
   PageTabs,
   ConfirmDialog,
+  Modal,
   PromptDialog,
   ServerListFilters,
   buttonClassName } from '../../shared/components/ui';
@@ -252,11 +253,17 @@ export function summarizeOpsNotes(
     if (/jail\.local|fail2ban/i.test(n) && /Wrote|已寫/i.test(n)) {
       return t('protection.note.f2bWritten');
     }
+    if (/protectionHint=/.test(n)) {
+      return t('protection.note.hintDropped');
+    }
+    if (/limit_req(?:_zone)?\b/i.test(n)) {
+      return t('protection.note.nginxLimits');
+    }
     if (n.length > 120 && n.includes('/')) {
       return n.replace(/\/home\/[^ ]+/g, '…').slice(0, 100);
     }
     return n;
-  });
+  }).filter((n) => n && n !== t('protection.note.hintDropped'));
 }
 
 export function toneToBadge(t?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
@@ -517,6 +524,7 @@ export function ProtectionPage() {
   const [presetConfirmId, setPresetConfirmId] = useState<string | null>(null);
   const [emergencyPromptOpen, setEmergencyPromptOpen] = useState(false);
   const [pendingBan, setPendingBan] = useState<{ ip: string; reason?: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [showMech, setShowMech] = useState(true);
   const [automation, setAutomation] = useState<DefenseAutomation | null>(null);
   const [mechanisms, setMechanisms] = useState<
@@ -784,6 +792,7 @@ export function ProtectionPage() {
           confirm }) })) as OpsResultLike;
       if (!preview) await refresh();
       if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
+      if (preview) setPreviewOpen(true);
       return r;
     }, preview ? t('protection.previewDone') : t('protection.presetApplied'));
   }
@@ -1070,7 +1079,9 @@ export function ProtectionPage() {
                   tone: nginxLimitsTone(status?.nginxLimits.exists) },
                 {
                   label: t('protection.mode'),
-                  value: status?.protectionMode ?? '—' },
+                  value: status?.protectionMode
+                    ? t(`protection.modeValue.${status.protectionMode}`)
+                    : '—' },
                 {
                   label: t('protection.controlPlane'),
                   value: status?.executeEnabled
@@ -2443,7 +2454,7 @@ export function ProtectionPage() {
                 <>
                   <SummaryStrip
                     items={[
-                      { label: t('protection.provider'), value: geoStatus.provider === 'sapics+dbip' ? 'DB-IP / sapics' : geoStatus.provider },
+                      { label: t('protection.provider'), value: geoStatus.provider === 'sapics+dbip' ? t('protection.geoSourceLocal') : geoStatus.provider },
                       {
                         label: t('protection.dbReady'),
                         value: geoStatus.ready ? t('protection.yes') : t('protection.no'),
@@ -2794,6 +2805,7 @@ export function ProtectionPage() {
                 >
                   {t('protection.savePolicy')}
                 </Button>
+                {!geoEnabled ? <Badge tone="warn">{t('protection.draftBadge')}</Badge> : null}
                 <Button
                   variant="secondary"
                   size="md"
@@ -2895,7 +2907,12 @@ export function ProtectionPage() {
                           String(lookupResult.lookup!.regionKey),
                         )}
                       >
-                        {t('protection.plusRegion', { v: String(lookupResult.lookup.regionKey) })}
+                        {t('protection.plusRegion', {
+                          v: String(
+                            lookupResult.lookup.regionName ||
+                              lookupResult.lookup.regionKey,
+                          ),
+                        })}
                       </Button>
                     ) : null}
                     {lookupResult.lookup.cityKey ? (
@@ -2947,8 +2964,8 @@ export function ProtectionPage() {
                         [t('protection.country'), lookupResult.lookup.country],
                         [
                           t('protection.region'),
-                          lookupResult.lookup.regionKey ||
-                            lookupResult.lookup.regionName,
+                          lookupResult.lookup.regionName ||
+                            lookupResult.lookup.regionKey,
                         ],
                         [t('protection.city'), lookupResult.lookup.city],
                         [t('protection.continent'), lookupResult.lookup.continent],
@@ -2960,7 +2977,12 @@ export function ProtectionPage() {
                         ],
                         ['ASN', lookupResult.lookup.asn],
                         [t('protection.provider'), lookupResult.lookup.asName],
-                        [t('protection.source'), lookupResult.lookup.source],
+                        [
+                          t('protection.source'),
+                          String(lookupResult.lookup.source) === 'sapics+dbip'
+                            ? t('protection.geoSourceLocal')
+                            : lookupResult.lookup.source,
+                        ],
                         [
                           t('protection.policy'),
                           lookupResult.access?.blocked ? t('protection.block') : t('protection.allow'),
@@ -2984,21 +3006,60 @@ export function ProtectionPage() {
         {tab === 'about' ? <PageGuide guideId="protection" /> : null}
       </PageTabs>
 
-      <OpsResultPanel
-        title={t('opsResult.title')}
-        result={
-          result
-            ? {
-                ...result,
-                notes: summarizeOpsNotes(
-                  Array.isArray(result.notes) ? result.notes.map(String) : undefined,
-                  t,
-                ) }
-            : result
+      <Modal
+        open={previewOpen && Boolean(result || msg)}
+        onClose={() => setPreviewOpen(false)}
+        title={t('protection.preview')}
+        size="lg"
+        footer={
+          <Button variant="secondary" onClick={() => setPreviewOpen(false)}>
+            {t('common.close')}
+          </Button>
         }
-        message={msg}
-        busy={busy}
-      />
+      >
+        <p className="muted u-text-sm u-mb-2">{t('protection.nginxPreviewHint')}</p>
+        {Array.isArray(result?.notes) &&
+        result.notes.some((n) => /limit_req(?:_zone)?\b/i.test(String(n))) ? (
+          <pre className="log-viewer u-mb-3">
+            {result.notes
+              .map(String)
+              .filter((n) => /limit_req(?:_zone)?\b/i.test(n))
+              .join('\n')}
+          </pre>
+        ) : null}
+        <OpsResultPanel
+          title={t('opsResult.title')}
+          result={
+            result
+              ? {
+                  ...result,
+                  notes: summarizeOpsNotes(
+                    Array.isArray(result.notes) ? result.notes.map(String) : undefined,
+                    t,
+                  ) }
+              : result
+          }
+          message={msg}
+          busy={busy}
+        />
+      </Modal>
+      {!previewOpen ? (
+        <OpsResultPanel
+          title={t('opsResult.title')}
+          result={
+            result
+              ? {
+                  ...result,
+                  notes: summarizeOpsNotes(
+                    Array.isArray(result.notes) ? result.notes.map(String) : undefined,
+                    t,
+                  ) }
+              : result
+          }
+          message={msg}
+          busy={busy}
+        />
+      ) : null}
 
       <ConfirmDialog
         open={presetConfirmId != null}
@@ -3020,7 +3081,13 @@ export function ProtectionPage() {
         open={pendingBan != null}
         onClose={bindCloseIfIdle(busy, () => setPendingBan(null))}
         title={t('protection.banConfirmTitle', { ip: pendingBan?.ip ?? '' })}
-        description={t('protection.banConfirmDesc', { ip: pendingBan?.ip ?? '' })}
+        description={t('protection.banConfirmDesc', {
+          ip: pendingBan?.ip ?? '',
+          self:
+            pendingBan && isProtectedSelfIp(pendingBan.ip, selfIpOpts)
+              ? t('protection.banIsSelf')
+              : t('protection.banNotSelf'),
+        })}
         confirmLabel={t('protection.ban')}
         cancelLabel={t('common.cancel')}
         danger

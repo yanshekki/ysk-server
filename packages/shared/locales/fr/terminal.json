@@ -35,5 +35,7 @@
   "rootConfirmDesc": "Cette session est un PTY racine sans restriction sur l'hôte. Les commandes sont auditées.",
   "rootConfirmBody": "Continuez uniquement si vous avez l'intention d'exécuter des commandes d'hôte privilégiées.",
   "copyAll": "Copier tout",
-  "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté"
+  "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté",
+  "groupSystem": "System",
+  "groupProject": "Project"
 }

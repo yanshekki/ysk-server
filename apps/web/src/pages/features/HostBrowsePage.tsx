@@ -95,6 +95,7 @@ export function HostBrowsePage() {
   });
   const [blockHostsText, setBlockHostsText] = useState('');
   const [settingsBusy, setSettingsBusy] = useState(false);
+  const [stackProbeTick, setStackProbeTick] = useState(0);
   const [envHints, setEnvHints] = useState<Record<string, string | null>>({});
   const [audioStatus, setAudioStatus] = useState<{
     enabled: boolean;
@@ -900,7 +901,7 @@ export function HostBrowsePage() {
           variant="ghost"
           onClick={() => void onCloseSession()}
           disabled={!session || busy}
-          title={t('hostBrowse.closeSessionHint')}
+          title={!session ? t('hostBrowse.closeNoSession') : t('hostBrowse.closeSessionHint')}
         >
           {t('hostBrowse.closeSession')}
         </Button>
@@ -1607,9 +1608,10 @@ export function HostBrowsePage() {
               title={t('hostBrowse.softwareNeeded')}
               onInstalled={() => {
                 void loadCapsAndSettings();
+                setStackProbeTick((n) => n + 1);
               }}
               showReadyActions={false} />
-            <SoftwareVersionBar softwareId="chromium" />
+            <SoftwareVersionBar key={stackProbeTick} softwareId="chromium" />
             <Alert variant="info">{t('hostBrowse.softwareHint')}</Alert>
           </div>
         ) : null}

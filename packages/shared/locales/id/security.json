@@ -447,5 +447,7 @@
   "statApiSessions": "sesi API",
   "revokeOtherTitle": "Keluar {{n}} sesi lainnya",
   "policyNeedSelf2fa": "Aktifkan 2FA pada akun ini terlebih dahulu, lalu konfirmasi dengan kode TOTP",
-  "revokeAllDevicesTitle": "Cabut setiap perangkat yang diingat — Anda dan admin lain harus memverifikasi 2FA lagi"
+  "revokeAllDevicesTitle": "Cabut setiap perangkat yang diingat — Anda dan admin lain harus memverifikasi 2FA lagi",
+  "statSshValue": "{{keys}} keys · {{auth}} authorized",
+  "statSshHint": "Outbound identities / authorized login keys"
 }

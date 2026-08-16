@@ -90,5 +90,7 @@
   "aboutPolicySub": "写模板与安装到系统是两步；装完仍可重跑，不代表未完成。",
   "policyInstallFull": "安装并启用：复制到 /etc/systemd/system、daemon-reload、enable --now。需 root + EXECUTE。",
   "policyBlockedTitle": "无权限时封锁",
-  "policyNotEqualTitle": "状态不等同"
+  "policyNotEqualTitle": "状态不等同",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

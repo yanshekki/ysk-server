@@ -34,5 +34,11 @@
   "diagCopyTitle": "نسخ الإصدار وEXECUTE وبيانات المضيف",
   "diagPreview": "معاينة ما سيُنسخ",
   "diagLoading": "جارٍ تحميل التشخيص…",
-  "diagLoadFailed": "تعذر تحميل التشخيص"
+  "diagLoadFailed": "تعذر تحميل التشخيص",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

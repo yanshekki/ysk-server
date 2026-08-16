@@ -125,7 +125,7 @@
   "resticOverwriteDone": "Restic 覆寫 主目錄 完成",
   "opsResult": "操作結果",
   "filesTitle": "備份檔案 ({{count}})",
-  "filesSub": "管理目錄 封存 · 下載需登入 · 還原有 預覽試行／網站／完整",
+  "filesSub": "備份檔存在面板資料目錄。下載需登入；還原可先預覽，或只還原網站，或完整還原。",
   "backupAllBtn": "全部備份",
   "yes": "是",
   "no": "否",
@@ -143,5 +143,8 @@
   "testDisabledHint": "請先開啟遠端推送才可測試。",
   "identityId": "出站 SSH 身份",
   "identityHint": "優先使用。與 /security SSH 同一金鑰庫。密碼需 sshpass。",
-  "identityNone": "無 — 用密碼或本機預設金鑰"
+  "identityNone": "無 — 用密碼或本機預設金鑰",
+  "skippedListHint": "以下專案被略過：",
+  "goLogs": "開啟日誌",
+  "goAbout": "備份說明"
 }

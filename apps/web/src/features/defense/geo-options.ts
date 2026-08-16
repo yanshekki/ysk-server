@@ -183,44 +183,55 @@ const REGION_VALUES: RegionValue[] = [
   { value: 'TW-KHH', country: 'TW', hint: 'Kaohsiung' },
   { value: 'HK-HK', country: 'HK', hint: 'Hong Kong' },
   { value: 'MO-MO', country: 'MO', hint: 'Macao' },
-  { value: 'US-CA', country: 'US', hint: 'CA' },
-  { value: 'US-NY', country: 'US', hint: 'NY' },
-  { value: 'US-TX', country: 'US', hint: 'TX' },
-  { value: 'US-FL', country: 'US', hint: 'FL' },
-  { value: 'US-WA', country: 'US', hint: 'WA' },
-  { value: 'US-IL', country: 'US', hint: 'IL' },
-  { value: 'US-VA', country: 'US', hint: 'VA' },
-  { value: 'US-OR', country: 'US', hint: 'OR' },
-  { value: 'US-GA', country: 'US', hint: 'GA' },
-  { value: 'US-NJ', country: 'US', hint: 'NJ' },
-  { value: 'US-MA', country: 'US', hint: 'MA' },
-  { value: 'US-OH', country: 'US', hint: 'OH' },
-  { value: 'US-PA', country: 'US', hint: 'PA' },
-  { value: 'US-AZ', country: 'US', hint: 'AZ' },
-  { value: 'US-CO', country: 'US', hint: 'CO' },
-  { value: 'US-NC', country: 'US', hint: 'NC' },
-  { value: 'US-MI', country: 'US', hint: 'MI' },
-  { value: 'US-NV', country: 'US', hint: 'NV' },
+  { value: 'US-CA', country: 'US', hint: 'California' },
+  { value: 'US-NY', country: 'US', hint: 'New York' },
+  { value: 'US-TX', country: 'US', hint: 'Texas' },
+  { value: 'US-FL', country: 'US', hint: 'Florida' },
+  { value: 'US-WA', country: 'US', hint: 'Washington' },
+  { value: 'US-IL', country: 'US', hint: 'Illinois' },
+  { value: 'US-VA', country: 'US', hint: 'Virginia' },
+  { value: 'US-OR', country: 'US', hint: 'Oregon' },
+  { value: 'US-GA', country: 'US', hint: 'Georgia' },
+  { value: 'US-NJ', country: 'US', hint: 'New Jersey' },
+  { value: 'US-MA', country: 'US', hint: 'Massachusetts' },
+  { value: 'US-OH', country: 'US', hint: 'Ohio' },
+  { value: 'US-PA', country: 'US', hint: 'Pennsylvania' },
+  { value: 'US-AZ', country: 'US', hint: 'Arizona' },
+  { value: 'US-CO', country: 'US', hint: 'Colorado' },
+  { value: 'US-NC', country: 'US', hint: 'North Carolina' },
+  { value: 'US-MI', country: 'US', hint: 'Michigan' },
+  { value: 'US-NV', country: 'US', hint: 'Nevada' },
   { value: 'JP-13', country: 'JP', hint: 'Tokyo' },
   { value: 'JP-27', country: 'JP', hint: 'Osaka' },
   { value: 'JP-14', country: 'JP', hint: 'Kanagawa' },
   { value: 'JP-23', country: 'JP', hint: 'Aichi' },
   { value: 'KR-11', country: 'KR', hint: 'Seoul' },
   { value: 'KR-26', country: 'KR', hint: 'Busan' },
-  { value: 'SG-01', country: 'SG', hint: 'SG' },
-  { value: 'AU-NSW', country: 'AU', hint: 'NSW' },
-  { value: 'AU-VIC', country: 'AU', hint: 'VIC' },
-  { value: 'GB-ENG', country: 'GB', hint: 'ENG' },
-  { value: 'DE-BE', country: 'DE', hint: 'BE' },
-  { value: 'DE-BY', country: 'DE', hint: 'BY' },
-  { value: 'RU-MOW', country: 'RU', hint: 'MOW' },
-  { value: 'RU-SPE', country: 'RU', hint: 'SPE' },
+  { value: 'SG-01', country: 'SG', hint: 'Singapore' },
+  { value: 'AU-NSW', country: 'AU', hint: 'New South Wales' },
+  { value: 'AU-VIC', country: 'AU', hint: 'Victoria' },
+  { value: 'GB-ENG', country: 'GB', hint: 'England' },
+  { value: 'DE-BE', country: 'DE', hint: 'Berlin' },
+  { value: 'DE-BY', country: 'DE', hint: 'Bavaria' },
+  { value: 'RU-MOW', country: 'RU', hint: 'Moscow' },
+  { value: 'RU-SPE', country: 'RU', hint: 'Saint Petersburg' },
 ];
 
 function labelOf(t: TFunction | undefined, key: string, fallback: string): string {
   if (!t) return fallback;
   const translated = t(key);
   return translated === key ? fallback : translated;
+}
+
+/** Localized name plus English when they differ — e.g. 新南威爾士（New South Wales）. */
+export function bilingualGeoLabel(
+  t: TFunction | undefined,
+  key: string,
+  english: string,
+): string {
+  const loc = labelOf(t, key, english);
+  if (!loc || loc === english) return english;
+  return `${loc}（${english}）`;
 }
 
 /** @deprecated Prefer getGeoContinents(t) for localized labels */
@@ -248,7 +259,7 @@ export const GEO_REGIONS: (GeoOption & { country: string })[] = REGION_VALUES.ma
 export function getGeoContinents(t?: TFunction): GeoOption[] {
   return CONTINENT_VALUES.map((c) => ({
     value: c.value,
-    label: labelOf(t, `geo.continents.${c.value}`, c.hint),
+    label: bilingualGeoLabel(t, `geo.continents.${c.value}`, c.hint),
     hint: c.hint,
   }));
 }
@@ -256,7 +267,7 @@ export function getGeoContinents(t?: TFunction): GeoOption[] {
 export function getGeoCountries(t?: TFunction): GeoOption[] {
   return COUNTRY_VALUES.map((c) => ({
     value: c.value,
-    label: labelOf(t, `geo.countries.${c.value}`, c.hint),
+    label: bilingualGeoLabel(t, `geo.countries.${c.value}`, c.hint),
     hint: c.hint,
   }));
 }
@@ -272,7 +283,7 @@ export function getGeoRegions(t?: TFunction, countries?: string[]): GeoRegionOpt
   return list.map((r) => ({
     value: r.value,
     country: r.country,
-    label: labelOf(t, `geo.regions.${r.value}`, r.hint),
+    label: bilingualGeoLabel(t, `geo.regions.${r.value}`, r.hint),
     hint: r.hint,
   }));
 }

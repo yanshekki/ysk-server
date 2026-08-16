@@ -465,7 +465,7 @@ export function MetricsPage() {
                 tone: heroTone },
               items: [
                 {
-                  label: 'Load 1m',
+                  label: t('metrics.load1m'),
                   value: load1 != null ? load1.toFixed(2) : '—' },
                 {
                   label: t('common.memory'),
@@ -490,7 +490,7 @@ export function MetricsPage() {
                   value: alerts.length,
                   tone: alerts.length ? 'warn' : 'ok' },
                 { label: 'CPU', value: cpuCount || '—' },
-                { label: 'Uptime', value: formatUptime(uptimeSec) },
+                { label: t('metrics.uptime'), value: formatUptime(uptimeSec) },
               ] }
           : undefined
       }
@@ -898,8 +898,8 @@ export function MetricsPage() {
                       [
                         ['none', t('metrics.filterAll')],
                         ['mine', t('metrics.filterMine')],
-                        ['cpu5', '≥5%CPU'],
-                        ['mem5', '≥5%MEM'],
+                        ['cpu5', t('metrics.filterCpu5')],
+                        ['mem5', t('metrics.filterMem5')],
                       ] as const
                     ).map(([id, lab]) => (
                       <button
@@ -918,6 +918,9 @@ export function MetricsPage() {
                       ? t('metrics.showOf', { shown: filteredRows.length, total: rows.length })
                       : ''}
                   </span>
+                </div>
+                <div className="met-live-bar met-live-bar--signals">
+                  <p className="muted u-text-sm u-mb-0">{t('metrics.signalHint')}</p>
                   <div className="met-signal-actions">
                     <Button
                       variant="secondary"
@@ -1143,22 +1146,14 @@ export function MetricsPage() {
                         <button
                           type="button"
                           className="met-icon-btn"
-                          title={blockTitle ?? t('metrics.sigTermTitle')}
-                          aria-label={blockTitle ?? t('metrics.sigTermTitle')}
+                          title={t('metrics.signalFromRow')}
+                          aria-label={t('metrics.signalFromRow')}
                           disabled={blocked}
-                          onClick={bindCall2(openSignal, r.pid, 'TERM')}
+                          onClick={() => {
+                            setSelected(new Set([r.pid]));
+                          }}
                         >
-                          {t('metrics.batchTerm')}
-                        </button>
-                        <button
-                          type="button"
-                          className="met-icon-btn met-icon-btn--danger"
-                          title={blockTitle ?? t('metrics.sigKillTitle')}
-                          aria-label={blockTitle ?? t('metrics.sigKillTitle')}
-                          disabled={blocked}
-                          onClick={bindCall2(openSignal, r.pid, 'KILL')}
-                        >
-                          {t('metrics.batchKill')}
+                          {t('metrics.selectForSignal')}
                         </button>
                       </div>
                     );
@@ -1200,14 +1195,21 @@ export function MetricsPage() {
                   onConfirm={bindVoid(runSignal)}
                   title={
                     pending?.signal === 'KILL'
-                      ? t('metrics.forceKillTitle', { pid: pending?.pid })
-                      : t('metrics.sendSigTitle', { pid: pending?.pid, sig: pending?.signal ?? 'TERM' })
+                      ? t('metrics.forceKillTitleNamed', {
+                          pid: pending?.pid,
+                          cmd: (pending?.command ?? '—').slice(0, 80),
+                        })
+                      : t('metrics.sendSigTitleNamed', {
+                          pid: pending?.pid,
+                          cmd: (pending?.command ?? '—').slice(0, 80),
+                        })
                   }
                   description={
                     pending?.signal === 'KILL'
                       ? t('metrics.forceKillDesc', { cmd: (pending?.command ?? '—').slice(0, 120) })
                       : t('metrics.termDesc', { cmd: (pending?.command ?? '—').slice(0, 120) })
                   }
+                  confirmText={pending?.signal === 'KILL' ? 'KILL' : undefined}
                   confirmLabel={
                     pending?.signal === 'KILL' ? t('metrics.forceKillBtn') : t('metrics.sendTermBtn')
                   }

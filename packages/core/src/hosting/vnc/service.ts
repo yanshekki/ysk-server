@@ -797,9 +797,14 @@ export class VncService {
     });
     notes.push(...stop.notes.filter((n) => !/blocked/i.test(n)));
 
+    let userRemoved = true;
     if (opts?.removeLinuxUser) {
       const del = await removeLinuxUser(this.host, rec.linuxUser, true);
       notes.push(...del.notes);
+      userRemoved = del.ok;
+      if (!del.ok) {
+        notes.push(tl('notes.vnc.userdelLeftover', { user: rec.linuxUser }));
+      }
     } else {
       notes.push(tl('notes.vnc.linuxUserKept', { user: rec.linuxUser }));
     }
@@ -808,9 +813,9 @@ export class VncService {
     this.saveAccounts(items);
     notes.push(tl('notes.vnc.accountDeleted', { name: rec.name }));
     return {
-      ok: true,
+      ok: userRemoved,
       notes,
-      blocked: stop.blocked,
+      blocked: stop.blocked || (!userRemoved && opts?.removeLinuxUser),
       requiresExecute: stop.requiresExecute,
       written: [this.accountsPath()],
     };

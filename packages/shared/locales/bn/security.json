@@ -447,5 +447,7 @@
   "statApiSessions": "API সেশন",
   "revokeOtherTitle": "সাইন আউট করুন {{n}} অন্যান্য সেশন(গুলি)",
   "policyNeedSelf2fa": "প্রথমে এই অ্যাকাউন্টে 2FA সক্ষম করুন, তারপর একটি TOTP কোড দিয়ে নিশ্চিত করুন৷",
-  "revokeAllDevicesTitle": "মনে রাখা প্রতিটি ডিভাইস প্রত্যাহার করুন — আপনাকে এবং অন্যান্য প্রশাসকদের আবার 2FA যাচাই করতে হবে"
+  "revokeAllDevicesTitle": "মনে রাখা প্রতিটি ডিভাইস প্রত্যাহার করুন — আপনাকে এবং অন্যান্য প্রশাসকদের আবার 2FA যাচাই করতে হবে",
+  "statSshValue": "{{keys}} keys · {{auth}} authorized",
+  "statSshHint": "Outbound identities / authorized login keys"
 }

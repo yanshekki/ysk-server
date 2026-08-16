@@ -138,7 +138,9 @@
     "labelStderr": "stderr",
     "labelAckCli": "ack + CLI JSON",
     "labelStdoutBody": "CLI stdout body",
-    "resultOuterHint": "Outer result is CLI --json stdout."
+    "resultOuterHint": "Outer result is CLI --json stdout.",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "Publish Nginx",
       "project.suspend": "Suspend project",
       "software.install": "Install software",
-      "software.update": "Update software"
+      "software.update": "Update software",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -427,7 +432,7 @@
     "resticOverwriteDone": "restic overwrite home complete",
     "opsResult": "Ops result",
     "filesTitle": "Backup files ({{count}})",
-    "filesSub": "Management-dir tar · download needs login · restore: dry-run / web / full",
+    "filesSub": "Archives live in the panel data directory. Download needs a login. Restore can preview, restore the site only, or restore everything.",
     "backupAllBtn": "Backup all",
     "yes": "Yes",
     "no": "No",
@@ -445,7 +450,10 @@
     "testDisabledHint": "Turn on remote push before testing.",
     "identityId": "Outbound SSH identity",
     "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-    "identityNone": "None — password or default key"
+    "identityNone": "None — password or default key",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "BT Tracker",
@@ -736,6 +744,31 @@
       "unknown": "unknown"
     },
     "recentNotes": "Recent notes",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
     "edgeConfPreview": "Nginx edge conf preview",
     "tabs": {
       "nodes": "Nodes",
@@ -744,7 +777,8 @@
       "about": "About"
     },
     "nodesTitle": "CDN nodes ({{count}})",
-    "nodesDesc": "Register control / origin / edge / dns. Probe updates status.",
+    "nodesDesc": "Register control-plane, origin, edge, and DNS nodes. Probe refreshes status.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
     "colName": "Name",
     "colRole": "Role",
     "colStatus": "Status",
@@ -2332,9 +2366,19 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    },
     "title": "Dashboard",
     "health": "Health",
     "protection": "Protection mode",
@@ -2391,7 +2435,7 @@
     "warnCount": " · warn {{count}}",
     "applyAuditBadge": "Apply audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
     "executeBadge": "EXECUTE {{state}}",
-    "executeLabel": "EXECUTE",
+    "executeLabel": "System change",
     "go": "Open",
     "open": "Open",
     "noCriticalWarn": "No critical or warning alerts",
@@ -2604,6 +2648,8 @@
     "update": "Update",
     "alsoCreateRole": "Also create role",
     "cluster": {
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "roleUnassigned": "No role assigned",
       "title": "Cluster",
       "description": "Plan → write management files → apply → probe → distribute to peers / fleet. Default is dry-run (no host restart).",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
@@ -3150,7 +3196,7 @@
       "networks": "No networks"
     },
     "logs": {
-      "empty": "This container has not written any logs yet.",
+      "empty": "No log output. Short-lived containers (for example hello-world) often exit without writing logs.",
       "follow": "Follow"
     },
     "deleteRunningWarn": "This container is still running or restarting. It will be force-removed.",
@@ -4787,7 +4833,8 @@
     "liveWaiting": "Connecting host browser…",
     "tabSettings": "Settings",
     "softwareNeeded": "Chromium / Chrome required for real browser engine",
-    "softwareHint": "One-click installs distro Chromium via apt. Google Chrome binary is also detected if already present. Requires root + YSK_EXECUTE=1.",
+    "softwareHint": "One-click installs distro Chromium via apt. Google Chrome is also detected if already present. Needs superuser and system-change permission.",
+    "closeNoSession": "No session yet",
     "goInstallChrome": "Open Software tab",
     "settingsIntro": "These panel settings override process environment variables for Host Browse.",
     "settingsEngine": "Default engine",
@@ -5076,9 +5123,12 @@
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
     "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
     "projectSourcesTitle": "{{n}} source(s) (files + journal)",
     "logrotatePath": "Path",
     "logrotateLast": "Last rotated",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)",
     "logrotateExpand": "Show {{n}} more",
     "logrotateCollapse": "Show fewer",
     "logrotateVersion": "Status version {{v}}"
@@ -5112,6 +5162,15 @@
       "alerts": "Alerts"
     },
     "load": "Load",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
     "min1": "1m",
     "min5": "5m",
     "min15": "15m",
@@ -5313,9 +5372,12 @@
     "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
     "orphanRemove": "Remove leftover home",
     "orphanRemoveTitle": "Delete leftover project home?",
-    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs superuser and system-change permission.",
     "orphanRemovePhrase": "Type DELETE to confirm.",
     "orphanRemoveNeedConfirm": "Needs confirmation",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer",
     "moreWarnings": "…and {{n}} more",
     "authPassword": "root password (switch to key after temp key install)",
     "authIdentity": "SSH identity vault identityId",
@@ -5326,7 +5388,7 @@
     "allowOverwriteDesc": "· Required if target already has ysk.json",
     "dryRunOnly": "Dry-run only",
     "dryRunOnlyDesc": "· Inventory + precheck only; no rsync or target writes",
-    "executeNote": "Host needs YSK_EXECUTE=1 and root API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
+    "executeNote": "Host needs system-change permission and a superuser API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
     "dnsCutover": "DNS cutover (manual)",
     "dnsCutoverDesc": "Point A/AAAA for these names to the new public IP;"
   },
@@ -6634,7 +6696,7 @@
       "n0647": "intern (MB)",
       "n0648": "password",
       "n0649": "Error, please apply",
-      "n0650": "Security → My security → enable 2FA; policy may set requireAdminTotp",
+      "n0650": "Enable admin 2FA under Security → My security, then add a backup admin on Users.",
       "n0651": "and path",
       "n0652": "install PAM",
       "n0653": "install vsftpd",
@@ -7929,7 +7991,7 @@
       "t0328": "projectdirectory: {{v0}}",
       "t0329": "tar failed: {{v0}}",
       "t0330": "Wrotebackup {{v0}}",
-      "t0331": "dry-run: file {{v0}}+ ( {{v1}})",
+      "t0331": "Preview: {{v0}} files in the archive (showing {{v1}})",
       "t0332": "cannot: {{v0}}",
       "t0333": "restore (web) to {{v0}}",
       "t0334": "web restoreFailed: {{v0}}",
@@ -7983,7 +8045,7 @@
       "t0382": "S3 {{v0}}",
       "t0383": "S3 failed: {{v0}}",
       "t0384": ": {{v0}}/{{v1}} admin Enabled 2FA",
-      "t0385": "Policy not enforced: {{v0}}/{{v1}} admin(s) have 2FA enabled",
+      "t0385": "Policy not enforced: {{v0}}/{{v1}} admin(s) have 2FA. If there is a single admin without 2FA, enable 2FA then add a backup admin.",
       "t0386": "{{v0}} PATH",
       "t0387": "{{v0}} not found",
       "t0388": "Install {{v0}} or add it to PATH",
@@ -8676,6 +8738,7 @@
       "userdelBlocked": "Cannot remove Linux user {{user}} without root + YSK_EXECUTE",
       "userAlreadyGone": "Linux user {{user}} already absent",
       "userdelFailed": "userdel failed for {{user}}: {{detail}}",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
       "userDeleted": "Removed Linux user {{user}}",
       "passwordTooShort": "VNC password must be at least 6 characters",
       "passwordWrittenOnly": "Password marked in control plane only (need root + YSK_EXECUTE for vncpasswd)",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "Not applied on host (needs root + YSK_EXECUTE=1) — saved to panel settings",
       "nginxWritten": "Wrote Nginx rate-limit panel file",
-      "f2bWritten": "Wrote fail2ban panel settings"
+      "f2bWritten": "Wrote fail2ban panel settings",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "Just now",
@@ -9727,6 +9792,12 @@
     "reapply": "Re-apply",
     "nginxLimits": "Nginx rate limits",
     "notWritten": "Not written",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    },
     "mode": "Mode",
     "controlPlane": "Control plane",
     "canApply": "Can apply",
@@ -10037,7 +10108,12 @@
     "signalJails": "{{n}} jail(s)",
     "dbReadyHint": "MMDB files are present",
     "dbNotReadyHint": "Download a GeoIP database first",
-    "staleHint": "Whether the last successful update is older than 7 days"
+    "staleHint": "Whether the last successful update is older than 7 days",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):"
   },
   "publicFiles": {
     "notSet": "Not set",
@@ -10226,6 +10302,15 @@
     "executeOff": "Off",
     "blockers": "Blockers",
     "blockersHint": "Blockers are the critical subset of Missing — not extra checks.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
     "probing": "Probing…",
     "reprobe": "Re-probe",
     "exportReport": "Export report",
@@ -10843,7 +10928,8 @@
     "tabProcesses": "Processes",
     "pm2": {
       "title": "PM2 fleet",
-      "desc": "Read-only view of pm2 jlist (panel user PM2_HOME). Live SSE refreshes every 2s.",
+      "desc": "PM2 is a process manager. This tab lists the panel user’s processes (read-only). Live updates use SSE (server-sent events) about every 2 seconds.",
+      "glossary": "PM2 = process manager; SSE = live stream.",
       "live": "Live",
       "installed": "PM2 installed",
       "version": "pm2 version",
@@ -11020,6 +11106,8 @@
     "statApiSessions": "API sessions",
     "revokeOtherTitle": "Sign out {{n}} other session(s)",
     "statSsh": "SSH",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys",
     "statPending": "Pending",
     "on": "On",
     "off": "Off",
@@ -11441,7 +11529,7 @@
     "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
     "revokeDevicesTitle": "Revoke trusted devices?",
     "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
-    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant Review approvals and Handle approvals on Users → Permissions.",
     "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
     "colTool": "Tool",
     "colAllowed": "Allowed",
@@ -11499,8 +11587,22 @@
   },
   "services": {
     "enabledBoot": "On boot",
-    "unitNotFound": "Unit not installed",
+    "unitNotFound": "Not installed",
+    "bootNa": "Not applicable",
     "unitNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    },
     "unitStatic": "static",
     "unitIndirect": "indirect",
     "action": {
@@ -12071,13 +12173,19 @@
     "copyTitle": "Copy {{address}}",
     "docsLink": "Documentation",
     "diagTitle": "Diagnostic summary",
-    "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
+    "diagBody": "Copy version, system-change, superuser, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
     "diagCopied": "Diagnostic summary copied",
-    "diagCopyTitle": "Copy version, EXECUTE, and host facts",
+    "diagCopyTitle": "Copy version, system-change, and host facts",
     "diagPreview": "Preview what will be copied",
     "diagLoading": "Loading diagnostic…",
-    "diagLoadFailed": "Could not load diagnostic"
+    "diagLoadFailed": "Could not load diagnostic",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "Failed to load export data",
@@ -12109,7 +12217,10 @@
     "prettyPh": "Friendly display name",
     "timezone": "Timezone",
     "timezoneHint": "Choose an IANA timezone from the list (e.g. Asia/Hong_Kong)",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
     "timezoneSelect": "Select timezone",
+    "notExported": "Not exported yet",
     "dns": "DNS",
     "updated": "Updated",
     "applyIdentity": "Apply identity",
@@ -12268,8 +12379,8 @@
     "syncConfirmDesc": "Sync managed Nginx conf to /etc/nginx/conf",
     "uptime": "Uptime",
     "load1m": "Load 1m",
-    "executeLabel": "EXECUTE",
-    "rootLabel": "Root",
+    "executeLabel": "System change",
+    "rootLabel": "Superuser",
     "managedLabel": "Managed",
     "managedCount": "Managed",
     "exportsCount": "Exports",
@@ -12358,6 +12469,8 @@
     "policyNotEqualFull": "Write template ≠ service enabled ≠ listening",
     "controlPlaneUnit": "Control-plane unit",
     "kpiRuntime": "Runtime",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot",
     "kpiBoot": "Boot enable",
     "kpiCaps": "Apply capability",
     "capsReady": "Can install to system",
@@ -12403,7 +12516,9 @@
     "error": "Terminal error",
     "wsError": "WebSocket failed",
     "exitCode": "Exit code {{code}}",
-    "needRootExecute": "Requires root + YSK_EXECUTE=1 for system shells.",
+    "needRootExecute": "System shells need superuser and system-change permission.",
+    "groupSystem": "System",
+    "groupProject": "Project",
     "unavailable": "unavailable",
     "copyAll": "Copy all",
     "copyAllNeedConn": "Connect first — the buffer is empty while disconnected",
@@ -12746,7 +12861,8 @@
     "applyNeedConfirm": "Opens a confirm dialog before applying",
     "probeFailed": "Probe failed",
     "notViaApt": "Not managed by apt — no candidate",
-    "noCandidate": "No candidate version",
+    "noCandidate": "No candidate from package manager",
+    "cveLabel": "CVE",
     "jobOpenGeo": "GeoIP page",
     "job": {
       "protection_probe": {
@@ -12780,6 +12896,10 @@
       "email_dnsbl": {
         "name": "Email DNSBL",
         "hint": "Mail DNSBL check"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "permPolicy": "Permissions",
@@ -12877,7 +12997,9 @@
     "packages": "Packages",
     "suspended": "Suspended",
     "securityCenter": "Security center",
-    "singleAdminNo2fa": "This host has a single admin and 2FA is off — enable 2FA and add a backup admin.",
+    "singleAdminNo2fa": "This host has a single admin and 2FA is off. Enable admin 2FA under Security, then add a backup admin on this page.",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin",
     "loading": "Loading users & packages…",
     "userList": "Users ({{count}})",
     "userListDesc": "Open detail to edit role, password, package, overrides",
@@ -13408,7 +13530,7 @@
     "defaultDesktop": "Default desktop",
     "defaultGeometry": "Default resolution",
     "defaultDepth": "Colour depth",
-    "defaultRfbBind": "RFB listen",
+    "defaultRfbBind": "VNC (RFB) listen range",
     "defaultAutostart": "Autostart sessions",
     "autostartLabel": "Start on boot",
     "settingsSaved": "VNC defaults saved",
@@ -13475,11 +13597,11 @@
     "nextPage": "Next",
     "pageOf": "Page {{page}} / {{total}} · {{count}}",
     "deleteAccountTitle": "Delete VNC account?",
-    "deleteAccountDesc": "Remove control-plane account {{name}} ({{user}}). Session will be stopped first.",
-    "deleteAccountC1": "VNC session for this display",
-    "deleteAccountC2": "Panel metadata under dataDir/vnc",
-    "deleteAccountC3User": "Linux user home will be removed (userdel -r)",
-    "deleteAccountC3Keep": "Linux user will be kept on the system",
+    "deleteAccountDesc": "Remove control-plane account “{{name}}” (Linux user {{user}}). The VNC session for this display stops first.",
+    "deleteAccountC1": "The VNC session for this account will be stopped first.",
+    "deleteAccountC2": "The panel VNC account record will be removed.",
+    "deleteAccountC3User": "The Linux user and home directory will also be removed. If the host refuses, the panel reports failure and the user stays.",
+    "deleteAccountC3Keep": "The Linux user stays on the host; only the panel account is removed.",
     "removeLinuxUser": "Also remove Linux user and home directory",
     "connection": "Connect",
     "connectionTitle": "Connection materials",

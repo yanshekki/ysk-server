@@ -203,5 +203,8 @@
   "nginxUnusedHint": "স্টক / catch-all conf (000-default)। ব্যবস্থা না নিলে সিঙ্কে থাকে।",
   "powerUnlock": "বিপদ অঞ্চল আনলক করুন",
   "powerLock": "বিপদ অঞ্চল লক করুন",
-  "noScheduledPower": "কোনো রিবুট বা পাওয়ার অফ নির্ধারিত নেই"
+  "noScheduledPower": "কোনো রিবুট বা পাওয়ার অফ নির্ধারিত নেই",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

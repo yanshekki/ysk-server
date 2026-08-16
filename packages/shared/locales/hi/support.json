@@ -34,5 +34,11 @@
   "diagCopyTitle": "संस्करण, EXECUTE और होस्ट तथ्य कॉपी करें",
   "diagPreview": "जो कॉपी होगा उसकी झलक",
   "diagLoading": "निदान लोड हो रहा है...",
-  "diagLoadFailed": "डायग्नोस्टिक लोड नहीं किया जा सका"
+  "diagLoadFailed": "डायग्नोस्टिक लोड नहीं किया जा सका",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

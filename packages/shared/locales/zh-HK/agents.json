@@ -134,5 +134,7 @@
   "labelStderr": "標準錯誤",
   "labelAckCli": "確認 + CLI JSON",
   "labelStdoutBody": "命令列 標準輸出內容",
-  "resultOuterHint": "外層結果為命令列 --json 的標準輸出。"
+  "resultOuterHint": "外層結果為命令列 --json 的標準輸出。",
+  "noteAllowlist": "代理工具呼叫必須通過允許清單。",
+  "noteRbacCap": "代理角色權限上限為低寫入。"
 }

@@ -223,11 +223,16 @@
     "email_dnsbl": {
       "name": "DNSBL にメールを送信する",
       "hint": "メールDNSBLチェック"
+    },
+    "validators_upgrade_scan": {
+      "name": "Validators upgrade scan",
+      "hint": "Check validator image / binary updates"
     }
   },
   "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
   "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
   "panelRestarted": "パネルが復帰しました · {{version}}",
   "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
-  "cveNotChecked": "Not checked"
+  "cveNotChecked": "Not checked",
+  "cveLabel": "CVE"
 }

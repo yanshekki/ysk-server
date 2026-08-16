@@ -30,9 +30,11 @@ import {
   SegRadio,
   buttonClassName } from '../shared/components/ui';
 import { FEATURE_SECTIONS } from '../shared/nav/features';
+import { localizeServiceActive } from './features/ServicesPage';
 import { api } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { formatDateTime } from '../shared/lib/datetime';
 import { bindSet, bindInput } from './bind-handlers';
 import {
   defaultRuntimeInstallVersion,
@@ -157,7 +159,7 @@ export function badgeForKey(
 }
 
 export function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const {
@@ -487,7 +489,11 @@ export function DashboardPage() {
                         key={s.id}
                         to={s.href || '/services'}
                         className="badge-link"
-                        title={s.active}
+                        title={localizeServiceActive(s.active, t, s.activeLabel)}
+                        aria-label={t('dashboard.serviceAria', {
+                          name: s.label,
+                          state: localizeServiceActive(s.active, t, s.activeLabel),
+                        })}
                       >
                         <Badge
                           tone={
@@ -498,7 +504,8 @@ export function DashboardPage() {
                                 : 'warn'
                           }
                         >
-                          {s.label}: {s.activeLabel}
+                          {s.label}：
+                          {localizeServiceActive(s.active, t, s.activeLabel)}
                           {s.active === 'failed' ? ` · ${t('dashboard.goFix')}` : ''}
                         </Badge>
                       </Link>
@@ -633,7 +640,9 @@ export function DashboardPage() {
                           <Badge
                             tone={f.severity === 'bad' ? 'danger' : 'warn'}
                           >
-                            {f.severity}
+                            {t(`dashboard.sev.${f.severity}`) === `dashboard.sev.${f.severity}`
+                              ? f.severity
+                              : t(`dashboard.sev.${f.severity}`)}
                           </Badge>{' '}
                           <span className="muted u-text-sm">{f.kind}</span>{' '}
                           <strong>{f.name}</strong>
@@ -855,7 +864,13 @@ export function DashboardPage() {
                                   {actionLabel === actionKey ? action : actionLabel}
                                 </span>
                                 <time className="dash-kpi__time">
-                                  {String(a.created_at).replace('T', ' ').slice(5, 19)}
+                                  {formatDateTime(
+                                    a.created_at as string | number | Date | null | undefined,
+                                    {
+                                      locale: i18n.language,
+                                      withOffset: true,
+                                    },
+                                  )}
                                 </time>
                               </li>
                             );

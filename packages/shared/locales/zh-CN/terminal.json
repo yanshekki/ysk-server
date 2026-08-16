@@ -35,5 +35,7 @@
   "rootConfirmDesc": "此会话是主机上不受限制的 root PTY。命令会写入审计记录。",
   "rootConfirmBody": "仅在你打算执行具权限的主机命令时继续。",
   "copyAll": "全部复制",
-  "copyAllNeedConn": "首先连接——断开连接时缓冲区为空"
+  "copyAllNeedConn": "首先连接——断开连接时缓冲区为空",
+  "groupSystem": "System",
+  "groupProject": "Project"
 }

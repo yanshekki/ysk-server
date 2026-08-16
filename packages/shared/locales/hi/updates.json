@@ -223,11 +223,16 @@
     "email_dnsbl": {
       "name": "डीएनएसबीएल को ईमेल करें",
       "hint": "मेल डीएनएसबीएल जांच"
+    },
+    "validators_upgrade_scan": {
+      "name": "Validators upgrade scan",
+      "hint": "Check validator image / binary updates"
     }
   },
   "applyPanelAlreadyLatest": "पहले से ही नवीनतम पैनल संस्करण",
   "panelRestarting": "नया संस्करण लोड करने के लिए पैनल पुनः आरंभ हो रहा है…",
   "panelRestarted": "पैनल वापस आ गया · {{version}}",
   "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।",
-  "cveNotChecked": "Not checked"
+  "cveNotChecked": "Not checked",
+  "cveLabel": "CVE"
 }

@@ -568,8 +568,8 @@ export function UpdatesPage() {
             hint: t('updates.needApprovalHint'),
           },
           {
-            label: t('updates.hasCve'),
-            value: osvChecked ? withCve : t('updates.cveNotChecked'),
+            label: t('updates.cveLabel'),
+            value: osvChecked ? String(withCve) : t('updates.cveNotChecked'),
             tone: withCve > 0 ? 'warn' : 'neutral' },
           {
             label: t('updates.panel'),
@@ -810,19 +810,29 @@ export function UpdatesPage() {
                       );
                     }
                     const cur = shortVersion(e.currentVersion);
-                    const lat = e.latestVersion ? shortVersion(e.latestVersion) : '—';
-                    const label = `${cur} → ${lat}`;
+                    const lat = e.latestVersion ? shortVersion(e.latestVersion) : '';
+                    const same = Boolean(lat) && lat === cur;
+                    if (!lat) {
+                      return (
+                        <span title={tab === 'runtime' ? t('updates.notViaApt') : t('updates.noCandidate')}>
+                          <code>{cur}</code>{' '}
+                          <span className="muted u-text-sm">{t('updates.noCandidate')}</span>
+                        </span>
+                      );
+                    }
+                    if (same) {
+                      return (
+                        <span>
+                          <code>{cur}</code>{' '}
+                          <span className="muted u-text-sm">{t('updates.noUpgrade')}</span>
+                        </span>
+                      );
+                    }
                     return (
-                      <span
-                        title={
-                          e.latestVersion
-                            ? undefined
-                            : tab === 'runtime'
-                              ? t('updates.notViaApt')
-                              : t('updates.noCandidate')
-                        }
-                      >
-                        {label}
+                      <span>
+                        <code>{cur}</code>
+                        <span className="upd-pkg__arrow"> → </span>
+                        <code>{lat}</code>
                       </span>
                     );
                   },
@@ -1380,25 +1390,29 @@ export function UpdatesPage() {
                         {t(`${jobI18nKey(String(j.id))}.name`, { defaultValue: String(j.id) })}
                       </span>
                       <span className="upd-job__meta">
-                        {j.intervalMs != null
-                          ? formatIntervalMs(Number(j.intervalMs), t)
-                          : j.interval
-                            ? String(j.interval)
-                            : '—'}
-                        {' · '}
-                        {j.lastRunAt ||
-                        (String(j.id) === 'updates.scan' && (summary?.lastScanAt ?? lastAt))
-                          ? t('updates.lastRun', {
-                              when: relTime(
-                                String(
-                                  j.lastRunAt ||
-                                    summary?.lastScanAt ||
-                                    lastAt,
+                        {[
+                          j.intervalMs != null
+                            ? formatIntervalMs(Number(j.intervalMs), t)
+                            : j.interval
+                              ? String(j.interval)
+                              : '',
+                          j.lastRunAt ||
+                          (String(j.id) === 'updates.scan' && (summary?.lastScanAt ?? lastAt))
+                            ? t('updates.lastRun', {
+                                when: relTime(
+                                  String(
+                                    j.lastRunAt ||
+                                      summary?.lastScanAt ||
+                                      lastAt,
+                                  ),
+                                  t,
                                 ),
-                                t,
-                              ),
-                            })
-                          : t('updates.neverRun')}
+                              })
+                            : t('updates.neverRun'),
+                        ]
+                          .map((s) => String(s || '').trim())
+                          .filter(Boolean)
+                          .join(' · ')}
                         {String(j.id) === 'defense-geoip-update' &&
                         !(j.lastRunAt) ? (
                           <>

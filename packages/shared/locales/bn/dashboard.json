@@ -119,5 +119,11 @@
   "notifAll": "সব",
   "notifDismiss": "লুকান",
   "goFix": "ঠিক করুন",
-  "needDomainFirst": "আগে ডোমেইন লিখুন"
+  "needDomainFirst": "আগে ডোমেইন লিখুন",
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  }
 }

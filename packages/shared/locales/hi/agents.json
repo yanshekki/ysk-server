@@ -134,5 +134,7 @@
   "staleFor": "अनदेखी {{age}}",
   "commandTitle": "इस सत्र के लिए एक आदेश कतारबद्ध करें",
   "historyTitleShort": "कमांड इतिहास खोलें (केवल पढ़ने के लिए)",
-  "expEdge": "एक किनारे पर:"
+  "expEdge": "एक किनारे पर:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

@@ -675,7 +675,9 @@ export function UsersPage() {
       {usersReady && admins <= 1 && with2fa === 0 ? (
         <Alert variant="warn">
           {t('users.singleAdminNo2fa')}{' '}
-          <Link to="/security">{t('users.securityCenter')}</Link>
+          <Link to="/security?tab=account">{t('users.enableAdmin2fa')}</Link>
+          {' · '}
+          <Link to="/users">{t('users.addBackupAdmin')}</Link>
         </Alert>
       ) : null}
       {loading ? (

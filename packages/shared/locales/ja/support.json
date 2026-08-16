@@ -34,5 +34,11 @@
   "diagCopyTitle": "バージョン、EXECUTE、ホスト情報をコピー",
   "diagPreview": "コピーされる内容をプレビュー",
   "diagLoading": "診断を読み込んでいます…",
-  "diagLoadFailed": "診断をロードできませんでした"
+  "diagLoadFailed": "診断をロードできませんでした",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

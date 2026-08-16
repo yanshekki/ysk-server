@@ -143,5 +143,8 @@
   "restoreWebTitle": "Restaurer les fichiers du site Web uniquement à partir de cette archive",
   "previewTitle": "Aperçu de la restauration sans écrire",
   "partialSkipped": "Partiel – certains projets ignorés",
-  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+  "skippedListHint": "These projects were skipped:",
+  "goLogs": "Open logs",
+  "goAbout": "Backup notes"
 }

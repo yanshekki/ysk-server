@@ -153,5 +153,14 @@
   "alertsReadOnly": "केवल अंतर्निहित सीपीयू/मेमोरी/डिस्क थ्रेशोल्ड। कोई ईमेल, वेबहुक या स्लैक चैनल नहीं।",
   "alertsGoNotifications": "अधिसूचना केंद्र खोलें",
   "lastCheck": "आखिरी जांच",
-  "rawTopHint": "अअनुवादित शीर्ष(1) आउटपुट"
+  "rawTopHint": "अअनुवादित शीर्ष(1) आउटपुट",
+  "load1m": "Load 1m",
+  "uptime": "Uptime",
+  "filterCpu5": "≥5% CPU",
+  "filterMem5": "≥5% memory",
+  "signalHint": "Select a process, then send TERM or KILL.",
+  "signalFromRow": "Select this process for TERM / KILL",
+  "selectForSignal": "Select",
+  "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+  "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
 }

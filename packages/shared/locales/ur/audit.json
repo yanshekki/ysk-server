@@ -22,6 +22,9 @@
     "project.publish": "Nginx شائع کریں۔",
     "project.suspend": "منصوبے کو معطل کریں۔",
     "software.install": "سافٹ ویئر انسٹال کریں۔",
-    "software.update": "سافٹ ویئر کو اپ ڈیٹ کریں۔"
+    "software.update": "سافٹ ویئر کو اپ ڈیٹ کریں۔",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

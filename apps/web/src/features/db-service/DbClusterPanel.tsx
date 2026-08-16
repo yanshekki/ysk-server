@@ -104,6 +104,9 @@ export function DbClusterPanel({
   } | null>(null);
   const [fleetAgents, setFleetAgents] = useState<FleetAgent[]>([]);
   const [probeFacts, setProbeFacts] = useState<Record<string, string> | null>(null);
+  const [otherClusters, setOtherClusters] = useState<
+    Array<{ id: string; name: string; engine: string; status: string }>
+  >([]);
   const [pendingConfirm, setPendingConfirm] = useState<
     | { kind: 'remove'; id: string }
     | { kind: 'installPeers'; id: string }
@@ -119,6 +122,19 @@ export function DbClusterPanel({
     try {
       const r = await dbClusterApi.list(engine);
       setItems(r.items ?? []);
+      try {
+        const ov = await dbClusterApi.overview();
+        setOtherClusters(
+          (ov.items ?? []).filter((x) => x.engine !== engine).map((x) => ({
+            id: x.id,
+            name: x.name,
+            engine: x.engine,
+            status: x.status,
+          })),
+        );
+      } catch {
+        setOtherClusters([]);
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -424,10 +440,18 @@ export function DbClusterPanel({
                 render: (c) =>
                   (c.members ?? [])
                     .map((m) => {
-                      const host = String(m.host ?? '').replace(/\s*\(none\)/gi, '').trim();
+                      const host = String(m.host ?? '')
+                        .replace(/\s*\(none\)/gi, '')
+                        .trim();
+                      const roleRaw = String((m as { role?: string }).role ?? '').trim();
+                      const role =
+                        !roleRaw || roleRaw === 'none' || roleRaw === '(none)'
+                          ? t('db.cluster.roleUnassigned')
+                          : roleRaw;
+                      const base = host ? `${host} · ${role}` : role;
                       return m.applyStatus && m.applyStatus !== 'applied'
-                        ? `${host} (${clusterStatusLabel(m.applyStatus, t)})`
-                        : host;
+                        ? `${base}（${clusterStatusLabel(m.applyStatus, t)}）`
+                        : base;
                     })
                     .join(', ') },
             ]}
@@ -606,9 +630,15 @@ export function DbClusterPanel({
               <EmptyState
                 title={t('db.cluster.standaloneTitle')}
                 description={
-                  isRepl
-                    ? t('db.cluster.standaloneRepl')
-                    : t('db.cluster.standaloneHa')
+                  otherClusters.length
+                    ? t('db.cluster.standaloneOtherEngines', {
+                        names: otherClusters
+                          .map((c) => `${c.name}（${c.engine}）`)
+                          .join(' · '),
+                      })
+                    : isRepl
+                      ? t('db.cluster.standaloneRepl')
+                      : t('db.cluster.standaloneHa')
                 }
               />
             }

@@ -203,5 +203,8 @@
   "nginxUnusedHint": "Conf de origem / catch-all (000-default). Incluída na sincronização até agir.",
   "powerUnlock": "Desbloquear zona de perigo",
   "powerLock": "Bloquear zona de perigo",
-  "noScheduledPower": "Nenhuma reinicialização ou desligamento está agendado"
+  "noScheduledPower": "Nenhuma reinicialização ou desligamento está agendado",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

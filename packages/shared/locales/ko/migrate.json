@@ -86,5 +86,8 @@
   "orphanRemovePhrase": "확인하려면 DELETE를 입력하세요.",
   "orphanRemoveNeedConfirm": "확인이 필요합니다",
   "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+  "orphanBackupFirst": "Back up first (open Backups)",
+  "expandAllWarnings": "Show all {{n}} warnings",
+  "collapseWarnings": "Show fewer"
 }

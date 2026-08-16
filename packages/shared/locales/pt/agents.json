@@ -134,5 +134,7 @@
   "staleFor": "Invisível {{age}}",
   "commandTitle": "Enfileirar um comando para esta sessão",
   "historyTitleShort": "Abrir histórico de comandos (somente leitura)",
-  "expEdge": "No limite:"
+  "expEdge": "No limite:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

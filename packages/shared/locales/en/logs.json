@@ -152,9 +152,12 @@
   "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
   "sourceCount": "{{shown}} shown",
   "sourceUnavailable": "This source has not produced a log yet",
+  "sourceNoLog": "No log yet",
   "projectSourcesTitle": "{{n}} source(s) (files + journal)",
   "logrotatePath": "Path",
   "logrotateLast": "Last rotated",
+  "exportJsonl": "JSONL export",
+  "sseLive": " (live stream)",
   "logrotateExpand": "Show {{n}} more",
   "logrotateCollapse": "Show fewer",
   "logrotateVersion": "Status version {{v}}"

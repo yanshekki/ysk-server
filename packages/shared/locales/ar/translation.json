@@ -138,7 +138,9 @@
     "staleFor": "الغيب {{age}}",
     "commandTitle": "قم بوضع أمر في قائمة الانتظار لهذه الجلسة",
     "historyTitleShort": "فتح سجل الأوامر (للقراءة فقط)",
-    "expEdge": "على حافة:"
+    "expEdge": "على حافة:",
+    "noteAllowlist": "Agent tool calls must pass the allowlist.",
+    "noteRbacCap": "Agent role is capped at write-low."
   },
   "ai": {
     "status": {
@@ -297,7 +299,10 @@
       "project.publish": "نشر نجينكس",
       "project.suspend": "تعليق المشروع",
       "software.install": "تثبيت البرنامج",
-      "software.update": "تحديث البرنامج"
+      "software.update": "تحديث البرنامج",
+      "backup.restore": "Backup restore",
+      "backup.run": "Backup run",
+      "backup.delete": "Backup deleted"
     }
   },
   "backups": {
@@ -445,7 +450,10 @@
     "restoreWebTitle": "استعادة ملفات موقع الويب من هذا الأرشيف فقط",
     "previewTitle": "معاينة الاستعادة دون الكتابة",
     "partialSkipped": "جزئي - تم تخطي بعض المشاريع",
-    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+    "skippedListHint": "These projects were skipped:",
+    "goLogs": "Open logs",
+    "goAbout": "Backup notes"
   },
   "btTracker": {
     "title": "جهاز تعقب بي تي",
@@ -854,7 +862,33 @@
     "statOnlineOf": "Online {{n}}/{{total}}",
     "statDraining": "Draining {{n}}",
     "localTest": "local / test",
-    "colRegion": "Region"
+    "colRegion": "Region",
+    "previewOnlyNote": "Preview only — nothing was written to the edges.",
+    "statByRegion": "Region: ",
+    "statByApply": "Apply status: ",
+    "col": {
+      "origin": "Origin",
+      "edges": "Edges",
+      "apply": "Apply",
+      "dns": "DNS",
+      "edgesOnline": "Edges online / applied",
+      "dnsRr": "CDN DNS records"
+    },
+    "mode": {
+      "origin_pull": "Origin pull",
+      "reverse_proxy": "Reverse proxy",
+      "static_edge": "Static edge"
+    },
+    "dnsStrategy": {
+      "multi_a": "Multiple A records",
+      "cname": "CNAME",
+      "geo": "Geo"
+    },
+    "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+    "hitMiss": "Hits {{hits}} / misses {{misses}}",
+    "cacheBytes": "Cache ≈ {{n}} B",
+    "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
   },
   "cli": {
     "unknownCommand": "أمر غير معروف: {{command}}\nتشغيل `{{cli}} مساعدة`",
@@ -2332,7 +2366,11 @@
     "saveJob": "Save (management only)",
     "panelLines": "Panel lines",
     "otherLines": "Other lines",
-    "totalLines": "Total"
+    "totalLines": "Total",
+    "writtenOnHostHint": "Lines already written to the host crontab",
+    "registeredJobsHint": "Jobs registered in the panel (including pending install)",
+    "pendingInstallCount": "{{n}} pending install",
+    "systemJobBadge": "No project · system user"
   },
   "dashboard": {
     "title": "لوحة القيادة",
@@ -2455,7 +2493,13 @@
     "notifAll": "الجميع",
     "notifDismiss": "يخفي",
     "goFix": "يصلح",
-    "needDomainFirst": "أدخل نطاقاً أولاً"
+    "needDomainFirst": "أدخل نطاقاً أولاً",
+    "serviceAria": "{{name}}: {{state}}",
+    "sev": {
+      "ok": "OK",
+      "warn": "Warning",
+      "bad": "Problem"
+    }
   },
   "dataTable": {
     "empty": "لا توجد بيانات",
@@ -2708,7 +2752,9 @@
       "pushPlanTitle": "معاينة الدفع إلى النظير (بدون scp)",
       "fleetSyncPlanTitle": "معاينة مزامنة الأسطول (بدون تنفيذ)",
       "fleetApplyTitle": "هل تنطبق على أعضاء الأسطول؟",
-      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+      "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+      "roleUnassigned": "No role assigned",
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
     },
     "console": {
       "dataBrowse": "تصفح البيانات",
@@ -4885,7 +4931,8 @@
     "envColPanel": "إعداد اللوحة",
     "envColEffective": "الفعّال",
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+    "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+    "closeNoSession": "No session yet"
   },
   "listToolbar": {
     "searchPlaceholder": "يبحث…",
@@ -5081,7 +5128,10 @@
     "logrotateVersion": "نسخة الحالة {{v}}",
     "errorsWindowHint": "Recent errors from the last overview probe (not live-updating when you switch tabs)",
     "sourceCount": "{{shown}} shown",
-    "sourceUnavailable": "This source has not produced a log yet"
+    "sourceUnavailable": "This source has not produced a log yet",
+    "sourceNoLog": "No log yet",
+    "exportJsonl": "JSONL export",
+    "sseLive": " (live stream)"
   },
   "metrics": {
     "alert": {
@@ -5238,7 +5288,16 @@
     "alertsReadOnly": "عتبات وحدة المعالجة المركزية/الذاكرة/القرص المدمجة فقط. لا يوجد بريد إلكتروني أو خطاف ويب أو قناة Slack.",
     "alertsGoNotifications": "فتح مركز الإخطار",
     "lastCheck": "الاختيار الأخير",
-    "rawTopHint": "إخراج أعلى (1) غير مترجم"
+    "rawTopHint": "إخراج أعلى (1) غير مترجم",
+    "load1m": "Load 1m",
+    "uptime": "Uptime",
+    "filterCpu5": "≥5% CPU",
+    "filterMem5": "≥5% memory",
+    "signalHint": "Select a process, then send TERM or KILL.",
+    "signalFromRow": "Select this process for TERM / KILL",
+    "selectForSignal": "Select",
+    "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
+    "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?"
   },
   "migrate": {
     "tabInventory": "جرد",
@@ -5328,7 +5387,10 @@
     "orphanRemovePhrase": "اكتب DELETE للتأكيد.",
     "orphanRemoveNeedConfirm": "يلزم التأكيد",
     "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+    "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+    "orphanBackupFirst": "Back up first (open Backups)",
+    "expandAllWarnings": "Show all {{n}} warnings",
+    "collapseWarnings": "Show fewer"
   },
   "multiCheck": {
     "customPlaceholder": "رمز مخصص",
@@ -8697,7 +8759,8 @@
       "passwordNeedTiger": "لم يتم العثور على vncpasswd. قم بتثبيت TigerVNC (خادم Tigervnc المستقل) قبل تعيين كلمة المرور.",
       "linuxUserRolledBack": "تمت إزالة مستخدم Linux المتبقي {{user}} بعد فشل كلمة مرور VNC.",
       "linuxUserOrphan": "تعذرت إزالة مستخدم Linux المتبقي {{user}} بعد فشل كلمة مرور VNC.",
-      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again."
+      "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
     },
     "apache": {
       "needServerName": "اسم الخادم مطلوب",
@@ -9681,7 +9744,9 @@
     "note": {
       "notApplied": "لا يتم تطبيقه على المضيف (يحتاج إلى الجذر + YSK_EXECUTE=1) - يتم حفظه في إعدادات اللوحة",
       "nginxWritten": "كتب ملف لوحة الحد الأقصى لمعدل Nginx",
-      "f2bWritten": "كتب إعدادات لوحة fail2ban"
+      "f2bWritten": "كتب إعدادات لوحة fail2ban",
+      "hintDropped": "Internal protection hint omitted",
+      "nginxLimits": "Will write Nginx rate-limit snippet"
     },
     "rel": {
       "justNow": "الآن",
@@ -10037,7 +10102,18 @@
     "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
     "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
     "whitelistSyncOn": "on",
-    "whitelistSyncOff": "off (lists may differ)"
+    "whitelistSyncOff": "off (lists may differ)",
+    "draftBadge": "Draft",
+    "banIsSelf": "This IP matches the current panel source or this host.",
+    "banNotSelf": "This IP is not the current panel source.",
+    "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+    "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+    "modeValue": {
+      "normal": "Normal",
+      "degraded": "Degraded",
+      "ddos-protection": "DDoS protection",
+      "offline": "Offline"
+    }
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -10324,7 +10400,16 @@
     "leftoverDovecot": "يشير Dovecot TLS إلى الشهادة المفقودة",
     "leftoverOther": "بقايا المضيف",
     "leftoverApply": "تنطبق بقايا",
-    "isolationOwnerDegrades": "يؤثر فقدان Owner_user_id على إسناد حصة الحزمة — الحالة متدهورة وليست جاهزة."
+    "isolationOwnerDegrades": "يؤثر فقدان Owner_user_id على إسناد حصة الحزمة — الحالة متدهورة وليست جاهزة.",
+    "totalChecks": "All checks",
+    "totalChecksHint": "Ready + degraded + missing = this total. Blockers are the critical missing subset.",
+    "requireAdminTotp": "require admin 2FA policy",
+    "listenBind": "listen address",
+    "item": {
+      "admin2fa": "Admin two-factor"
+    },
+    "dataDirPerms": "panel data-directory permissions",
+    "mode750": "mode 750"
   },
   "redis": {
     "neverExpire": "لا تنتهي صلاحيته أبدًا",
@@ -10896,7 +10981,8 @@
       "pm2ActionsHint": "PM2 actions apply to the panel user’s process list only.",
       "noteUnparsed": "PM2 list could not be parsed (empty or unexpected output).",
       "notePanelUserOnly": "PM2 list is for the panel process user only.",
-      "noteProjectUnits": "{{n}} YSK project unit(s) listed"
+      "noteProjectUnits": "{{n}} YSK project unit(s) listed",
+      "glossary": "PM2 = process manager; SSE = live stream."
     },
     "recordedInstalled": "تم التسجيل {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -11454,7 +11540,9 @@
     "statApiSessions": "جلسات API",
     "revokeOtherTitle": "تسجيل الخروج {{n}} جلسة (جلسات) أخرى",
     "policyNeedSelf2fa": "قم بتمكين المصادقة الثنائية على هذا الحساب أولاً، ثم قم بالتأكيد باستخدام رمز TOTP",
-    "revokeAllDevicesTitle": "قم بإبطال كل جهاز تم تذكره — يجب عليك وعلى المسؤولين الآخرين التحقق من المصادقة الثنائية مرة أخرى"
+    "revokeAllDevicesTitle": "قم بإبطال كل جهاز تم تذكره — يجب عليك وعلى المسؤولين الآخرين التحقق من المصادقة الثنائية مرة أخرى",
+    "statSshValue": "{{keys}} keys · {{auth}} authorized",
+    "statSshHint": "Outbound identities / authorized login keys"
   },
   "serviceExposure": {
     "title": "الوصول إلى الشبكة",
@@ -11578,7 +11666,21 @@
     "unitNa": "Not applicable",
     "unitStatic": "static",
     "unitIndirect": "indirect",
-    "needRunning": "{{label}} is not running"
+    "needRunning": "{{label}} is not running",
+    "bootNa": "Not applicable",
+    "permLabel": "Permission",
+    "permCanChange": "Can change the system (superuser)",
+    "permBlocked": "Cannot change the system",
+    "permHint": "System change {{exec}} · Superuser {{root}}",
+    "clusterLegend": "Planned = saved in the panel, not applied on the host.",
+    "active": {
+      "active": "Running",
+      "inactive": "Stopped",
+      "not-found": "Not installed",
+      "failed": "Failed",
+      "tool": "Tool",
+      "activating": "Starting"
+    }
   },
   "software": {
     "title": "برمجة",
@@ -12077,7 +12179,13 @@
     "diagCopyTitle": "نسخ الإصدار وEXECUTE وبيانات المضيف",
     "diagPreview": "معاينة ما سيُنسخ",
     "diagLoading": "جارٍ تحميل التشخيص…",
-    "diagLoadFailed": "تعذر تحميل التشخيص"
+    "diagLoadFailed": "تعذر تحميل التشخيص",
+    "copiedAddr": "Copied {{addr}}",
+    "diagStatus": "Status",
+    "diagMode": "Mode",
+    "diagProtection": "Protection",
+    "diagHostname": "Hostname",
+    "diagOs": "OS"
   },
   "system": {
     "exportLoadFailed": "فشل تحميل بيانات التصدير",
@@ -12284,7 +12392,10 @@
     "nginxUnusedHint": "إعداد افتراضي / catch-all (000-default). يبقى في المزامنة حتى تتصرّف.",
     "powerUnlock": "فتح منطقة الخطر",
     "powerLock": "قفل منطقة الخطر",
-    "noScheduledPower": "لم تتم جدولة إعادة التشغيل أو إيقاف التشغيل"
+    "noScheduledPower": "لم تتم جدولة إعادة التشغيل أو إيقاف التشغيل",
+    "timezoneNow": "Host time now: {{time}} ({{tz}})",
+    "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+    "notExported": "Not exported yet"
   },
   "systemd": {
     "enabled": "ممكّن",
@@ -12378,7 +12489,9 @@
     "aboutPolicySub": "تعد كتابة القالب وتثبيت النظام خطوتين منفصلتين. تعتبر إعادة التشغيل بعد التثبيت عملية عادية، وليست خطوة مفقودة.",
     "policyInstallFull": "التثبيت والتمكين: النسخ إلى /etc/systemd/system، daemon-reload، تمكين --now. يحتاج إلى الجذر + التنفيذ.",
     "policyBlockedTitle": "محظور دون امتياز",
-    "policyNotEqualTitle": "الدول ليست متكافئة"
+    "policyNotEqualTitle": "الدول ليست متكافئة",
+    "rawStateHint": "Raw unit state in tooltip",
+    "bootHint": "Whether the unit starts at boot"
   },
   "tabs": {
     "scrollLeft": "انتقل علامات التبويب إلى اليسار",
@@ -12424,7 +12537,9 @@
     "rootConfirmDesc": "هذه الجلسة عبارة عن جذر PTY غير مقيد على المضيف. يتم تدقيق الأوامر.",
     "rootConfirmBody": "تابع فقط إذا كنت تنوي تشغيل أوامر المضيف المميزة.",
     "copyAll": "انسخ الكل",
-    "copyAllNeedConn": "الاتصال أولاً - المخزن المؤقت فارغ أثناء قطع الاتصال"
+    "copyAllNeedConn": "الاتصال أولاً - المخزن المؤقت فارغ أثناء قطع الاتصال",
+    "groupSystem": "System",
+    "groupProject": "Project"
   },
   "uiInline": {
     "s27d9daa5": "وقت التشغيل {{v0}} {{v1}}،",
@@ -12863,13 +12978,18 @@
       "email_dnsbl": {
         "name": "البريد الإلكتروني DNSBL",
         "hint": "التحقق من البريد DNSBL"
+      },
+      "validators_upgrade_scan": {
+        "name": "Validators upgrade scan",
+        "hint": "Check validator image / binary updates"
       }
     },
     "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
     "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
     "panelRestarted": "عادت اللوحة · {{version}}",
     "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
-    "cveNotChecked": "Not checked"
+    "cveNotChecked": "Not checked",
+    "cveLabel": "CVE"
   },
   "users": {
     "userCount": "{{count}} المستخدمين",
@@ -13007,7 +13127,9 @@
     "impersonateHint": "يفتح جلسة باسم هذا المستخدم. استخدم قائمة الحساب لترك انتحال الشخصية.",
     "operatorHighRiskHint": "دور المشغّل الافتراضي يشمل كتابات عالية المخاطر. تضييقه يؤثر على الحسابات الجديدة فقط؛ تغيير الافتراضي يؤثر على المشغّلين الحاليين.",
     "cannotImpersonateSelf": "لقد قمت بالفعل بتسجيل الدخول باستخدام هذا الحساب",
-    "singleAdminNo2fa": "هذا المضيف لديه مسؤول واحد والمصادقة الثنائية متوقفة - قم بتمكين المصادقة الثنائية وأضف مسؤولًا احتياطيًا."
+    "singleAdminNo2fa": "هذا المضيف لديه مسؤول واحد والمصادقة الثنائية متوقفة - قم بتمكين المصادقة الثنائية وأضف مسؤولًا احتياطيًا.",
+    "enableAdmin2fa": "Enable admin 2FA",
+    "addBackupAdmin": "Add a backup admin"
   },
   "validators": {
     "title": "المدققون (Beta)",

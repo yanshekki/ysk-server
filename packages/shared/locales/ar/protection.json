@@ -30,7 +30,9 @@
   "note": {
     "notApplied": "لا يتم تطبيقه على المضيف (يحتاج إلى الجذر + YSK_EXECUTE=1) - يتم حفظه في إعدادات اللوحة",
     "nginxWritten": "كتب ملف لوحة الحد الأقصى لمعدل Nginx",
-    "f2bWritten": "كتب إعدادات لوحة fail2ban"
+    "f2bWritten": "كتب إعدادات لوحة fail2ban",
+    "hintDropped": "Internal protection hint omitted",
+    "nginxLimits": "Will write Nginx rate-limit snippet"
   },
   "rel": {
     "justNow": "الآن",
@@ -386,5 +388,16 @@
   "ufwOffHint": "UFW is not active — fail2ban is the usable target.",
   "whitelistSyncHint": "{{n}} panel entries · fail2ban ignoreip sync: {{sync}}",
   "whitelistSyncOn": "on",
-  "whitelistSyncOff": "off (lists may differ)"
+  "whitelistSyncOff": "off (lists may differ)",
+  "draftBadge": "Draft",
+  "banIsSelf": "This IP matches the current panel source or this host.",
+  "banNotSelf": "This IP is not the current panel source.",
+  "geoSourceLocal": "Local GeoIP library (sapics + DB-IP)",
+  "nginxPreviewHint": "Nginx snippet this preset would write (preview only):",
+  "modeValue": {
+    "normal": "Normal",
+    "degraded": "Degraded",
+    "ddos-protection": "DDoS protection",
+    "offline": "Offline"
+  }
 }

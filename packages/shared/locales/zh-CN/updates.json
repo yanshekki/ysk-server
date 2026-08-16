@@ -223,11 +223,16 @@
     "email_dnsbl": {
       "name": "电子邮件 DNSBL",
       "hint": "邮件 DNSBL 检查"
+    },
+    "validators_upgrade_scan": {
+      "name": "Validators upgrade scan",
+      "hint": "Check validator image / binary updates"
     }
   },
   "applyPanelAlreadyLatest": "已经是最新的面板版本了",
   "panelRestarting": "面板正在重启以加载新版本…",
   "panelRestarted": "面板已恢复 · {{version}}",
   "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
-  "cveNotChecked": "Not checked"
+  "cveNotChecked": "Not checked",
+  "cveLabel": "CVE"
 }

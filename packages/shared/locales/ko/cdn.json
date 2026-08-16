@@ -175,5 +175,31 @@
   "statOnlineOf": "Online {{n}}/{{total}}",
   "statDraining": "Draining {{n}}",
   "localTest": "local / test",
-  "colRegion": "Region"
+  "colRegion": "Region",
+  "previewOnlyNote": "Preview only — nothing was written to the edges.",
+  "statByRegion": "Region: ",
+  "statByApply": "Apply status: ",
+  "col": {
+    "origin": "Origin",
+    "edges": "Edges",
+    "apply": "Apply",
+    "dns": "DNS",
+    "edgesOnline": "Edges online / applied",
+    "dnsRr": "CDN DNS records"
+  },
+  "mode": {
+    "origin_pull": "Origin pull",
+    "reverse_proxy": "Reverse proxy",
+    "static_edge": "Static edge"
+  },
+  "dnsStrategy": {
+    "multi_a": "Multiple A records",
+    "cname": "CNAME",
+    "geo": "Geo"
+  },
+  "edgesOnlineApplied": "{{online}}/{{total}} online · {{applied}} applied",
+  "hitMiss": "Hits {{hits}} / misses {{misses}}",
+  "cacheBytes": "Cache ≈ {{n}} B",
+  "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
+  "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
 }

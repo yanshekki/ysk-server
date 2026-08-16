@@ -22,6 +22,9 @@
     "project.publish": "Publier Nginx",
     "project.suspend": "Suspendre le projet",
     "software.install": "Installer un logiciel",
-    "software.update": "Mettre à jour un logiciel"
+    "software.update": "Mettre à jour un logiciel",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

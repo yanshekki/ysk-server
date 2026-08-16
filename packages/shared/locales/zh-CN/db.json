@@ -253,7 +253,9 @@
     "pushPlanTitle": "预览推送到对等点（无 scp）",
     "fleetSyncPlanTitle": "预览队列同步（不执行）",
     "fleetApplyTitle": "队列适用于车队成员吗？",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "资料浏览",

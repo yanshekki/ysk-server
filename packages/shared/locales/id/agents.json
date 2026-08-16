@@ -134,5 +134,7 @@
   "staleFor": "Tak terlihat {{age}}",
   "commandTitle": "Antrean perintah untuk sesi ini",
   "historyTitleShort": "Buka riwayat perintah (hanya baca)",
-  "expEdge": "Di tepi:"
+  "expEdge": "Di tepi:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

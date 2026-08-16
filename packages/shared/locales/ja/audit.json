@@ -22,6 +22,9 @@
     "project.publish": "Nginxを公開する",
     "project.suspend": "プロジェクトを一時停止する",
     "software.install": "ソフトウェアのインストール",
-    "software.update": "ソフトウェアをアップデートする"
+    "software.update": "ソフトウェアをアップデートする",
+    "backup.restore": "Backup restore",
+    "backup.run": "Backup run",
+    "backup.delete": "Backup deleted"
   }
 }

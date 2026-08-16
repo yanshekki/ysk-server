@@ -419,7 +419,8 @@
   "tabProcesses": "Processes",
   "pm2": {
     "title": "PM2 fleet",
-    "desc": "Read-only view of pm2 jlist (panel user PM2_HOME). Live SSE refreshes every 2s.",
+    "desc": "PM2 is a process manager. This tab lists the panel user’s processes (read-only). Live updates use SSE (server-sent events) about every 2 seconds.",
+    "glossary": "PM2 = process manager; SSE = live stream.",
     "live": "Live",
     "installed": "PM2 installed",
     "version": "pm2 version",

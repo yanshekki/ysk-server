@@ -90,5 +90,7 @@
   "aboutPolicySub": "템플릿 작성과 시스템 설치는 별도의 단계입니다. 설치 후 다시 실행하는 것은 누락된 단계가 아니라 일반적인 작업입니다.",
   "policyInstallFull": "설치 및 활성화: /etc/systemd/system에 복사하고 daemon-reload하고 --now를 활성화합니다. 루트 + EXECUTE가 필요합니다.",
   "policyBlockedTitle": "권한 없이 차단됨",
-  "policyNotEqualTitle": "상태는 동일하지 않습니다."
+  "policyNotEqualTitle": "상태는 동일하지 않습니다.",
+  "rawStateHint": "Raw unit state in tooltip",
+  "bootHint": "Whether the unit starts at boot"
 }

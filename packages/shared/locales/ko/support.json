@@ -34,5 +34,11 @@
   "diagCopyTitle": "버전, EXECUTE, 호스트 정보 복사",
   "diagPreview": "복사될 내용 미리보기",
   "diagLoading": "진단 로드 중…",
-  "diagLoadFailed": "진단을 로드할 수 없습니다."
+  "diagLoadFailed": "진단을 로드할 수 없습니다.",
+  "copiedAddr": "Copied {{addr}}",
+  "diagStatus": "Status",
+  "diagMode": "Mode",
+  "diagProtection": "Protection",
+  "diagHostname": "Hostname",
+  "diagOs": "OS"
 }

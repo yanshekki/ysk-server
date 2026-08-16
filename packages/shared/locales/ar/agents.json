@@ -134,5 +134,7 @@
   "staleFor": "الغيب {{age}}",
   "commandTitle": "قم بوضع أمر في قائمة الانتظار لهذه الجلسة",
   "historyTitleShort": "فتح سجل الأوامر (للقراءة فقط)",
-  "expEdge": "على حافة:"
+  "expEdge": "على حافة:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }

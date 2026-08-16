@@ -203,5 +203,8 @@
   "nginxUnusedHint": "اسٹاک / catch-all conf (000-default)۔ کارروائی تک سنک میں رہتا ہے۔",
   "powerUnlock": "خطرے کے زون کو غیر مقفل کریں۔",
   "powerLock": "خطرے کے زون کو بند کریں۔",
-  "noScheduledPower": "کوئی ریبوٹ یا پاور آف شیڈول نہیں ہے۔"
+  "noScheduledPower": "کوئی ریبوٹ یا پاور آف شیڈول نہیں ہے۔",
+  "timezoneNow": "Host time now: {{time}} ({{tz}})",
+  "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
+  "notExported": "Not exported yet"
 }

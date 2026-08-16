@@ -31,6 +31,7 @@ import {
   ServerListFilters,
   buttonClassName } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
+import { toast } from '../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindVoid } from './bind-handlers';
 
 export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
@@ -481,7 +482,9 @@ export function AgentsPage() {
                 header: t('agents.colSession'),
                 render: (a) => (
                   <span className="u-flex u-items-center u-gap-2">
-                    <code className="inline u-break-all">{a.id}</code>
+                    <code className="inline u-truncate" title={a.id}>
+                      {a.id}
+                    </code>
                     <Button
                       type="button"
                       variant="ghost"
@@ -489,7 +492,7 @@ export function AgentsPage() {
                       title={t('agents.copySession')}
                       onClick={() => {
                         void navigator.clipboard.writeText(a.id).then(
-                          () => undefined,
+                          () => toast.ok(t('common.copied')),
                           () => undefined,
                         );
                       }}
@@ -781,7 +784,9 @@ intervalMs: 5000`}
                           variant="secondary"
                           size="sm"
                           loading={busy}
-                          onClick={bindCall1(probeKind, rt.kind)}
+                          onClick={() =>
+                            void probeKind(rt.kind).then(() => refreshAll())
+                          }
                         >
                           {t('agents.probe')}
                         </Button>
@@ -797,7 +802,9 @@ intervalMs: 5000`}
                           variant="primary"
                           size="sm"
                           loading={busy}
-                          onClick={bindCall1(installKind, rt.kind)}
+                          onClick={() =>
+                            void installKind(rt.kind).then(() => refreshAll())
+                          }
                         >
                           {t('agents.install')}
                         </Button>

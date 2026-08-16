@@ -459,15 +459,16 @@ export async function restoreProjectBackup(input: {
 
   if (mode === 'dry-run') {
     const r = await input.host.runCommand(['tar', '-tzf', archivePath], { timeoutMs: 60_000 });
-    const listing = (r.stdout || '').split('\n').filter(Boolean).slice(0, 80);
+    const listing = (r.stdout || '').split('\n').filter(Boolean);
+    const shown = listing.slice(0, 12);
     return {
       ok: r.exitCode === 0,
       archivePath,
       notes: [
         r.exitCode === 0
-          ? tl('notes.auto.t0331', { v0: (listing.length), v1: (listing.length) })
+          ? tl('notes.auto.t0331', { v0: listing.length, v1: shown.length })
           : tl('notes.auto.t0332', { v0: (r.stderr) }),
-        ...listing.slice(0, 12).map((l) => `  ${l}`),
+        ...shown.map((l) => `  ${l}`),
       ],
       commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }] };
   }
@@ -743,16 +744,17 @@ export async function restoreControlPlaneBackup(input: {
 
   if (mode === 'dry-run') {
     const r = await input.host.runCommand(['tar', '-tzf', archivePath], { timeoutMs: 60_000 });
-    const listing = (r.stdout || '').split('\n').filter(Boolean).slice(0, 40);
+    const listing = (r.stdout || '').split('\n').filter(Boolean);
+    const shown = listing.slice(0, 12);
     return {
       ok: r.exitCode === 0,
       archivePath,
       notes: [
         r.exitCode === 0
-          ? tl('notes.auto.t0331', { v0: listing.length, v1: listing.length })
+          ? tl('notes.auto.t0331', { v0: listing.length, v1: shown.length })
           : tl('notes.auto.t0332', { v0: r.stderr }),
         tl('notes.backup.controlPlaneDryRun'),
-        ...listing.slice(0, 12).map((l) => `  ${l}`),
+        ...shown.map((l) => `  ${l}`),
       ],
       commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }],
     };

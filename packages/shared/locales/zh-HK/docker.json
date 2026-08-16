@@ -106,7 +106,7 @@
     "networks": "未有網絡"
   },
   "logs": {
-    "empty": "此容器尚未輸出日誌。",
+    "empty": "沒有日誌輸出。像 hello-world 這類即時結束的容器，通常不會寫日誌。",
     "follow": "跟隨"
   },
   "deleteRunningWarn": "此容器仍在運行或重啟中，刪除會強制移除。",

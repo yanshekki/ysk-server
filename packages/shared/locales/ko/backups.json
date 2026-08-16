@@ -143,5 +143,8 @@
   "restoreWebTitle": "이 아카이브에서만 웹사이트 파일을 복원하세요.",
   "previewTitle": "쓰지 않고 복원 미리보기",
   "partialSkipped": "부분 — 일부 프로젝트를 건너뛰었습니다.",
-  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
+  "skippedListHint": "These projects were skipped:",
+  "goLogs": "Open logs",
+  "goAbout": "Backup notes"
 }

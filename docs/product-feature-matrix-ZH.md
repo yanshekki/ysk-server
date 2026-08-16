@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-16 — 對齊 **1.1.3**（1.1.2 之後的 npm latest）。Docker 先安裝控制台、品牌名凍結、E2E-1111 誠實／UX。標記對齊已交付程式（面板 + CLI + API），不是行銷。  
+**重計：** 2026-08-16 — 對齊 **1.1.4**（1.1.3 之後的 npm latest）。E2E-1113 誠實／確認、最後邊緣、VNC userdel 失敗唔假成功。標記對齊已交付程式（面板 + CLI + API），不是行銷。  
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

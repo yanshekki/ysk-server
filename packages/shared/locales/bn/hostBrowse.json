@@ -142,5 +142,6 @@
   "envColPanel": "প্যানেল সেটিং",
   "envColEffective": "কার্যকর",
   "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
-  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar."
+  "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
+  "closeNoSession": "No session yet"
 }

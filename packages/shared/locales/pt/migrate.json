@@ -86,5 +86,8 @@
   "orphanRemovePhrase": "Escreva DELETE para confirmar.",
   "orphanRemoveNeedConfirm": "Requer confirmação",
   "passwordNotStored": "Password is used for this SSH session only and is not saved on disk.",
-  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel."
+  "overwriteDanger": "Overwrite will replace existing YSK data on the target. This cannot be undone from the panel.",
+  "orphanBackupFirst": "Back up first (open Backups)",
+  "expandAllWarnings": "Show all {{n}} warnings",
+  "collapseWarnings": "Show fewer"
 }

@@ -245,7 +245,9 @@
     "pushPlanTitle": "Aperçu push to peer (pas de scp)",
     "fleetSyncPlanTitle": "Aperçu de la synchronisation de la flotte (pas d'exécution)",
     "fleetApplyTitle": "La mise en file d'attente s'applique-t-elle aux membres de la flotte ?",
-    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab."
+    "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
+    "roleUnassigned": "No role assigned",
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
   },
   "console": {
     "dataBrowse": "Parcourir les données",

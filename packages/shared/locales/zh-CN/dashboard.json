@@ -119,5 +119,11 @@
   "notifAll": "全部",
   "notifDismiss": "隐藏",
   "goFix": "前往处理",
-  "needDomainFirst": "请先填域名"
+  "needDomainFirst": "请先填域名",
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Warning",
+    "bad": "Problem"
+  }
 }

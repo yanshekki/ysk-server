@@ -134,5 +134,7 @@
   "staleFor": "Invisible {{age}}",
   "commandTitle": "Poner en cola un comando para esta sesión",
   "historyTitleShort": "Abrir historial de comandos (solo lectura)",
-  "expEdge": "En un borde:"
+  "expEdge": "En un borde:",
+  "noteAllowlist": "Agent tool calls must pass the allowlist.",
+  "noteRbacCap": "Agent role is capped at write-low."
 }
