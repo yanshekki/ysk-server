@@ -12950,7 +12950,10 @@
       "stepSummary": "Summary",
       "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
       "diskNeed": "This profile needs about {{need}} · free {{free}}",
-      "diskShort": "Not enough free disk for this chain / network / profile"
+      "diskShort": "Not enough free disk for this chain / network / profile",
+      "limitNone": "No limit",
+      "rpcDefault": "Default",
+      "customPath": "Use a custom data path"
     },
     "actions": {
       "detail": "বিস্তারিত",

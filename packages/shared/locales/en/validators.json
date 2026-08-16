@@ -150,10 +150,13 @@
     "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
     "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
     "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
-    "memory": "Memory limit (e.g. 4g)",
-    "cpus": "CPU limit (e.g. 2.0)",
-    "dataPath": "Data path (optional)",
-    "rpcPort": "RPC port (optional)"
+    "memory": "Memory limit",
+    "cpus": "CPU limit",
+    "dataPath": "Data path",
+    "rpcPort": "RPC port",
+    "limitNone": "No limit",
+    "rpcDefault": "Default",
+    "customPath": "Use a custom data path"
   },
   "actions": {
     "detail": "Details",

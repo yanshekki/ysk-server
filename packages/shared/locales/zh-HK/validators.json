@@ -150,10 +150,13 @@
     "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
     "mainnetAck": "我明白磁碟與罰沒風險，仍要建立主網節點。",
     "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
-    "memory": "記憶體上限（例如 4g）",
-    "cpus": "CPU 上限（例如 2.0）",
-    "dataPath": "資料路徑（可選）",
-    "rpcPort": "RPC 埠（可選）"
+    "memory": "記憶體上限",
+    "cpus": "CPU 上限",
+    "dataPath": "資料路徑",
+    "rpcPort": "RPC 埠",
+    "limitNone": "不限",
+    "rpcDefault": "預設",
+    "customPath": "使用自訂資料路徑"
   },
   "actions": {
     "detail": "詳情",

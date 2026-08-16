@@ -11,6 +11,7 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormLayout,
   Modal,
   OpsResultPanel,
   PageGuide,
@@ -37,6 +38,12 @@ import {
 } from '../../features/validators';
 
 const TABS = ['nodes', 'disk', 'about'] as const;
+
+function profileLabel(id: string, t: (k: string) => string): string {
+  if (id === 'rpc') return 'RPC';
+  if (id === 'pruned') return 'Pruned';
+  return t(`validators.profile.${id}`);
+}
 
 function formatBytes(n: number | null | undefined): string {
   if (n == null || !Number.isFinite(n)) return '—';
@@ -66,6 +73,7 @@ export function ValidatorsPage() {
   const [memory, setMemory] = useState('');
   const [cpus, setCpus] = useState('');
   const [dataPath, setDataPath] = useState('');
+  const [customPath, setCustomPath] = useState(false);
   const [rpcPort, setRpcPort] = useState('');
   const stream = useOpsStreamOptional();
   const [summaries, setSummaries] = useState<Record<string, ValidatorSummaryDto>>({});
@@ -153,6 +161,7 @@ export function ValidatorsPage() {
     setMemory('');
     setCpus('');
     setDataPath('');
+    setCustomPath(false);
     setRpcPort('');
     setOps(null);
   };
@@ -169,7 +178,7 @@ export function ValidatorsPage() {
         mithril: chain === 'ada' ? mithril : undefined,
         memory: memory.trim() || undefined,
         cpus: cpus.trim() || undefined,
-        dataPath: dataPath.trim() || undefined,
+        dataPath: customPath ? dataPath.trim() || undefined : undefined,
         rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
         execute,
       });
@@ -346,7 +355,7 @@ export function ValidatorsPage() {
               {
                 key: 'profile',
                 header: t('validators.col.profile'),
-                render: (row) => t(`validators.profile.${row.profile}`),
+                render: (row) => profileLabel(row.profile, t),
               },
               {
                 key: 'status',
@@ -505,10 +514,12 @@ export function ValidatorsPage() {
           </>
         }
       >
+        <div className="stack val-wizard">
         {step === 0 ? (
           <>
             <SegRadio
               name="chain"
+              aria-label={t('validators.wizard.stepChain')}
               value={chain}
               onChange={(v) => {
                 setChain(v);
@@ -544,6 +555,7 @@ export function ValidatorsPage() {
           <>
             <SegRadio
               name="network"
+              aria-label={t('validators.wizard.stepNetwork')}
               value={network}
               onChange={setNetwork}
               options={(chainSpec?.networks ?? []).map((n) => ({
@@ -554,14 +566,14 @@ export function ValidatorsPage() {
             {netSpec?.kind === 'mainnet' ? (
               <>
                 <Alert variant="warn">{t('validators.wizard.mainnetWarn')}</Alert>
-                <Field htmlFor="val-mainnet-ack" label={t('validators.wizard.mainnetAck')}>
+                <label className="u-flex u-gap-2 u-items-center">
                   <input
-                    id="val-mainnet-ack"
                     type="checkbox"
                     checked={mainnetOk}
                     onChange={(e) => setMainnetOk(e.target.checked)}
                   />
-                </Field>
+                  <span>{t('validators.wizard.mainnetAck')}</span>
+                </label>
               </>
             ) : null}
           </>
@@ -570,11 +582,12 @@ export function ValidatorsPage() {
           <>
             <SegRadio
               name="profile"
+              aria-label={t('validators.wizard.stepProfile')}
               value={profile}
               onChange={setProfile}
               options={['minimal', 'pruned', 'validator-ready', 'rpc'].map((p) => ({
                 value: p,
-                label: t(`validators.profile.${p}`),
+                label: profileLabel(p, t),
               }))}
             />
             {needBytes != null ? (
@@ -586,59 +599,111 @@ export function ValidatorsPage() {
               </Alert>
             ) : null}
             {chain === 'eth' ? (
-              <>
+              <FormLayout>
                 <Field htmlFor="val-el" label={t('validators.clients.el')}>
-                  <select id="val-el" value={el} onChange={(e) => setEl(e.target.value)}>
-                    {(chainSpec?.clients.filter((c) => c.role === 'el') ?? []).map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.id}
-                      </option>
-                    ))}
-                  </select>
+                  <SegRadio
+                    name="el"
+                    aria-label={t('validators.clients.el')}
+                    value={el}
+                    onChange={setEl}
+                    options={(chainSpec?.clients.filter((c) => c.role === 'el') ?? []).map((c) => ({
+                      value: c.id,
+                      label: c.id,
+                    }))}
+                  />
                 </Field>
                 <Field htmlFor="val-cl" label={t('validators.clients.cl')}>
-                  <select id="val-cl" value={cl} onChange={(e) => setCl(e.target.value)}>
-                    {(chainSpec?.clients.filter((c) => c.role === 'cl') ?? []).map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.id}
-                      </option>
-                    ))}
-                  </select>
+                  <SegRadio
+                    name="cl"
+                    aria-label={t('validators.clients.cl')}
+                    value={cl}
+                    onChange={setCl}
+                    options={(chainSpec?.clients.filter((c) => c.role === 'cl') ?? []).map((c) => ({
+                      value: c.id,
+                      label: c.id,
+                    }))}
+                  />
                 </Field>
-              </>
+              </FormLayout>
             ) : null}
             {chain === 'ada' ? (
-              <Field htmlFor="val-mithril" label={t('validators.mithril.label')}>
+              <label className="u-flex u-gap-2 u-items-center">
                 <input
-                  id="val-mithril"
                   type="checkbox"
                   checked={mithril}
                   onChange={(e) => setMithril(e.target.checked)}
                 />
+                <span>{t('validators.mithril.label')}</span>
+              </label>
+            ) : null}
+            <FormLayout>
+              <Field htmlFor="val-mem" label={t('validators.wizard.memory')}>
+                <SegRadio
+                  name="mem"
+                  aria-label={t('validators.wizard.memory')}
+                  value={memory}
+                  onChange={setMemory}
+                  options={[
+                    { value: '', label: t('validators.wizard.limitNone') },
+                    { value: '2g', label: '2g' },
+                    { value: '4g', label: '4g' },
+                    { value: '8g', label: '8g' },
+                    { value: '16g', label: '16g' },
+                  ]}
+                />
+              </Field>
+              <Field htmlFor="val-cpus" label={t('validators.wizard.cpus')}>
+                <SegRadio
+                  name="cpus"
+                  aria-label={t('validators.wizard.cpus')}
+                  value={cpus}
+                  onChange={setCpus}
+                  options={[
+                    { value: '', label: t('validators.wizard.limitNone') },
+                    { value: '1', label: '1' },
+                    { value: '2', label: '2' },
+                    { value: '4', label: '4' },
+                    { value: '8', label: '8' },
+                  ]}
+                />
+              </Field>
+              <Field htmlFor="val-rpcport" label={t('validators.wizard.rpcPort')}>
+                <SegRadio
+                  name="rpcport"
+                  aria-label={t('validators.wizard.rpcPort')}
+                  value={rpcPort}
+                  onChange={setRpcPort}
+                  options={[
+                    { value: '', label: t('validators.wizard.rpcDefault') },
+                    { value: '8545', label: '8545' },
+                    { value: '8551', label: '8551' },
+                    { value: '8546', label: '8546' },
+                  ]}
+                />
+              </Field>
+            </FormLayout>
+            <label className="u-flex u-gap-2 u-items-center">
+              <input
+                type="checkbox"
+                checked={customPath}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setCustomPath(on);
+                  if (!on) setDataPath('');
+                }}
+              />
+              <span>{t('validators.wizard.customPath')}</span>
+            </label>
+            {customPath ? (
+              <Field htmlFor="val-datapath" label={t('validators.wizard.dataPath')}>
+                <input
+                  id="val-datapath"
+                  value={dataPath}
+                  onChange={(e) => setDataPath(e.target.value)}
+                  placeholder="/var/lib/ysk-server/validators/…"
+                />
               </Field>
             ) : null}
-            <Field htmlFor="val-mem" label={t('validators.wizard.memory')}>
-              <input id="val-mem" value={memory} onChange={(e) => setMemory(e.target.value)} placeholder="4g" />
-            </Field>
-            <Field htmlFor="val-cpus" label={t('validators.wizard.cpus')}>
-              <input id="val-cpus" value={cpus} onChange={(e) => setCpus(e.target.value)} placeholder="2.0" />
-            </Field>
-            <Field htmlFor="val-datapath" label={t('validators.wizard.dataPath')}>
-              <input
-                id="val-datapath"
-                value={dataPath}
-                onChange={(e) => setDataPath(e.target.value)}
-                placeholder="/var/lib/ysk-server/validators/…"
-              />
-            </Field>
-            <Field htmlFor="val-rpcport" label={t('validators.wizard.rpcPort')}>
-              <input
-                id="val-rpcport"
-                value={rpcPort}
-                onChange={(e) => setRpcPort(e.target.value)}
-                placeholder="8545"
-              />
-            </Field>
           </>
         ) : null}
         {step === 3 ? (
@@ -653,10 +718,11 @@ export function ValidatorsPage() {
             </div>
             <div>
               <dt>{t('validators.col.profile')}</dt>
-              <dd>{t(`validators.profile.${profile}`)}</dd>
+              <dd>{profileLabel(profile, t)}</dd>
             </div>
           </dl>
         ) : null}
+        </div>
       </Modal>
 
       <Modal

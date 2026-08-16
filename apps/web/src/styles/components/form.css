@@ -273,6 +273,14 @@ textarea:disabled {
   margin-top: var(--space-card-block, var(--space-6));
 }
 
+.val-wizard {
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.val-wizard .field {
+  min-width: 0;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;
