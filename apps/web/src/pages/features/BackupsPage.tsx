@@ -1264,7 +1264,11 @@ export function BackupsPage() {
                     size="md"
                     loading={busy}
                     disabled={!remote.enabled}
-                    title={!remote.enabled ? t('backups.testDisabledHint') : undefined}
+                    title={
+                      !remote.enabled
+                        ? t('backups.testDisabledHint')
+                        : t('backups.testRemoteHint')
+                    }
                     onClick={() => {
                       void run(async () => {
                         try {

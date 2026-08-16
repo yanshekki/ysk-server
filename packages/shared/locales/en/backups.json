@@ -136,6 +136,7 @@
   "secretKey": "Secret Key",
   "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite",
   "testRemote": "Test destination",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
   "testRemoteDone": "Remote probe finished",
   "testRemoteFailed": "Remote probe failed",
   "resticRepoPh": "Panel data directory / restic-repo",

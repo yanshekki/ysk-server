@@ -225,5 +225,8 @@
       "hint": "মেল DNSBL চেক"
     }
   },
-  "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ"
+  "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ",
+  "panelRestarting": "নতুন সংস্করণ লোড করতে প্যানেল পুনরায় চালু হচ্ছে…",
+  "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
+  "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।"
 }

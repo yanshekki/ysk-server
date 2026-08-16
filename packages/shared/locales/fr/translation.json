@@ -442,7 +442,8 @@
     "restoreFullTitle": "Écraser les fichiers de projet et les bases de données de cette archive — saisissez le nom du fichier pour confirmer",
     "restoreWebTitle": "Restaurer les fichiers du site Web uniquement à partir de cette archive",
     "previewTitle": "Aperçu de la restauration sans écrire",
-    "partialSkipped": "Partiel – certains projets ignorés"
+    "partialSkipped": "Partiel – certains projets ignorés",
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
   },
   "btTracker": {
     "title": "Traqueur BT",
@@ -781,7 +782,7 @@
     "deleteSiteDesc": "Supprime le site CDN « {{name}} ».",
     "deleteSiteC1": "Politique du site et associations edge",
     "deleteSiteC2": "Les configs nginx appliquées peuvent nécessiter un nettoyage ou une réapplication séparés",
-    "statOnline": "Online {{n}}/{{total}}",
+    "statOnline": "Online",
     "statOffline": "Hors ligne {{n}}",
     "statHitRate": "Taux de réussite {{v}}",
     "hitNoStats": "Pas encore de stats de bord",
@@ -836,7 +837,10 @@
       "offline": "hors ligne",
       "draining": "évacuation",
       "unknown": "inconnu"
-    }
+    },
+    "statOnlineOf": "Online {{n}}/{{total}}",
+    "statDraining": "Draining {{n}}",
+    "localTest": "local / test"
   },
   "cli": {
     "unknownCommand": "Commande inconnue : {{command}}\nExécutez `{{cli}} help`",
@@ -3073,7 +3077,9 @@
       "images": "Aucune image",
       "compose": "Aucun projet Compose",
       "volumes": "Aucun volume",
-      "networks": "Aucun réseau"
+      "networks": "Aucun réseau",
+      "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+      "composeCta": "Open validator nodes"
     },
     "logs": {
       "empty": "Pas encore de journaux"
@@ -3144,7 +3150,23 @@
         "stop": "docker.service arrêté",
         "restart": "docker.service redémarré"
       }
-    }
+    },
+    "needEngineTitle": "Install Docker Engine first",
+    "notInstalledValue": "Not installed",
+    "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+    "volPlaceholder": "my-data",
+    "netPlaceholder": "my-net",
+    "runPorts": "Publish ports",
+    "runPortsHint": "host:container per line, e.g. 8080:80",
+    "runEnv": "Environment",
+    "runEnvHint": "KEY=value per line",
+    "runRestart": "Restart policy",
+    "runNetwork": "Network",
+    "runVolumes": "Volumes",
+    "runVolumesHint": "volume:dest per line",
+    "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+    "daemonConfirmTitle": "Apply daemon settings?",
+    "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted."
   },
   "email": {
     "title": "E-mail",
@@ -9851,7 +9873,10 @@
     "col429": "429",
     "topIpsTitle": "IP en tête",
     "hitsCount": "{{n}} requêtes",
-    "sampleWindowHint": "Les comptes viennent de la fenêtre d’échantillons access + auth actuelle, pas du fichier journal complet."
+    "sampleWindowHint": "Les comptes viennent de la fenêtre d’échantillons access + auth actuelle, pas du fichier journal complet.",
+    "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+    "suspectActionableCount": "Actionable IPs {{count}}",
+    "uaNeedZones": "Set a Cloudflare zone first"
   },
   "publicFiles": {
     "notSet": "Non défini",
@@ -12627,7 +12652,10 @@
         "hint": "Vérification DNSBL par courrier"
       }
     },
-    "applyPanelAlreadyLatest": "Déjà la dernière version du panneau"
+    "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
+    "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
+    "panelRestarted": "Panneau de retour · {{version}}",
+    "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes."
   },
   "users": {
     "userCount": "{{count}} utilisateurs",
@@ -12770,7 +12798,7 @@
   "validators": {
     "title": "Validateurs (Beta)",
     "subtitle": "Installez et gérez des nœuds L1 sur cet hôte. Non dépositaire — vous gardez les clés.",
-    "beta": "Bêta",
+    "beta": "Beta",
     "tab": {
       "nodes": "Nœuds",
       "disk": "Disque",
@@ -12778,7 +12806,10 @@
     },
     "empty": {
       "title": "Aucun nœud validateur pour l’instant",
-      "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "copyCli": "Copy command",
+      "copied": "Copied"
     },
     "refresh": "Actualiser",
     "disk": {
@@ -12789,23 +12820,24 @@
       "none": "Pas encore de données d’instance",
       "warn": "Utilisation du disque élevée (70 %+)",
       "danger": "Utilisation du disque critique (85 %+)",
-      "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)"
+      "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)",
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
     },
     "chain": {
-      "eth": "Éthereum",
+      "eth": "Ethereum",
       "avax": "Avalanche",
       "near": "NEAR",
       "ada": "Cardano",
       "btc": "Bitcoin",
-      "cosmos": "Centre Cosmos",
+      "cosmos": "Cosmos Hub",
       "sui": "Sui",
       "aptos": "Aptos",
-      "dot": "Pois",
+      "dot": "Polkadot",
       "sol": "Solana"
     },
     "network": {
-      "hoodi": "Sweat à capuche",
-      "sepolia": "Sépolie",
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
       "mainnet": "Réseau principal",
       "fuji": "Fuji",
       "testnet": "Réseau de test",
@@ -12819,7 +12851,7 @@
     },
     "profile": {
       "minimal": "Minimaliste",
-      "pruned": "Élagué",
+      "pruned": "Pruned",
       "validator-ready": "Prêt validateur",
       "rpc": "RPC"
     },
@@ -12871,7 +12903,7 @@
     "notes": {
       "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
       "noKeys": "YSK Server ne génère ni n’enregistre jamais de clés de staking.",
-      "dockerSoon": "Installation, démarrage et arrêt arrivent à l’étape suivante. Cette page liste seulement les instances et le disque.",
+      "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
       "dryCreate": "Spécification d’instance et compose écrits (dry-run). Passez --execute et YSK_EXECUTE=1 pour démarrer les conteneurs.",
       "dryStart": "Le démarrage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
       "dryStop": "L’arrêt est un dry-run. Passez --execute et YSK_EXECUTE=1.",
@@ -12910,7 +12942,15 @@
       "memory": "Limite mémoire (ex. 4g)",
       "cpus": "Limite CPU (ex. 2.0)",
       "dataPath": "Chemin de données (facultatif)",
-      "rpcPort": "Port RPC (facultatif)"
+      "rpcPort": "Port RPC (facultatif)",
+      "stepOf": "Step {{n}} / {{total}}",
+      "stepChain": "Chain",
+      "stepNetwork": "Network",
+      "stepProfile": "Profile",
+      "stepSummary": "Summary",
+      "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+      "diskNeed": "This profile needs about {{need}} · free {{free}}",
+      "diskShort": "Not enough free disk for this chain / network / profile"
     },
     "actions": {
       "detail": "Détails",

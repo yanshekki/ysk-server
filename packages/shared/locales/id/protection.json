@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "IP teratas",
   "hitsCount": "{{n}} hit",
-  "sampleWindowHint": "Hitungan dari jendela sampel access + auth saat ini, bukan file log penuh."
+  "sampleWindowHint": "Hitungan dari jendela sampel access + auth saat ini, bukan file log penuh.",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

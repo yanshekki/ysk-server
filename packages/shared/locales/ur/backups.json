@@ -142,5 +142,6 @@
   "restoreFullTitle": "اس آرکائیو سے پروجیکٹ فائلوں اور ڈیٹا بیس کو اوور رائٹ کریں — تصدیق کے لیے فائل کا نام ٹائپ کریں۔",
   "restoreWebTitle": "ویب سائٹ کی فائلوں کو صرف اس آرکائیو سے بحال کریں۔",
   "previewTitle": "بغیر تحریر کے بحالی کا پیش نظارہ کریں۔",
-  "partialSkipped": "جزوی - کچھ پروجیکٹس چھوڑ دیے گئے۔"
+  "partialSkipped": "جزوی - کچھ پروجیکٹس چھوڑ دیے گئے۔",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

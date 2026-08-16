@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "أعلى عناوين IP",
   "hitsCount": "{{n}} ضربة",
-  "sampleWindowHint": "الأعداد من نافذة عينات access + auth الحالية، وليست من ملف السجل الكامل."
+  "sampleWindowHint": "الأعداد من نافذة عينات access + auth الحالية، وليست من ملف السجل الكامل.",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

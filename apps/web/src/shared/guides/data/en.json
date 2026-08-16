@@ -1752,9 +1752,9 @@
     "summary": "One-click install and manage L1 nodes (Ethereum, Avalanche, NEAR, Cardano, Bitcoin, Cosmos, Sui, Aptos, Polkadot, Solana) on this host. Non-custodial — the panel never holds staking keys.",
     "canDo": [
       "List node instances and recommended chains",
+      "Create, start, stop, and clear nodes from the panel wizard",
       "See disk used by validator data",
-      "Use the CLI: ysk-server validators list|chains|disk --json",
-      "Later: install / start / stop / clear / upgrade"
+      "Use the CLI: ysk-server validators list|create|start --json"
     ],
     "workflow": [
       "Read the disk tab before creating a node",
@@ -1762,7 +1762,7 @@
       "Mutations need root and YSK_EXECUTE=1"
     ],
     "notes": [
-      "Beta: install and start are not on this page yet",
+      "Beta: install and start need Docker Engine, root, and YSK_EXECUTE=1",
       "Mainnet needs hundreds of GB free (ETH) — the create flow will refuse if space is short",
       "RPC binds to localhost by default"
     ],
@@ -1802,7 +1802,7 @@
       "Mutations need root and YSK_EXECUTE=1"
     ],
     "notes": [
-      "This is not Kubernetes. No privileged run, no arbitrary Compose upload.",
+      "This page manages Docker on one host. Use external Kubernetes for cluster orchestration. No privileged run, no arbitrary Compose upload.",
       "Stopping the engine stops validator stacks too."
     ],
     "cliHints": [

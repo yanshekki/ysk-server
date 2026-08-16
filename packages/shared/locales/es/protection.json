@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "IP principales",
   "hitsCount": "{{n}} impactos",
-  "sampleWindowHint": "Los recuentos son de la ventana de muestras access + auth actual, no del archivo de registro completo."
+  "sampleWindowHint": "Los recuentos son de la ventana de muestras access + auth actual, no del archivo de registro completo.",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

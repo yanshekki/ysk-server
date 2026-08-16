@@ -879,7 +879,10 @@ export function ProtectionPage() {
               items: [
                 {
                   label: t('protection.statSuspects'),
-                  value: suspects.length,
+                  value: t('protection.statSuspectsSplit', {
+                    actionable: actionableSuspects.length,
+                    total: suspects.length,
+                  }),
                   hint: t('protection.scoreBasisHint'),
                   tone: suspects.length > 0 ? 'warn' : 'ok',
                 },
@@ -925,7 +928,7 @@ export function ProtectionPage() {
           </Button>
           {actionableSuspects.length > 0 ? (
             <Button variant="danger" size="sm" onClick={goBans}>
-              {t('protection.suspectIpsCount', { count: actionableSuspects.length })}
+              {t('protection.suspectActionableCount', { count: actionableSuspects.length })}
             </Button>
           ) : null}
         </ActionBar>
@@ -1634,6 +1637,8 @@ export function ProtectionPage() {
                   variant="ghost"
                   size="sm"
                   loading={busy}
+                  disabled={!cfZonesText.trim()}
+                  title={!cfZonesText.trim() ? t('protection.uaNeedZones') : undefined}
                   onClick={bindDefensePostOnly(
                     run,
                     api.requestRaw,
@@ -2504,12 +2509,16 @@ export function ProtectionPage() {
             </div>
 
             <div className="def-panel-card">
+              {geoStatus && !geoStatus.ready ? (
+                <Alert variant="warn">{t('protection.geoNeedDb')}</Alert>
+              ) : null}
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('protection.accessPolicy')}</h3>
                 <label className="def-switch">
                   <input
                     type="checkbox"
                     checked={geoEnabled}
+                    disabled={!geoStatus?.ready}
                     onChange={bindCheck(setGeoEnabled)}
                   />
                   {t('protection.enable')}

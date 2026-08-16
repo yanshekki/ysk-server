@@ -219,6 +219,7 @@ export const updatesApi = {
       ok?: boolean;
       notes?: string[];
       applied?: boolean;
+      restarting?: boolean;
       blockMessage?: string;
       message?: string;
     }>('/api/v1/updates/self/apply', {

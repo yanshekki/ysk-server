@@ -116,7 +116,7 @@
   "deleteSiteDesc": "将删除 CDN 站点「{{name}}」。",
   "deleteSiteC1": "站点策略与边缘关联",
   "deleteSiteC2": "已下发的 nginx 配置需另行清理或重新应用",
-  "statOnline": "线上 {{n}}/{{total}}",
+  "statOnline": "线上",
   "statOffline": "离线 {{n}}",
   "statHitRate": "命中率 {{v}}",
   "hitNoStats": "尚无边缘统计",
@@ -171,5 +171,8 @@
     "offline": "离线",
     "draining": "排水",
     "unknown": "未知"
-  }
+  },
+  "statOnlineOf": "线上 {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

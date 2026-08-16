@@ -116,7 +116,7 @@
   "deleteSiteDesc": "CDN साइट \"{{name}}\" को हटाता है।",
   "deleteSiteC1": "साइट नीति और एज एसोसिएशन",
   "deleteSiteC2": "लागू nginx कॉन्फ़िगरेशन को अलग से सफाई या पुनः लागू करने की आवश्यकता हो सकती है",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "ऑफलाइन {{n}}",
   "statHitRate": "हिट दर {{v}}",
   "hitNoStats": "अभी एज आँकड़े नहीं",
@@ -171,5 +171,8 @@
     "offline": "ऑफलाइन",
     "draining": "जल निकासी",
     "unknown": "अज्ञात"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

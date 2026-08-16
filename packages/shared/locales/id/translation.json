@@ -442,7 +442,8 @@
     "restoreFullTitle": "Timpa file proyek dan database dari arsip ini — ketikkan nama file untuk mengonfirmasi",
     "restoreWebTitle": "Pulihkan file situs web hanya dari arsip ini",
     "previewTitle": "Pratinjau pemulihan tanpa menulis",
-    "partialSkipped": "Parsial — beberapa proyek dilewati"
+    "partialSkipped": "Parsial — beberapa proyek dilewati",
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
   },
   "btTracker": {
     "title": "Pelacak BT",
@@ -781,7 +782,7 @@
     "deleteSiteDesc": "Menghapus situs CDN \"{{name}}\".",
     "deleteSiteC1": "Kebijakan situs dan asosiasi edge",
     "deleteSiteC2": "Konfigurasi nginx yang diterapkan mungkin memerlukan pembersihan terpisah atau penerapan ulang",
-    "statOnline": "Online {{n}}/{{total}}",
+    "statOnline": "Online",
     "statOffline": "Luring {{n}}",
     "statHitRate": "Tingkat hit {{v}}",
     "hitNoStats": "Belum ada statistik edge",
@@ -836,7 +837,10 @@
       "offline": "luring",
       "draining": "menguras",
       "unknown": "tidak dikenal"
-    }
+    },
+    "statOnlineOf": "Online {{n}}/{{total}}",
+    "statDraining": "Draining {{n}}",
+    "localTest": "local / test"
   },
   "cli": {
     "unknownCommand": "Perintah tidak diketahui: {{command}}\nJalankan `{{cli}} bantuan`",
@@ -3073,7 +3077,9 @@
       "images": "Tidak ada citra",
       "compose": "Tidak ada proyek Compose",
       "volumes": "Tidak ada volume",
-      "networks": "Tidak ada jaringan"
+      "networks": "Tidak ada jaringan",
+      "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+      "composeCta": "Open validator nodes"
     },
     "logs": {
       "empty": "Belum ada log"
@@ -3144,7 +3150,23 @@
         "stop": "docker.service dihentikan",
         "restart": "docker.service dimulai ulang"
       }
-    }
+    },
+    "needEngineTitle": "Install Docker Engine first",
+    "notInstalledValue": "Not installed",
+    "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+    "volPlaceholder": "my-data",
+    "netPlaceholder": "my-net",
+    "runPorts": "Publish ports",
+    "runPortsHint": "host:container per line, e.g. 8080:80",
+    "runEnv": "Environment",
+    "runEnvHint": "KEY=value per line",
+    "runRestart": "Restart policy",
+    "runNetwork": "Network",
+    "runVolumes": "Volumes",
+    "runVolumesHint": "volume:dest per line",
+    "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+    "daemonConfirmTitle": "Apply daemon settings?",
+    "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted."
   },
   "email": {
     "title": "E-mail",
@@ -9851,7 +9873,10 @@
     "col429": "429",
     "topIpsTitle": "IP teratas",
     "hitsCount": "{{n}} hit",
-    "sampleWindowHint": "Hitungan dari jendela sampel access + auth saat ini, bukan file log penuh."
+    "sampleWindowHint": "Hitungan dari jendela sampel access + auth saat ini, bukan file log penuh.",
+    "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+    "suspectActionableCount": "Actionable IPs {{count}}",
+    "uaNeedZones": "Set a Cloudflare zone first"
   },
   "publicFiles": {
     "notSet": "Tidak disetel",
@@ -12627,7 +12652,10 @@
         "hint": "Periksa DNSBL melalui email"
       }
     },
-    "applyPanelAlreadyLatest": "Sudah versi panel terbaru"
+    "applyPanelAlreadyLatest": "Sudah versi panel terbaru",
+    "panelRestarting": "Panel sedang dimulai ulang untuk memuat versi baru…",
+    "panelRestarted": "Panel kembali · {{version}}",
+    "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi."
   },
   "users": {
     "userCount": "{{count}} pengguna",
@@ -12778,7 +12806,10 @@
     },
     "empty": {
       "title": "Belum ada node validator",
-      "desc": "Buat node testnet dalam beberapa klik. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "desc": "Buat node testnet dalam beberapa klik.",
+      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "copyCli": "Copy command",
+      "copied": "Copied"
     },
     "refresh": "Segarkan",
     "disk": {
@@ -12789,15 +12820,16 @@
       "none": "Belum ada data instans",
       "warn": "Pemakaian disk tinggi (70%+)",
       "danger": "Pemakaian disk kritis (85%+)",
-      "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)"
+      "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)",
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
     },
     "chain": {
       "eth": "Ethereum",
-      "avax": "Salju longsor",
+      "avax": "Avalanche",
       "near": "NEAR",
       "ada": "Cardano",
       "btc": "Bitcoin",
-      "cosmos": "Pusat Kosmos",
+      "cosmos": "Cosmos Hub",
       "sui": "Sui",
       "aptos": "Aptos",
       "dot": "Polkadot",
@@ -12811,7 +12843,7 @@
       "testnet": "Jaringan uji",
       "preview": "Pratinjau",
       "preprod": "Persiapan",
-      "westend": "ujung barat"
+      "westend": "Westend"
     },
     "networkKind": {
       "testnet": "Jaringan uji",
@@ -12819,7 +12851,7 @@
     },
     "profile": {
       "minimal": "Paling kecil",
-      "pruned": "Dipangkas",
+      "pruned": "Pruned",
       "validator-ready": "Siap validator",
       "rpc": "RPC"
     },
@@ -12871,7 +12903,7 @@
     "notes": {
       "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
       "noKeys": "YSK Server tidak pernah membuat atau menyimpan kunci staking.",
-      "dockerSoon": "Pasang, mulai, dan henti menyusul di tahap berikutnya. Halaman ini hanya menampilkan instans dan disk.",
+      "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
       "dryCreate": "Spesifikasi instans dan compose ditulis (dry-run). Tambahkan --execute dan YSK_EXECUTE=1 untuk memulai kontainer.",
       "dryStart": "Mulai adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
       "dryStop": "Henti adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
@@ -12910,7 +12942,15 @@
       "memory": "Batas memori (mis. 4g)",
       "cpus": "Batas CPU (mis. 2.0)",
       "dataPath": "Jalur data (opsional)",
-      "rpcPort": "Port RPC (opsional)"
+      "rpcPort": "Port RPC (opsional)",
+      "stepOf": "Step {{n}} / {{total}}",
+      "stepChain": "Chain",
+      "stepNetwork": "Network",
+      "stepProfile": "Profile",
+      "stepSummary": "Summary",
+      "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+      "diskNeed": "This profile needs about {{need}} · free {{free}}",
+      "diskShort": "Not enough free disk for this chain / network / profile"
     },
     "actions": {
       "detail": "Rincian",

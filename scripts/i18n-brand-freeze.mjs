@@ -135,6 +135,33 @@ for (const loc of locales()) {
   if (sup.yskTitle !== 'YSK Limited') {
     fails.push(`${loc}/support.json yskTitle must be "YSK Limited"`);
   }
+
+  const val = load(loc, 'validators.json');
+  const valExact = {
+    'chain.eth': 'Ethereum',
+    'chain.avax': 'Avalanche',
+    'chain.near': 'NEAR',
+    'chain.ada': 'Cardano',
+    'chain.btc': 'Bitcoin',
+    'chain.cosmos': 'Cosmos Hub',
+    'chain.sui': 'Sui',
+    'chain.aptos': 'Aptos',
+    'chain.dot': 'Polkadot',
+    'chain.sol': 'Solana',
+    'network.hoodi': 'Hoodi',
+    'network.sepolia': 'Sepolia',
+    'network.fuji': 'Fuji',
+    'network.westend': 'Westend',
+    'profile.rpc': 'RPC',
+    'profile.pruned': 'Pruned',
+    beta: 'Beta',
+  };
+  for (const [path, want] of Object.entries(valExact)) {
+    const got = path.split('.').reduce((o, k) => (o == null ? o : o[k]), val);
+    if (got != null && got !== want) {
+      fails.push(`${loc}/validators.json ${path}: expected "${want}" got "${got}"`);
+    }
+  }
   const blob = JSON.stringify({ nav, cat, sup });
   for (const re of FORBIDDEN) {
     if (re.test(blob)) {

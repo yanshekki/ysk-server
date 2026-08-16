@@ -1,7 +1,7 @@
 {
   "title": "검증자 노드 (Beta)",
   "subtitle": "이 호스트에서 L1 노드를 설치하고 관리합니다. 비수탁 — 키는 직접 보관하세요.",
-  "beta": "베타",
+  "beta": "Beta",
   "tab": {
     "nodes": "노드",
     "disk": "디스크",
@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "아직 검증자 노드가 없습니다",
-    "desc": "마법사로 테스트넷 노드를 만드세요. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "마법사로 테스트넷 노드를 만드세요.",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "새로 고침",
   "disk": {
@@ -20,29 +23,30 @@
     "none": "아직 인스턴스 데이터가 없습니다",
     "warn": "디스크 사용량이 높습니다(70% 이상)",
     "danger": "디스크 사용량이 위험합니다(85% 이상)",
-    "autoClear": "디스크가 위험할 때 가장 큰 중지 인스턴스를 자동 삭제(기본 꺼짐)"
+    "autoClear": "디스크가 위험할 때 가장 큰 중지 인스턴스를 자동 삭제(기본 꺼짐)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "이더리움",
-    "avax": "눈사태",
+    "eth": "Ethereum",
+    "avax": "Avalanche",
     "near": "NEAR",
-    "ada": "카르다노",
-    "btc": "비트코인",
-    "cosmos": "코스모스 허브",
-    "sui": "수이",
-    "aptos": "앱토스",
-    "dot": "폴카닷",
-    "sol": "솔라나"
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
   },
   "network": {
-    "hoodi": "후디",
-    "sepolia": "세폴리아",
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
     "mainnet": "메인넷",
-    "fuji": "후지산",
+    "fuji": "Fuji",
     "testnet": "테스트넷",
     "preview": "시사",
     "preprod": "프레프로트",
-    "westend": "웨스트엔드"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "테스트넷",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "최소",
-    "pruned": "가지치기됨",
+    "pruned": "Pruned",
     "validator-ready": "검증자 준비",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "이 기능은 Beta입니다. 호스트 변경에는 root와 YSK_EXECUTE=1이 필요합니다.",
     "noKeys": "YSK Server는 스테이킹 키를 생성하거나 저장하지 않습니다.",
-    "dockerSoon": "설치, 시작, 중지는 다음 단계에서 제공됩니다. 이 페이지는 인스턴스와 디스크만 표시합니다.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "인스턴스 사양과 compose를 썼습니다(dry-run). 컨테이너를 시작하려면 --execute와 YSK_EXECUTE=1을 사용하세요.",
     "dryStart": "시작은 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
     "dryStop": "중지는 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
@@ -141,7 +145,15 @@
     "memory": "메모리 한도(예: 4g)",
     "cpus": "CPU 한도(예: 2.0)",
     "dataPath": "데이터 경로(선택)",
-    "rpcPort": "RPC 포트(선택)"
+    "rpcPort": "RPC 포트(선택)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "자세히",

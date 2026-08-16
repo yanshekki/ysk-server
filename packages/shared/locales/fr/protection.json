@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "IP en tête",
   "hitsCount": "{{n}} requêtes",
-  "sampleWindowHint": "Les comptes viennent de la fenêtre d’échantillons access + auth actuelle, pas du fichier journal complet."
+  "sampleWindowHint": "Les comptes viennent de la fenêtre d’échantillons access + auth actuelle, pas du fichier journal complet.",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

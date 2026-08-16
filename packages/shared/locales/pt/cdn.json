@@ -116,7 +116,7 @@
   "deleteSiteDesc": "Exclui site CDN \"{{name}}\".",
   "deleteSiteC1": "Política do site e associações de borda",
   "deleteSiteC2": "As configurações nginx aplicadas podem precisar de limpeza separada ou reaplicação",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "Off-line {{n}}",
   "statHitRate": "Taxa de acerto {{v}}",
   "hitNoStats": "Ainda sem estatísticas de bordo",
@@ -171,5 +171,8 @@
     "offline": "off-line",
     "draining": "drenando",
     "unknown": "desconhecido"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "سرفہرست IP",
   "hitsCount": "{{n}} ہٹس",
-  "sampleWindowHint": "شمار موجودہ access + auth نمونے کی کھڑکی سے ہیں، پوری لاگ فائل سے نہیں۔"
+  "sampleWindowHint": "شمار موجودہ access + auth نمونے کی کھڑکی سے ہیں، پوری لاگ فائل سے نہیں۔",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

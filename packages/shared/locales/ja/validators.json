@@ -1,7 +1,7 @@
 {
   "title": "バリデーター (Beta)",
   "subtitle": "このホストで L1 ノードを導入・管理します。ノンカストディアル — 鍵は自分で保管してください。",
-  "beta": "ベータ",
+  "beta": "Beta",
   "tab": {
     "nodes": "ノード",
     "disk": "ディスク",
@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "バリデーターノードはまだありません",
-    "desc": "ウィザードでテストネットノードを作成できます。CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "ウィザードでテストネットノードを作成できます。",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "更新",
   "disk": {
@@ -20,29 +23,30 @@
     "none": "インスタンスデータはまだありません",
     "warn": "ディスク使用率が高い（70% 以上）",
     "danger": "ディスク使用率が危険（85% 以上）",
-    "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）"
+    "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "イーサリアム",
-    "avax": "雪崩",
+    "eth": "Ethereum",
+    "avax": "Avalanche",
     "near": "NEAR",
-    "ada": "カルダノ",
-    "btc": "ビットコイン",
-    "cosmos": "コスモスハブ",
-    "sui": "スイ",
-    "aptos": "アプトス",
-    "dot": "水玉模様",
-    "sol": "ソラナ"
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
   },
   "network": {
-    "hoodi": "フーディ",
-    "sepolia": "セポリア",
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
     "mainnet": "メインネット",
-    "fuji": "富士山",
+    "fuji": "Fuji",
     "testnet": "テストネット",
     "preview": "プレビュー",
     "preprod": "プリプロド",
-    "westend": "ウェストエンド"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "テストネット",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "最小",
-    "pruned": "プルーニング済み",
+    "pruned": "Pruned",
     "validator-ready": "バリデーター準備",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",
     "noKeys": "YSK Server はステーキング鍵を生成も保存もしません。",
-    "dockerSoon": "導入・起動・停止は次の段階です。このページはインスタンスとディスクのみ表示します。",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "インスタンス仕様と compose を書き込みました（dry-run）。コンテナ起動には --execute と YSK_EXECUTE=1 を付けてください。",
     "dryStart": "起動は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
     "dryStop": "停止は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
@@ -141,7 +145,15 @@
     "memory": "メモリ上限（例: 4g）",
     "cpus": "CPU 上限（例: 2.0）",
     "dataPath": "データパス（任意）",
-    "rpcPort": "RPC ポート（任意）"
+    "rpcPort": "RPC ポート（任意）",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "詳細",

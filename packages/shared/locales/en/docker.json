@@ -4,7 +4,23 @@
   "refresh": "Refresh",
   "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
   "protected": "Protected",
-  "pruneConfirm": "Type PRUNE to confirm volume or system prune",
+  "pruneConfirm": "Type PRUNE to confirm any prune",
+  "needEngineTitle": "Install Docker Engine first",
+  "notInstalledValue": "Not installed",
+  "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+  "volPlaceholder": "my-data",
+  "netPlaceholder": "my-net",
+  "runPorts": "Publish ports",
+  "runPortsHint": "host:container per line, e.g. 8080:80",
+  "runEnv": "Environment",
+  "runEnvHint": "KEY=value per line",
+  "runRestart": "Restart policy",
+  "runNetwork": "Network",
+  "runVolumes": "Volumes",
+  "runVolumesHint": "volume:dest per line",
+  "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+  "daemonConfirmTitle": "Apply daemon settings?",
+  "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted.",
   "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
   "cli": {
     "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
@@ -68,6 +84,8 @@
     "containers": "No containers",
     "images": "No images",
     "compose": "No Compose projects",
+    "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+    "composeCta": "Open validator nodes",
     "volumes": "No volumes",
     "networks": "No networks"
   },
@@ -82,7 +100,7 @@
   },
   "about": {
     "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
-    "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
+    "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page manages Docker on one host; use external Kubernetes for cluster orchestration.",
     "validators": "Open validator nodes"
   },
   "alerts": {

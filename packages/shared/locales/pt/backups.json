@@ -142,5 +142,6 @@
   "restoreFullTitle": "Substitua arquivos de projeto e bancos de dados deste arquivo — digite o nome do arquivo para confirmar",
   "restoreWebTitle": "Restaure arquivos de sites apenas deste arquivo",
   "previewTitle": "Visualizar restauração sem escrever",
-  "partialSkipped": "Parcial – alguns projetos ignorados"
+  "partialSkipped": "Parcial – alguns projetos ignorados",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

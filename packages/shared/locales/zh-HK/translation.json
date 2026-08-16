@@ -436,6 +436,7 @@
     "secretKey": "密鑰",
     "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫",
     "testRemote": "測試目的地",
+    "testRemoteHint": "會連線遠端主機並寫入測試檔，並非只讀探測。",
     "testRemoteDone": "遠端探測完成",
     "testRemoteFailed": "遠端探測失敗",
     "resticRepoPh": "面板資料目錄／restic 庫",
@@ -708,8 +709,11 @@
     },
     "statSites": "站點",
     "pillNodesSites": "節點 {{n}} · 站點 {{s}}",
-    "statOnline": "線上 {{n}}/{{total}}",
+    "statOnline": "線上",
+    "statOnlineOf": "線上 {{n}}/{{total}}",
+    "statDraining": "排空中 {{n}}",
     "statHit": "命中率",
+    "localTest": "本機／測試",
     "hitUnknown": "未知",
     "lastHealthHint": "上次探活 {{at}} · {{ok}}",
     "lastHealthNever": "尚未探活 — 請按「探活」",
@@ -735,7 +739,7 @@
     "colRole": "角色",
     "colStatus": "狀態",
     "clearDrain": "解除 drain",
-    "drain": "流走",
+    "drain": "排空流量",
     "drainTitle": "停止向此邊緣派新流量",
     "drainDesc": "Drain「{{name}}」？現有連線會待完結。",
     "drainLastTitle": "這是最後一個邊緣 — Drain 後所有站點沒有邊緣可用",
@@ -3008,7 +3012,23 @@
     "refresh": "重新整理",
     "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 及 docker-compose-v2。",
     "protected": "受保護",
-    "pruneConfirm": "輸入 PRUNE 以確認清理 volume 或系統",
+    "pruneConfirm": "輸入 PRUNE 以確認任何清理",
+    "needEngineTitle": "請先安裝 Docker Engine",
+    "notInstalledValue": "未安裝",
+    "nameHint": "字母、數字、底線、點、連字號（最長 128）",
+    "volPlaceholder": "my-data",
+    "netPlaceholder": "my-net",
+    "runPorts": "發佈埠",
+    "runPortsHint": "每行 host:container，例如 8080:80",
+    "runEnv": "環境變數",
+    "runEnvHint": "每行 KEY=value",
+    "runRestart": "重啟政策",
+    "runNetwork": "網絡",
+    "runVolumes": "Volume",
+    "runVolumesHint": "每行 volume:dest",
+    "runAdvancedHint": "多服務堆疊請用驗證者節點，或主機上已有的 Compose 檔。",
+    "daemonConfirmTitle": "套用引擎設定？",
+    "daemonConfirmDesc": "會寫入 daemon.json 並重啟 docker.service。所有容器都會中斷。",
     "settingsHint": "只開放安全的 daemon.json 選項。套用會寫入檔案並重啟 docker.service。",
     "cli": {
       "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
@@ -3072,6 +3092,8 @@
       "containers": "未有容器",
       "images": "未有映像",
       "compose": "未有 Compose 專案",
+      "composeDesc": "專案來自驗證者節點或主機上已有的 Compose 檔。本頁不接受任意上載 YAML。",
+      "composeCta": "開啟驗證者節點",
       "volumes": "未有 volume",
       "networks": "未有網絡"
     },
@@ -3086,7 +3108,7 @@
     },
     "about": {
       "body": "Docker 是 YSK Server 的一級主機服務，與 Nginx 同級。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
-      "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
+      "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。本頁管理單機 Docker；叢集編排請用外部 Kubernetes。",
       "validators": "開啟驗證者節點"
     },
     "alerts": {
@@ -5032,7 +5054,7 @@
     "protectedPid": "面板不可向 PID 1／init／systemd 發送訊號",
     "sigTermTitle": "發送 SIGTERM（請進程自行結束）",
     "sigKillTitle": "發送 SIGKILL（強制結束，無法攔截）",
-    "batchTerm": "學期",
+    "batchTerm": "TERM",
     "batchKill": "殺",
     "rawTopLabel": "原始 top（未翻譯）",
     "followSseLabel": "跟隨（即時串流）",
@@ -9529,6 +9551,8 @@
     "automationSaved": "已儲存自動化設定",
     "statFirewall": "防火牆",
     "statSuspects": "可疑 IP",
+    "statSuspectsSplit": "可操作 {{actionable}}／全部 {{total}}",
+    "suspectActionableCount": "可操作 IP {{count}}",
     "scoreBasisHint": "威脅分計入防火牆、fail2ban 封禁量與請求速率，與情報分頁的可疑清單不是同一計數。",
     "statAutoBan": "自動 封鎖",
     "statApply": "系統套用",
@@ -9838,6 +9862,7 @@
     "hideZeroScore": "隱藏 0 分",
     "freshnessNa": "不適用",
     "geoDraftOnly": "政策未啟用 — 儲存只寫草稿，Nginx 不會執行，直至你勾選啟用。",
+    "uaNeedZones": "請先設定 Cloudflare zone",
     "geoNeedDb": "尚未有本地 GeoIP 庫 — 請先更新 MMDB 檔",
     "selectAllCountriesWarn": "封鎖名單模式下全選全部國家？這可能把本機與你的登入所在地一併封鎖。",
     "badgeRecommendPreset": "以目前威脅水平，建議改用更強預設",
@@ -12567,6 +12592,9 @@
     "updateFailed": "更新失敗",
     "updateIncomplete": "更新未完成",
     "appliedUpdate": "已套用更新",
+    "panelRestarting": "面板正在重啟以載入新版本…",
+    "panelRestarted": "面板已恢復 · {{version}}",
+    "panelRestartWait": "已套用更新。若此頁未刷新，請數秒後重新載入。",
     "aptCandidate": "套件管理 Candidate（候選版本）",
     "advice": {
       "update": "建議更新",
@@ -12770,7 +12798,7 @@
   "validators": {
     "title": "驗證者節點 (Beta)",
     "subtitle": "在此主機安裝與管理 L1 節點。非託管 — 私鑰由你自行保管。",
-    "beta": "貝塔",
+    "beta": "Beta",
     "tab": {
       "nodes": "節點",
       "disk": "磁碟",
@@ -12778,7 +12806,10 @@
     },
     "empty": {
       "title": "尚未建立驗證者節點",
-      "desc": "用精靈幾步建立測試網節點。CLI：ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "desc": "用精靈幾步建立測試網節點。",
+      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "copyCli": "複製指令",
+      "copied": "已複製"
     },
     "refresh": "重新整理",
     "disk": {
@@ -12789,29 +12820,30 @@
       "none": "尚未有實例資料",
       "warn": "磁碟用量偏高（70% 或以上）",
       "danger": "磁碟用量危急（85% 或以上）",
-      "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）"
+      "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）",
+      "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。"
     },
     "chain": {
-      "eth": "以太坊",
-      "avax": "雪崩",
-      "near": "靠近",
-      "ada": "卡爾達諾",
-      "btc": "比特幣",
-      "cosmos": "宇宙中心",
-      "sui": "隋",
-      "aptos": "阿普托斯",
-      "dot": "波爾卡圓點",
-      "sol": "索拉納"
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
     },
     "network": {
-      "hoodi": "胡迪",
-      "sepolia": "塞波利亞",
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
       "mainnet": "主網",
-      "fuji": "富士",
+      "fuji": "Fuji",
       "testnet": "測試網",
       "preview": "預覽",
       "preprod": "預生產",
-      "westend": "韋斯特滕德"
+      "westend": "Westend"
     },
     "networkKind": {
       "testnet": "測試網",
@@ -12819,9 +12851,9 @@
     },
     "profile": {
       "minimal": "精簡",
-      "pruned": "已修剪",
+      "pruned": "Pruned",
       "validator-ready": "驗證者就緒",
-      "rpc": "遠程過程調用"
+      "rpc": "RPC"
     },
     "col": {
       "id": "識別碼",
@@ -12871,7 +12903,7 @@
     "notes": {
       "beta": "此功能屬 Beta。變更主機須 root 及 YSK_EXECUTE=1。",
       "noKeys": "YSK Server 不會產生或保存質押私鑰。",
-      "dockerSoon": "安裝、啟動、停止會在下一階段提供。此頁只列出實例與磁碟用量。",
+      "dockerSoon": "安裝與啟動由此頁精靈提供。變更主機須 root 及 YSK_EXECUTE=1。",
       "dryCreate": "已寫入實例規格與 compose（dry-run）。要啟動容器請加 --execute 及 YSK_EXECUTE=1。",
       "dryStart": "啟動為 dry-run。請加 --execute 及 YSK_EXECUTE=1。",
       "dryStop": "停止為 dry-run。請加 --execute 及 YSK_EXECUTE=1。",
@@ -12901,6 +12933,14 @@
     "create": "建立節點",
     "wizard": {
       "title": "建立節點",
+      "stepOf": "第 {{n}}／{{total}} 步",
+      "stepChain": "鏈",
+      "stepNetwork": "網絡",
+      "stepProfile": "設定檔",
+      "stepSummary": "摘要",
+      "needDocker": "未安裝 Docker Engine。請先安裝 — 此按鈕保持停用。",
+      "diskNeed": "此設定檔約需 {{need}} · 可用 {{free}}",
+      "diskShort": "可用磁碟不足以建立此鏈／網絡／設定檔",
       "back": "上一步",
       "next": "下一步",
       "install": "安裝",

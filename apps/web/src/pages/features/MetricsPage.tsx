@@ -1148,7 +1148,7 @@ export function MetricsPage() {
                           disabled={blocked}
                           onClick={bindCall2(openSignal, r.pid, 'TERM')}
                         >
-                          T
+                          {t('metrics.batchTerm')}
                         </button>
                         <button
                           type="button"
@@ -1158,7 +1158,7 @@ export function MetricsPage() {
                           disabled={blocked}
                           onClick={bindCall2(openSignal, r.pid, 'KILL')}
                         >
-                          K
+                          {t('metrics.batchKill')}
                         </button>
                       </div>
                     );

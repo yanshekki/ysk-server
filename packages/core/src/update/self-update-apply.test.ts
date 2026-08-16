@@ -137,6 +137,53 @@ describe('runSelfUpdate', () => {
     expect(r.notes.some((n) => /up to date|最新版本|已是最新/i.test(n))).toBe(true);
   });
 
+  it('does not systemctl-restart before the caller can send HTTP 200', async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const root = mkdtempSync(join(tmpdir(), 'ysk-self-norest-'));
+    const dest = join(root, 'dest');
+    const unpacked = join(root, 'package');
+    mkdirSync(join(unpacked, 'dist'), { recursive: true });
+    mkdirSync(join(dest, 'dist'), { recursive: true });
+    writeFileSync(join(unpacked, 'dist', 'cli.js'), 'export const cli = true;\n');
+    writeFileSync(join(unpacked, 'dist', 'version.js'), "export const VERSION = '0.2.0';\n");
+    writeFileSync(join(dest, 'dist', 'cli.js'), "export const VERSION = '0.1.0';\n");
+    writeFileSync(join(dest, 'package.json'), JSON.stringify({ name: 'ysk-server', version: '0.1.0' }));
+    const seen: string[] = [];
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }),
+      runCommand: async (argv: string[]) => {
+        seen.push(argv.join(' '));
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    try {
+      const r = await runSelfUpdate({
+        currentVersion: '0.1.0',
+        host: host as never,
+        apply: true,
+        latestOverride: '0.2.0',
+        cliJsHint: join(dest, 'dist', 'cli.js'),
+        unpackedDir: unpacked,
+      });
+      expect(r.applied).toBe(true);
+      expect(r.ok).toBe(true);
+      expect(seen.some((s) => /systemctl/.test(s))).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('plan-only without apply when update available', async () => {
     const host = new LocalHostExecutor({ executeEnabled: true });
     const r = await runSelfUpdate({

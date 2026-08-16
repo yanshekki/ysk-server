@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "上位 IP",
   "hitsCount": "{{n}} 回",
-  "sampleWindowHint": "件数は現在の access + auth サンプル窓であり、ログ全体ではありません。"
+  "sampleWindowHint": "件数は現在の access + auth サンプル窓であり、ログ全体ではありません。",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

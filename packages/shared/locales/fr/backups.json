@@ -142,5 +142,6 @@
   "restoreFullTitle": "Écraser les fichiers de projet et les bases de données de cette archive — saisissez le nom du fichier pour confirmer",
   "restoreWebTitle": "Restaurer les fichiers du site Web uniquement à partir de cette archive",
   "previewTitle": "Aperçu de la restauration sans écrire",
-  "partialSkipped": "Partiel – certains projets ignorés"
+  "partialSkipped": "Partiel – certains projets ignorés",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

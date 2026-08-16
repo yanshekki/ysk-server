@@ -225,5 +225,8 @@
       "hint": "邮件 DNSBL 检查"
     }
   },
-  "applyPanelAlreadyLatest": "已经是最新的面板版本了"
+  "applyPanelAlreadyLatest": "已经是最新的面板版本了",
+  "panelRestarting": "面板正在重启以加载新版本…",
+  "panelRestarted": "面板已恢复 · {{version}}",
+  "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。"
 }

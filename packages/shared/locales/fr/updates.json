@@ -225,5 +225,8 @@
       "hint": "Vérification DNSBL par courrier"
     }
   },
-  "applyPanelAlreadyLatest": "Déjà la dernière version du panneau"
+  "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
+  "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
+  "panelRestarted": "Panneau de retour · {{version}}",
+  "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes."
 }

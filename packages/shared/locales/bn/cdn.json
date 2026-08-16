@@ -116,7 +116,7 @@
   "deleteSiteDesc": "CDN সাইট \"{{name}}\" মুছে দেয়।",
   "deleteSiteC1": "সাইট নীতি এবং প্রান্ত সমিতি",
   "deleteSiteC2": "প্রয়োগ করা nginx কনফিগারেশনের জন্য আলাদা ক্লিনআপ বা পুনরায় আবেদন করতে হতে পারে",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "অফলাইন {{n}}",
   "statHitRate": "হিট রেট {{v}}",
   "hitNoStats": "এখনও এজ পরিসংখ্যান নেই",
@@ -171,5 +171,8 @@
     "offline": "অফলাইন",
     "draining": "নিষ্কাশন",
     "unknown": "অজানা"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

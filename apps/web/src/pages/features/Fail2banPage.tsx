@@ -615,7 +615,7 @@ export function Fail2banPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
-                  disabled={!selected.length}
+                  disabled={!selected.length || (status?.ignoreIps?.length ?? 0) === 0}
                   title={
                     (status?.ignoreIps?.length ?? 0) === 0
                       ? t('fail2ban.applyIgnoreEmptyWarn')

@@ -1,11 +1,12 @@
 /**
  * Updates feature — inventory + self-update hook (panel apply).
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { updatesApi, type AdviceRow, type UpdateHubEntry } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
+import { isPanelRestartDisconnect, waitForPanelAfterRestart } from './self-apply';
 
 export function useUpdates() {
   const { t } = useTranslation();
@@ -365,10 +366,36 @@ export function useUpdates() {
     [t, rescanInventoryQuiet],
   );
 
+  const applySelfLock = useRef(false);
+
+  const finishSelfAfterRestart = useCallback(
+    async (expectVersion?: string) => {
+      toast.ok(t('updates.panelRestarting'));
+      const back = await waitForPanelAfterRestart({
+        expectVersion,
+        probe: async () => {
+          const self = await updatesApi.self();
+          return self as { currentVersion?: unknown; ok?: unknown };
+        },
+      });
+      if (back) {
+        setSelfUpdate(back as Record<string, unknown>);
+        toast.ok(t('updates.panelRestarted', { version: String(back.currentVersion ?? '') }));
+        return back;
+      }
+      toast.ok(t('updates.panelRestartWait'));
+      return null;
+    },
+    [t],
+  );
+
   const applySelf = useCallback(async () => {
+    if (applySelfLock.current) return;
+    applySelfLock.current = true;
     setBusy(true);
     setError(null);
     setMsg(null);
+    const expectVersion = String(selfUpdate?.latestVersion ?? '').trim() || undefined;
     try {
       const r = await updatesApi.selfApply();
       const notes = sanitizeOperatorNotes(r.notes);
@@ -400,9 +427,9 @@ export function useUpdates() {
       if (r.ok === false || (r.applied === false && r.ok !== true)) {
         setError(null);
         toast.error(toastNote(true, t('updates.updateIncomplete')));
-      } else if (r.applied) {
+      } else if (r.applied || r.restarting) {
         setMsg(null);
-        toast.ok(toastNote(false, t('updates.appliedUpdate')));
+        await finishSelfAfterRestart(expectVersion);
       } else {
         setMsg(null);
         toast.ok(toastNote(false, t('updates.selfUpToDate')));
@@ -411,10 +438,14 @@ export function useUpdates() {
         const self = await updatesApi.self();
         setSelfUpdate(self);
       } catch {
-        /* keep prior */
+        /* keep prior — restart poll may already have set it */
       }
       return r;
     } catch (e) {
+      if (isPanelRestartDisconnect(e)) {
+        await finishSelfAfterRestart(expectVersion);
+        return { ok: true, applied: true, restarting: true, notes: [] };
+      }
       const raw = e instanceof Error ? e.message : t('updates.updateFailed');
       const m =
         (raw.match(/npm notice/gi) || []).length >= 2 || /Tarball Contents/i.test(raw)
@@ -424,9 +455,10 @@ export function useUpdates() {
       toast.error(m);
       throw e;
     } finally {
+      applySelfLock.current = false;
       setBusy(false);
     }
-  }, [t]);
+  }, [t, selfUpdate?.latestVersion, finishSelfAfterRestart]);
 
   useEffect(() => {
     void load(false);

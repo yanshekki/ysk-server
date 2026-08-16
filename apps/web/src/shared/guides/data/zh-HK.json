@@ -1740,9 +1740,9 @@
     "summary": "在此主機一鍵安裝與管理 L1 節點（Ethereum、Avalanche、NEAR、Cardano、Bitcoin、Cosmos、Sui、Aptos、Polkadot、Solana）。非託管 — 面板不會保管質押私鑰。",
     "canDo": [
       "列出節點實例與支援鏈",
+      "用精靈建立、啟動、停止與清空節點",
       "查看驗證者資料佔用的磁碟",
-      "使用 CLI：ysk-server validators list|chains|disk --json",
-      "稍後：安裝／啟動／停止／清空／升級"
+      "使用 CLI：ysk-server validators list|create|start --json"
     ],
     "workflow": [
       "建立前先看磁碟分頁",
@@ -1750,7 +1750,7 @@
       "變更主機須 root 及 YSK_EXECUTE=1"
     ],
     "notes": [
-      "Beta：此頁尚未提供安裝與啟動",
+      "Beta：安裝與啟動需要 Docker Engine、root 及 YSK_EXECUTE=1",
       "ETH 主網需要數百 GB 可用空間 — 空間不足時會拒絕建立",
       "RPC 預設只綁本機"
     ],
@@ -1790,7 +1790,7 @@
       "變更主機需要 root 同 YSK_EXECUTE=1"
     ],
     "notes": [
-      "這頁不是 Kubernetes。不提供特權執行或任意上載 Compose。",
+      "本頁管理單機 Docker；叢集編排請用外部 Kubernetes。不提供特權執行或任意上載 Compose。",
       "停止引擎會一併停止驗證者堆疊。"
     ],
     "cliHints": [

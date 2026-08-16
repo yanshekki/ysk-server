@@ -442,7 +442,8 @@
     "restoreFullTitle": "قم بالكتابة فوق ملفات المشروع وقواعد البيانات من هذا الأرشيف — اكتب اسم الملف للتأكيد",
     "restoreWebTitle": "استعادة ملفات موقع الويب من هذا الأرشيف فقط",
     "previewTitle": "معاينة الاستعادة دون الكتابة",
-    "partialSkipped": "جزئي - تم تخطي بعض المشاريع"
+    "partialSkipped": "جزئي - تم تخطي بعض المشاريع",
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
   },
   "btTracker": {
     "title": "جهاز تعقب بي تي",
@@ -781,7 +782,7 @@
     "deleteSiteDesc": "يحذف موقع CDN \"{{name}}\".",
     "deleteSiteC1": "سياسة الموقع وجمعيات الحافة",
     "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق",
-    "statOnline": "Online {{n}}/{{total}}",
+    "statOnline": "Online",
     "statOffline": "غير متصل {{n}}",
     "statHitRate": "معدل الإصابة {{v}}",
     "hitNoStats": "لا إحصاءات حافة بعد",
@@ -836,7 +837,10 @@
       "offline": "غير متصل",
       "draining": "استنزاف",
       "unknown": "مجهول"
-    }
+    },
+    "statOnlineOf": "Online {{n}}/{{total}}",
+    "statDraining": "Draining {{n}}",
+    "localTest": "local / test"
   },
   "cli": {
     "unknownCommand": "أمر غير معروف: {{command}}\nتشغيل `{{cli}} مساعدة`",
@@ -3073,7 +3077,9 @@
       "images": "لا صور",
       "compose": "لا مشاريع Compose",
       "volumes": "لا volumes",
-      "networks": "لا شبكات"
+      "networks": "لا شبكات",
+      "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+      "composeCta": "Open validator nodes"
     },
     "logs": {
       "empty": "لا سجلات بعد"
@@ -3144,7 +3150,23 @@
         "stop": "توقف docker.service",
         "restart": "أُعيد تشغيل docker.service"
       }
-    }
+    },
+    "needEngineTitle": "Install Docker Engine first",
+    "notInstalledValue": "Not installed",
+    "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+    "volPlaceholder": "my-data",
+    "netPlaceholder": "my-net",
+    "runPorts": "Publish ports",
+    "runPortsHint": "host:container per line, e.g. 8080:80",
+    "runEnv": "Environment",
+    "runEnvHint": "KEY=value per line",
+    "runRestart": "Restart policy",
+    "runNetwork": "Network",
+    "runVolumes": "Volumes",
+    "runVolumesHint": "volume:dest per line",
+    "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+    "daemonConfirmTitle": "Apply daemon settings?",
+    "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted."
   },
   "email": {
     "title": "بريد إلكتروني",
@@ -9851,7 +9873,10 @@
     "col429": "429",
     "topIpsTitle": "أعلى عناوين IP",
     "hitsCount": "{{n}} ضربة",
-    "sampleWindowHint": "الأعداد من نافذة عينات access + auth الحالية، وليست من ملف السجل الكامل."
+    "sampleWindowHint": "الأعداد من نافذة عينات access + auth الحالية، وليست من ملف السجل الكامل.",
+    "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+    "suspectActionableCount": "Actionable IPs {{count}}",
+    "uaNeedZones": "Set a Cloudflare zone first"
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -12627,7 +12652,10 @@
         "hint": "التحقق من البريد DNSBL"
       }
     },
-    "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة"
+    "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
+    "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
+    "panelRestarted": "عادت اللوحة · {{version}}",
+    "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان."
   },
   "users": {
     "userCount": "{{count}} المستخدمين",
@@ -12770,7 +12798,7 @@
   "validators": {
     "title": "المدققون (Beta)",
     "subtitle": "ثبّت وأدر عُقد L1 على هذا المضيف. غير وصائي — المفاتيح تبقى لديك.",
-    "beta": "بيتا",
+    "beta": "Beta",
     "tab": {
       "nodes": "العُقد",
       "disk": "القرص",
@@ -12778,7 +12806,10 @@
     },
     "empty": {
       "title": "لا توجد عُقد مدقق بعد",
-      "desc": "أنشئ عقدة شبكة اختبار بعدة نقرات. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "desc": "أنشئ عقدة شبكة اختبار بعدة نقرات.",
+      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "copyCli": "Copy command",
+      "copied": "Copied"
     },
     "refresh": "تحديث",
     "disk": {
@@ -12789,29 +12820,30 @@
       "none": "لا توجد بيانات مثيل بعد",
       "warn": "استخدام القرص مرتفع (٧٠٪+)",
       "danger": "استخدام القرص حرج (٨٥٪+)",
-      "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)"
+      "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)",
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
     },
     "chain": {
-      "eth": "ايثريوم",
-      "avax": "انهيار جليدي",
+      "eth": "Ethereum",
+      "avax": "Avalanche",
       "near": "NEAR",
-      "ada": "كاردانو",
-      "btc": "بيتكوين",
-      "cosmos": "مركز الكون",
-      "sui": "سوي",
-      "aptos": "ابتوس",
-      "dot": "المنقط",
-      "sol": "سولانا"
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
     },
     "network": {
-      "hoodi": "هودي",
-      "sepolia": "سيبوليا",
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
       "mainnet": "الشبكة الرئيسية",
-      "fuji": "فوجي",
+      "fuji": "Fuji",
       "testnet": "شبكة الاختبار",
       "preview": "معاينة",
       "preprod": "إنتاج مسبق",
-      "westend": "ويستند"
+      "westend": "Westend"
     },
     "networkKind": {
       "testnet": "شبكة الاختبار",
@@ -12819,7 +12851,7 @@
     },
     "profile": {
       "minimal": "أدنى",
-      "pruned": "مقلّم",
+      "pruned": "Pruned",
       "validator-ready": "جاهز للمدقق",
       "rpc": "RPC"
     },
@@ -12871,7 +12903,7 @@
     "notes": {
       "beta": "هذه الميزة Beta. تغييرات المضيف تحتاج root و YSK_EXECUTE=1.",
       "noKeys": "لا يولّد YSK Server مفاتيح الرهن ولا يخزنها أبدًا.",
-      "dockerSoon": "التثبيت والبدء والإيقاف في المرحلة التالية. تعرض هذه الصفحة المثيلات والقرص فقط.",
+      "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
       "dryCreate": "كُتبت مواصفات المثيل وcompose (dry-run). مرّر --execute و YSK_EXECUTE=1 لبدء الحاويات.",
       "dryStart": "البدء dry-run. مرّر --execute و YSK_EXECUTE=1.",
       "dryStop": "الإيقاف dry-run. مرّر --execute و YSK_EXECUTE=1.",
@@ -12910,7 +12942,15 @@
       "memory": "حد الذاكرة (مثل 4g)",
       "cpus": "حد المعالج (مثل 2.0)",
       "dataPath": "مسار البيانات (اختياري)",
-      "rpcPort": "منفذ RPC (اختياري)"
+      "rpcPort": "منفذ RPC (اختياري)",
+      "stepOf": "Step {{n}} / {{total}}",
+      "stepChain": "Chain",
+      "stepNetwork": "Network",
+      "stepProfile": "Profile",
+      "stepSummary": "Summary",
+      "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+      "diskNeed": "This profile needs about {{need}} · free {{free}}",
+      "diskShort": "Not enough free disk for this chain / network / profile"
     },
     "actions": {
       "detail": "التفاصيل",

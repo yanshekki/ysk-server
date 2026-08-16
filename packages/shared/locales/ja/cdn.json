@@ -116,7 +116,7 @@
   "deleteSiteDesc": "CDN サイト「{{name}}」を削除します。",
   "deleteSiteC1": "サイトポリシーとエッジの関連付け",
   "deleteSiteC2": "適用された nginx 構成には、個別のクリーンアップまたは再適用が必要な場合があります",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "オフライン {{n}}",
   "statHitRate": "命中率 {{v}}",
   "hitNoStats": "エッジ統計はまだありません",
@@ -171,5 +171,8 @@
     "offline": "オフライン",
     "draining": "排水する",
     "unknown": "未知"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

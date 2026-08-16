@@ -862,6 +862,7 @@ export function SecurityPage() {
                   >
                     {t('security.revokeAllDevices')}
                   </Button>
+                  {totpOn ? (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -869,6 +870,7 @@ export function SecurityPage() {
                   >
                     {t('security.export2faBackup')}
                   </Button>
+                  ) : null}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -928,9 +930,6 @@ export function SecurityPage() {
                   />
                   <span>{t('security.strictAdmin2fa')}</span>
                 </label>
-                {totpKnown && !totpStatus.enrolled && !totpStatus.enabled ? (
-                  <p className="muted u-text-sm u-mt-1">{t('security.strictNeedsEnrolled')}</p>
-                ) : null}
                 {totpOn ? (
                   <Field
                     label={t('security.confirmTotpPolicy')}

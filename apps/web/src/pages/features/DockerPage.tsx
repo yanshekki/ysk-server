@@ -8,6 +8,7 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmDialog,
   DataTable,
   EmptyState,
   FeaturePageLayout,
@@ -46,6 +47,40 @@ const TABS = [
   'about',
 ] as const;
 
+function parsePorts(raw: string) {
+  return raw
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [host, container] = line.split(':');
+      return { host: Number(host), container: Number(container), proto: 'tcp' as const };
+    })
+    .filter((p) => Number.isFinite(p.host) && Number.isFinite(p.container));
+}
+
+function parseEnv(raw: string): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const line of raw.split(/\n/)) {
+    const i = line.indexOf('=');
+    if (i <= 0) continue;
+    env[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+  }
+  return env;
+}
+
+function parseVolumes(raw: string) {
+  return raw
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const i = line.indexOf(':');
+      return { name: line.slice(0, i).trim(), dest: line.slice(i + 1).trim() };
+    })
+    .filter((v) => v.name && v.dest);
+}
+
 export function DockerPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'overview');
@@ -65,6 +100,11 @@ export function DockerPage() {
   const [runOpen, setRunOpen] = useState(false);
   const [runImage, setRunImage] = useState('alpine:3.20');
   const [runName, setRunName] = useState('');
+  const [runPorts, setRunPorts] = useState('');
+  const [runEnv, setRunEnv] = useState('');
+  const [runRestart, setRunRestart] = useState('no');
+  const [runNetwork, setRunNetwork] = useState('');
+  const [runVolumes, setRunVolumes] = useState('');
   const [pullImage, setPullImage] = useState('alpine:3.20');
   const [volName, setVolName] = useState('');
   const [netName, setNetName] = useState('');
@@ -74,7 +114,12 @@ export function DockerPage() {
   const [mirrors, setMirrors] = useState('');
   const [insecure, setInsecure] = useState('');
   const [inspectText, setInspectText] = useState('');
+  const [daemonConfirm, setDaemonConfirm] = useState(false);
   const stream = useOpsStreamOptional();
+
+  const engineInstalled = status?.installed === true;
+  const needEngine = t('docker.needEngineTitle');
+  const emptyVal = engineInstalled ? '—' : t('docker.notInstalledValue');
 
   const load = useCallback(async () => {
     setError(null);
@@ -111,6 +156,10 @@ export function DockerPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!engineInstalled && tab !== 'overview' && tab !== 'about') setTab('overview');
+  }, [engineInstalled, tab, setTab]);
 
   const run = async (
     fn: () => Promise<DockerOpsResponse>,
@@ -169,9 +218,24 @@ export function DockerPage() {
 
   const onRun = async (e: FormEvent) => {
     e.preventDefault();
-    await run(() => dockerApi.run({ image: runImage.trim(), name: runName.trim() || undefined }));
+    if (!engineInstalled) return;
+    const env = parseEnv(runEnv);
+    await run(() =>
+      dockerApi.run({
+        image: runImage.trim(),
+        name: runName.trim() || undefined,
+        ports: parsePorts(runPorts),
+        env: Object.keys(env).length ? env : undefined,
+        restart: runRestart !== 'no' ? (runRestart as 'always' | 'unless-stopped' | 'on-failure') : undefined,
+        network: runNetwork.trim() || undefined,
+        volumes: parseVolumes(runVolumes),
+      }),
+    );
     setRunOpen(false);
   };
+
+  const pruneReady = pruneConfirm.trim() === 'PRUNE';
+  const visibleTabs = engineInstalled ? TABS : (['overview', 'about'] as const);
 
   return (
     <FeaturePageLayout
@@ -186,7 +250,11 @@ export function DockerPage() {
         items: [
           {
             label: t('docker.col.engine'),
-            value: status?.daemonActive ? t('docker.state.up') : t('docker.state.down'),
+            value: !engineInstalled
+              ? t('docker.notInstalledValue')
+              : status?.daemonActive
+                ? t('docker.state.up')
+                : t('docker.state.down'),
             tone: status?.daemonActive ? 'ok' : 'warn',
           },
           {
@@ -198,35 +266,41 @@ export function DockerPage() {
     >
       <SoftwareInstallBanner feature="docker" title={t('docker.notInstalled')} showReadyActions={false} />
       <div className="u-mb-3">
-        <ServiceLifecycleBar unit="docker" label="Docker" />
+        <ServiceLifecycleBar
+          unit="docker"
+          label="Docker"
+          installed={engineInstalled}
+          running={status?.daemonActive === true}
+          onDone={() => void load()}
+        />
       </div>
       {error ? <Alert variant="error">{error}</Alert> : null}
       {ops ? <OpsResultPanel title={t('docker.title')} result={ops} /> : null}
 
       <PageTabs
-        tabs={TABS.map((id) => ({ id, label: t(`docker.tab.${id}`) }))}
+        tabs={visibleTabs.map((id) => ({ id, label: t(`docker.tab.${id}`) }))}
         active={tab}
         onChange={setTab}
       >
         {tab === 'overview' ? (
           <>
-            {!status?.installed ? <Alert variant="warn">{t('docker.notInstalled')}</Alert> : null}
-            {status?.installed && !status.daemonActive ? (
+            {!engineInstalled ? <Alert variant="warn">{t('docker.notInstalled')}</Alert> : null}
+            {engineInstalled && !status.daemonActive ? (
               <Alert variant="warn">{t('docker.alerts.daemonBody')}</Alert>
             ) : null}
             <dl className="desc-list">
               <div>
                 <dt>{t('docker.col.version')}</dt>
-                <dd>{status?.version ?? '—'}</dd>
+                <dd>{status?.version ?? emptyVal}</dd>
               </div>
               <div>
                 <dt>Compose</dt>
-                <dd>{status?.composeVersion ?? '—'}</dd>
+                <dd>{status?.composeVersion ?? emptyVal}</dd>
               </div>
               <div>
                 <dt>{t('docker.col.dataRoot')}</dt>
                 <dd>
-                  <code>{status?.dataRoot ?? '—'}</code>
+                  <code>{status?.dataRoot ?? emptyVal}</code>
                 </dd>
               </div>
               <div>
@@ -236,9 +310,9 @@ export function DockerPage() {
                     ? `${(status.disk.usedBytes / 1024 ** 3).toFixed(1)} GiB / ${
                         status.disk.availBytes != null
                           ? `${(status.disk.availBytes / 1024 ** 3).toFixed(1)} GiB free`
-                          : '—'
+                          : emptyVal
                       }`
-                    : '—'}
+                    : emptyVal}
                 </dd>
               </div>
               <div>
@@ -248,21 +322,6 @@ export function DockerPage() {
                 </dd>
               </div>
             </dl>
-            <div className="u-flex u-gap-2 u-mt-3">
-              <Button size="sm" onClick={() => void run(() => dockerApi.engine('start'))}>
-                {t('docker.actions.startEngine')}
-              </Button>
-              <Button size="sm" onClick={() => void run(() => dockerApi.engine('restart'))}>
-                {t('docker.actions.restartEngine')}
-              </Button>
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={() => void run(() => dockerApi.engine('stop'))}
-              >
-                {t('docker.actions.stopEngine')}
-              </Button>
-            </div>
           </>
         ) : null}
 
@@ -270,7 +329,12 @@ export function DockerPage() {
           <DataTable<DockerContainerRow>
             rowKey={(row) => row.id || row.name}
             toolbar={
-              <Button variant="primary" onClick={() => setRunOpen(true)}>
+              <Button
+                variant="primary"
+                disabled={!engineInstalled || busy}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => setRunOpen(true)}
+              >
                 {t('docker.actions.run')}
               </Button>
             }
@@ -296,10 +360,18 @@ export function DockerPage() {
             rows={containers}
             rowActions={(row) => (
               <>
-                <Button size="sm" onClick={() => void run(() => dockerApi.containerAction(row.name || row.id, 'start'))}>
+                <Button
+                  size="sm"
+                  disabled={!engineInstalled || busy}
+                  onClick={() => void run(() => dockerApi.containerAction(row.name || row.id, 'start'))}
+                >
                   {t('docker.actions.start')}
                 </Button>
-                <Button size="sm" onClick={() => void run(() => dockerApi.containerAction(row.name || row.id, 'stop'))}>
+                <Button
+                  size="sm"
+                  disabled={!engineInstalled || busy}
+                  onClick={() => void run(() => dockerApi.containerAction(row.name || row.id, 'stop'))}
+                >
                   {t('docker.actions.stop')}
                 </Button>
                 <Button size="sm" onClick={() => void openLogs(row.name || row.id)}>
@@ -307,6 +379,7 @@ export function DockerPage() {
                 </Button>
                 <Button
                   size="sm"
+                  disabled={!engineInstalled || busy}
                   onClick={() =>
                     void run(
                       () => dockerApi.exec(row.name || row.id, 'version'),
@@ -332,6 +405,7 @@ export function DockerPage() {
                 <Button
                   size="sm"
                   variant="danger"
+                  disabled={!engineInstalled || busy}
                   onClick={() => void run(() => dockerApi.containerAction(row.name || row.id, 'remove'))}
                 >
                   {t('docker.actions.remove')}
@@ -348,6 +422,8 @@ export function DockerPage() {
                 <input id="dock-pull" value={pullImage} onChange={(e) => setPullImage(e.target.value)} />
               </Field>
               <Button
+                disabled={!engineInstalled || busy || !pullImage.trim()}
+                title={!engineInstalled ? needEngine : undefined}
                 onClick={() =>
                   void run(
                     () => dockerApi.pull(pullImage.trim()),
@@ -376,6 +452,7 @@ export function DockerPage() {
                 <Button
                   size="sm"
                   variant="danger"
+                  disabled={!engineInstalled || busy}
                   onClick={() => void run(() => dockerApi.removeImage(row.id || `${row.repository}:${row.tag}`))}
                 >
                   {t('docker.actions.remove')}
@@ -388,7 +465,17 @@ export function DockerPage() {
         {tab === 'compose' ? (
           <DataTable<DockerComposeProject>
             rowKey={(row) => row.name}
-            empty={<EmptyState title={t('docker.empty.compose')} />}
+            empty={
+              <EmptyState
+                title={t('docker.empty.compose')}
+                description={t('docker.empty.composeDesc')}
+                action={
+                  <Link className="btn btn--secondary btn--sm" to="/validators">
+                    {t('docker.empty.composeCta')}
+                  </Link>
+                }
+              />
+            }
             columns={[
               { key: 'name', header: t('docker.col.name'), render: (row) => row.name },
               { key: 'status', header: t('docker.col.status'), render: (row) => row.status },
@@ -404,6 +491,7 @@ export function DockerPage() {
               <>
                 <Button
                   size="sm"
+                  disabled={!engineInstalled || busy}
                   onClick={() =>
                     void run(
                       () => dockerApi.composeAction(row.name, 'up'),
@@ -415,7 +503,11 @@ export function DockerPage() {
                 >
                   {t('docker.actions.up')}
                 </Button>
-                <Button size="sm" onClick={() => void run(() => dockerApi.composeAction(row.name, 'down'))}>
+                <Button
+                  size="sm"
+                  disabled={!engineInstalled || busy}
+                  onClick={() => void run(() => dockerApi.composeAction(row.name, 'down'))}
+                >
                   {t('docker.actions.down')}
                 </Button>
               </>
@@ -426,10 +518,19 @@ export function DockerPage() {
         {tab === 'volumes' ? (
           <>
             <div className="u-flex u-gap-2 u-mb-3">
-              <Field htmlFor="dock-vol" label={t('docker.actions.createVolume')}>
-                <input id="dock-vol" value={volName} onChange={(e) => setVolName(e.target.value)} />
+              <Field htmlFor="dock-vol" label={t('docker.actions.createVolume')} hint={t('docker.nameHint')}>
+                <input
+                  id="dock-vol"
+                  value={volName}
+                  placeholder={t('docker.volPlaceholder')}
+                  onChange={(e) => setVolName(e.target.value)}
+                />
               </Field>
-              <Button onClick={() => void run(() => dockerApi.createVolume(volName.trim()))}>
+              <Button
+                disabled={!engineInstalled || busy || !volName.trim()}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => void run(() => dockerApi.createVolume(volName.trim()))}
+              >
                 {t('docker.actions.createVolume')}
               </Button>
             </div>
@@ -445,6 +546,7 @@ export function DockerPage() {
                 <Button
                   size="sm"
                   variant="danger"
+                  disabled={!engineInstalled || busy}
                   onClick={() => void run(() => dockerApi.removeVolume(row.name))}
                 >
                   {t('docker.actions.remove')}
@@ -457,10 +559,19 @@ export function DockerPage() {
         {tab === 'networks' ? (
           <>
             <div className="u-flex u-gap-2 u-mb-3">
-              <Field htmlFor="dock-net" label={t('docker.actions.createNetwork')}>
-                <input id="dock-net" value={netName} onChange={(e) => setNetName(e.target.value)} />
+              <Field htmlFor="dock-net" label={t('docker.actions.createNetwork')} hint={t('docker.nameHint')}>
+                <input
+                  id="dock-net"
+                  value={netName}
+                  placeholder={t('docker.netPlaceholder')}
+                  onChange={(e) => setNetName(e.target.value)}
+                />
               </Field>
-              <Button onClick={() => void run(() => dockerApi.createNetwork(netName.trim()))}>
+              <Button
+                disabled={!engineInstalled || busy || !netName.trim()}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => void run(() => dockerApi.createNetwork(netName.trim()))}
+              >
                 {t('docker.actions.createNetwork')}
               </Button>
             </div>
@@ -479,6 +590,7 @@ export function DockerPage() {
                   <Button
                     size="sm"
                     variant="danger"
+                    disabled={!engineInstalled || busy}
                     onClick={() => void run(() => dockerApi.removeNetwork(row.name || row.id))}
                   >
                     {t('docker.actions.remove')}
@@ -508,17 +620,31 @@ export function DockerPage() {
               <input id="dock-prune-c" value={pruneConfirm} onChange={(e) => setPruneConfirm(e.target.value)} />
             </Field>
             <div className="u-flex u-gap-2 u-mt-3">
-              <Button onClick={() => void run(() => dockerApi.prune('containers'))}>
+              <Button
+                disabled={!engineInstalled || busy || !pruneReady}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => void run(() => dockerApi.prune('containers', pruneConfirm))}
+              >
                 {t('docker.actions.pruneContainers')}
               </Button>
-              <Button onClick={() => void run(() => dockerApi.prune('images'))}>
+              <Button
+                disabled={!engineInstalled || busy || !pruneReady}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => void run(() => dockerApi.prune('images', pruneConfirm))}
+              >
                 {t('docker.actions.pruneImages')}
               </Button>
-              <Button onClick={() => void run(() => dockerApi.prune('volumes', pruneConfirm))}>
+              <Button
+                disabled={!engineInstalled || busy || !pruneReady}
+                title={!engineInstalled ? needEngine : undefined}
+                onClick={() => void run(() => dockerApi.prune('volumes', pruneConfirm))}
+              >
                 {t('docker.actions.pruneVolumes')}
               </Button>
               <Button
                 variant="danger"
+                disabled={!engineInstalled || busy || !pruneReady}
+                title={!engineInstalled ? needEngine : undefined}
                 onClick={() =>
                   void run(
                     () => dockerApi.prune('system', pruneConfirm),
@@ -572,16 +698,9 @@ export function DockerPage() {
             </Field>
             <Button
               className="u-mt-3"
-              onClick={() =>
-                void run(() =>
-                  dockerApi.patchDaemon({
-                    logMaxSize,
-                    liveRestore,
-                    registryMirrors: mirrors.split(/\s+/).map((s) => s.trim()).filter(Boolean),
-                    insecureRegistries: insecure.split(/\s+/).map((s) => s.trim()).filter(Boolean),
-                  }),
-                )
-              }
+              disabled={!engineInstalled || busy}
+              title={!engineInstalled ? needEngine : undefined}
+              onClick={() => setDaemonConfirm(true)}
             >
               {t('docker.actions.applyDaemon')}
             </Button>
@@ -609,8 +728,21 @@ export function DockerPage() {
         onClose={() => setRunOpen(false)}
         title={t('docker.actions.run')}
         size="md"
+        footer={
+          <>
+            <Button onClick={() => setRunOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              type="submit"
+              form="dock-run-form"
+              variant="primary"
+              disabled={busy || !engineInstalled}
+            >
+              {t('docker.actions.run')}
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={(e) => void onRun(e)}>
+        <form id="dock-run-form" onSubmit={(e) => void onRun(e)}>
           <Field htmlFor="dock-run-img" label={t('docker.col.image')}>
             <input
               id="dock-run-img"
@@ -619,14 +751,51 @@ export function DockerPage() {
               required
             />
           </Field>
-          <Field htmlFor="dock-run-name" label={t('docker.col.name')}>
+          <Field htmlFor="dock-run-name" label={t('docker.col.name')} hint={t('docker.nameHint')}>
             <input id="dock-run-name" value={runName} onChange={(e) => setRunName(e.target.value)} />
           </Field>
-          <Button type="submit" variant="primary" disabled={busy}>
-            {t('docker.actions.run')}
-          </Button>
+          <Field htmlFor="dock-run-ports" label={t('docker.runPorts')} hint={t('docker.runPortsHint')}>
+            <textarea id="dock-run-ports" rows={2} value={runPorts} onChange={(e) => setRunPorts(e.target.value)} />
+          </Field>
+          <Field htmlFor="dock-run-vol" label={t('docker.runVolumes')} hint={t('docker.runVolumesHint')}>
+            <textarea id="dock-run-vol" rows={2} value={runVolumes} onChange={(e) => setRunVolumes(e.target.value)} />
+          </Field>
+          <Field htmlFor="dock-run-env" label={t('docker.runEnv')} hint={t('docker.runEnvHint')}>
+            <textarea id="dock-run-env" rows={2} value={runEnv} onChange={(e) => setRunEnv(e.target.value)} />
+          </Field>
+          <Field htmlFor="dock-run-restart" label={t('docker.runRestart')}>
+            <select id="dock-run-restart" value={runRestart} onChange={(e) => setRunRestart(e.target.value)}>
+              <option value="no">no</option>
+              <option value="on-failure">on-failure</option>
+              <option value="always">always</option>
+              <option value="unless-stopped">unless-stopped</option>
+            </select>
+          </Field>
+          <Field htmlFor="dock-run-net" label={t('docker.runNetwork')}>
+            <input id="dock-run-net" value={runNetwork} onChange={(e) => setRunNetwork(e.target.value)} />
+          </Field>
+          <p className="muted u-text-sm u-mt-2">{t('docker.runAdvancedHint')}</p>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={daemonConfirm}
+        onClose={() => setDaemonConfirm(false)}
+        title={t('docker.daemonConfirmTitle')}
+        description={t('docker.daemonConfirmDesc')}
+        severity="destructive"
+        onConfirm={() => {
+          setDaemonConfirm(false);
+          void run(() =>
+            dockerApi.patchDaemon({
+              logMaxSize,
+              liveRestore,
+              registryMirrors: mirrors.split(/\s+/).map((s) => s.trim()).filter(Boolean),
+              insecureRegistries: insecure.split(/\s+/).map((s) => s.trim()).filter(Boolean),
+            }),
+          );
+        }}
+      />
 
       <Modal
         open={Boolean(logTitle)}

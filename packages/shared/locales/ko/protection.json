@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "상위 IP",
   "hitsCount": "{{n}}회",
-  "sampleWindowHint": "횟수는 전체 로그가 아니라 현재 access + auth 샘플 창에서 나옵니다."
+  "sampleWindowHint": "횟수는 전체 로그가 아니라 현재 access + auth 샘플 창에서 나옵니다.",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

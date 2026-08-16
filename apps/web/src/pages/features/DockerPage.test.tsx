@@ -59,9 +59,11 @@ describe('DockerPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /^docker$/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole('tab', { name: /containers/i }));
+    expect(screen.queryByRole('tab', { name: /containers/i })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/not installed/i).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('tab', { name: /about/i }));
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /run/i })).toBeInTheDocument();
+      expect(screen.getByText(/first-class host service/i)).toBeInTheDocument();
     });
   });
 });

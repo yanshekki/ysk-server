@@ -29,6 +29,7 @@ import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { toast } from '../../shared/stores/toast-store';
+import { formatDateTime } from '../../shared/lib/datetime';
 import {
   bindSet,
   bindInput,
@@ -362,7 +363,7 @@ export function buildCdnSiteBody(input: {
 }
 
 export function CdnPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'nodes');
   const nodeList = useServerList<CdnNodeDto>({
     path: '/api/v1/cdn/nodes',
@@ -1170,15 +1171,21 @@ export function CdnPage() {
                 {
                   key: 'origin',
                   header: 'Origin',
-                  render: (s) => (
-                    <span className="u-text-sm muted">
-                      {s.origin?.kind === 'url'
-                        ? s.origin.url
-                        : s.origin?.projectId
-                          ? `project:${s.origin.projectId}`
-                          : '—'}
-                    </span>
-                  ) },
+                  render: (s) => {
+                    const url = s.origin?.kind === 'url' ? String(s.origin.url ?? '') : '';
+                    const loopback = /127\.0\.0\.1|localhost|\[::1\]/i.test(url);
+                    return (
+                      <span className="u-text-sm muted">
+                        {url || (s.origin?.projectId ? `project:${s.origin.projectId}` : '—')}
+                        {loopback ? (
+                          <>
+                            {' '}
+                            <Badge tone="warn">{t('cdn.localTest')}</Badge>
+                          </>
+                        ) : null}
+                      </span>
+                    );
+                  } },
                 {
                   key: 'edges',
                   header: 'Edges',
@@ -1364,7 +1371,7 @@ export function CdnPage() {
                 title={t('cdn.dashboardTitle')}
                 description={
                   dashboard
-                    ? t('cdn.updatedAt', { at: new Date(dashboard.at).toLocaleString() })
+                    ? t('cdn.updatedAt', { at: formatDateTime(dashboard.at, { locale: i18n.language }) })
                     : t('common.loading')
                 }
               >
@@ -1382,7 +1389,7 @@ export function CdnPage() {
                   <>
                     <div className="u-flex u-flex-wrap gap-3 u-mt-2">
                       <Badge tone="ok">
-                        {t('cdn.statOnline', {
+                        {t('cdn.statOnlineOf', {
                           n: dashboard.nodes.online,
                           total: dashboard.nodes.total,
                         })}

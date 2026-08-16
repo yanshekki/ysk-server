@@ -1764,7 +1764,7 @@
       "变更主机须 root 及 YSK_EXECUTE=1"
     ],
     "notes": [
-      "Beta：此页尚未提供安装与启动",
+      "Beta：安装与启动需要 Docker Engine、root 及 YSK_EXECUTE=1",
       "ETH 主网需要数百 GB 可用空间 — 空间不足时会拒绝创建",
       "RPC 默认只绑定本机"
     ],
@@ -1804,7 +1804,7 @@
       "变更主机需要 root 和 YSK_EXECUTE=1"
     ],
     "notes": [
-      "本页不是 Kubernetes。不提供特权运行或任意上传 Compose。",
+      "本页管理单机 Docker；集群编排请用外部 Kubernetes。不提供特权运行或任意上传 Compose。",
       "停止引擎会一并停止验证者堆栈。"
     ],
     "cliHints": [

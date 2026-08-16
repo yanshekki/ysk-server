@@ -142,5 +142,6 @@
   "restoreFullTitle": "इस संग्रह से प्रोजेक्ट फ़ाइलों और डेटाबेस को अधिलेखित करें - पुष्टि करने के लिए फ़ाइल नाम टाइप करें",
   "restoreWebTitle": "केवल इस संग्रह से वेबसाइट फ़ाइलें पुनर्स्थापित करें",
   "previewTitle": "बिना लिखे पूर्वावलोकन पुनर्स्थापित करें",
-  "partialSkipped": "आंशिक - कुछ परियोजनाएँ छोड़ दी गईं"
+  "partialSkipped": "आंशिक - कुछ परियोजनाएँ छोड़ दी गईं",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

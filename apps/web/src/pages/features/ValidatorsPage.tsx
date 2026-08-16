@@ -22,6 +22,7 @@ import {
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { dockerApi } from '../../features/docker';
 import {
   streamValidatorAction,
   validatorsApi,
@@ -85,14 +86,17 @@ export function ValidatorsPage() {
   const [status, setStatus] = useState<ValidatorStatusResponse | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [clearText, setClearText] = useState('');
+  const [dockerInstalled, setDockerInstalled] = useState<boolean | null>(null);
+  const [copiedCli, setCopiedCli] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [list, diskRes, chainRes] = await Promise.all([
+      const [list, diskRes, chainRes, dock] = await Promise.all([
         validatorsApi.list(),
         validatorsApi.disk(),
         validatorsApi.chains(),
+        dockerApi.status().catch(() => null),
       ]);
       setInstances(list.instances ?? []);
       setDisk(diskRes.disk ?? null);
@@ -101,6 +105,7 @@ export function ValidatorsPage() {
       for (const s of list.summaries ?? []) map[s.id] = s;
       setSummaries(map);
       setAutoClear(list.settings?.autoClear === true);
+      setDockerInstalled(dock?.status?.installed === true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -122,8 +127,17 @@ export function ValidatorsPage() {
 
   const chainSpec = useMemo(() => chains.find((c) => c.id === chain), [chains, chain]);
   const netSpec = chainSpec?.networks.find((n) => n.id === network);
+  const needBytes =
+    chainSpec?.minFreeBytes?.[network]?.[profile as 'minimal'] ??
+    chainSpec?.minFreeBytes?.[network]?.minimal ??
+    null;
+  const diskShort =
+    needBytes != null && disk?.availBytes != null && disk.availBytes < needBytes;
   const canCreate =
-    Boolean(chainSpec && netSpec) && (netSpec?.kind !== 'mainnet' || mainnetOk);
+    dockerInstalled === true &&
+    Boolean(chainSpec && netSpec) &&
+    (netSpec?.kind !== 'mainnet' || mainnetOk) &&
+    !diskShort;
 
   const openWizard = () => {
     setWizard(true);
@@ -288,6 +302,23 @@ export function ValidatorsPage() {
               <EmptyState
                 title={t('validators.empty.title')}
                 description={t('validators.empty.desc')}
+                action={
+                  <div>
+                    <pre className="code-block u-mt-2">{t('validators.empty.cli')}</pre>
+                    <Button
+                      size="sm"
+                      className="u-mt-2"
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(t('validators.empty.cli')).then(() => {
+                          setCopiedCli(true);
+                          window.setTimeout(() => setCopiedCli(false), 2000);
+                        });
+                      }}
+                    >
+                      {copiedCli ? t('validators.empty.copied') : t('validators.empty.copyCli')}
+                    </Button>
+                  </div>
+                }
               />
             }
             columns={[
@@ -375,6 +406,7 @@ export function ValidatorsPage() {
             ) : disk?.tone === 'warn' ? (
               <Alert variant="warn">{t('validators.disk.warn')}</Alert>
             ) : null}
+            <Alert variant="error">{t('validators.disk.autoClearRisk')}</Alert>
             <Field htmlFor="val-autoclear" label={t('validators.disk.autoClear')}>
               <input
                 id="val-autoclear"
@@ -428,23 +460,44 @@ export function ValidatorsPage() {
       <Modal
         open={wizard}
         onClose={() => setWizard(false)}
-        title={t('validators.wizard.title')}
+        title={`${t('validators.wizard.title')} · ${t('validators.wizard.stepOf', { n: step + 1, total: 4 })}`}
+        description={
+          step === 0
+            ? t('validators.wizard.stepChain')
+            : step === 1
+              ? t('validators.wizard.stepNetwork')
+              : step === 2
+                ? t('validators.wizard.stepProfile')
+                : t('validators.wizard.stepSummary')
+        }
         size="lg"
         footer={
           <>
+            <Button onClick={() => setWizard(false)}>{t('common.cancel')}</Button>
             {step > 0 ? (
               <Button onClick={() => setStep((s) => s - 1)}>{t('validators.wizard.back')}</Button>
             ) : null}
             {step < 3 ? (
               <Button
                 variant="primary"
-                disabled={step === 1 && !canCreate}
+                disabled={step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk}
                 onClick={() => setStep((s) => s + 1)}
               >
                 {t('validators.wizard.next')}
               </Button>
             ) : (
-              <Button variant="primary" disabled={busy || !canCreate} onClick={() => void create(true)}>
+              <Button
+                variant="primary"
+                disabled={busy || !canCreate}
+                title={
+                  dockerInstalled === false
+                    ? t('validators.wizard.needDocker')
+                    : diskShort
+                      ? t('validators.wizard.diskShort')
+                      : undefined
+                }
+                onClick={() => void create(true)}
+              >
                 {t('validators.wizard.install')}
               </Button>
             )}
@@ -481,6 +534,9 @@ export function ValidatorsPage() {
               }))}
             />
             {chainSpec?.heavy ? <Alert variant="warn">{t('validators.wizard.heavyWarn')}</Alert> : null}
+            {dockerInstalled === false ? (
+              <Alert variant="warn">{t('validators.wizard.needDocker')}</Alert>
+            ) : null}
           </>
         ) : null}
         {step === 1 ? (
@@ -520,6 +576,14 @@ export function ValidatorsPage() {
                 label: t(`validators.profile.${p}`),
               }))}
             />
+            {needBytes != null ? (
+              <Alert variant={diskShort ? 'error' : 'info'}>
+                {t(diskShort ? 'validators.wizard.diskShort' : 'validators.wizard.diskNeed', {
+                  need: formatBytes(needBytes),
+                  free: formatBytes(disk?.availBytes),
+                })}
+              </Alert>
+            ) : null}
             {chain === 'eth' ? (
               <>
                 <Field htmlFor="val-el" label={t('validators.clients.el')}>

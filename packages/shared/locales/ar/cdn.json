@@ -116,7 +116,7 @@
   "deleteSiteDesc": "يحذف موقع CDN \"{{name}}\".",
   "deleteSiteC1": "سياسة الموقع وجمعيات الحافة",
   "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "غير متصل {{n}}",
   "statHitRate": "معدل الإصابة {{v}}",
   "hitNoStats": "لا إحصاءات حافة بعد",
@@ -171,5 +171,8 @@
     "offline": "غير متصل",
     "draining": "استنزاف",
     "unknown": "مجهول"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

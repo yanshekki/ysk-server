@@ -225,5 +225,8 @@
       "hint": "メールDNSBLチェック"
     }
   },
-  "applyPanelAlreadyLatest": "すでに最新のパネルバージョン"
+  "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
+  "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
+  "panelRestarted": "パネルが復帰しました · {{version}}",
+  "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。"
 }

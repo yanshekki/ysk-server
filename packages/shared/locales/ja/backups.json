@@ -142,5 +142,6 @@
   "restoreFullTitle": "このアーカイブからプロジェクト ファイルとデータベースを上書きします — 確認するためにファイル名を入力します",
   "restoreWebTitle": "このアーカイブからのみ Web サイト ファイルを復元します",
   "previewTitle": "書き込みなしでプレビュー復元",
-  "partialSkipped": "部分的 — 一部のプロジェクトがスキップされました"
+  "partialSkipped": "部分的 — 一部のプロジェクトがスキップされました",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

@@ -559,6 +559,23 @@ export function SystemPage() {
                                   ? true
                                   : z.toLowerCase().includes(tzQuery.trim().toLowerCase()),
                               )
+                              .sort((a, b) => {
+                                const pin = [
+                                  'UTC',
+                                  'Asia/Hong_Kong',
+                                  'Asia/Shanghai',
+                                  'Asia/Tokyo',
+                                  'Europe/London',
+                                  'America/New_York',
+                                ];
+                                return pin.indexOf(a) === -1
+                                  ? pin.indexOf(b) === -1
+                                    ? 0
+                                    : 1
+                                  : pin.indexOf(b) === -1
+                                    ? -1
+                                    : pin.indexOf(a) - pin.indexOf(b);
+                              })
                               .map((z) => (
                               <option key={z} value={z}>
                                 {z}
@@ -850,17 +867,6 @@ export function SystemPage() {
                         >
                           {t('system.panelTls.enableExisting')}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="md"
-                          loading={tlsBusy}
-                          disabled={!panelTls?.tlsEnabled}
-                          title={t('system.panelTls.disableNeedConfirm')}
-                          aria-label={t('system.panelTls.disableNeedConfirm')}
-                          onClick={() => setDisableTlsOpen(true)}
-                        >
-                          {t('system.panelTls.disable')}
-                        </Button>
                         {hostname ? (
                           <Link
                             to={`/ssl?domain=${encodeURIComponent(hostname)}&action=le`}
@@ -870,6 +876,21 @@ export function SystemPage() {
                           </Link>
                         ) : null}
                       </div>
+                      <details className="u-mt-3">
+                        <summary className="u-text-sm">{t('system.panelTls.disableNeedConfirm')}</summary>
+                        <Button
+                          className="u-mt-2"
+                          variant="danger"
+                          size="sm"
+                          loading={tlsBusy}
+                          disabled={!panelTls?.tlsEnabled}
+                          title={t('system.panelTls.disableNeedConfirm')}
+                          aria-label={t('system.panelTls.disableNeedConfirm')}
+                          onClick={() => setDisableTlsOpen(true)}
+                        >
+                          {t('system.panelTls.disable')}
+                        </Button>
+                      </details>
                     </section>
 
                     <section className="sys-panel">

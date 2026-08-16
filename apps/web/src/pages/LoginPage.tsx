@@ -129,7 +129,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" key={normalizeLocale(i18n.language)}>
       <div className="login-card">
         <div className="login-card__brand">
           <img src="/logo.svg" alt="YSK Limited" width={56} height={56} />

@@ -116,7 +116,7 @@
   "deleteSiteDesc": "Menghapus situs CDN \"{{name}}\".",
   "deleteSiteC1": "Kebijakan situs dan asosiasi edge",
   "deleteSiteC2": "Konfigurasi nginx yang diterapkan mungkin memerlukan pembersihan terpisah atau penerapan ulang",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "Luring {{n}}",
   "statHitRate": "Tingkat hit {{v}}",
   "hitNoStats": "Belum ada statistik edge",
@@ -171,5 +171,8 @@
     "offline": "luring",
     "draining": "menguras",
     "unknown": "tidak dikenal"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "Belum ada node validator",
-    "desc": "Buat node testnet dalam beberapa klik. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "Buat node testnet dalam beberapa klik.",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "Segarkan",
   "disk": {
@@ -20,15 +23,16 @@
     "none": "Belum ada data instans",
     "warn": "Pemakaian disk tinggi (70%+)",
     "danger": "Pemakaian disk kritis (85%+)",
-    "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)"
+    "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
     "eth": "Ethereum",
-    "avax": "Salju longsor",
+    "avax": "Avalanche",
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Pusat Kosmos",
+    "cosmos": "Cosmos Hub",
     "sui": "Sui",
     "aptos": "Aptos",
     "dot": "Polkadot",
@@ -42,7 +46,7 @@
     "testnet": "Jaringan uji",
     "preview": "Pratinjau",
     "preprod": "Persiapan",
-    "westend": "ujung barat"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "Jaringan uji",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "Paling kecil",
-    "pruned": "Dipangkas",
+    "pruned": "Pruned",
     "validator-ready": "Siap validator",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
     "noKeys": "YSK Server tidak pernah membuat atau menyimpan kunci staking.",
-    "dockerSoon": "Pasang, mulai, dan henti menyusul di tahap berikutnya. Halaman ini hanya menampilkan instans dan disk.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "Spesifikasi instans dan compose ditulis (dry-run). Tambahkan --execute dan YSK_EXECUTE=1 untuk memulai kontainer.",
     "dryStart": "Mulai adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
     "dryStop": "Henti adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
@@ -141,7 +145,15 @@
     "memory": "Batas memori (mis. 4g)",
     "cpus": "Batas CPU (mis. 2.0)",
     "dataPath": "Jalur data (opsional)",
-    "rpcPort": "Port RPC (opsional)"
+    "rpcPort": "Port RPC (opsional)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "Rincian",

@@ -225,5 +225,8 @@
       "hint": "Verificação DNSBL de correio"
     }
   },
-  "applyPanelAlreadyLatest": "Já é a versão mais recente do painel"
+  "applyPanelAlreadyLatest": "Já é a versão mais recente do painel",
+  "panelRestarting": "O painel está a reiniciar para carregar a nova versão…",
+  "panelRestarted": "Painel de volta · {{version}}",
+  "panelRestartWait": "Atualização aplicada. Se esta página não atualizar, recarregue após alguns segundos."
 }

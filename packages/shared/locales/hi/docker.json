@@ -69,7 +69,9 @@
     "images": "कोई छवि नहीं",
     "compose": "कोई Compose प्रोजेक्ट नहीं",
     "volumes": "कोई volume नहीं",
-    "networks": "कोई नेटवर्क नहीं"
+    "networks": "कोई नेटवर्क नहीं",
+    "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+    "composeCta": "Open validator nodes"
   },
   "logs": {
     "empty": "अभी कोई लॉग नहीं"
@@ -140,5 +142,21 @@
       "stop": "docker.service रुका",
       "restart": "docker.service पुनः चालू हुआ"
     }
-  }
+  },
+  "needEngineTitle": "Install Docker Engine first",
+  "notInstalledValue": "Not installed",
+  "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+  "volPlaceholder": "my-data",
+  "netPlaceholder": "my-net",
+  "runPorts": "Publish ports",
+  "runPortsHint": "host:container per line, e.g. 8080:80",
+  "runEnv": "Environment",
+  "runEnvHint": "KEY=value per line",
+  "runRestart": "Restart policy",
+  "runNetwork": "Network",
+  "runVolumes": "Volumes",
+  "runVolumesHint": "volume:dest per line",
+  "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+  "daemonConfirmTitle": "Apply daemon settings?",
+  "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted."
 }

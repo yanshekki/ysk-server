@@ -4,7 +4,23 @@
   "refresh": "重新整理",
   "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 及 docker-compose-v2。",
   "protected": "受保護",
-  "pruneConfirm": "輸入 PRUNE 以確認清理 volume 或系統",
+  "pruneConfirm": "輸入 PRUNE 以確認任何清理",
+  "needEngineTitle": "請先安裝 Docker Engine",
+  "notInstalledValue": "未安裝",
+  "nameHint": "字母、數字、底線、點、連字號（最長 128）",
+  "volPlaceholder": "my-data",
+  "netPlaceholder": "my-net",
+  "runPorts": "發佈埠",
+  "runPortsHint": "每行 host:container，例如 8080:80",
+  "runEnv": "環境變數",
+  "runEnvHint": "每行 KEY=value",
+  "runRestart": "重啟政策",
+  "runNetwork": "網絡",
+  "runVolumes": "Volume",
+  "runVolumesHint": "每行 volume:dest",
+  "runAdvancedHint": "多服務堆疊請用驗證者節點，或主機上已有的 Compose 檔。",
+  "daemonConfirmTitle": "套用引擎設定？",
+  "daemonConfirmDesc": "會寫入 daemon.json 並重啟 docker.service。所有容器都會中斷。",
   "settingsHint": "只開放安全的 daemon.json 選項。套用會寫入檔案並重啟 docker.service。",
   "cli": {
     "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
@@ -68,6 +84,8 @@
     "containers": "未有容器",
     "images": "未有映像",
     "compose": "未有 Compose 專案",
+    "composeDesc": "專案來自驗證者節點或主機上已有的 Compose 檔。本頁不接受任意上載 YAML。",
+    "composeCta": "開啟驗證者節點",
     "volumes": "未有 volume",
     "networks": "未有網絡"
   },
@@ -82,7 +100,7 @@
   },
   "about": {
     "body": "Docker 是 YSK Server 的一級主機服務，與 Nginx 同級。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
-    "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
+    "honesty": "變更主機需要 root 及 YSK_EXECUTE=1。預設是試行。本頁管理單機 Docker；叢集編排請用外部 Kubernetes。",
     "validators": "開啟驗證者節點"
   },
   "alerts": {

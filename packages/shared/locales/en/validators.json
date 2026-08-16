@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "No validator nodes yet",
-    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "Create a testnet node in a few clicks.",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "Refresh",
   "disk": {
@@ -20,7 +23,8 @@
     "none": "No instance data yet",
     "warn": "Disk usage is high (70%+)",
     "danger": "Disk usage is critical (85%+)",
-    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
     "eth": "Ethereum",
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
     "noKeys": "YSK Server never generates or stores staking keys.",
-    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
     "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
     "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
@@ -132,6 +136,14 @@
   "create": "Create node",
   "wizard": {
     "title": "Create node",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile",
     "back": "Back",
     "next": "Next",
     "install": "Install",

@@ -225,5 +225,8 @@
       "hint": "Periksa DNSBL melalui email"
     }
   },
-  "applyPanelAlreadyLatest": "Sudah versi panel terbaru"
+  "applyPanelAlreadyLatest": "Sudah versi panel terbaru",
+  "panelRestarting": "Panel sedang dimulai ulang untuk memuat versi baru…",
+  "panelRestarted": "Panel kembali · {{version}}",
+  "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi."
 }

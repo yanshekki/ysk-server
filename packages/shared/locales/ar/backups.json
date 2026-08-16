@@ -142,5 +142,6 @@
   "restoreFullTitle": "قم بالكتابة فوق ملفات المشروع وقواعد البيانات من هذا الأرشيف — اكتب اسم الملف للتأكيد",
   "restoreWebTitle": "استعادة ملفات موقع الويب من هذا الأرشيف فقط",
   "previewTitle": "معاينة الاستعادة دون الكتابة",
-  "partialSkipped": "جزئي - تم تخطي بعض المشاريع"
+  "partialSkipped": "جزئي - تم تخطي بعض المشاريع",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

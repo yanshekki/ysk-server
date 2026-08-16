@@ -376,5 +376,8 @@
   "col429": "429",
   "topIpsTitle": "শীর্ষ IP",
   "hitsCount": "{{n}} হিট",
-  "sampleWindowHint": "গণনা বর্তমান access + auth নমুনা উইন্ডো থেকে, পুরো লগ ফাইল থেকে নয়।"
+  "sampleWindowHint": "গণনা বর্তমান access + auth নমুনা উইন্ডো থেকে, পুরো লগ ফাইল থেকে নয়।",
+  "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+  "suspectActionableCount": "Actionable IPs {{count}}",
+  "uaNeedZones": "Set a Cloudflare zone first"
 }

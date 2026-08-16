@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "Aún no hay nodos validador",
-    "desc": "Crea un nodo de testnet en unos clics. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "Crea un nodo de testnet en unos clics.",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "Actualizar",
   "disk": {
@@ -20,29 +23,30 @@
     "none": "Aún no hay datos de instancia",
     "warn": "El uso de disco es alto (70%+)",
     "danger": "El uso de disco es crítico (85%+)",
-    "autoClear": "Vaciar automáticamente la instancia detenida más grande cuando el disco es crítico (desactivado por defecto)"
+    "autoClear": "Vaciar automáticamente la instancia detenida más grande cuando el disco es crítico (desactivado por defecto)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "Etereum",
-    "avax": "Avalancha",
+    "eth": "Ethereum",
+    "avax": "Avalanche",
     "near": "NEAR",
     "ada": "Cardano",
-    "btc": "bitcóin",
-    "cosmos": "Centro Cosmos",
-    "sui": "sui",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
     "aptos": "Aptos",
-    "dot": "lunares",
-    "sol": "solana"
+    "dot": "Polkadot",
+    "sol": "Solana"
   },
   "network": {
-    "hoodi": "sudadera con capucha",
+    "hoodi": "Hoodi",
     "sepolia": "Sepolia",
     "mainnet": "Red principal",
-    "fuji": "fuji",
+    "fuji": "Fuji",
     "testnet": "Red de pruebas",
     "preview": "Avance",
     "preprod": "preproducción",
-    "westend": "Oeste"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "Red de pruebas",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "Mínimo",
-    "pruned": "Podado",
+    "pruned": "Pruned",
     "validator-ready": "Listo para validador",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "Esta función es Beta. Los cambios de host necesitan root y YSK_EXECUTE=1.",
     "noKeys": "YSK Server nunca genera ni guarda claves de staking.",
-    "dockerSoon": "Instalar, iniciar y detener llegan en el siguiente incremento. Esta página solo lista instancias y disco.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "Se escribió la especificación y el compose (dry-run). Pasa --execute y YSK_EXECUTE=1 para iniciar contenedores.",
     "dryStart": "El arranque es dry-run. Pasa --execute y YSK_EXECUTE=1.",
     "dryStop": "La parada es dry-run. Pasa --execute y YSK_EXECUTE=1.",
@@ -141,7 +145,15 @@
     "memory": "Límite de memoria (p. ej. 4g)",
     "cpus": "Límite de CPU (p. ej. 2.0)",
     "dataPath": "Ruta de datos (opcional)",
-    "rpcPort": "Puerto RPC (opcional)"
+    "rpcPort": "Puerto RPC (opcional)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "Detalles",

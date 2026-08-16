@@ -69,7 +69,9 @@
     "images": "이미지 없음",
     "compose": "Compose 프로젝트 없음",
     "volumes": "volume 없음",
-    "networks": "네트워크 없음"
+    "networks": "네트워크 없음",
+    "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+    "composeCta": "Open validator nodes"
   },
   "logs": {
     "empty": "아직 로그가 없습니다"
@@ -140,5 +142,21 @@
       "stop": "docker.service를 중지했습니다",
       "restart": "docker.service를 다시 시작했습니다"
     }
-  }
+  },
+  "needEngineTitle": "Install Docker Engine first",
+  "notInstalledValue": "Not installed",
+  "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+  "volPlaceholder": "my-data",
+  "netPlaceholder": "my-net",
+  "runPorts": "Publish ports",
+  "runPortsHint": "host:container per line, e.g. 8080:80",
+  "runEnv": "Environment",
+  "runEnvHint": "KEY=value per line",
+  "runRestart": "Restart policy",
+  "runNetwork": "Network",
+  "runVolumes": "Volumes",
+  "runVolumesHint": "volume:dest per line",
+  "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+  "daemonConfirmTitle": "Apply daemon settings?",
+  "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted."
 }

@@ -1,7 +1,7 @@
 {
   "title": "ویلیڈیٹرز (Beta)",
   "subtitle": "اس میزبان پر L1 نوڈ نصب اور منظم کریں۔ غیر تولیتی — کنجیاں آپ کے پاس رہیں۔",
-  "beta": "بیٹا",
+  "beta": "Beta",
   "tab": {
     "nodes": "نوڈز",
     "disk": "ڈسک",
@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "ابھی کوئی ویلیڈیٹر نوڈ نہیں",
-    "desc": "چند کلکس میں ٹیسٹ نیٹ نوڈ بنائیں۔ CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "چند کلکس میں ٹیسٹ نیٹ نوڈ بنائیں۔",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "تازہ کریں",
   "disk": {
@@ -20,29 +23,30 @@
     "none": "ابھی کوئی انسٹنس ڈیٹا نہیں",
     "warn": "ڈسک استعمال زیادہ ہے (70%+)",
     "danger": "ڈسک استعمال سنگین ہے (85%+)",
-    "autoClear": "ڈسک سنگین ہونے پر سب سے بڑا رکا ہوا انسٹنس خود صاف کریں (طے شدہ بند)"
+    "autoClear": "ڈسک سنگین ہونے پر سب سے بڑا رکا ہوا انسٹنس خود صاف کریں (طے شدہ بند)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "ایتھریم",
-    "avax": "برفانی تودہ",
+    "eth": "Ethereum",
+    "avax": "Avalanche",
     "near": "NEAR",
-    "ada": "کارڈانو",
-    "btc": "بٹ کوائن",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
     "cosmos": "Cosmos Hub",
-    "sui": "سوئی",
-    "aptos": "اپٹوس",
-    "dot": "پولکاڈوٹ",
-    "sol": "سولانہ"
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
   },
   "network": {
-    "hoodi": "ہودی",
-    "sepolia": "سیپولیا",
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
     "mainnet": "مین نیٹ",
-    "fuji": "فوجی",
+    "fuji": "Fuji",
     "testnet": "ٹیسٹ نیٹ",
     "preview": "پیش نظارہ",
     "preprod": "پری پروڈ",
-    "westend": "ویسٹ اینڈ"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "ٹیسٹ نیٹ",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "کم سے کم",
-    "pruned": "تراشا ہوا",
+    "pruned": "Pruned",
     "validator-ready": "ویلیڈیٹر تیار",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "یہ خصوصیت Beta ہے۔ میزبان تبدیلی کے لیے root اور YSK_EXECUTE=1 چاہیے۔",
     "noKeys": "YSK Server کبھی سٹیکنگ کنجیاں بناتا یا رکھتا نہیں۔",
-    "dockerSoon": "نصب، چلانا اور روکنا اگلے مرحلے میں آئیں گے۔ یہ صفحہ صرف انسٹنس اور ڈسک دکھاتا ہے۔",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "انسٹنس وضاحت اور compose لکھا (dry-run)۔ کنٹینر چلانے کے لیے --execute اور YSK_EXECUTE=1 دیں۔",
     "dryStart": "چلانا dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
     "dryStop": "روکنا dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
@@ -141,7 +145,15 @@
     "memory": "میموری حد (جیسے 4g)",
     "cpus": "CPU حد (جیسے 2.0)",
     "dataPath": "ڈیٹا راستہ (اختیاری)",
-    "rpcPort": "RPC پورٹ (اختیاری)"
+    "rpcPort": "RPC پورٹ (اختیاری)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "تفصیل",

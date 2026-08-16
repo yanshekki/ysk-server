@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 1.1.2 — 2026-08-16
+
+### Fix
+- Panel self-update no longer restarts systemd before the HTTP 200; a dropped connection is treated as restart, not `Failed to fetch`
+- Docker actions stay disabled until Docker Engine is installed; prune always needs `PRUNE`
+- Validator chain / network / Beta / RPC / Pruned names stay English; wizard install is blocked without Docker
+- CDN chip interpolation (`statOnline` / `statDraining`) and locale date format
+- `metrics.batchTerm` no longer translates TERM as 學期 / 学期
+
+### Improve
+- Docker compose empty state explains there is no YAML upload; run modal exposes ports / env / volumes
+- Validator wizard step labels, disk estimate, copy-CLI, auto-clear risk
+- Protection suspect counts split listed vs actionable; CF Under Attack on/off share the same zone gate
+- Login remounts on language change; dashboard loading no longer stacks three 載入中
+
 ## 1.1.1 — 2026-08-16
 
 ### Improve

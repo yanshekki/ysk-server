@@ -142,5 +142,6 @@
   "restoreFullTitle": "এই সংরক্ষণাগার থেকে প্রকল্প ফাইল এবং ডাটাবেস ওভাররাইট করুন — নিশ্চিত করতে ফাইলের নাম টাইপ করুন",
   "restoreWebTitle": "শুধুমাত্র এই সংরক্ষণাগার থেকে ওয়েবসাইট ফাইল পুনরুদ্ধার করুন",
   "previewTitle": "লেখা ছাড়াই পুনরুদ্ধারের পূর্বরূপ",
-  "partialSkipped": "আংশিক — কিছু প্রকল্প এড়িয়ে গেছে"
+  "partialSkipped": "আংশিক — কিছু প্রকল্প এড়িয়ে গেছে",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

@@ -116,7 +116,7 @@
   "deleteSiteDesc": "CDN 사이트 \"{{name}}\"을 삭제합니다.",
   "deleteSiteC1": "사이트 정책 및 에지 연결",
   "deleteSiteC2": "적용된 nginx 구성은 별도의 정리 또는 재적용이 필요할 수 있습니다.",
-  "statOnline": "Online {{n}}/{{total}}",
+  "statOnline": "Online",
   "statOffline": "오프라인 {{n}}",
   "statHitRate": "적중률 {{v}}",
   "hitNoStats": "아직 에지 통계가 없습니다",
@@ -171,5 +171,8 @@
     "offline": "오프라인",
     "draining": "배수",
     "unknown": "알려지지 않은"
-  }
+  },
+  "statOnlineOf": "Online {{n}}/{{total}}",
+  "statDraining": "Draining {{n}}",
+  "localTest": "local / test"
 }

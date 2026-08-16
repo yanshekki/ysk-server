@@ -146,7 +146,7 @@
   "protectedPid": "无法从面板发出 PID 1 / init / systemd 信号",
   "sigTermTitle": "发送SIGTERM（要求进程退出）",
   "sigKillTitle": "发送SIGKILL（强制杀死——无法被捕获）",
-  "batchTerm": "学期",
+  "batchTerm": "TERM",
   "batchKill": "杀",
   "rawTopLabel": "原始上衣（未翻译）",
   "followSseLabel": "关注（直播）",

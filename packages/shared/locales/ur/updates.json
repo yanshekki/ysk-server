@@ -225,5 +225,8 @@
       "hint": "میل DNSBL چیک کریں۔"
     }
   },
-  "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن"
+  "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن",
+  "panelRestarting": "نیا ورژن لوڈ کرنے کے لیے پینل دوبارہ شروع ہو رہا ہے…",
+  "panelRestarted": "پینل واپس آ گیا · {{version}}",
+  "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔"
 }

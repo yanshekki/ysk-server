@@ -142,5 +142,6 @@
   "restoreFullTitle": "Sobrescriba los archivos del proyecto y las bases de datos de este archivo: escriba el nombre del archivo para confirmar",
   "restoreWebTitle": "Restaurar archivos del sitio web solo desde este archivo",
   "previewTitle": "Vista previa de restauración sin escribir",
-  "partialSkipped": "Parcial: algunos proyectos se omitieron"
+  "partialSkipped": "Parcial: algunos proyectos se omitieron",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

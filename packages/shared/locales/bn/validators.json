@@ -1,7 +1,7 @@
 {
   "title": "ভ্যালিডেটর (Beta)",
   "subtitle": "এই হোস্টে L1 নোড স্থাপন ও পরিচালনা করুন। নন-কাস্টোডিয়াল — চাবি আপনার কাছেই থাকবে।",
-  "beta": "বেটা",
+  "beta": "Beta",
   "tab": {
     "nodes": "নোড",
     "disk": "ডিস্ক",
@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "এখনও কোনো ভ্যালিডেটর নোড নেই",
-    "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন। CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "রিফ্রেশ",
   "disk": {
@@ -20,29 +23,30 @@
     "none": "এখনও কোনো ইনস্ট্যান্স ডেটা নেই",
     "warn": "ডিস্ক ব্যবহার বেশি (৭০%+)",
     "danger": "ডিস্ক ব্যবহার সংকটজনক (৮৫%+)",
-    "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)"
+    "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "ইথেরিয়াম",
-    "avax": "তুষারপাত",
+    "eth": "Ethereum",
+    "avax": "Avalanche",
     "near": "NEAR",
-    "ada": "কার্ডানো",
-    "btc": "বিটকয়েন",
-    "cosmos": "কসমস হাব",
-    "sui": "সুই",
-    "aptos": "অ্যাপটোস",
-    "dot": "পোলকাডট",
-    "sol": "সোলানা"
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
   },
   "network": {
-    "hoodi": "হুডি",
-    "sepolia": "সেপোলিয়া",
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
     "mainnet": "মেইননেট",
-    "fuji": "ফুজি",
+    "fuji": "Fuji",
     "testnet": "টেস্টনেট",
     "preview": "পূর্বরূপ",
     "preprod": "প্রিপ্রোড",
-    "westend": "ওয়েস্টেন্ড"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "টেস্টনেট",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "ন্যূনতম",
-    "pruned": "ছাঁটা",
+    "pruned": "Pruned",
     "validator-ready": "ভ্যালিডেটর প্রস্তুত",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "এই বৈশিষ্ট্য Beta। হোস্ট পরিবর্তনে root ও YSK_EXECUTE=1 লাগে।",
     "noKeys": "YSK Server কখনো স্টেকিং চাবি তৈরি বা সংরক্ষণ করে না।",
-    "dockerSoon": "স্থাপন, চালু ও থামানো পরের ধাপে আসবে। এই পাতা শুধু ইনস্ট্যান্স ও ডিস্ক দেখায়।",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "ইনস্ট্যান্স স্পেক ও compose লেখা হয়েছে (dry-run)। কন্টেইনার চালু করতে --execute ও YSK_EXECUTE=1 দিন।",
     "dryStart": "চালু dry-run। --execute ও YSK_EXECUTE=1 দিন।",
     "dryStop": "থামানো dry-run। --execute ও YSK_EXECUTE=1 দিন।",
@@ -141,7 +145,15 @@
     "memory": "মেমরি সীমা (যেমন 4g)",
     "cpus": "CPU সীমা (যেমন 2.0)",
     "dataPath": "ডেটা পথ (ঐচ্ছিক)",
-    "rpcPort": "RPC পোর্ট (ঐচ্ছিক)"
+    "rpcPort": "RPC পোর্ট (ঐচ্ছিক)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "বিস্তারিত",

@@ -141,6 +141,9 @@
   "updateFailed": "Update failed",
   "updateIncomplete": "Update incomplete",
   "appliedUpdate": "Update applied",
+  "panelRestarting": "Panel is restarting to load the new version…",
+  "panelRestarted": "Panel is back · {{version}}",
+  "panelRestartWait": "Panel apply finished. If this page does not refresh, reload after a few seconds.",
   "aptCandidate": "apt Candidate",
   "advice": {
     "update": "Update recommended",

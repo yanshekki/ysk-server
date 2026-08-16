@@ -436,6 +436,7 @@
     "secretKey": "Secret Key",
     "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite",
     "testRemote": "Test destination",
+    "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only.",
     "testRemoteDone": "Remote probe finished",
     "testRemoteFailed": "Remote probe failed",
     "resticRepoPh": "Panel data directory / restic-repo",
@@ -835,7 +836,10 @@
     "deleteSiteDesc": "Deletes CDN site \"{{name}}\".",
     "deleteSiteC1": "Site policy and edge associations",
     "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply",
+    "statOnlineOf": "Online {{n}}/{{total}}",
+    "statDraining": "Draining {{n}}",
     "statOffline": "Offline {{n}}",
+    "localTest": "local / test",
     "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
@@ -3008,7 +3012,23 @@
     "refresh": "Refresh",
     "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
     "protected": "Protected",
-    "pruneConfirm": "Type PRUNE to confirm volume or system prune",
+    "pruneConfirm": "Type PRUNE to confirm any prune",
+    "needEngineTitle": "Install Docker Engine first",
+    "notInstalledValue": "Not installed",
+    "nameHint": "Letters, digits, underscore, dot, hyphen (max 128)",
+    "volPlaceholder": "my-data",
+    "netPlaceholder": "my-net",
+    "runPorts": "Publish ports",
+    "runPortsHint": "host:container per line, e.g. 8080:80",
+    "runEnv": "Environment",
+    "runEnvHint": "KEY=value per line",
+    "runRestart": "Restart policy",
+    "runNetwork": "Network",
+    "runVolumes": "Volumes",
+    "runVolumesHint": "volume:dest per line",
+    "runAdvancedHint": "For multi-service stacks use validator nodes or Compose files already on this host.",
+    "daemonConfirmTitle": "Apply daemon settings?",
+    "daemonConfirmDesc": "Writes daemon.json and restarts docker.service. All containers will be interrupted.",
     "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
     "cli": {
       "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
@@ -3072,6 +3092,8 @@
       "containers": "No containers",
       "images": "No images",
       "compose": "No Compose projects",
+      "composeDesc": "Projects come from validator nodes or Compose files already on this host. This page does not accept arbitrary YAML uploads.",
+      "composeCta": "Open validator nodes",
       "volumes": "No volumes",
       "networks": "No networks"
     },
@@ -3086,7 +3108,7 @@
     },
     "about": {
       "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
-      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
+      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page manages Docker on one host; use external Kubernetes for cluster orchestration.",
       "validators": "Open validator nodes"
     },
     "alerts": {
@@ -9529,7 +9551,9 @@
     "automationSaved": "Automation settings saved",
     "statFirewall": "Firewall",
     "statSuspects": "Suspect IPs",
-    "scoreBasisHint": "Threat score uses firewall, fail2ban ban volume, and request-rate signals — not the same count as the intel suspect list.",
+    "statSuspectsSplit": "{{actionable}} actionable / {{total}} listed",
+    "suspectActionableCount": "Actionable IPs {{count}}",
+    "scoreBasisHint": "Listed suspects vs IPs you can still ban (excludes already banned / whitelist).",
     "statAutoBan": "Auto-ban",
     "statApply": "System apply",
     "statActiveBans": "Active bans",
@@ -9839,6 +9863,7 @@
     "hideZeroScore": "Hide 0-score",
     "geoDraftOnly": "Policy is off — Save stores a draft only. Nginx will not enforce until you enable it.",
     "geoNeedDb": "GeoIP databases are missing — update the MMDB files first",
+    "uaNeedZones": "Set a Cloudflare zone first",
     "selectAllCountriesWarn": "Select all countries in block-list mode? That can lock out this host and your login country.",
     "badgeRecommendPreset": "A stronger preset is recommended for the current threat",
     "badgeAutomationOn": "Automation is on",
@@ -12567,6 +12592,9 @@
     "updateFailed": "Update failed",
     "updateIncomplete": "Update incomplete",
     "appliedUpdate": "Update applied",
+    "panelRestarting": "Panel is restarting to load the new version…",
+    "panelRestarted": "Panel is back · {{version}}",
+    "panelRestartWait": "Panel apply finished. If this page does not refresh, reload after a few seconds.",
     "aptCandidate": "apt Candidate",
     "advice": {
       "update": "Update recommended",
@@ -12778,7 +12806,10 @@
     },
     "empty": {
       "title": "No validator nodes yet",
-      "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+      "desc": "Create a testnet node in a few clicks.",
+      "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+      "copyCli": "Copy command",
+      "copied": "Copied"
     },
     "refresh": "Refresh",
     "disk": {
@@ -12789,7 +12820,8 @@
       "none": "No instance data yet",
       "warn": "Disk usage is high (70%+)",
       "danger": "Disk usage is critical (85%+)",
-      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
+      "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)",
+      "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
     },
     "chain": {
       "eth": "Ethereum",
@@ -12871,7 +12903,7 @@
     "notes": {
       "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
       "noKeys": "YSK Server never generates or stores staking keys.",
-      "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
+      "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
       "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
       "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
       "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
@@ -12901,6 +12933,14 @@
     "create": "Create node",
     "wizard": {
       "title": "Create node",
+      "stepOf": "Step {{n}} / {{total}}",
+      "stepChain": "Chain",
+      "stepNetwork": "Network",
+      "stepProfile": "Profile",
+      "stepSummary": "Summary",
+      "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+      "diskNeed": "This profile needs about {{need}} · free {{free}}",
+      "diskShort": "Not enough free disk for this chain / network / profile",
       "back": "Back",
       "next": "Next",
       "install": "Install",

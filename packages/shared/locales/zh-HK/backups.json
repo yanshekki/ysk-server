@@ -136,6 +136,7 @@
   "secretKey": "密鑰",
   "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫",
   "testRemote": "測試目的地",
+  "testRemoteHint": "會連線遠端主機並寫入測試檔，並非只讀探測。",
   "testRemoteDone": "遠端探測完成",
   "testRemoteFailed": "遠端探測失敗",
   "resticRepoPh": "面板資料目錄／restic 庫",

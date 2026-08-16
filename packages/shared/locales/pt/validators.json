@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "Ainda não há nós validador",
-    "desc": "Crie um nó de testnet em poucos cliques. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "Crie um nó de testnet em poucos cliques.",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "Atualizar",
   "disk": {
@@ -20,7 +23,8 @@
     "none": "Ainda sem dados de instância",
     "warn": "A utilização do disco está alta (70%+)",
     "danger": "A utilização do disco é crítica (85%+)",
-    "autoClear": "Limpar automaticamente a maior instância parada quando o disco é crítico (desligado por omissão)"
+    "autoClear": "Limpar automaticamente a maior instância parada quando o disco é crítico (desligado por omissão)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
     "eth": "Ethereum",
@@ -28,10 +32,10 @@
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Centro Cosmos",
+    "cosmos": "Cosmos Hub",
     "sui": "Sui",
     "aptos": "Aptos",
-    "dot": "De bolinhas",
+    "dot": "Polkadot",
     "sol": "Solana"
   },
   "network": {
@@ -42,7 +46,7 @@
     "testnet": "Rede de testes",
     "preview": "Visualização",
     "preprod": "Pré-produção",
-    "westend": "Oeste"
+    "westend": "Westend"
   },
   "networkKind": {
     "testnet": "Rede de testes",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "Mínimo",
-    "pruned": "Podado",
+    "pruned": "Pruned",
     "validator-ready": "Pronto para validador",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "Esta funcionalidade é Beta. Alterações no anfitrião precisam de root e YSK_EXECUTE=1.",
     "noKeys": "O YSK Server nunca gera nem guarda chaves de staking.",
-    "dockerSoon": "Instalar, iniciar e parar chegam no próximo incremento. Esta página só lista instâncias e disco.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "Especificação da instância e compose escritos (dry-run). Passe --execute e YSK_EXECUTE=1 para iniciar contentores.",
     "dryStart": "O arranque é dry-run. Passe --execute e YSK_EXECUTE=1.",
     "dryStop": "A paragem é dry-run. Passe --execute e YSK_EXECUTE=1.",
@@ -141,7 +145,15 @@
     "memory": "Limite de memória (p. ex. 4g)",
     "cpus": "Limite de CPU (p. ex. 2.0)",
     "dataPath": "Caminho de dados (opcional)",
-    "rpcPort": "Porto RPC (opcional)"
+    "rpcPort": "Porto RPC (opcional)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "Detalhes",

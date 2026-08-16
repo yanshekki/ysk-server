@@ -103,7 +103,7 @@
   "protectedPid": "面板不可向 PID 1／init／systemd 發送訊號",
   "sigTermTitle": "發送 SIGTERM（請進程自行結束）",
   "sigKillTitle": "發送 SIGKILL（強制結束，無法攔截）",
-  "batchTerm": "學期",
+  "batchTerm": "TERM",
   "batchKill": "殺",
   "rawTopLabel": "原始 top（未翻譯）",
   "followSseLabel": "跟隨（即時串流）",

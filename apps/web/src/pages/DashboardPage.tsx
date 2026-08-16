@@ -362,7 +362,7 @@ export function DashboardPage() {
       status={{
         pill: {
           label: loading
-            ? t('common.loading')
+            ? '…'
             : health?.status === 'ok'
               ? t('dashboard.status.healthy')
               : readiness?.productionReady
@@ -376,7 +376,10 @@ export function DashboardPage() {
                 ? 'danger'
                 : 'warn' },
         items: loading
-          ? [{ label: t('common.loading'), value: '…' }]
+          ? [
+              { label: t('nav.projects'), value: '…' },
+              { label: t('dashboard.stat.notifications'), value: '…' },
+            ]
           : [
           { label: t('nav.projects'), value: projects.length },
           {

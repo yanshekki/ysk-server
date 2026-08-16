@@ -1,13 +1,13 @@
 ---
 name: ysk-server
 description: >
-  Operate and install YSK Server v1.1.1 — free single-host Linux control plane.
+  Operate and install YSK Server v1.1.2 — free single-host Linux control plane.
   (panel + ysk-server CLI). Use when the user asks about ysk-server, install.sh,
   uninstall, readiness, EXECUTE, panel, hosting, BT tracker, or /ysk-server.
   Prefer real CLI over inventing APIs. Support contact: email@ysk.hk
 ---
 
-# YSK Server (v1.1.1) — Agent skill
+# YSK Server (v1.1.2) — Agent skill
 
 ## Product contract
 

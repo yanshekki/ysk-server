@@ -1,7 +1,7 @@
 {
   "title": "Validateurs (Beta)",
   "subtitle": "Installez et gérez des nœuds L1 sur cet hôte. Non dépositaire — vous gardez les clés.",
-  "beta": "Bêta",
+  "beta": "Beta",
   "tab": {
     "nodes": "Nœuds",
     "disk": "Disque",
@@ -9,7 +9,10 @@
   },
   "empty": {
     "title": "Aucun nœud validateur pour l’instant",
-    "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "cli": "ysk-server validators create --chain eth --network hoodi --profile minimal --json",
+    "copyCli": "Copy command",
+    "copied": "Copied"
   },
   "refresh": "Actualiser",
   "disk": {
@@ -20,23 +23,24 @@
     "none": "Pas encore de données d’instance",
     "warn": "Utilisation du disque élevée (70 %+)",
     "danger": "Utilisation du disque critique (85 %+)",
-    "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)"
+    "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)",
+    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires."
   },
   "chain": {
-    "eth": "Éthereum",
+    "eth": "Ethereum",
     "avax": "Avalanche",
     "near": "NEAR",
     "ada": "Cardano",
     "btc": "Bitcoin",
-    "cosmos": "Centre Cosmos",
+    "cosmos": "Cosmos Hub",
     "sui": "Sui",
     "aptos": "Aptos",
-    "dot": "Pois",
+    "dot": "Polkadot",
     "sol": "Solana"
   },
   "network": {
-    "hoodi": "Sweat à capuche",
-    "sepolia": "Sépolie",
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
     "mainnet": "Réseau principal",
     "fuji": "Fuji",
     "testnet": "Réseau de test",
@@ -50,7 +54,7 @@
   },
   "profile": {
     "minimal": "Minimaliste",
-    "pruned": "Élagué",
+    "pruned": "Pruned",
     "validator-ready": "Prêt validateur",
     "rpc": "RPC"
   },
@@ -102,7 +106,7 @@
   "notes": {
     "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
     "noKeys": "YSK Server ne génère ni n’enregistre jamais de clés de staking.",
-    "dockerSoon": "Installation, démarrage et arrêt arrivent à l’étape suivante. Cette page liste seulement les instances et le disque.",
+    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
     "dryCreate": "Spécification d’instance et compose écrits (dry-run). Passez --execute et YSK_EXECUTE=1 pour démarrer les conteneurs.",
     "dryStart": "Le démarrage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
     "dryStop": "L’arrêt est un dry-run. Passez --execute et YSK_EXECUTE=1.",
@@ -141,7 +145,15 @@
     "memory": "Limite mémoire (ex. 4g)",
     "cpus": "Limite CPU (ex. 2.0)",
     "dataPath": "Chemin de données (facultatif)",
-    "rpcPort": "Port RPC (facultatif)"
+    "rpcPort": "Port RPC (facultatif)",
+    "stepOf": "Step {{n}} / {{total}}",
+    "stepChain": "Chain",
+    "stepNetwork": "Network",
+    "stepProfile": "Profile",
+    "stepSummary": "Summary",
+    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
+    "diskNeed": "This profile needs about {{need}} · free {{free}}",
+    "diskShort": "Not enough free disk for this chain / network / profile"
   },
   "actions": {
     "detail": "Détails",

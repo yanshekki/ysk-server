@@ -142,5 +142,6 @@
   "restoreFullTitle": "Timpa file proyek dan database dari arsip ini — ketikkan nama file untuk mengonfirmasi",
   "restoreWebTitle": "Pulihkan file situs web hanya dari arsip ini",
   "previewTitle": "Pratinjau pemulihan tanpa menulis",
-  "partialSkipped": "Parsial — beberapa proyek dilewati"
+  "partialSkipped": "Parsial — beberapa proyek dilewati",
+  "testRemoteHint": "Connects to the remote host and writes a small probe file. Not read-only."
 }

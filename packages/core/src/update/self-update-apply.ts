@@ -557,6 +557,8 @@ export async function runSelfUpdate(input: {
   channel: string;
   packageName?: string;
   restarted?: boolean;
+  /** True when a delayed systemd restart was scheduled (HTTP must flush first). */
+  restarting?: boolean;
   blocked?: boolean;
   message?: string;
   blockMessage?: string;
@@ -662,28 +664,9 @@ export async function runSelfUpdate(input: {
     }
 
     if (applied) {
+      // Delay systemd restart so the HTTP 200 can flush. A synchronous
+      // try-restart here kills the process and the panel shows Failed to fetch.
       restarted = scheduleYskServerRestart();
-      if (input.host.executeEnabled()) {
-        try {
-          const rst = await input.host.runCommand(
-            [
-              'bash',
-              '-c',
-              'systemctl try-restart ysk-server 2>/dev/null || systemctl restart ysk-server 2>/dev/null || true',
-            ],
-            { timeoutMs: 60_000 },
-          );
-          commandResults.push({
-            argv: ['systemctl', 'try-restart', 'ysk-server'],
-            exitCode: rst.exitCode,
-            stdout: rst.stdout,
-            stderr: rst.stderr,
-          });
-          restarted = restarted || rst.exitCode === 0;
-        } catch {
-          /* delayed restart still scheduled */
-        }
-      }
       if (!restarted) notes.push(tl('notes.auto.n1219'));
       try {
         const { collectStaleCliNotes, probeHostLeftovers } = await import(
@@ -745,6 +728,7 @@ export async function runSelfUpdate(input: {
     channel: check.channel,
     packageName: pkgName,
     restarted,
+    restarting: restarted,
     blocked: applyFailed,
     message: userNote,
     blockMessage: applyFailed ? userNote : undefined,
