@@ -60,7 +60,7 @@ describe('backups routes (HTTP)', () => {
     expect(body.exclusions).toContain('node_modules');
   });
 
-  it('remote test without EXECUTE is honest', async () => {
+  it('remote SFTP test does not require EXECUTE', async () => {
     ts = await startTestServer();
     await apiJson(ts, 'POST', '/api/v1/backups/settings', {
       remote: {
@@ -77,10 +77,12 @@ describe('backups routes (HTTP)', () => {
       ok?: boolean;
       blocked?: boolean;
       requiresExecute?: boolean;
+      notes?: string[];
     };
+    expect(body.requiresExecute).not.toBe(true);
     expect(body.ok === true && body.blocked === true).toBe(false);
-    expect(body.ok).toBe(false);
-    expect(body.blocked === true || body.requiresExecute === true).toBe(true);
+    const blob = `${body.notes?.join(' ') ?? ''} ${JSON.stringify(body)}`;
+    expect(/YSK_EXECUTE/.test(blob)).toBe(false);
   });
 
   it('rejects unauthenticated settings mutation', async () => {
