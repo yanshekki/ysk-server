@@ -62,7 +62,7 @@
   "matrixTab": "Service matrix ({{count}})",
   "stackTab": "Software stack",
   "stackTitle": "Host software stack",
-  "stackHint": "Install or remove host components by plan; SQL server engines are exclusive.",
+  "stackHint": "Software plans install OS packages. The service matrix tab lists systemd units — the two counts are not the same set.",
   "protectionTab": "Protection probe",
   "knownServices": "Known services",
   "showing": "Showing {{shown}} / {{total}}",

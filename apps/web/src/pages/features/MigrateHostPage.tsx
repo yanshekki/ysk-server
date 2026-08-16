@@ -22,6 +22,7 @@ import {
   PageTabs } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '../../shared/lib/datetime';
 import i18n from '../../shared/lib/i18n';
 import { bindInput, bindCheck, bindVoid } from '../bind-handlers';
 import {
@@ -633,7 +634,7 @@ export function MigrateHostPage() {
                   header: t('updates.badgeUpdate'),
                   nowrap: true,
                   render: (j) =>
-                    new Date(j.updatedAt).toLocaleString() },
+                    formatDateTime(j.updatedAt) },
                 {
                   key: 'err',
                   header: t('common.notes'),

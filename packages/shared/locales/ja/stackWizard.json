@@ -18,5 +18,9 @@
   "uninstallNow": "今すぐアンインストールする",
   "uninstallNeedSelect": "少なくとも 1 つのバンドルを選択します。空の選択はすべてを削除することを意味しなくなりました。",
   "uninstallConfirmTitle": "選択したバンドルを削除しますか?",
-  "uninstallConfirmDesc": "{{count}} バンドルが削除されます。 REMOVE と入力して確認します。"
+  "uninstallConfirmDesc": "{{count}} バンドルが削除されます。 REMOVE と入力して確認します。",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

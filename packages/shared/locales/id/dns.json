@@ -229,5 +229,6 @@
   "installConfirmDesc": "Memasang pdns-server dan menulis konfigurasi terkelola. Perlu root dan YSK_EXECUTE=1.",
   "installConfirmConsequence": "Setelah pasang dan mulai, PowerDNS mengikat port 53.",
   "installPort53Busy": "Port 53 sudah dipakai. PowerDNS mungkin gagal bind sampai pendengar itu dihentikan atau diperbaiki.",
-  "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53."
+  "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53.",
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
 }

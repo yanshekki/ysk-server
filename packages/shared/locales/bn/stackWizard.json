@@ -18,5 +18,9 @@
   "uninstallNow": "এখনই আনইনস্টল করুন",
   "uninstallNeedSelect": "অন্তত একটি বান্ডিল নির্বাচন করুন. খালি নির্বাচন আর মানে সব মুছে ফেলা।",
   "uninstallConfirmTitle": "নির্বাচিত বান্ডিলগুলি সরাতে চান?",
-  "uninstallConfirmDesc": "{{count}} বান্ডিল(গুলি) সরানো হবে। নিশ্চিত করতে REMOVE টাইপ করুন।"
+  "uninstallConfirmDesc": "{{count}} বান্ডিল(গুলি) সরানো হবে। নিশ্চিত করতে REMOVE টাইপ করুন।",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

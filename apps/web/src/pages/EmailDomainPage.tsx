@@ -37,6 +37,7 @@ import {
   DescriptionList } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { ApiError, api } from '../shared/services/api';
+import { formatDateTime } from '../shared/lib/datetime';
 import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
 import {
   bindBusyApplyPolicy,
@@ -849,7 +850,7 @@ export function EmailDomainPage() {
                     const d = new Date(String(raw));
                     return Number.isNaN(d.getTime())
                       ? String(raw)
-                      : d.toLocaleString();
+                      : formatDateTime(d);
                   },
                 },
               ]}

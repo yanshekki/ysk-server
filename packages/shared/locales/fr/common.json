@@ -127,5 +127,6 @@
   "showPassword": "Montrer",
   "hidePassword": "Cacher",
   "more": "Plus",
-  "redirectedTo": "Ouvert {{to}} (était {{from}})"
+  "redirectedTo": "Ouvert {{to}} (était {{from}})",
+  "unavailable": "Not available right now"
 }

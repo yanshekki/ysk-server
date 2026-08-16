@@ -2167,7 +2167,8 @@
     "showPassword": "見せる",
     "hidePassword": "隠れる",
     "more": "もっと",
-    "redirectedTo": "{{to}} を開きました（元: {{from}}）"
+    "redirectedTo": "{{to}} を開きました（元: {{from}}）",
+    "unavailable": "Not available right now"
   },
   "cron": {
     "presetCdTrue": "cd アプリ + true (テスト)",
@@ -3037,7 +3038,8 @@
     "installConfirmDesc": "pdns-server を入れ、管理設定を書き込みます。root と YSK_EXECUTE=1 が必要です。",
     "installConfirmConsequence": "インストールして起動すると PowerDNS が 53 番をバインドします。",
     "installPort53Busy": "53番は既に使用中です。その待受を止めるか修復するまで PowerDNS はバインドに失敗することがあります。",
-    "installPort53BusyConsequence": "53 番で応答を期待する前に、バインドを修復するか他の待受を止めてください。"
+    "installPort53BusyConsequence": "53 番で応答を期待する前に、バインドを修復するか他の待受を止めてください。",
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
   },
   "docker": {
     "title": "Docker",
@@ -11985,7 +11987,11 @@
     "uninstallNow": "今すぐアンインストールする",
     "uninstallNeedSelect": "少なくとも 1 つのバンドルを選択します。空の選択はすべてを削除することを意味しなくなりました。",
     "uninstallConfirmTitle": "選択したバンドルを削除しますか?",
-    "uninstallConfirmDesc": "{{count}} バンドルが削除されます。 REMOVE と入力して確認します。"
+    "uninstallConfirmDesc": "{{count}} バンドルが削除されます。 REMOVE と入力して確認します。",
+    "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+    "executeRoot": "System changes {{execute}} · administrator {{root}}",
+    "manifestPlan": "Plan {{plan}} ({{bundles}})",
+    "manifestHint": "Last chosen software plan and bundles"
   },
   "support": {
     "title": "サポート",

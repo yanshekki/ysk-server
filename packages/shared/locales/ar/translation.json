@@ -2167,7 +2167,8 @@
     "showPassword": "يعرض",
     "hidePassword": "يخفي",
     "more": "أكثر",
-    "redirectedTo": "فُتح {{to}} (كان {{from}})"
+    "redirectedTo": "فُتح {{to}} (كان {{from}})",
+    "unavailable": "Not available right now"
   },
   "cron": {
     "presetCdTrue": "تطبيق cd + صحيح (اختبار)",
@@ -3037,7 +3038,8 @@
     "installConfirmDesc": "يثبّت pdns-server ويكتب الإعداد المُدار. يحتاج root و YSK_EXECUTE=1.",
     "installConfirmConsequence": "بعد التثبيت والتشغيل سيستخدم PowerDNS المنفذ 53.",
     "installPort53Busy": "يوجد بالفعل مستمع على المنفذ 53. قد يفشل ربط PowerDNS حتى يُوقف أو يُصلح ذلك المستمع.",
-    "installPort53BusyConsequence": "أصلح الربط أو أوقف المستمع الآخر قبل توقع إجابات على المنفذ 53."
+    "installPort53BusyConsequence": "أصلح الربط أو أوقف المستمع الآخر قبل توقع إجابات على المنفذ 53.",
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
   },
   "docker": {
     "title": "Docker",
@@ -11985,7 +11987,11 @@
     "uninstallNow": "قم بإلغاء التثبيت الآن",
     "uninstallNeedSelect": "حدد حزمة واحدة على الأقل. التحديد الفارغ لم يعد يعني إزالة الكل.",
     "uninstallConfirmTitle": "هل تريد إزالة الحزم المحددة؟",
-    "uninstallConfirmDesc": "{{count}} سيتم إزالة الحزمة (الحزم). اكتب إزالة للتأكيد."
+    "uninstallConfirmDesc": "{{count}} سيتم إزالة الحزمة (الحزم). اكتب إزالة للتأكيد.",
+    "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+    "executeRoot": "System changes {{execute}} · administrator {{root}}",
+    "manifestPlan": "Plan {{plan}} ({{bundles}})",
+    "manifestHint": "Last chosen software plan and bundles"
   },
   "support": {
     "title": "الدعم",

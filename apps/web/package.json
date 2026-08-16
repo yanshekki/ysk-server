@@ -15,6 +15,7 @@
     "css:reuse": "node ./scripts/css-reuse-check.mjs",
     "chrome:check": "node ./scripts/page-chrome-check.mjs",
     "primitives:check": "node ./scripts/page-primitives-check.mjs",
+    "disabled-title:check": "node ./scripts/disabled-title-check.mjs",
     "about-tab:check": "node ./scripts/about-tab-check.mjs"
   },
   "dependencies": {

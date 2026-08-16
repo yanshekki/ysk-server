@@ -127,5 +127,6 @@
   "showPassword": "Espectáculo",
   "hidePassword": "Esconder",
   "more": "Más",
-  "redirectedTo": "Se abrió {{to}} (antes {{from}})"
+  "redirectedTo": "Se abrió {{to}} (antes {{from}})",
+  "unavailable": "Not available right now"
 }

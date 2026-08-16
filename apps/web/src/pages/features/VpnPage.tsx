@@ -27,6 +27,7 @@ import {
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
 import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
+import { formatDateTime } from '../../shared/lib/datetime';
 import {
   vpnApi,
   type VpnClientProfile,
@@ -96,12 +97,7 @@ function engineStatus(
 }
 
 function formatWhen(iso?: string): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso.slice(0, 16);
-  }
+  return formatDateTime(iso);
 }
 
 export function VpnPage() {

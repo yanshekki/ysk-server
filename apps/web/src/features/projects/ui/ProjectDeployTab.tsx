@@ -20,6 +20,7 @@ import {
   Alert } from '../../../shared/components/ui';
 import { useOpsStreamOptional } from '../../../shared/ops-stream/OpsStreamContext';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
+import { formatDateTime } from '../../../shared/lib/datetime';
 import { isRuntimeBinFallback } from '../model/ops';
 import {
   defaultRuntimeInstallVersion,
@@ -614,7 +615,7 @@ export function ProjectDeployTab({
                 <p className="u-mb-1 u-mt-0">
                   <strong>{t('projects.lastDeploy')}</strong>
                   {project.lastDeployAt
-                    ? ` · ${new Date(project.lastDeployAt).toLocaleString()}`
+                    ? ` · ${formatDateTime(project.lastDeployAt)}`
                     : ''}
                   {project.port != null ? t('projects.deployPort', { port: project.port }) : ''}
                   {project.processStatus ? ` · ${project.processStatus}` : ''}
@@ -863,7 +864,7 @@ export function ProjectDeployTab({
                       ) : null}
                     </span>
                     <span className="muted u-text-sm u-nowrap">
-                      {new Date(h.created_at).toLocaleString()} · {h.actor}
+                      {formatDateTime(h.created_at)} · {h.actor}
                     </span>
                   </li>
                 );

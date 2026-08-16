@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "Confirm purge? Registered data paths (databases/mail) will be deleted permanently.",
-  "installedCount": "Installed {{installed}} · Missing {{missing}}",
+  "installedCount": "Packages installed {{installed}} · missing {{missing}}",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles",
   "needRootExecute": "Live install/remove needs administrator rights and system-change permission. You can still dry-run.",
   "modeInstall": "Install plan",
   "modeUninstall": "Uninstall",

@@ -18,5 +18,9 @@
   "uninstallNow": "Copot pemasangannya sekarang",
   "uninstallNeedSelect": "Pilih setidaknya satu paket. Pilihan kosong bukan lagi berarti menghapus semua.",
   "uninstallConfirmTitle": "Hapus paket yang dipilih?",
-  "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi."
+  "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi.",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

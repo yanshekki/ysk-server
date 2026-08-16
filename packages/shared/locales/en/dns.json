@@ -110,6 +110,7 @@
   "validateDesc": "Create/edit auto-validates (CNAME clashes, A/AAAA format, etc.).",
   "createZoneTitle": "Create DNS zone",
   "createZoneDesc": "Generate records from a template",
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
   "zoneNameHint": "e.g. example.com (no trailing dot)",
   "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
   "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",

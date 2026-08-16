@@ -2167,7 +2167,8 @@
     "showPassword": "Menunjukkan",
     "hidePassword": "Bersembunyi",
     "more": "Lagi",
-    "redirectedTo": "Membuka {{to}} (sebelumnya {{from}})"
+    "redirectedTo": "Membuka {{to}} (sebelumnya {{from}})",
+    "unavailable": "Not available right now"
   },
   "cron": {
     "presetCdTrue": "cd aplikasi + benar (tes)",
@@ -3037,7 +3038,8 @@
     "installConfirmDesc": "Memasang pdns-server dan menulis konfigurasi terkelola. Perlu root dan YSK_EXECUTE=1.",
     "installConfirmConsequence": "Setelah pasang dan mulai, PowerDNS mengikat port 53.",
     "installPort53Busy": "Port 53 sudah dipakai. PowerDNS mungkin gagal bind sampai pendengar itu dihentikan atau diperbaiki.",
-    "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53."
+    "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53.",
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
   },
   "docker": {
     "title": "Docker",
@@ -11985,7 +11987,11 @@
     "uninstallNow": "Copot pemasangannya sekarang",
     "uninstallNeedSelect": "Pilih setidaknya satu paket. Pilihan kosong bukan lagi berarti menghapus semua.",
     "uninstallConfirmTitle": "Hapus paket yang dipilih?",
-    "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi."
+    "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi.",
+    "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+    "executeRoot": "System changes {{execute}} · administrator {{root}}",
+    "manifestPlan": "Plan {{plan}} ({{bundles}})",
+    "manifestHint": "Last chosen software plan and bundles"
   },
   "support": {
     "title": "Dukungan",

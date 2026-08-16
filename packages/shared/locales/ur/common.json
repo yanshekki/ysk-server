@@ -127,5 +127,6 @@
   "showPassword": "دکھائیں۔",
   "hidePassword": "چھپائیں",
   "more": "مزید",
-  "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})"
+  "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})",
+  "unavailable": "Not available right now"
 }

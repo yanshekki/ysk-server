@@ -709,6 +709,13 @@ export function ProjectGitPanel({
                   type="button"
                   className="btn btn--ghost btn--sm"
                   disabled={gitBusy || gitSt?.dirty}
+                  title={
+                    gitSt?.dirty
+                      ? t('projects.gitDirtyTitle')
+                      : gitBusy
+                        ? t('common.processing')
+                        : t('projects.gitCheckout')
+                  }
                   onClick={() => {
                     setGitBranch(c.hash);
                     setCustomOpen(true);

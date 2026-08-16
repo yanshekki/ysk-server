@@ -127,5 +127,6 @@
   "showPassword": "Menunjukkan",
   "hidePassword": "Bersembunyi",
   "more": "Lagi",
-  "redirectedTo": "Membuka {{to}} (sebelumnya {{from}})"
+  "redirectedTo": "Membuka {{to}} (sebelumnya {{from}})",
+  "unavailable": "Not available right now"
 }

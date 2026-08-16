@@ -1,3 +1,5 @@
+import { formatDateTime } from '../../shared/lib/datetime';
+
 /** Human-readable byte count. */
 export function formatVpnBytes(n: number | null | undefined): string {
   if (n == null || !Number.isFinite(n)) return '—';
@@ -27,10 +29,5 @@ export function formatVpnRate(bps: number | null | undefined): string {
 }
 
 export function formatVpnWhen(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso.slice(0, 19);
-  }
+  return formatDateTime(iso);
 }

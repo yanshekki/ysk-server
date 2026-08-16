@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { formatDateTime } from '../../shared/lib/datetime';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -1381,7 +1382,7 @@ export function DnsPage() {
                                 ? t('dns.zoneDirMissing')
                                 : ''}
                               {lp.at
-                                ? ` · ${new Date(lp.at).toLocaleString()}`
+                                ? ` · ${formatDateTime(lp.at)}`
                                 : ''}
                             </p>
                           ) : (
@@ -1849,6 +1850,11 @@ export function DnsPage() {
                   serverIp.trim(),
                 )
               }
+              title={
+                zones.busy
+                  ? t('common.processing')
+                  : t('dns.createZoneNeedValid')
+              }
             >
               {t('common.create')}
             </button>
@@ -1975,7 +1981,13 @@ export function DnsPage() {
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setRecOpen, false)}>
               {t('common.cancel')}
             </button>
-            <button type="submit" form="dr" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={records.busy}>
+            <button
+              type="submit"
+              form="dr"
+              className={buttonClassName({ variant: 'primary', size: 'md' })}
+              disabled={records.busy}
+              title={records.busy ? t('common.processing') : t('common.save')}
+            >
               {t('common.save')}
             </button>
           </>

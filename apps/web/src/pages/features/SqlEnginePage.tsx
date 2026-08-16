@@ -685,6 +685,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       type="button"
                       className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                       disabled={busy}
+                      title={busy ? t('common.processing') : t('common.apply')}
                       onClick={bindVoidCall2(dbs.apply, r.id, true)}
                     >
                       {t('common.apply')}
@@ -693,6 +694,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       type="button"
                       className={buttonClassName({ variant: 'danger', size: 'sm' })}
                       disabled={busy}
+                      title={busy ? t('common.processing') : t('common.delete')}
                       onClick={bindSet(setDelDb, r.id)}
                     >
                       {t('common.delete')}
@@ -712,6 +714,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   type="button"
                   className={buttonClassName({ variant: 'secondary', size: 'sm' })}
                   disabled={!installed}
+                  title={
+                    !installed
+                      ? t('db.installFirst', { engine: title })
+                      : t('users.createUserPlus')
+                  }
                   onClick={bindSet(setUserOpen, true)}
                 >
                   {t('users.createUserPlus')}
@@ -759,6 +766,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     type="button"
                     className={buttonClassName({ variant: 'danger', size: 'sm' })}
                     disabled={busy}
+                    title={busy ? t('common.processing') : t('common.delete')}
                     onClick={bindSet(setDelUser, r.id)}
                   >
                     {t('common.delete')}
@@ -1028,7 +1036,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setCreateOpen, false)}>
               {t('common.cancel')}
             </button>
-            <button type="submit" form="sql-create" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
+            <button
+              type="submit"
+              form="sql-create"
+              className={buttonClassName({ variant: 'primary', size: 'md' })}
+              disabled={busy}
+              title={busy ? t('common.processing') : t('common.create')}
+            >
               {t('common.create')}
             </button>
           </>
@@ -1113,7 +1127,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setUserOpen, false)}>
               {t('common.cancel')}
             </button>
-            <button type="submit" form="sql-user" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={busy}>
+            <button
+              type="submit"
+              form="sql-user"
+              className={buttonClassName({ variant: 'primary', size: 'md' })}
+              disabled={busy}
+              title={busy ? t('common.processing') : t('common.create')}
+            >
               {t('common.create')}
             </button>
           </>

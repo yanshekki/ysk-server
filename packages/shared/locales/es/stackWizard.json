@@ -18,5 +18,9 @@
   "uninstallNow": "Desinstalar ahora",
   "uninstallNeedSelect": "Seleccione al menos un paquete. La selección vacía ya no significa eliminar todo.",
   "uninstallConfirmTitle": "¿Eliminar paquetes seleccionados?",
-  "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar."
+  "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar.",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

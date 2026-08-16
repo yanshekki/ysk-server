@@ -531,6 +531,7 @@ export function SslPage() {
                 form="ssl-up"
                 className={buttonClassName({ variant: 'primary', size: 'md' })}
                 disabled={busy}
+                title={busy ? t('common.processing') : t('common.save')}
               >
                 {t('common.save')}
               </button>
@@ -619,6 +620,7 @@ export function SslPage() {
                 form="ssl-le"
                 className={buttonClassName({ variant: 'primary', size: 'md' })}
                 disabled={busy}
+                title={busy ? t('common.processing') : t('ssl.requestCert')}
               >
                 {t('ssl.requestCert')}
               </button>

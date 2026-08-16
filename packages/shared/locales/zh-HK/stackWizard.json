@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "確認清除？將刪除已登記的資料目錄（資料庫／郵件等），此操作無法復原。",
-  "installedCount": "已安裝 {{installed}} · 未安裝 {{missing}}",
+  "installedCount": "套件已安裝 {{installed}} · 未安裝 {{missing}}",
+  "countHint": "此處計的是軟件方案裏的作業系統套件，不是另一分頁的服務單元。",
+  "executeRoot": "系統變更 {{execute}} · 管理員 {{root}}",
+  "manifestPlan": "方案 {{plan}}（{{bundles}}）",
+  "manifestHint": "上次選用的軟件方案與套件組",
   "needRootExecute": "實際安裝或移除需要管理員權限，並開啟系統變更權限。仍可先做預覽試行。",
   "modeInstall": "安裝套餐",
   "modeUninstall": "移除套餐",

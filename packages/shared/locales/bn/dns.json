@@ -229,5 +229,6 @@
   "installConfirmDesc": "pdns-server ইনস্টল করে পরিচালিত কনফিগ লেখে। root ও YSK_EXECUTE=1 লাগে।",
   "installConfirmConsequence": "ইনস্টল ও চালুর পর PowerDNS পোর্ট ৫৩ বাঁধবে।",
   "installPort53Busy": "পোর্ট ৫৩ ইতিমধ্যে শুনছে। সেই প্রক্রিয়া বন্ধ বা সারানো না হলে PowerDNS বাঁধতে ব্যর্থ হতে পারে।",
-  "installPort53BusyConsequence": "৫৩ পোর্টে উত্তর আশা করার আগে বাইন্ড সারান বা অন্য শ্রোতা বন্ধ করুন।"
+  "installPort53BusyConsequence": "৫৩ পোর্টে উত্তর আশা করার আগে বাইন্ড সারান বা অন্য শ্রোতা বন্ধ করুন।",
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
 }

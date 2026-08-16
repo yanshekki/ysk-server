@@ -2167,7 +2167,8 @@
     "showPassword": "Espectáculo",
     "hidePassword": "Esconder",
     "more": "Más",
-    "redirectedTo": "Se abrió {{to}} (antes {{from}})"
+    "redirectedTo": "Se abrió {{to}} (antes {{from}})",
+    "unavailable": "Not available right now"
   },
   "cron": {
     "presetCdTrue": "aplicación de CD + verdadero (prueba)",
@@ -3037,7 +3038,8 @@
     "installConfirmDesc": "Instala pdns-server y escribe la config gestionada. Requiere root y YSK_EXECUTE=1.",
     "installConfirmConsequence": "Tras instalar e iniciar, PowerDNS usará el puerto 53.",
     "installPort53Busy": "Algo ya escucha en el puerto 53. PowerDNS puede fallar al enlazar hasta detener o reparar ese proceso.",
-    "installPort53BusyConsequence": "Repare el enlace o detenga el otro oyente antes de esperar respuestas en 53."
+    "installPort53BusyConsequence": "Repare el enlace o detenga el otro oyente antes de esperar respuestas en 53.",
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
   },
   "docker": {
     "title": "Docker",
@@ -11985,7 +11987,11 @@
     "uninstallNow": "Desinstalar ahora",
     "uninstallNeedSelect": "Seleccione al menos un paquete. La selección vacía ya no significa eliminar todo.",
     "uninstallConfirmTitle": "¿Eliminar paquetes seleccionados?",
-    "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar."
+    "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar.",
+    "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+    "executeRoot": "System changes {{execute}} · administrator {{root}}",
+    "manifestPlan": "Plan {{plan}} ({{bundles}})",
+    "manifestHint": "Last chosen software plan and bundles"
   },
   "support": {
     "title": "Soporte",

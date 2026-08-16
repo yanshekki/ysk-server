@@ -127,5 +127,6 @@
   "showPassword": "보여주다",
   "hidePassword": "숨다",
   "more": "더",
-  "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})"
+  "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})",
+  "unavailable": "Not available right now"
 }

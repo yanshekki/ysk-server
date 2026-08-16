@@ -59,14 +59,23 @@ export function Button({
   className,
   children,
   type = 'button',
+  title,
   ...rest
 }: ButtonProps) {
   const { t } = useTranslation();
+  const resolvedTitle =
+    title ??
+    (loading
+      ? t('common.processing')
+      : disabled
+        ? t('common.unavailable')
+        : undefined);
   return (
     <button
       type={type}
       className={buttonClassName({ variant, size, fullWidth, className })}
       disabled={disabled || loading}
+      title={resolvedTitle}
       {...rest}
     >
       {loading ? t('common.processing') : children}

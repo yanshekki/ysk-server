@@ -193,6 +193,7 @@ export function LoginPage() {
               type="submit"
               className={buttonClassName({ variant: 'primary', fullWidth: true })}
               disabled={loading}
+              title={loading ? t('login.submitting') : t('login.changePassword')}
             >
               {loading ? t('login.submitting') : t('login.changePassword')}
             </button>
@@ -243,6 +244,7 @@ export function LoginPage() {
               type="submit"
               className={buttonClassName({ variant: 'primary', fullWidth: true })}
               disabled={loading}
+              title={loading ? t('login.submitting') : t('login.submit')}
             >
               {loading ? t('login.submitting') : t('login.submit')}
             </button>

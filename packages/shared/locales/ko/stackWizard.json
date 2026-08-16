@@ -18,5 +18,9 @@
   "uninstallNow": "지금 제거",
   "uninstallNeedSelect": "번들을 하나 이상 선택하세요. 빈 선택은 더 이상 모두 제거를 의미하지 않습니다.",
   "uninstallConfirmTitle": "선택한 번들을 삭제하시겠습니까?",
-  "uninstallConfirmDesc": "{{count}} 번들이 제거됩니다. 확인하려면 REMOVE를 입력하세요."
+  "uninstallConfirmDesc": "{{count}} 번들이 제거됩니다. 확인하려면 REMOVE를 입력하세요.",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

@@ -1,3 +1,4 @@
+import { formatDateTime } from '../../shared/lib/datetime';
 import { bindCall1, bindCheck, bindCheckCall, bindInput, bindInputCall, bindSelect, bindSet, bindValueSet } from '../../pages/bind-handlers';
 /**
  * Professional user detail editor — large modal, sectioned, progressive disclosure.
@@ -179,7 +180,7 @@ export function UserDetailModal({
             <p className="user-detail__meta">
               {user.lastSeenAt
                 ? t('users.lastSeenValue', {
-                    time: new Date(user.lastSeenAt).toLocaleString() })
+                    time: formatDateTime(user.lastSeenAt) })
                 : t('users.neverSeen')}
               {user.packageName || packageId
                 ? ` · ${t('users.package')}: ${user.packageName || packages.find((p) => p.id === packageId)?.name || packageId}`

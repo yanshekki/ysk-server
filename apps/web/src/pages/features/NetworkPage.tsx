@@ -27,6 +27,7 @@ import {
   OpsResultPanel,
   PageTabs,
   PresetChips } from '../../shared/components/ui';
+import { formatDateTime } from '../../shared/lib/datetime';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindSet2, bindSet3, bindVoid } from '../bind-handlers';
 import {
@@ -1105,7 +1106,7 @@ export function NetworkPage() {
                       description={
                         rawAt
                           ? t('network.rawLoadedAt', {
-                              time: new Date(rawAt).toLocaleString(),
+                              time: formatDateTime(rawAt),
                             })
                           : undefined
                       }

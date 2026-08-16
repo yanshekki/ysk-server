@@ -127,5 +127,6 @@
   "showPassword": "見せる",
   "hidePassword": "隠れる",
   "more": "もっと",
-  "redirectedTo": "{{to}} を開きました（元: {{from}}）"
+  "redirectedTo": "{{to}} を開きました（元: {{from}}）",
+  "unavailable": "Not available right now"
 }

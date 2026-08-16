@@ -127,5 +127,6 @@
   "showPassword": "يعرض",
   "hidePassword": "يخفي",
   "more": "أكثر",
-  "redirectedTo": "فُتح {{to}} (كان {{from}})"
+  "redirectedTo": "فُتح {{to}} (كان {{from}})",
+  "unavailable": "Not available right now"
 }

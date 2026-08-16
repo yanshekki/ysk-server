@@ -158,15 +158,22 @@ export function StackWizard() {
     <div className="stack-wizard" data-testid="stack-wizard">
       <div className="stack-wizard__status u-flex u-flex-wrap u-gap-3 u-mb-4">
         <Badge tone={canMutate ? 'ok' : 'warn'}>
-          EXECUTE {status?.executeEnabled ? 'ON' : 'OFF'} / root {status?.isRoot ? 'yes' : 'no'}
+          {t('stackWizard.executeRoot', {
+            execute: status?.executeEnabled ? t('common.on') : t('common.off'),
+            root: status?.isRoot ? t('common.yes') : t('common.no'),
+          })}
         </Badge>
-        <Badge tone="neutral">
+        <Badge tone="neutral" title={t('stackWizard.countHint')}>
           {t('stackWizard.installedCount', { installed, missing })}
         </Badge>
-        <Badge tone="neutral">
-          manifest: {status?.manifest?.plan || '—'} ({(status?.manifest?.bundles ?? []).join(', ') || '—'})
+        <Badge tone="neutral" title={t('stackWizard.manifestHint')}>
+          {t('stackWizard.manifestPlan', {
+            plan: status?.manifest?.plan || '—',
+            bundles: (status?.manifest?.bundles ?? []).join(', ') || '—',
+          })}
         </Badge>
       </div>
+      <p className="muted u-text-sm u-mb-3">{t('stackWizard.countHint')}</p>
 
       {!canMutate ? <Alert variant="info">{t('stackWizard.needRootExecute')}</Alert> : null}
 

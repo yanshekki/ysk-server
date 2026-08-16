@@ -25,6 +25,7 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useOpsStreamOptional } from '../shared/ops-stream/OpsStreamContext';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
+import { formatDateTime } from '../shared/lib/datetime';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 import { toast } from '../shared/stores/toast-store';
 import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
@@ -152,7 +153,7 @@ export function relTime(iso: string | null, tr: (k: string, o?: Record<string, u
     if (sec < 60) return tr('updates.secAgo', { n: sec });
     if (sec < 3600) return tr('updates.minAgo', { n: Math.floor(sec / 60) });
     if (sec < 86400) return tr('updates.hourAgo', { n: Math.floor(sec / 3600) });
-    return new Date(iso).toLocaleString();
+    return formatDateTime(iso);
   } catch {
     return iso;
   }
@@ -670,7 +671,7 @@ export function UpdatesPage() {
                   {
                     label: t('updates.nextScan'),
                     value: summary?.nextScanAt
-                      ? new Date(summary.nextScanAt).toLocaleString()
+                      ? formatDateTime(summary.nextScanAt)
                       : '—',
                   },
                   {

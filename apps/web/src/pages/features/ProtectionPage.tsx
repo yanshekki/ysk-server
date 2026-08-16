@@ -40,6 +40,7 @@ import {
   collectLoginIps,
   isProtectedSelfIp,
 } from '../../shared/lib/self-ip';
+import { formatDateTime } from '../../shared/lib/datetime';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import { bindAppendUniqueStr, bindBanAndClear, bindBanOne, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
 
@@ -275,7 +276,7 @@ export function relTime(
   if (d < 60_000) return t('protection.rel.justNow');
   if (d < 3600_000) return t('protection.rel.minutesAgo', { n: Math.floor(d / 60_000) });
   if (d < 86400_000) return t('protection.rel.hoursAgo', { n: Math.floor(d / 3600_000) });
-  return new Date(iso).toLocaleString();
+  return formatDateTime(iso);
 }
 
 /** Suggested defense preset for the current threat level (never auto-picks emergency). */

@@ -31,6 +31,7 @@ import {
   PromptDialog,
   PageTabs } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { formatDateTime } from '../shared/lib/datetime';
 import { bindSet, bindInput, bindCheck, bindVoid } from './bind-handlers';
 
 const TAB_IDS = ['account', 'keys', 'ssh', 'approvals', 'tools', 'about'] as const;
@@ -101,7 +102,7 @@ export function relativeTime(
   if (sec < 3600) return t('security.sessionMinAgo', { n: Math.max(1, Math.floor(sec / 60)) });
   if (sec < 86400) return t('security.sessionHourAgo', { n: Math.floor(sec / 3600) });
   if (sec < 86400 * 7) return t('security.sessionDayAgo', { n: Math.floor(sec / 86400) });
-  return new Date(iso).toLocaleString();
+  return formatDateTime(iso);
 }
 
 /** True when browser exposes WebAuthn APIs (does not guarantee platform authenticator). */

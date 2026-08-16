@@ -229,5 +229,6 @@
   "installConfirmDesc": "pdns-server انسٹال کرتا ہے اور منظم کنفگ لکھتا ہے۔ root اور YSK_EXECUTE=1 درکار۔",
   "installConfirmConsequence": "انسٹال اور شروع کے بعد PowerDNS پورٹ 53 باندھے گا۔",
   "installPort53Busy": "پورٹ 53 پہلے سے سن رہا ہے۔ اس سننے والے کو روکے یا ٹھیک کیے بغیر PowerDNS بائنڈ ناکام ہو سکتا ہے۔",
-  "installPort53BusyConsequence": "پورٹ 53 پر جواب کی توقع سے پہلے بائنڈ ٹھیک کریں یا دوسرا سننے والا روکیں۔"
+  "installPort53BusyConsequence": "پورٹ 53 پر جواب کی توقع سے پہلے بائنڈ ٹھیک کریں یا دوسرا سننے والا روکیں۔",
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
 }

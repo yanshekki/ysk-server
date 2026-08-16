@@ -18,5 +18,9 @@
   "uninstallNow": "ابھی ان انسٹال کریں۔",
   "uninstallNeedSelect": "کم از کم ایک بنڈل منتخب کریں۔ خالی انتخاب کا مطلب اب سب کو ہٹانا نہیں ہے۔",
   "uninstallConfirmTitle": "منتخب بنڈلز کو ہٹائیں؟",
-  "uninstallConfirmDesc": "{{count}} بنڈل ہٹا دیے جائیں گے۔ تصدیق کرنے کے لیے REMOVE ٹائپ کریں۔"
+  "uninstallConfirmDesc": "{{count}} بنڈل ہٹا دیے جائیں گے۔ تصدیق کرنے کے لیے REMOVE ٹائپ کریں۔",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

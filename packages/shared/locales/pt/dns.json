@@ -229,5 +229,6 @@
   "installConfirmDesc": "Instala pdns-server e escreve a configuração gerida. Precisa de root e YSK_EXECUTE=1.",
   "installConfirmConsequence": "Após instalar e iniciar, o PowerDNS liga a porta 53.",
   "installPort53Busy": "A porta 53 já tem um ouvinte. O PowerDNS pode falhar a ligar até esse processo ser parado ou reparado.",
-  "installPort53BusyConsequence": "Repare a ligação ou pare o outro ouvinte antes de esperar respostas na 53."
+  "installPort53BusyConsequence": "Repare a ligação ou pare o outro ouvinte antes de esperar respostas na 53.",
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
 }

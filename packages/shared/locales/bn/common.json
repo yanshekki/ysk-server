@@ -127,5 +127,6 @@
   "showPassword": "দেখান",
   "hidePassword": "লুকান",
   "more": "আরও",
-  "redirectedTo": "{{to}} খোলা হয়েছে (আগে {{from}})"
+  "redirectedTo": "{{to}} খোলা হয়েছে (আগে {{from}})",
+  "unavailable": "Not available right now"
 }

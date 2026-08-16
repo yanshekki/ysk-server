@@ -18,5 +18,9 @@
   "uninstallNow": "立即移除",
   "uninstallNeedSelect": "至少选择一个捆绑包。空选择不再意味着全部删除。",
   "uninstallConfirmTitle": "删除选定的捆绑包？",
-  "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。"
+  "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

@@ -2167,7 +2167,8 @@
     "showPassword": "展示",
     "hidePassword": "隐藏",
     "more": "更多的",
-    "redirectedTo": "已转到 {{to}}（原为 {{from}}）"
+    "redirectedTo": "已转到 {{to}}（原为 {{from}}）",
+    "unavailable": "Not available right now"
   },
   "cron": {
     "presetCdTrue": "cd app + true（测试）",
@@ -3037,7 +3038,8 @@
     "installConfirmDesc": "会安装 pdns-server 并写入受管权威配置。需要 root 与 YSK_EXECUTE=1。",
     "installConfirmConsequence": "安装并启动后，PowerDNS 会绑定 53 端口。",
     "installPort53Busy": "53 端口已有程序在监听。未停止或修复该监听前，PowerDNS 可能无法绑定。",
-    "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。"
+    "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。",
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
   },
   "docker": {
     "title": "Docker",
@@ -11985,7 +11987,11 @@
     "uninstallNow": "立即移除",
     "uninstallNeedSelect": "至少选择一个捆绑包。空选择不再意味着全部删除。",
     "uninstallConfirmTitle": "删除选定的捆绑包？",
-    "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。"
+    "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。",
+    "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+    "executeRoot": "System changes {{execute}} · administrator {{root}}",
+    "manifestPlan": "Plan {{plan}} ({{bundles}})",
+    "manifestHint": "Last chosen software plan and bundles"
   },
   "support": {
     "title": "支持",

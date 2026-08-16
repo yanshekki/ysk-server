@@ -18,5 +18,9 @@
   "uninstallNow": "Désinstaller maintenant",
   "uninstallNeedSelect": "Sélectionnez au moins un forfait. Une sélection vide ne signifie plus tout supprimer.",
   "uninstallConfirmTitle": "Supprimer les groupes sélectionnés ?",
-  "uninstallConfirmDesc": "{{count}} le ou les bundles seront supprimés. Tapez SUPPRIMER pour confirmer."
+  "uninstallConfirmDesc": "{{count}} le ou les bundles seront supprimés. Tapez SUPPRIMER pour confirmer.",
+  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
+  "executeRoot": "System changes {{execute}} · administrator {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Last chosen software plan and bundles"
 }

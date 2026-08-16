@@ -52,6 +52,7 @@ import {
   type DestNameEntry,
   type FileNameConflictPrompt,
 } from '../features/files/name-conflict';
+import { formatDateTime } from '../shared/lib/datetime';
 import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
@@ -2084,7 +2085,7 @@ export function FilesPage() {
                       mobile: 'meta',
                       render: (s) =>
                         s.expiresAt
-                          ? new Date(s.expiresAt).toLocaleString()
+                          ? formatDateTime(s.expiresAt)
                           : t('files.shareExpireNever'),
                     },
                     {
@@ -2704,7 +2705,7 @@ export function FilesPage() {
                         dateTime={v.createdAt}
                         title={when.toISOString()}
                       >
-                        {when.toLocaleString()}
+                        {formatDateTime(when)}
                       </time>
                       <span className="fm-versions__size muted">
                         {formatBytes(v.bytes)}
@@ -3148,7 +3149,7 @@ export function FilesPage() {
               {shareResultExpires ? (
                 <Badge tone="info">
                   {t('files.shareExpiresAt', {
-                    at: new Date(shareResultExpires).toLocaleString(),
+                    at: formatDateTime(shareResultExpires),
                   })}
                 </Badge>
               ) : (

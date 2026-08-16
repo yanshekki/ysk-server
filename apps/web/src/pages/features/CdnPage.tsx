@@ -1556,6 +1556,7 @@ export function CdnPage() {
               form="cdn-node-form"
               className={buttonClassName({ variant: 'primary', size: 'md' })}
               disabled={busy}
+              title={busy ? t('common.processing') : t('common.save')}
             >
               {t('common.save')}
             </button>
@@ -1705,6 +1706,7 @@ export function CdnPage() {
               form="cdn-site-form"
               className={buttonClassName({ variant: 'primary', size: 'md' })}
               disabled={busy}
+              title={busy ? t('common.processing') : t('common.save')}
             >
               {t('common.save')}
             </button>
