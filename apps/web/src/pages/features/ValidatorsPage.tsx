@@ -22,6 +22,7 @@ import {
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { validatorChainLabel, validatorNetworkLabel } from 'ysk-server-shared';
 import { dockerApi } from '../../features/docker';
 import {
   streamValidatorAction,
@@ -326,14 +327,14 @@ export function ValidatorsPage() {
               {
                 key: 'chain',
                 header: t('validators.col.chain'),
-                render: (row) => t(`validators.chain.${row.chain}`),
+                render: (row) => validatorChainLabel(row.chain),
               },
               {
                 key: 'network',
                 header: t('validators.col.network'),
                 render: (row) => (
                   <span>
-                    {t(`validators.network.${row.network}`)}{' '}
+                    {validatorNetworkLabel(row.network) ?? t(`validators.network.${row.network}`)}{' '}
                     <Badge tone={row.network === 'mainnet' ? 'warn' : 'ok'}>
                       {row.network === 'mainnet'
                         ? t('validators.networkKind.mainnet')
@@ -530,7 +531,7 @@ export function ValidatorsPage() {
                   ]
               ).map((c) => ({
                 value: c.id,
-                label: t(`validators.chain.${c.id}`),
+                label: validatorChainLabel(c.id),
               }))}
             />
             {chainSpec?.heavy ? <Alert variant="warn">{t('validators.wizard.heavyWarn')}</Alert> : null}
@@ -547,7 +548,7 @@ export function ValidatorsPage() {
               onChange={setNetwork}
               options={(chainSpec?.networks ?? []).map((n) => ({
                 value: n.id,
-                label: t(`validators.network.${n.id}`),
+                label: validatorNetworkLabel(n.id) ?? t(`validators.network.${n.id}`),
               }))}
             />
             {netSpec?.kind === 'mainnet' ? (
@@ -644,11 +645,11 @@ export function ValidatorsPage() {
           <dl className="desc-list">
             <div>
               <dt>{t('validators.col.chain')}</dt>
-              <dd>{t(`validators.chain.${chain}`)}</dd>
+              <dd>{validatorChainLabel(chain, chainSpec?.title)}</dd>
             </div>
             <div>
               <dt>{t('validators.col.network')}</dt>
-              <dd>{t(`validators.network.${network}`)}</dd>
+              <dd>{validatorNetworkLabel(network) ?? t(`validators.network.${network}`)}</dd>
             </div>
             <div>
               <dt>{t('validators.col.profile')}</dt>

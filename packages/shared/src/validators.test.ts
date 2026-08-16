@@ -5,7 +5,9 @@ import {
   isValidatorInstanceId,
   isValidatorProfileId,
   isValidatorUpgradePolicy,
+  validatorChainLabel,
   validatorDiskTone,
+  validatorNetworkLabel,
 } from './validators.js';
 
 describe('validators DTO helpers', () => {
@@ -25,6 +27,16 @@ describe('validators DTO helpers', () => {
     expect(isValidatorProfileId('archive')).toBe(false);
     expect(isValidatorUpgradePolicy('notify')).toBe(true);
     expect(isValidatorUpgradePolicy('nightly')).toBe(false);
+  });
+
+  it('keeps chain and network brand names in English', () => {
+    expect(validatorChainLabel('near')).toBe('NEAR');
+    expect(validatorChainLabel('sui')).toBe('Sui');
+    expect(validatorChainLabel('cosmos')).toBe('Cosmos Hub');
+    expect(validatorChainLabel('eth', 'Ethereum')).toBe('Ethereum');
+    expect(validatorNetworkLabel('hoodi')).toBe('Hoodi');
+    expect(validatorNetworkLabel('sepolia')).toBe('Sepolia');
+    expect(validatorNetworkLabel('mainnet')).toBeNull();
   });
 
   it('validates instance ids', () => {

@@ -184,6 +184,38 @@ export const VALIDATOR_CHAIN_IDS: readonly ValidatorChainId[] = [
   'sol',
 ];
 
+/** Brand names — never machine-translate. */
+export const VALIDATOR_CHAIN_LABEL: Record<ValidatorChainId, string> = {
+  eth: 'Ethereum',
+  avax: 'Avalanche',
+  near: 'NEAR',
+  ada: 'Cardano',
+  btc: 'Bitcoin',
+  cosmos: 'Cosmos Hub',
+  sui: 'Sui',
+  aptos: 'Aptos',
+  dot: 'Polkadot',
+  sol: 'Solana',
+};
+
+/** Network proper nouns — never machine-translate. Generic kinds (mainnet/testnet) stay i18n. */
+export const VALIDATOR_NETWORK_PROPER: Record<string, string> = {
+  hoodi: 'Hoodi',
+  sepolia: 'Sepolia',
+  fuji: 'Fuji',
+  westend: 'Westend',
+};
+
+export function validatorChainLabel(id: string, title?: string | null): string {
+  if (title && title.trim()) return title.trim();
+  if (isValidatorChainId(id)) return VALIDATOR_CHAIN_LABEL[id];
+  return id;
+}
+
+export function validatorNetworkLabel(id: string): string | null {
+  return VALIDATOR_NETWORK_PROPER[id] ?? null;
+}
+
 export const VALIDATOR_PROFILE_IDS: readonly ValidatorProfileId[] = [
   'minimal',
   'pruned',
