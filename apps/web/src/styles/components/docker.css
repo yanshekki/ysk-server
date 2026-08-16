@@ -1,0 +1,82 @@
+/* Docker page — overview cards, selection-first forms, disk meter */
+
+.dock-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 1.25rem);
+  min-width: 0;
+}
+
+.dock-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  min-width: 0;
+}
+
+.dock-form > .field,
+.dock-form > .form-layout,
+.dock-form > .checkbox-field {
+  margin-bottom: 0;
+}
+
+.dock-caps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4, 1rem);
+}
+
+.dock-cap {
+  padding: var(--space-4, 1rem);
+  border: 1px solid var(--border-light, var(--border-color));
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle, #f8fafc);
+  min-width: 0;
+}
+
+.dock-cap__title {
+  margin: 0 0 var(--space-2, 0.5rem);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+
+.dock-cap__desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-sub, var(--text-muted));
+  line-height: 1.5;
+}
+
+.dock-meter {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-muted, #e2e8f0);
+  overflow: hidden;
+}
+
+.dock-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-blue, #2563eb);
+}
+
+.dock-meter__fill--warn {
+  background: var(--tone-warn, #d97706);
+}
+
+.dock-meter__fill--danger {
+  background: var(--tone-danger, #dc2626);
+}
+
+.modal__body > .dock-form {
+  padding-top: var(--space-1, 0.25rem);
+}
+
+@media (max-width: 860px) {
+  .dock-caps {
+    grid-template-columns: 1fr;
+  }
+}

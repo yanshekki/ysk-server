@@ -46,6 +46,7 @@
 @import './totp-setup.css';
 @import './support.css';
 @import './dns-zone.css';
+@import './docker.css';
 @import './table.css';
 @import './list-toolbar.css';
 @import './tabs.css';

@@ -4,8 +4,12 @@
 
 ## 1.1.3 — 2026-08-16
 
+### Improve
+- Docker page redesigned: install-first overview, status cards, and selection-first pull / run / prune / settings (no more typing `PRUNE` in the panel)
+
 ### Fix
 - Validator wizard / table show English chain and network names (Ethereum, NEAR, Sui, Hoodi…) from a catalog SSOT — they are never machine-translated
+- Docker / Compose stay English in every locale (no more “stevedore” / “撰寫” / “作曲する”)
 
 ## 1.1.2 — 2026-08-16
 

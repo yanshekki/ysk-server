@@ -136,6 +136,14 @@ for (const loc of locales()) {
     fails.push(`${loc}/support.json yskTitle must be "YSK Limited"`);
   }
 
+  const dock = load(loc, 'docker.json');
+  if (dock.title != null && dock.title !== 'Docker') {
+    fails.push(`${loc}/docker.json title: expected "Docker" got "${dock.title}"`);
+  }
+  if (dock.tab?.compose != null && dock.tab.compose !== 'Compose') {
+    fails.push(`${loc}/docker.json tab.compose: expected "Compose" got "${dock.tab.compose}"`);
+  }
+
   const val = load(loc, 'validators.json');
   const valExact = {
     'chain.eth': 'Ethereum',
