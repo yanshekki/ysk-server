@@ -2,12 +2,31 @@
 
 ## Unreleased
 
+## 1.1.0 — 2026-08-16
+
 ### Feature
-- Validators (Beta): panel `/validators` + `ysk-server validators` for L1 nodes — Phase 1 (ETH, AVAX, NEAR, ADA) and Phase 2 (BTC pruned, Cosmos Hub, Sui, Aptos, Polkadot, Solana heavy). Non-custodial. Mutations need `YSK_EXECUTE=1`.
-- Docker engine page `/docker` + `ysk-server docker` (install via apt `docker.io` + compose v2; containers, images, volumes, networks, Compose, prune, safe daemon.json).
-- Validator upgrades health-check and roll back to the previous image/tag on failure.
-- Cardano Mithril one-click snapshot restore (`validators mithril`).
-- Ethereum EL×CL matrix: Geth / Nethermind / Reth × Lighthouse / Prysm / Teku / Nimbus.
+- Docker engine page `/docker` + `ysk-server docker` (install via apt `docker.io` + compose v2; containers, images, volumes, networks, Compose, prune, safe daemon.json)
+- Validators (Beta): panel `/validators` + `ysk-server validators` for L1 nodes — Phase 1 (ETH, AVAX, NEAR, ADA) and Phase 2 (BTC pruned, Cosmos Hub, Sui, Aptos, Polkadot, Solana heavy). Non-custodial. Mutations need `YSK_EXECUTE=1`
+- Validator upgrades health-check and roll back to the previous image/tag on failure
+- Cardano Mithril one-click snapshot restore (`validators mithril`)
+- Ethereum EL×CL matrix: Geth / Nethermind / Reth × Lighthouse / Prysm / Teku / Nimbus
+
+### Fix
+- SFTP batch stdin uses a real newline (`printf` + ANSI-C quote); backup remote password path uses the same helper
+- Panel TLS status reports the real listen host (`0.0.0.0` stays `0.0.0.0`); bootstrap self-signed cert is labelled; CLI probes `ss`
+- Process table cannot TERM/KILL PID 1 / init / systemd; backend already refused PID 1
+- Saving “require 2FA” is disabled until the actor has TOTP enrolled; settings API refuses the policy otherwise
+- vsftpd start is disabled when `listen` and `listen_ipv6` are both YES; form shows live file values and one-click IPv4-only
+- Project web stats no longer fall back to the host-wide `/var/log/nginx/access.log`
+- Git `git -c safe.directory=…` is parsed as read-only (value token is skipped)
+- CDN loopback origin is rewritten or refused on a remote edge; online + `baseUrl` does not inherit leftover root SSH
+- Request-rate “/ min” uses a 60s window (not a growing buffer)
+- Production readiness leftover findings are one item each (CLI / Apache / vsftpd)
+
+### Improve
+- Panel honesty for UX39-001–254: confirms, titles, probing skeletons, tab aliases, geo/MMDB gates, PASV public IP, bound TLS cert on project HTTPS, sshd enable-on-boot, HA banner localisation
+- 13 locales filled for recent keys; zh-HK stays written Chinese; product names stay English
+- `ysk-server fleet` documented as the top-level alias of `agents fleet`
 
 ## 1.0.39 — 2026-08-15
 

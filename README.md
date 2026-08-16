@@ -6,7 +6,7 @@
 
 | | |
 |--|--|
-| **Version** | **1.0.39** |
+| **Version** | **1.1.0** |
 | **License** | Free for public use (see repository license) |
 | **CLI** | `ysk-server` |
 | **Default UI locale** | zh-HK · also en, zh-CN, and more |
@@ -19,7 +19,7 @@
 - **One server you own** — not multi-tenant SaaS lock-in  
 - **Panel + CLI + API** share the same core (scriptable for humans and AI agents)  
 - **Honest ops** — host changes need **root** + `YSK_EXECUTE=1` (no fake “success”)  
-- **Hosting stack** — projects, Nginx/Apache, SSL, databases, email, FTP, BT shares, defense  
+- **Hosting stack** — projects, Nginx/Apache, SSL, databases, email, FTP, BT shares, defense, Docker, L1 validators (Beta)  
 
 ---
 
