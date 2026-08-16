@@ -1,63 +1,83 @@
-# YSK Server
+<p align="center">
+  <img src="apps/web/public/logo.svg" width="72" alt="YSK Server" />
+</p>
 
-> Language: English | [中文](./README-ZH.md)
-
-**Free, open, single-host Linux control plane** — web panel + CLI to manage hosting, files, mail, databases, DNS/SSL, security, and more on **your** VPS or bare metal.
-
-| | |
-|--|--|
-| **Version** | **1.1.0** |
-| **License** | Free for public use (see repository license) |
-| **CLI** | `ysk-server` |
-| **Default UI locale** | zh-HK · also en, zh-CN, and more |
-| **Support** | [email@ysk.hk](mailto:email@ysk.hk) · Panel **Support** page |
-
----
-
-## Why YSK Server?
-
-- **One server you own** — not multi-tenant SaaS lock-in  
-- **Panel + CLI + API** share the same core (scriptable for humans and AI agents)  
-- **Honest ops** — host changes need **root** + `YSK_EXECUTE=1` (no fake “success”)  
-- **Hosting stack** — projects, Nginx/Apache, SSL, databases, email, FTP, BT shares, defense, Docker, L1 validators (Beta)  
-
----
-
-## Screenshots
+<h1 align="center">YSK Server</h1>
 
 <p align="center">
-  <img src="docs/assets/screenshots/panel-dashboard-en.jpg" alt="YSK Server dashboard" width="900" />
+  <strong>The Linux control plane for a host you own.</strong><br />
+  Web panel, CLI, and API — sites, mail, data, edge, and defense on one VPS or bare metal.
 </p>
-<p align="center"><em>Dashboard — service health, readiness, security &amp; apply status</em></p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/panel-system-tools-en.jpg" alt="YSK Server system tools" width="900" />
+  <a href="./README-ZH.md">中文</a>
+  ·
+  <a href="https://ysk.hk/">ysk.hk</a>
+  ·
+  <a href="mailto:email@ysk.hk">email@ysk.hk</a>
+  ·
+  <a href="https://www.npmjs.com/package/ysk-server">npm</a>
 </p>
-<p align="center"><em>System tools — identity, panel HTTPS, network &amp; storage</em></p>
 
----
+<p align="center">
+  <a href="https://www.npmjs.com/package/ysk-server"><img alt="npm ysk-server" src="https://img.shields.io/npm/v/ysk-server.svg?style=flat-square&color=2ea043" /></a>
+  <a href="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml/badge.svg?style=flat-square" /></a>
+  <img alt="Node.js 22+" src="https://img.shields.io/badge/node-%3E%3D22-58a6ff?style=flat-square" />
+  <img alt="13 locales" src="https://img.shields.io/badge/locales-13-58a6ff?style=flat-square" />
+  <img alt="MIT" src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square" />
+</p>
 
-## Install (ready to use)
+> Language: **English** · [中文（香港書面語）](./README-ZH.md)
 
-**Ubuntu 22.04 / 24.04** (other Linux: best-effort). Run as **root**:
+Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install it on your machine; the same core drives the UI, `ysk-server` CLI, and HTTP API — including AI agents.
+
+## Why
+
+| Own the machine | One control plane | Honest apply | Production stack |
+|:----------------|:------------------|:-------------|:-----------------|
+| One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
+
+## Panel
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-dashboard-en.jpg" alt="YSK Server dashboard — service health, readiness, and apply status" width="920" />
+</p>
+<p align="center"><sub>Dashboard — live service health, readiness, and apply honesty</sub></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-system-tools-en.jpg" alt="YSK Server system tools — identity, panel HTTPS, network, and storage" width="920" />
+</p>
+<p align="center"><sub>System tools — identity, panel HTTPS, network, and storage</sub></p>
+
+## Install
+
+**Ubuntu 22.04 / 24.04** as **root**. Other Linux: best-effort.
+
+### Recommended
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
 ```
 
-Or from npm (CLI bin: `ysk-server`):
+`install.sh` writes the systemd unit, bootstrap TLS, and prints a **one-time** admin password.
+
+### After install
+
+1. Open **`https://<server-ip>:9287`** (accept the self-signed warning once).
+2. Sign in with the credentials at the end of install (also `$dataDir/BOOTSTRAP-CREDENTIALS.txt`).
+3. Change the password. Turn on 2FA.
+4. Issue a trusted panel certificate when you have a domain.
+
+### Other ways
 
 ```bash
 npm install -g ysk-server
-# Weak default "admin" is rejected. Pass a strong password:
-ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
+sudo ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
 export YSK_EXECUTE=1
-ysk-server serve
+sudo ysk-server serve
 ```
 
-On a fresh host, prefer **`install.sh`** (systemd, TLS, random admin password printed once).
-
-Or from git:
+Weak default `admin` is rejected. Prefer `install.sh` on a fresh host.
 
 ```bash
 git clone https://github.com/yanshekki/ysk-server.git
@@ -65,69 +85,57 @@ cd ysk-server
 sudo ./install.sh
 ```
 
-After install (root defaults):
-
-1. **systemd** starts `ysk-server`  
-2. Open **`https://<server-ip>:9287`** (accept self-signed cert warning)  
-3. Login with credentials printed at the end of install (also in `$dataDir/BOOTSTRAP-CREDENTIALS.txt`)  
-4. Change password · enable 2FA  
-
-Uninstall:
+### Uninstall
 
 ```bash
 sudo ./uninstall.sh --all --keep-data --yes
-# wipe data too:
+# also wipe registered data:
 sudo ./uninstall.sh --all --purge-data --yes
 ```
 
-Full install options, plans, TLS flags: **[docs/getting-started/install.md](docs/getting-started/install.md)**  
-Uninstall details: **[docs/getting-started/uninstall.md](docs/getting-started/uninstall.md)**
+Guides: [install](docs/getting-started/install.md) · [uninstall](docs/getting-started/uninstall.md) · [docs index](docs/INDEX.md)
 
----
+## Capabilities
 
-## What you get
-
-| Area | Highlights |
-|------|------------|
-| **Sites** | Projects, deploy, isolation |
-| **Files** | Manager, public shares, WebDAV, FTP, **BT Tracker** / WebTorrent |
-| **Mail** | Domains, mailboxes, deliverability checks |
-| **Data** | MySQL / MariaDB / PostgreSQL / Redis |
+| Area | What ships |
+|:-----|:-----------|
+| **Sites** | Projects, Git deploy, per-site isolation |
+| **Files** | File manager, public shares, WebDAV, FTPS, BT Tracker / WebTorrent |
+| **Mail** | Domains, mailboxes, deliverability checks (inbox reputation is not guaranteed) |
+| **Data** | MySQL, MariaDB, PostgreSQL, Redis |
 | **Edge** | DNS, SSL, Nginx, Apache, CDN agents |
-| **Security** | Protection / defense, SSH/2FA, VPN, VNC |
+| **Security** | Protection, SSH / 2FA, VPN, VNC |
+| **Containers** | Docker engine |
 | **Ops** | Metrics, logs, terminal, cron, backups, updates |
+| **Validators** | L1 nodes (Beta) |
 
-Everything is documented under **[docs/INDEX.md](docs/INDEX.md)** — start there for feature handbooks, CLI reference, and architecture.
-
----
-
-## CLI & AI agents
+## CLI
 
 ```bash
 ysk-server readiness --json
 ysk-server help --locale en
-export YSK_EXECUTE=1   # required for real host mutations
+export YSK_EXECUTE=1    # required for real host mutations
 ```
 
-- [docs/cli/reference.md](docs/cli/reference.md)  
-- [docs/agent/README.md](docs/agent/README.md) · [docs/agent/commands.json](docs/agent/commands.json)  
-- Project skill: [`.grok/skills/ysk-server/SKILL.md`](.grok/skills/ysk-server/SKILL.md)  
+[CLI reference](docs/cli/reference.md) · [agent commands](docs/agent/commands.json) · [agent skill](.grok/skills/ysk-server/SKILL.md)
 
----
+## Honesty
 
-## Support, donate & professional services
+- Installing the panel **does not** make global mail inbox delivery a given. DNS, PTR, and port 25 are still yours.
+- Dangerous host operations stay **dry-run** until `YSK_EXECUTE=1`. A blocked result is not success.
+- The first panel certificate is self-signed. Replace it with Let’s Encrypt (or your own) when the host has a name.
 
-YSK Server is **free** for everyone. If it helps you:
+## Support
 
-- Panel **Support** page (`/support`) — Creator, donate, crypto handles  
-- **[Linktree](https://linktr.ee/yanshekki)** · GitHub Sponsors  
-- Crypto: `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA)  
-- Need hands-on help? **YSK Limited** (**no prices listed here** — contact us)  
-- Bugs / questions: **[email@ysk.hk](mailto:email@ysk.hk)**  
+YSK Server is **free**. If it helps:
 
----
+- Panel **Support** (`/support`) — creator, donate, crypto handles
+- [Linktree](https://linktr.ee/yanshekki) · GitHub Sponsors
+- Crypto: `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA)
+- Hands-on work: **YSK Limited** — write to us (no prices on this page)
+- Bugs and questions: [email@ysk.hk](mailto:email@ysk.hk)
 
-## Development (contributors)
+## Development
 
 ```bash
 pnpm install && pnpm build
@@ -135,16 +143,12 @@ pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts setup --data-dir 
 pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 ```
 
-Architecture and contribution details live in **docs/** — not in this README.
+Architecture and contribution notes live under **[docs/](docs/INDEX.md)**.
 
 ---
 
-## Honesty
-
-- **Install ≠ full stack “set and forget” for mail/DNS reputation.**  
-- Dangerous host operations are **dry-run by default** until `YSK_EXECUTE=1`.  
-- Self-signed panel cert is for first login; replace with Let’s Encrypt when you have a domain.  
-
----
-
-**YSK Server** · made for operators who want control · [ysk.hk](https://ysk.hk/) · [email@ysk.hk](mailto:email@ysk.hk)
+<p align="center">
+  <strong>YSK Server</strong> · control without a landlord ·
+  <a href="https://ysk.hk/">ysk.hk</a> ·
+  <a href="mailto:email@ysk.hk">email@ysk.hk</a>
+</p>
