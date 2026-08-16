@@ -8,6 +8,7 @@
 - Docker page redesigned: install-first overview, status cards, and selection-first pull / run / prune / settings (no more typing `PRUNE` in the panel)
 - Docker last tab matches System: 說明 / About via the shared page guide (not a prose 關於 dump)
 - E2E-1111-02/03/04: brand names stay English (PM2, WireGuard, SSE, Linktree); no raw `runtime.pm2.*` / `common.required`; vsftpd failed banner matches live listen flags; users/DNS/validators/system no longer flash false 0/down/off; `/cluster` announces redirect; panel restart and suspect-IP ban confirm; orphan-home delete labels include the path
+- Isolation deep-links, Node LTS-first chips, LE buttons include hostname, WebDAV disable gated, updates header stats stay stable, backup verdict unified, MySQL version parsed, `/ssl` shows panel LE, MySQL `?tab=cluster` works, health keys localized
 
 ### Fix
 - Validator wizard / table show English chain and network names (Ethereum, NEAR, Sui, Hoodi…) from a catalog SSOT — they are never machine-translated

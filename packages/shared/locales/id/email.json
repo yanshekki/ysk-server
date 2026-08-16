@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / port 25 belum diperiksa.",
   "deliverabilityScore": "Paket keterkiriman",
   "opendkimNoReload": "OpenDKIM tidak mendukung reload — gunakan restart setelah mengubah kunci atau tabel.",
-  "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini"
+  "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

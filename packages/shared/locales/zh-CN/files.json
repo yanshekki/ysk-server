@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "重新签发后令牌编号未变——写入可能未生效，请再试一次。",
   "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。",
   "dirNamedLikeFile": "（文件夹残留；名称像文件）",
-  "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。"
+  "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

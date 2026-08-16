@@ -30,7 +30,10 @@ import { bindSet, bindInput, bindCall2 } from '../bind-handlers';
 export function enabledLabel(v: string, t: TFunction): string {
   if (v === 'enabled') return t('services.enabledBoot');
   if (v === 'disabled') return t('common.no');
-  if (v === 'static' || v === 'indirect') return v;
+  if (v === 'not-found') return t('services.unitNotFound');
+  if (v === 'n/a' || v === 'na') return t('services.unitNa');
+  if (v === 'static') return t('services.unitStatic');
+  if (v === 'indirect') return t('services.unitIndirect');
   return v || t('common.noneSelectedShort');
 }
 

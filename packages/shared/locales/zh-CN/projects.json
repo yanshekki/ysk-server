@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "延遲",
     "error": "错误",
-    "at": "检查时间"
+    "at": "检查时间",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP / 站点",
   "railStatic": "静态站",
@@ -668,5 +673,7 @@
   "netBoundCert": "已绑定证书",
   "netBoundCertExpiry": "到期 {{at}}",
   "netNoBoundCert": "此主机名磁盘上没有证书",
-  "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。"
+  "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

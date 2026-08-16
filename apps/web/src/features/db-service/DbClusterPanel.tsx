@@ -418,11 +418,12 @@ export function DbClusterPanel({
                 className: 'muted',
                 render: (c) =>
                   (c.members ?? [])
-                    .map((m) =>
-                      m.applyStatus && m.applyStatus !== 'applied'
-                        ? `${m.host} (${clusterStatusLabel(m.applyStatus, t)})`
-                        : m.host,
-                    )
+                    .map((m) => {
+                      const host = String(m.host ?? '').replace(/\s*\(none\)/gi, '').trim();
+                      return m.applyStatus && m.applyStatus !== 'applied'
+                        ? `${host} (${clusterStatusLabel(m.applyStatus, t)})`
+                        : host;
+                    })
                     .join(', ') },
             ]}
             rows={items}

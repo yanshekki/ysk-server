@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "Estado latente",
     "error": "Error",
-    "at": "Comprobado en"
+    "at": "Comprobado en",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP/sitio",
   "railStatic": "Sitio estático",
@@ -668,5 +673,7 @@
   "netBoundCert": "Certificado vinculado",
   "netBoundCertExpiry": "caduca {{at}}",
   "netNoBoundCert": "No hay certificado en disco para este nombre",
-  "netForceHttpsNeedCert": "Emita un certificado en /ssl para este dominio antes de forzar HTTPS."
+  "netForceHttpsNeedCert": "Emita un certificado en /ssl para este dominio antes de forzar HTTPS.",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

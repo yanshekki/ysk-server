@@ -1,5 +1,9 @@
 {
   "enabledBoot": "自啟",
+  "unitNotFound": "未安裝單元",
+  "unitNa": "不適用",
+  "unitStatic": "static",
+  "unitIndirect": "indirect",
   "action": {
     "start": "啟動",
     "stop": "停止",

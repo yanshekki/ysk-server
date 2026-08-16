@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "DNS / PTR / port 25 n’ont pas encore été sondés.",
     "deliverabilityScore": "Pack de délivrabilité",
     "opendkimNoReload": "OpenDKIM n’a pas de reload — redémarrez après un changement de clés ou de tables.",
-    "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile"
+    "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Non autorisé",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "L'identifiant du jeton n'a pas changé après la réémission : l'écriture n'a peut-être pas persisté. Essayer à nouveau.",
     "webdavDisableFailed": "WebDAV est toujours activé après la désactivation : l'écriture n'a peut-être pas persisté. Essayer à nouveau.",
     "dirNamedLikeFile": "(dossier résiduel ; le nom ressemble à un fichier)",
-    "webdavAfterEnable": "Disponible après activation de WebDAV et émission d’un jeton."
+    "webdavAfterEnable": "Disponible après activation de WebDAV et émission d’un jeton.",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "Latence",
       "error": "Erreur",
-      "at": "Vérifié le"
+      "at": "Vérifié le",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "PHP/site",
     "railStatic": "Site statique",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "Certificat lié",
     "netBoundCertExpiry": "expire {{at}}",
     "netNoBoundCert": "Aucun certificat sur disque pour ce nom d’hôte",
-    "netForceHttpsNeedCert": "Émettez un certificat sur /ssl pour ce domaine avant de forcer HTTPS."
+    "netForceHttpsNeedCert": "Émettez un certificat sur /ssl pour ce domaine avant de forcer HTTPS.",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB n’est pas installé",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "Logiciels",
@@ -11881,7 +11894,9 @@
     "domainRequired": "Saisissez un domaine.",
     "domainInvalid": "Le format du domaine n’est pas valide.",
     "domainKnownHint": "Choisissez un domaine projet / DNS / mail connu, ou saisissez-en un.",
-    "deleteNeedDomain": "Supprimez ce certificat — saisissez le nom de domaine pour confirmer"
+    "deleteNeedDomain": "Supprimez ce certificat — saisissez le nom de domaine pour confirmer",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "Confirmer la purge ? Les chemins de données enregistrés (bases de données/courriel) seront supprimés définitivement.",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
     "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
     "panelRestarted": "Panneau de retour · {{version}}",
-    "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes."
+    "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes.",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} utilisateurs",

@@ -144,6 +144,7 @@ export function ProjectDeployTab({
   const [versionChoices, setVersionChoices] = useState<string[]>(() =>
     runtimeVersionChoices(project.runtime),
   );
+  const [versionLabels, setVersionLabels] = useState<Record<string, string>>({});
   const [history, setHistory] = useState<
     Array<{
       id: string;
@@ -260,6 +261,7 @@ export function ProjectDeployTab({
     void fetchRuntimeVersionChoices(project.runtime).then((r) => {
       if (cancelled || !r.choices.length) return;
       setVersionChoices(r.choices);
+      if (r.labels) setVersionLabels(r.labels);
       setRtVer((prev) => {
         if (prev && r.choices.includes(prev)) return prev;
         if (project.runtimeVersion && r.choices.includes(project.runtimeVersion)) {
@@ -442,7 +444,10 @@ export function ProjectDeployTab({
                         setPhpVer(v);
                         onPhpVersionChange?.(v);
                       }}
-                      options={versionChoices.map((v) => ({ value: v, label: v }))}
+                      options={versionChoices.map((v) => ({
+                        value: v,
+                        label: versionLabels[v] || v,
+                      }))}
                     />
                   ) : (
                     <select
@@ -455,7 +460,7 @@ export function ProjectDeployTab({
                     >
                       {versionChoices.map((v) => (
                         <option key={v} value={v}>
-                          {v}
+                          {versionLabels[v] || v}
                         </option>
                       ))}
                     </select>
@@ -475,7 +480,10 @@ export function ProjectDeployTab({
                       onChange={(v) => {
                         if (!(verBusy || anyBusy)) void saveRuntimeVersion(v);
                       }}
-                      options={versionChoices.map((v) => ({ value: v, label: v }))}
+                      options={versionChoices.map((v) => ({
+                        value: v,
+                        label: versionLabels[v] || v,
+                      }))}
                     />
                   ) : (
                     <select
@@ -488,7 +496,7 @@ export function ProjectDeployTab({
                     >
                       {versionChoices.map((v) => (
                         <option key={v} value={v}>
-                          {v}
+                          {versionLabels[v] || v}
                         </option>
                       ))}
                     </select>

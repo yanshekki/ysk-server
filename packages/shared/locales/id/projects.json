@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "Latensi",
     "error": "Kesalahan",
-    "at": "Diperiksa di"
+    "at": "Diperiksa di",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP / situs",
   "railStatic": "Situs statis",
@@ -668,5 +673,7 @@
   "netBoundCert": "Sertifikat terikat",
   "netBoundCertExpiry": "kedaluwarsa {{at}}",
   "netNoBoundCert": "Tidak ada sertifikat di disk untuk nama host ini",
-  "netForceHttpsNeedCert": "Terbitkan sertifikat di /ssl untuk domain ini sebelum memaksa HTTPS."
+  "netForceHttpsNeedCert": "Terbitkan sertifikat di /ssl untuk domain ini sebelum memaksa HTTPS.",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

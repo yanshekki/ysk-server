@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "待ち時間",
     "error": "エラー",
-    "at": "チェックイン日時"
+    "at": "チェックイン日時",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP/サイト",
   "railStatic": "静的サイト",
@@ -668,5 +673,7 @@
   "netBoundCert": "紐付け証明書",
   "netBoundCertExpiry": "期限 {{at}}",
   "netNoBoundCert": "このホスト名の証明書がディスクにありません",
-  "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。"
+  "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

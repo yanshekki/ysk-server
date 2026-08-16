@@ -507,5 +507,6 @@
   "healthUncheckedHint": "尚未实测 DNS／PTR／25 端口。",
   "deliverabilityScore": "送达能力检查包",
   "opendkimNoReload": "OpenDKIM 不支持重载 — 更改密钥或对照表后请用重启。",
-  "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim"
+  "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

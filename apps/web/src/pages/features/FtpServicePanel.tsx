@@ -466,6 +466,7 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 label={t('ftp.enableFtps')}
                 description={!sslReady ? t('ftp.ftpsNeedCert') : t('ftp.enableFtpsDesc')}
                 checked={settings.sslEnable}
+                disabled={!sslReady && !settings.sslEnable}
                 onChange={(v) => {
                   if (v && !sslReady) return;
                   patch('sslEnable', v);
@@ -476,6 +477,7 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 label={t('ftp.forceTlsLogin')}
                 description={!sslReady ? t('ftp.ftpsNeedCert') : undefined}
                 checked={settings.forceSsl}
+                disabled={!sslReady && !settings.forceSsl}
                 onChange={(v) => {
                   if (v && !sslReady) return;
                   patch('forceSsl', v);

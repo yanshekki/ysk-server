@@ -1711,7 +1711,9 @@ export function EmailDomainPage() {
                               `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
                             )}
                           >
-                            {t('email.tlsRequestLe')}
+                            {t('email.tlsRequestLeFor', {
+                              host: defaultMailSslDomain(domain.domain),
+                            })}
                           </Button>
                         </span>
                       ),
@@ -1734,7 +1736,9 @@ export function EmailDomainPage() {
                               )}&action=le`,
                             )}
                           >
-                            {t('email.tlsRequestLe')}
+                            {t('email.tlsRequestLeFor', {
+                              host: webmailDomain || defaultWebmailDomain(domain.domain),
+                            })}
                           </Button>
                         </span>
                       ),
@@ -1753,7 +1757,7 @@ export function EmailDomainPage() {
                               `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
                             )}
                           >
-                            {t('email.tlsRequestLe')}
+                            {t('email.tlsRequestLeFor', { host: domain.domain })}
                           </Button>
                         </span>
                       ),

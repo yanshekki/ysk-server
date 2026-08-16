@@ -507,5 +507,6 @@
   "healthUncheckedHint": "এখনও DNS / PTR / পোর্ট ২৫ যাচাই হয়নি।",
   "deliverabilityScore": "ডেলিভারেবিলিটি প্যাক",
   "opendkimNoReload": "OpenDKIM রিলোড সমর্থন করে না — কী বা টেবিল বদলের পর রিস্টার্ট ব্যবহার করুন।",
-  "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়"
+  "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

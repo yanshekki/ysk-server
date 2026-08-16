@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / پورٹ 25 ابھی پروب نہیں ہوئے۔",
   "deliverabilityScore": "ڈیلیوریبلٹی پیک",
   "opendkimNoReload": "OpenDKIM ری لوڈ نہیں کرتا — کلید یا جدول بدلنے کے بعد ری اسٹارٹ استعمال کریں۔",
-  "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں"
+  "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

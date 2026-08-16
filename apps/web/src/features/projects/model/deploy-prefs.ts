@@ -120,7 +120,7 @@ export function runtimeVersionChoices(runtime: string): string[] {
 /** Load version chips from version-discovery API (no hardcode). */
 export async function fetchRuntimeVersionChoices(
   runtime: string,
-): Promise<{ choices: string[]; latest?: string; source?: string }> {
+): Promise<{ choices: string[]; labels?: Record<string, string>; latest?: string; source?: string }> {
   const kind = runtimeInstallKind(runtime);
   if (!kind) return { choices: [] };
   try {
@@ -135,8 +135,13 @@ export async function fetchRuntimeVersionChoices(
       .map((c) => c.version)
       .filter((v): v is string => Boolean(v));
     if (choices.length) {
+      const labels: Record<string, string> = {};
+      for (const c of h.candidates ?? []) {
+        if (c.version && c.label) labels[c.version] = c.label;
+      }
       return {
         choices,
+        labels,
         latest: h.latestVersion || choices[0],
         source: h.source,
       };

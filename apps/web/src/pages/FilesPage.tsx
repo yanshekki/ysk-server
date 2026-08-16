@@ -2299,7 +2299,8 @@ export function FilesPage() {
                     variant="ghost"
                     size="md"
                     loading={webdavBusy}
-                    disabled={!webdavEnabled && !webdavLoaded}
+                    disabled={!webdavEnabled}
+                    title={!webdavEnabled ? t('files.webdavAlreadyOff') : undefined}
                     onClick={() => void disableWebdav()}
                   >
                     {t('files.disable')}

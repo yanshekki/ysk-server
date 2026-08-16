@@ -106,5 +106,7 @@
   "domainRequired": "Masukkan domain.",
   "domainInvalid": "Format domain tidak valid.",
   "domainKnownHint": "Pilih domain proyek, DNS, atau surel yang dikenal, atau ketik sendiri.",
-  "deleteNeedDomain": "Hapus sertifikat ini — ketikkan nama domain untuk mengonfirmasi"
+  "deleteNeedDomain": "Hapus sertifikat ini — ketikkan nama domain untuk mengonfirmasi",
+  "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+  "openPanelTls": "Open panel HTTPS"
 }

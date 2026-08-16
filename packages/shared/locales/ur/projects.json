@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "تاخیر",
     "error": "خرابی",
-    "at": "پر چیک کیا۔"
+    "at": "پر چیک کیا۔",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "پی ایچ پی / سائٹ",
   "railStatic": "جامد سائٹ",
@@ -668,5 +673,7 @@
   "netBoundCert": "منسلک سرٹیفکیٹ",
   "netBoundCertExpiry": "میعاد {{at}}",
   "netNoBoundCert": "اس میزبان نام کے لیے ڈسک پر سرٹیفکیٹ نہیں",
-  "netForceHttpsNeedCert": "HTTPS مجبور کرنے سے پہلے /ssl پر اس ڈومین کا سرٹیفکیٹ جاری کریں۔"
+  "netForceHttpsNeedCert": "HTTPS مجبور کرنے سے پہلے /ssl پر اس ڈومین کا سرٹیفکیٹ جاری کریں۔",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

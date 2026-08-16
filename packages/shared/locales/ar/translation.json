@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "لم يُفحص بعد DNS / PTR / المنفذ 25.",
     "deliverabilityScore": "حزمة قابلية التسليم",
     "opendkimNoReload": "OpenDKIM لا يدعم إعادة التحميل — استخدم إعادة التشغيل بعد تغيير المفاتيح أو الجداول.",
-    "opendkimNoReloadTitle": "systemctl reload opendkim غير مدعوم في هذه الحزمة"
+    "opendkimNoReloadTitle": "systemctl reload opendkim غير مدعوم في هذه الحزمة",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غير مصرح به",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "لم يتغير معرف الرمز المميز بعد إعادة الإصدار - ربما لم تستمر عملية الكتابة. حاول ثانية.",
     "webdavDisableFailed": "يظل WebDAV ممكنًا بعد التعطيل - ربما لم تستمر عملية الكتابة. حاول ثانية.",
     "dirNamedLikeFile": "(مجلد متبقٍ؛ الاسم يشبه ملفًا)",
-    "webdavAfterEnable": "متاح بعد تفعيل WebDAV وإصدار رمز."
+    "webdavAfterEnable": "متاح بعد تفعيل WebDAV وإصدار رمز.",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "كمون",
       "error": "خطأ",
-      "at": "تم التحقق في"
+      "at": "تم التحقق في",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "PHP/ الموقع",
     "railStatic": "موقع ثابت",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "الشهادة المرتبطة",
     "netBoundCertExpiry": "تنتهي {{at}}",
     "netNoBoundCert": "لا شهادة على القرص لهذا الاسم",
-    "netForceHttpsNeedCert": "أصدر شهادة على /ssl لهذا النطاق قبل فرض HTTPS."
+    "netForceHttpsNeedCert": "أصدر شهادة على /ssl لهذا النطاق قبل فرض HTTPS.",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB غير مثبّت",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "برمجة",
@@ -11881,7 +11894,9 @@
     "domainRequired": "أدخل نطاقاً.",
     "domainInvalid": "صيغة النطاق غير صالحة.",
     "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه.",
-    "deleteNeedDomain": "احذف هذه الشهادة — اكتب اسم المجال للتأكيد"
+    "deleteNeedDomain": "احذف هذه الشهادة — اكتب اسم المجال للتأكيد",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "تأكيد التطهير؟ سيتم حذف مسارات البيانات المسجلة (قواعد البيانات/البريد) نهائيًا.",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
     "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
     "panelRestarted": "عادت اللوحة · {{version}}",
-    "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان."
+    "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} المستخدمين",

@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / पोर्ट 25 अभी जाँचे नहीं गए।",
   "deliverabilityScore": "डिलिवरेबिलिटी पैक",
   "opendkimNoReload": "OpenDKIM रीलोड नहीं करता — कुंजी या तालिका बदलने के बाद रीस्टार्ट करें।",
-  "opendkimNoReloadTitle": "इस स्टैक पर systemctl reload opendkim समर्थित नहीं"
+  "opendkimNoReloadTitle": "इस स्टैक पर systemctl reload opendkim समर्थित नहीं",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

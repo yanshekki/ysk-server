@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "再発行後もトークン ID は変更されませんでした。書き込みが持続していない可能性があります。もう一度やり直してください。",
   "webdavDisableFailed": "WebDAV は無効にしても有効のままです。書き込みが持続していない可能性があります。もう一度やり直してください。",
   "dirNamedLikeFile": "（フォルダーの残留。名前がファイルのようです）",
-  "webdavAfterEnable": "WebDAV を有効にしてトークンを発行すると使えます。"
+  "webdavAfterEnable": "WebDAV を有効にしてトークンを発行すると使えます。",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / port 25 n’ont pas encore été sondés.",
   "deliverabilityScore": "Pack de délivrabilité",
   "opendkimNoReload": "OpenDKIM n’a pas de reload — redémarrez après un changement de clés ou de tables.",
-  "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile"
+  "opendkimNoReloadTitle": "systemctl reload opendkim n’est pas pris en charge sur cette pile",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

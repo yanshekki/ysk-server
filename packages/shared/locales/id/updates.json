@@ -228,5 +228,6 @@
   "applyPanelAlreadyLatest": "Sudah versi panel terbaru",
   "panelRestarting": "Panel sedang dimulai ulang untuk memuat versi baru…",
   "panelRestarted": "Panel kembali · {{version}}",
-  "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi."
+  "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
+  "cveNotChecked": "Not checked"
 }

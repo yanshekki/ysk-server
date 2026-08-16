@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "كمون",
     "error": "خطأ",
-    "at": "تم التحقق في"
+    "at": "تم التحقق في",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP/ الموقع",
   "railStatic": "موقع ثابت",
@@ -668,5 +673,7 @@
   "netBoundCert": "الشهادة المرتبطة",
   "netBoundCertExpiry": "تنتهي {{at}}",
   "netNoBoundCert": "لا شهادة على القرص لهذا الاسم",
-  "netForceHttpsNeedCert": "أصدر شهادة على /ssl لهذا النطاق قبل فرض HTTPS."
+  "netForceHttpsNeedCert": "أصدر شهادة على /ssl لهذا النطاق قبل فرض HTTPS.",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

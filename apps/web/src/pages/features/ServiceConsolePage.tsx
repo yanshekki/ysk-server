@@ -3,6 +3,7 @@
  * Overview = DescriptionList (never inputs). Settings = Form Kit (max 2 cols).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePageTab } from '../../shared/hooks/usePageTab';
 import { Link } from 'react-router-dom';
 import {
   PageGuide,
@@ -317,7 +318,18 @@ export function redisDirOptionLabel(
 export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const { t } = useTranslation();
   const [console, setConsole] = useState<ServiceConsole | null>(null);
-  const [tab, setTab] = useState('lifecycle');
+  const staticTabs = useMemo(
+    () => ['lifecycle', 'overview', 'cluster', 'stack', 'about'] as const,
+    [],
+  );
+  const tabIds = useMemo(
+    () =>
+      console
+        ? [...staticTabs, ...console.categories.map((c) => c.id)]
+        : [...staticTabs],
+    [console, staticTabs],
+  );
+  const [tab, setTab] = usePageTab(tabIds, 'lifecycle');
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | 'disable' | null>(null);
@@ -684,7 +696,17 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
 
   return (
     <FeaturePageLayout
-      title={t('db.console.serviceTitle', { title: console?.title ?? engine })}
+      title={t('db.console.serviceTitle', {
+        title:
+          console?.title ||
+          (engine === 'mysql'
+            ? 'MySQL'
+            : engine === 'mariadb'
+              ? 'MariaDB'
+              : engine === 'postgres'
+                ? 'PostgreSQL'
+                : 'Redis'),
+      })}
       status={
         console
           ? {

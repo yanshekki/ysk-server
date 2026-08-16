@@ -93,6 +93,7 @@
   "enabledMount": "已啟用 · {{path}}",
   "notEnabled": "未啟用",
   "disable": "停用",
+  "webdavAlreadyOff": "WebDAV 已關閉",
   "webdavDisabled": "已停用 WebDAV",
   "webdavEnabledNoEcho": "已啟用（密碼不會再次顯示；需要時請重新簽發）",
   "webdavDefaultOff": "預設關閉 — 按「啟用並簽發權杖」開始",

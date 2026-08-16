@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "尚未实测 DNS／PTR／25 端口。",
     "deliverabilityScore": "送达能力检查包",
     "opendkimNoReload": "OpenDKIM 不支持重载 — 更改密钥或对照表后请用重启。",
-    "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim"
+    "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "重新签发后令牌编号未变——写入可能未生效，请再试一次。",
     "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。",
     "dirNamedLikeFile": "（文件夹残留；名称像文件）",
-    "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。"
+    "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "延遲",
       "error": "错误",
-      "at": "检查时间"
+      "at": "检查时间",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "PHP / 站点",
     "railStatic": "静态站",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "已绑定证书",
     "netBoundCertExpiry": "到期 {{at}}",
     "netNoBoundCert": "此主机名磁盘上没有证书",
-    "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。"
+    "netForceHttpsNeedCert": "强制 HTTPS 前，请先在 /ssl 为此域名签发证书。",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "尚未安装 MariaDB",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "软件中心",
@@ -11881,7 +11894,9 @@
     "domainRequired": "请填写域名。",
     "domainInvalid": "域名格式无效。",
     "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。",
-    "deleteNeedDomain": "删除此证书 — 输入域名进行确认"
+    "deleteNeedDomain": "删除此证书 — 输入域名进行确认",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "已经是最新的面板版本了",
     "panelRestarting": "面板正在重启以加载新版本…",
     "panelRestarted": "面板已恢复 · {{version}}",
-    "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。"
+    "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} 用户",

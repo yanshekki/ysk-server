@@ -297,6 +297,9 @@ export function ProjectNetworkTab({
               checked={hsts}
               onChange={setHsts}
               disabled={suspended || !forceHttps}
+              description={
+                !forceHttps ? t('projects.netHstsNeedHttps') : t('projects.netHstsDesc')
+              }
             />
           </div>
           <FormLayout>

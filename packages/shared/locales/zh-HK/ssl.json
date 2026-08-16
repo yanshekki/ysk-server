@@ -16,6 +16,8 @@
   },
   "pillCount": "{{count}} 張",
   "statCerts": "憑證",
+  "panelCertHint": "面板 HTTPS 使用 {{path}}（到期 {{exp}}）。此憑證不在站點清單內。",
+  "openPanelTls": "開啟面板 HTTPS",
   "statWithFiles": "有檔案",
   "statBindings": "綁定",
   "statFailed": "失敗",

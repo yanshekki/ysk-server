@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "DNS / PTR / 25番はまだ未検査です。",
     "deliverabilityScore": "到達性パック",
     "opendkimNoReload": "OpenDKIM は reload 非対応です。鍵や表の変更後は再起動してください。",
-    "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません"
+    "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未認証",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "再発行後もトークン ID は変更されませんでした。書き込みが持続していない可能性があります。もう一度やり直してください。",
     "webdavDisableFailed": "WebDAV は無効にしても有効のままです。書き込みが持続していない可能性があります。もう一度やり直してください。",
     "dirNamedLikeFile": "（フォルダーの残留。名前がファイルのようです）",
-    "webdavAfterEnable": "WebDAV を有効にしてトークンを発行すると使えます。"
+    "webdavAfterEnable": "WebDAV を有効にしてトークンを発行すると使えます。",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "待ち時間",
       "error": "エラー",
-      "at": "チェックイン日時"
+      "at": "チェックイン日時",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "PHP/サイト",
     "railStatic": "静的サイト",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "紐付け証明書",
     "netBoundCertExpiry": "期限 {{at}}",
     "netNoBoundCert": "このホスト名の証明書がディスクにありません",
-    "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。"
+    "netForceHttpsNeedCert": "HTTPS 強制の前に /ssl でこのドメインの証明書を発行してください。",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB は未インストール",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "ソフトウェア",
@@ -11881,7 +11894,9 @@
     "domainRequired": "ドメインを入力してください。",
     "domainInvalid": "ドメイン形式が正しくありません。",
     "domainKnownHint": "既知のプロジェクト / DNS / メールドメインから選ぶか、手入力できます。",
-    "deleteNeedDomain": "この証明書を削除します — 確認するためにドメイン名を入力します"
+    "deleteNeedDomain": "この証明書を削除します — 確認するためにドメイン名を入力します",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "パージを確認しますか?登録されたデータパス（データベース/メール）は完全に削除されます。",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
     "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
     "panelRestarted": "パネルが復帰しました · {{version}}",
-    "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。"
+    "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} ユーザー",

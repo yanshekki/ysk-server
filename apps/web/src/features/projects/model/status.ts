@@ -1,5 +1,6 @@
 import type { ProjectDto } from 'ysk-server-shared';
 import type { BadgeTone } from '../../../shared/components/ui';
+import { formatDateTime } from '../../../shared/lib/datetime';
 
 export type ProjectStatusBucket =
   | 'running'
@@ -347,14 +348,34 @@ export function formatHealthFacts(lastHealth: Record<string, unknown> | undefine
   }
   if (lastHealth.at != null) {
     const d = new Date(String(lastHealth.at));
+    const stale = !Number.isNaN(d.getTime()) && Date.now() - d.getTime() > 24 * 3600_000;
     facts.push({
       labelKey: 'projects.healthDetail.at',
       labelFallback: 'Checked at',
-      value: Number.isNaN(d.getTime()) ? String(lastHealth.at) : d.toLocaleString(),
+      value: Number.isNaN(d.getTime())
+        ? String(lastHealth.at)
+        : formatDateTime(d, { locale: 'zh-HK' }),
+      hint: stale ? 'May be stale' : undefined,
     });
   }
 
-  // generic remaining keys (skip already shown)
+  const known: Record<string, string> = {
+    deployMode: 'projects.healthDetail.deployMode',
+    deploymode: 'projects.healthDetail.deployMode',
+    DEPLOYMODE: 'projects.healthDetail.deployMode',
+    edgeKind: 'projects.healthDetail.edgeKind',
+    edgekind: 'projects.healthDetail.edgeKind',
+    EDGEKIND: 'projects.healthDetail.edgeKind',
+    goLiveOk: 'projects.healthDetail.goLiveOk',
+    goliveok: 'projects.healthDetail.goLiveOk',
+    GOLIVEOK: 'projects.healthDetail.goLiveOk',
+    goLiveAt: 'projects.healthDetail.goLiveAt',
+    goliveat: 'projects.healthDetail.goLiveAt',
+    GOLIVEAT: 'projects.healthDetail.goLiveAt',
+    degraded: 'projects.healthDetail.degraded',
+    DEGRADED: 'projects.healthDetail.degraded',
+  };
+
   const skip = new Set([
     'ok',
     'nginxStatus',
@@ -368,10 +389,12 @@ export function formatHealthFacts(lastHealth: Record<string, unknown> | undefine
   for (const [k, v] of Object.entries(lastHealth)) {
     if (skip.has(k)) continue;
     if (v == null || typeof v === 'object') continue;
+    const key = known[k] || known[k.toLowerCase()] || '';
+    const isTime = /at$/i.test(k) && typeof v === 'string';
     facts.push({
-      labelKey: '',
-      labelFallback: k,
-      value: String(v),
+      labelKey: key,
+      labelFallback: key ? k : k,
+      value: isTime ? formatDateTime(v, { locale: 'zh-HK' }) : String(v),
     });
   }
 

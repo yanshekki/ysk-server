@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / 25번 포트는 아직 검사하지 않았습니다.",
   "deliverabilityScore": "전달성 팩",
   "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
-  "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다"
+  "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

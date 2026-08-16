@@ -228,5 +228,6 @@
   "applyPanelAlreadyLatest": "पहले से ही नवीनतम पैनल संस्करण",
   "panelRestarting": "नया संस्करण लोड करने के लिए पैनल पुनः आरंभ हो रहा है…",
   "panelRestarted": "पैनल वापस आ गया · {{version}}",
-  "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।"
+  "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।",
+  "cveNotChecked": "Not checked"
 }

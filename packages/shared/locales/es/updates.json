@@ -228,5 +228,6 @@
   "applyPanelAlreadyLatest": "Ya la última versión del panel.",
   "panelRestarting": "El panel se está reiniciando para cargar la nueva versión…",
   "panelRestarted": "El panel ha vuelto · {{version}}",
-  "panelRestartWait": "Actualización aplicada. Si esta página no se actualiza, recarga en unos segundos."
+  "panelRestartWait": "Actualización aplicada. Si esta página no se actualiza, recarga en unos segundos.",
+  "cveNotChecked": "Not checked"
 }

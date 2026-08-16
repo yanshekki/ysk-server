@@ -30,6 +30,7 @@ import { bindSet, bindInput } from '../bind-handlers';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import { api } from '../../shared/services/api';
 import { emailApi } from '../../features/email/api';
+import { systemApi } from '../../features/system';
 
 export function statusBadge(
   status: string,
@@ -149,6 +150,28 @@ export function SslPage() {
   const [email, setEmail] = useState('');
   const [leDomainError, setLeDomainError] = useState<string | null>(null);
   const [knownDomains, setKnownDomains] = useState<string[]>([]);
+  const [panelTls, setPanelTls] = useState<{
+    certPath?: string;
+    expiresAt?: string | null;
+    httpsUrl?: string;
+    certExists?: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    void systemApi
+      .panelTlsStatus()
+      .then((r) => {
+        if (r.certExists) {
+          setPanelTls({
+            certPath: r.certPath,
+            expiresAt: r.expiresAt,
+            httpsUrl: r.httpsUrl,
+            certExists: r.certExists,
+          });
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   // Preset from other pages: ?domain=example.com&action=le
   useEffect(() => {
@@ -259,7 +282,10 @@ export function SslPage() {
           label: t('ssl.pillCount', { count: items.length }),
           tone: items.length ? 'ok' : 'warn' },
         items: [
-          { label: t('ssl.statCerts'), value: items.length },
+          {
+            label: t('ssl.statCerts'),
+            value: items.length + (panelTls?.certExists ? 1 : 0),
+          },
           {
             label: t('ssl.statWithFiles'),
             value: items.filter((c) => c.files_exist).length },
@@ -298,6 +324,17 @@ export function SslPage() {
           </>
         }
       >
+        {panelTls?.certExists ? (
+          <Alert variant="info" className="u-mb-3">
+            {t('ssl.panelCertHint', {
+              path: panelTls.certPath || '',
+              exp: panelTls.expiresAt
+                ? formatDateTimeLocale(panelTls.expiresAt, i18n.language)
+                : '—',
+            })}{' '}
+            <Link to="/system">{t('ssl.openPanelTls')}</Link>
+          </Alert>
+        ) : null}
         {error ? (
           <Alert variant="error" className="u-mb-3">
             <strong className="u-block u-mb-1">{t('ssl.requestFailedWhy')}</strong>

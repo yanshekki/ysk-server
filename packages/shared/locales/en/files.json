@@ -93,6 +93,7 @@
   "enabledMount": "Enabled · {{path}}",
   "notEnabled": "Not enabled",
   "disable": "Disable",
+  "webdavAlreadyOff": "WebDAV is already off",
   "webdavDisabled": "WebDAV disabled",
   "webdavEnabledNoEcho": "Enabled (password will not be shown again; re-issue if needed)",
   "webdavDefaultOff": "Off by default — click Enable and issue token to start",

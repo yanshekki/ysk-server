@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "विलंब",
     "error": "गलती",
-    "at": "पर जाँच की गई"
+    "at": "पर जाँच की गई",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "पीएचपी/साइट",
   "railStatic": "स्थैतिक साइट",
@@ -668,5 +673,7 @@
   "netBoundCert": "बाउंड प्रमाणपत्र",
   "netBoundCertExpiry": "समाप्ति {{at}}",
   "netNoBoundCert": "इस होस्टनाम के लिए डिस्क पर प्रमाणपत्र नहीं",
-  "netForceHttpsNeedCert": "HTTPS बाध्य करने से पहले /ssl पर इस डोमेन का प्रमाणपत्र जारी करें।"
+  "netForceHttpsNeedCert": "HTTPS बाध्य करने से पहले /ssl पर इस डोमेन का प्रमाणपत्र जारी करें।",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

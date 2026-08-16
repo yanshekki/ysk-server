@@ -82,7 +82,7 @@
     "invalidId": "實例識別碼無效",
     "diskLow": "此鏈、網絡與設定檔所需的可用磁碟空間不足",
     "diskUnknownMainnet": "無法量度可用磁碟，拒絕建立主網節點",
-    "needDocker": "需要 Docker Compose，但找不到",
+    "needDocker": "需要 Docker Engine",
     "composeFailed": "docker compose 失敗",
     "needConfirm": "清空須 confirm=實例識別碼 或 CLEAR",
     "mithrilAdaOnly": "Mithril 還原只適用於 Cardano",

@@ -183,7 +183,14 @@ export function buildProjectIsolationReadinessItems(
         : ''),
     spec: '§4.1',
     fixHint:
-      tl('notes.auto.n0699') });
+      tl('notes.auto.n0699'),
+    fixHref: (() => {
+      const first = projects.find((p) => {
+        const plan = planIsolationMigration(p);
+        return !p.osProvisioned || !plan.homeIsCanonical || !existsSync(p.homeDir);
+      });
+      return first ? `/projects/${encodeURIComponent(first.id)}?tab=isolation` : '/projects';
+    })() });
 
   // Sample up to 8 non-ready projects as separate items for operators
   let listed = 0;
@@ -200,7 +207,8 @@ export function buildProjectIsolationReadinessItems(
       level: !p.osProvisioned ? 'missing' : homeOk ? 'ready' : 'degraded',
       detail: plan.reasons.join(clauseSep()) || `${p.linuxUser} @ ${p.homeDir}`,
       spec: '§4.1',
-      fixHint: tl('notes.auto.n1455') });
+      fixHint: tl('notes.auto.n1455'),
+      fixHref: `/projects/${encodeURIComponent(p.id)}?tab=isolation` });
   }
 
   return items;

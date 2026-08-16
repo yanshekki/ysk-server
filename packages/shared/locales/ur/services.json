@@ -74,5 +74,9 @@
   "mariadbNotInstalled": "MariaDB انسٹال نہیں",
   "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
   "restartConfirmPanelTitle": "Restart YSK Server?",
-  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+  "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+  "unitNotFound": "Unit not installed",
+  "unitNa": "Not applicable",
+  "unitStatic": "static",
+  "unitIndirect": "indirect"
 }

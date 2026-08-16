@@ -435,6 +435,7 @@
   "tlsRoleApex": "主域名",
   "tlsRoleApexHint": "網頁／apex 憑證",
   "tlsRequestLe": "申請 LE",
+  "tlsRequestLeFor": "為 {{host}} 申請 LE",
   "advancedToolsTitle": "佇列與客戶端",
   "flushQueueConfirm": "確定清空本機 MTA 佇列？此操作不可復原。",
   "mailSslTitleShort": "憑證與 TLS",

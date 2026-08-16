@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "ID token tidak berubah setelah diterbitkan ulang — penulisan mungkin tidak berlanjut. Coba lagi.",
   "webdavDisableFailed": "WebDAV masih aktif setelah dinonaktifkan — penulisan mungkin tidak berlanjut. Coba lagi.",
   "dirNamedLikeFile": "(sisa folder; nama terlihat seperti berkas)",
-  "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan."
+  "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan.",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

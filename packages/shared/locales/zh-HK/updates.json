@@ -24,6 +24,7 @@
   "reload": "重新載入",
   "osvTitle": "對前 12 個建議套件查 OSV（需外網）",
   "scanOsv": "掃描 + OSV",
+  "cveNotChecked": "未檢查",
   "scanPkgs": "掃描套件",
   "tabInventory": "套件清點",
   "tabSelf": "面板自身",

@@ -584,6 +584,7 @@ export function ProjectDetailPage() {
         onConfirm={onConfirmAction}
         title={t('projects.confirmStopTitle')}
         description={t('projects.confirmStopDesc', { name: project.name })}
+        confirmText={project.name}
         confirmLabel={t('projects.stop')}
         cancelLabel={t('common.cancel')}
         danger

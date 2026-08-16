@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "এখনও DNS / PTR / পোর্ট ২৫ যাচাই হয়নি।",
     "deliverabilityScore": "ডেলিভারেবিলিটি প্যাক",
     "opendkimNoReload": "OpenDKIM রিলোড সমর্থন করে না — কী বা টেবিল বদলের পর রিস্টার্ট ব্যবহার করুন।",
-    "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়"
+    "opendkimNoReloadTitle": "এই স্ট্যাকে systemctl reload opendkim সমর্থিত নয়",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "অননুমোদিত",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "পুনরায় ইস্যু করার পরে টোকেন আইডি পরিবর্তন হয়নি — লেখাটি স্থায়ী নাও থাকতে পারে। আবার চেষ্টা করুন",
     "webdavDisableFailed": "নিষ্ক্রিয় করার পরেও WebDAV সক্রিয় আছে — লেখাটি স্থায়ী নাও থাকতে পারে। আবার চেষ্টা করুন",
     "dirNamedLikeFile": "(ফোল্ডার অবশিষ্ট; নাম ফাইলের মতো)",
-    "webdavAfterEnable": "WebDAV চালু করে টোকেন ইস্যু করার পরে উপলব্ধ।"
+    "webdavAfterEnable": "WebDAV চালু করে টোকেন ইস্যু করার পরে উপলব্ধ।",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "লেটেন্সি",
       "error": "ত্রুটি",
-      "at": "চেক করা হয়েছে"
+      "at": "চেক করা হয়েছে",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "পিএইচপি/সাইট",
     "railStatic": "স্ট্যাটিক সাইট",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "বাঁধা সার্টিফিকেট",
     "netBoundCertExpiry": "মেয়াদ {{at}}",
     "netNoBoundCert": "এই হোস্টনামের জন্য ডিস্কে সার্টিফিকেট নেই",
-    "netForceHttpsNeedCert": "HTTPS বাধ্য করার আগে /ssl-এ এই ডোমেইনের সার্টিফিকেট দিন।"
+    "netForceHttpsNeedCert": "HTTPS বাধ্য করার আগে /ssl-এ এই ডোমেইনের সার্টিফিকেট দিন।",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB ইনস্টল নেই",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "সফটওয়্যার",
@@ -11881,7 +11894,9 @@
     "domainRequired": "ডোমেইন লিখুন।",
     "domainInvalid": "ডোমেইন বিন্যাস বৈধ নয়।",
     "domainKnownHint": "পরিচিত প্রকল্প / DNS / মেইল ডোমেইন বেছে নিন, অথবা নিজে লিখুন।",
-    "deleteNeedDomain": "এই শংসাপত্র মুছুন — নিশ্চিত করতে ডোমেন নাম টাইপ করুন"
+    "deleteNeedDomain": "এই শংসাপত্র মুছুন — নিশ্চিত করতে ডোমেন নাম টাইপ করুন",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "শুদ্ধি নিশ্চিত করবেন? নিবন্ধিত ডেটা পাথ (ডাটাবেস/মেইল) স্থায়ীভাবে মুছে ফেলা হবে।",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ",
     "panelRestarting": "নতুন সংস্করণ লোড করতে প্যানেল পুনরায় চালু হচ্ছে…",
     "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
-    "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।"
+    "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} ব্যবহারকারী",

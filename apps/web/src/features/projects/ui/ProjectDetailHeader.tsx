@@ -2,6 +2,7 @@
  * Primary action bar only — page title/back live in FeaturePageLayout (no duplicate header).
  */
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import type { ProjectDto } from 'ysk-server-shared';
 import { getProjectUiProfile } from '../model/runtime-ui';
 import {
@@ -103,6 +104,14 @@ export function ProjectDetailHeader({
           {t('projects.openUrl')}
         </Button>
       )}
+      {!provisioned ? (
+        <Link
+          to={`?tab=isolation`}
+          className={buttonClassName({ variant: 'secondary', size: 'md' })}
+        >
+          {t('projects.goIsolation')}
+        </Link>
+      ) : null}
       {onRefresh ? (
         <Button variant="ghost" size="md" loading={busy} onClick={onRefresh}>
           {t('common.refresh')}

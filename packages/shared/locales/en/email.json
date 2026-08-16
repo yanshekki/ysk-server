@@ -435,6 +435,7 @@
   "tlsRoleApex": "Apex domain",
   "tlsRoleApexHint": "Web / apex certificate",
   "tlsRequestLe": "Request LE",
+  "tlsRequestLeFor": "Request LE for {{host}}",
   "advancedToolsTitle": "Queue & clients",
   "flushQueueConfirm": "Flush the local MTA queue? This cannot be undone.",
   "mailSslTitleShort": "Certificates & TLS",

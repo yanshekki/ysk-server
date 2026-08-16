@@ -939,8 +939,8 @@ export function BackupsPage() {
                   {
                     label: t('projects.healthDetail.overall'),
                     value: (
-                      <Badge tone={lastRun.ok ? 'ok' : 'warn'}>
-                        {lastRun.ok ? t('backups.allSuccess') : t('backups.failOrSkip')}
+                      <Badge tone={lastTone}>
+                        {lastLabel}
                       </Badge>
                     ) },
                   {

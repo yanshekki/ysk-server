@@ -106,5 +106,7 @@
   "domainRequired": "Introduzca un dominio.",
   "domainInvalid": "El formato del dominio no es válido.",
   "domainKnownHint": "Elija un dominio de proyecto, DNS o correo, o escriba uno.",
-  "deleteNeedDomain": "Eliminar este certificado: escriba el nombre de dominio para confirmar"
+  "deleteNeedDomain": "Eliminar este certificado: escriba el nombre de dominio para confirmar",
+  "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+  "openPanelTls": "Open panel HTTPS"
 }

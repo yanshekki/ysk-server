@@ -259,6 +259,7 @@ export function UpdatesPage() {
     badgeCount?: number;
     stale?: boolean;
   } | null>(null);
+  const [osvChecked, setOsvChecked] = useState(false);
   const [scanEnabled, setScanEnabled] = useState(true);
   const [scanIntervalMs, setScanIntervalMs] = useState(24 * 60 * 60_000);
   const [searchParams] = useSearchParams();
@@ -342,11 +343,29 @@ export function UpdatesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only when filters change
   }, [listQuery]);
 
-  const highRisk = inventory.filter(
+  const [statsSnap, setStatsSnap] = useState<{
+    pkgs: number;
+    up: number;
+    high: number;
+    cve: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (riskFilter !== 'all' || debouncedQ || !inventory.length) return;
+    setStatsSnap({
+      pkgs: inventory.length,
+      up: inventory.filter((i) => i.candidateVersion && i.candidateVersion !== i.currentVersion)
+        .length,
+      high: inventory.filter((i) => i.risk === 'critical' || i.risk === 'high').length,
+      cve: inventory.filter((i) => (i.cves?.length ?? 0) > 0).length,
+    });
+  }, [inventory, riskFilter, debouncedQ]);
+
+  const highRisk = statsSnap?.high ?? inventory.filter(
     (i) => i.risk === 'critical' || i.risk === 'high',
   ).length;
   const needApproval = inventory.filter((i) => i.requiresApproval).length;
-  const withCve = inventory.filter((i) => (i.cves?.length ?? 0) > 0).length;
+  const withCve = statsSnap?.cve ?? inventory.filter((i) => (i.cves?.length ?? 0) > 0).length;
 
   const selfAvailable = Boolean(selfUpdate?.updateAvailable);
   const selfVersion = String(selfUpdate?.currentVersion ?? '—');
@@ -357,9 +376,12 @@ export function UpdatesPage() {
 
   const heroTone = highRisk > 0 ? 'danger' : selfAvailable ? 'warn' : 'ok';
 
-  const upgradableCount = inventory.filter(
-    (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
-  ).length;
+  const upgradableCount =
+    summary?.packagesUpgradable ??
+    statsSnap?.up ??
+    inventory.filter(
+      (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
+    ).length;
 
   const filtered = inventory;
   const activeFilterCount =
@@ -522,7 +544,7 @@ export function UpdatesPage() {
                   : t('updates.pendingScan'),
           tone: heroTone },
         items: [
-          { label: t('updates.packages'), value: inventory.length },
+          { label: t('updates.packages'), value: statsSnap?.pkgs ?? inventory.length },
           {
             label: t('updates.highRisk'),
             value: highRisk,
@@ -546,7 +568,7 @@ export function UpdatesPage() {
           },
           {
             label: t('updates.hasCve'),
-            value: withCve,
+            value: osvChecked ? withCve : t('updates.cveNotChecked'),
             tone: withCve > 0 ? 'warn' : 'neutral' },
           {
             label: t('updates.panel'),
@@ -570,7 +592,10 @@ export function UpdatesPage() {
             variant="secondary"
             size="sm"
             loading={busy}
-            onClick={bindCall2(load, true, true)}
+            onClick={() => {
+              setOsvChecked(true);
+              bindCall2(load, true, true)();
+            }}
             title={t('updates.osvTitle')}
           >
             {t('updates.scanOsvN', { n: 12, defaultValue: t('updates.scanOsv') })}

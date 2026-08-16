@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "DNS / PTR / 25번 포트는 아직 검사하지 않았습니다.",
     "deliverabilityScore": "전달성 팩",
     "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
-    "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다"
+    "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "재발행 후에도 토큰 ID가 변경되지 않았습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
     "webdavDisableFailed": "WebDAV는 비활성화 후에도 여전히 활성화되어 있습니다. 쓰기가 지속되지 않았을 수 있습니다. 다시 시도해 보세요.",
     "dirNamedLikeFile": "(폴더 잔여물; 이름이 파일처럼 보임)",
-    "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다."
+    "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다.",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "숨어 있음",
       "error": "오류",
-      "at": "확인 시간"
+      "at": "확인 시간",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "PHP / 사이트",
     "railStatic": "정적 사이트",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "바인딩된 인증서",
     "netBoundCertExpiry": "만료 {{at}}",
     "netNoBoundCert": "이 호스트 이름의 인증서가 디스크에 없습니다",
-    "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요."
+    "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요.",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB가 설치되지 않음",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "소프트웨어",
@@ -11881,7 +11894,9 @@
     "domainRequired": "도메인을 입력하세요.",
     "domainInvalid": "도메인 형식이 올바르지 않습니다.",
     "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요.",
-    "deleteNeedDomain": "이 인증서 삭제 - 도메인 이름을 입력하여 확인하세요."
+    "deleteNeedDomain": "이 인증서 삭제 - 도메인 이름을 입력하여 확인하세요.",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "퍼지를 확인하시겠습니까? 등록된 데이터 경로(데이터베이스/메일)가 영구적으로 삭제됩니다.",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "이미 최신 패널 버전",
     "panelRestarting": "새 버전을 불러오려고 패널을 다시 시작하는 중…",
     "panelRestarted": "패널이 복구됨 · {{version}}",
-    "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요."
+    "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} 사용자",

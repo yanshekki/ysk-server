@@ -1,5 +1,9 @@
 {
   "enabledBoot": "On boot",
+  "unitNotFound": "Unit not installed",
+  "unitNa": "Not applicable",
+  "unitStatic": "static",
+  "unitIndirect": "indirect",
   "action": {
     "start": "Start",
     "stop": "Stop",

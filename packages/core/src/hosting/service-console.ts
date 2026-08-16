@@ -75,7 +75,8 @@ async function loadMysqlLive(
   const metrics: Record<string, string> = {};
   if (!(await binPresent(host, 'mysql'))) return { live, metrics };
   const ver = await host.runCommand(['mysql', '--version'], { timeoutMs: 5_000 });
-  const version = ver.stdout.trim();
+  const rawVer = ver.stdout.trim();
+  const version = rawVer.match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/)?.[1] ?? rawVer;
   const vars = await host.runCommand(
     ['mysql', '-N', '-e', "SHOW GLOBAL VARIABLES WHERE Variable_name IN ('port','bind_address','max_connections','max_connect_errors','wait_timeout','interactive_timeout','innodb_buffer_pool_size','innodb_log_file_size','innodb_flush_log_at_trx_commit','tmp_table_size','max_heap_table_size','table_open_cache','character_set_server','collation_server','slow_query_log','long_query_time','log_error','general_log','log_bin','binlog_format','binlog_expire_logs_seconds','expire_logs_days','require_secure_transport','default_authentication_plugin','skip_name_resolve','thread_handling')"],
     { timeoutMs: 15_000 },

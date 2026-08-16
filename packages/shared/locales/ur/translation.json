@@ -3732,7 +3732,8 @@
     "healthUncheckedHint": "DNS / PTR / پورٹ 25 ابھی پروب نہیں ہوئے۔",
     "deliverabilityScore": "ڈیلیوریبلٹی پیک",
     "opendkimNoReload": "OpenDKIM ری لوڈ نہیں کرتا — کلید یا جدول بدلنے کے بعد ری اسٹارٹ استعمال کریں۔",
-    "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں"
+    "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں",
+    "tlsRequestLeFor": "Request LE for {{host}}"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",
@@ -4256,7 +4257,8 @@
     "webdavReissueUnchanged": "ٹوکن آئی ڈی دوبارہ جاری کرنے کے بعد تبدیل نہیں ہوئی — ممکن ہے تحریر برقرار نہ رہی ہو۔ دوبارہ کوشش کریں۔",
     "webdavDisableFailed": "WebDAV کو غیر فعال کرنے کے بعد بھی فعال کیا جاتا ہے - ہو سکتا ہے تحریر برقرار نہ رہی ہو۔ دوبارہ کوشش کریں۔",
     "dirNamedLikeFile": "(بقیہ فولڈر؛ نام فائل جیسا ہے)",
-    "webdavAfterEnable": "WebDAV فعال کر کے ٹوکن جاری کرنے کے بعد دستیاب۔"
+    "webdavAfterEnable": "WebDAV فعال کر کے ٹوکن جاری کرنے کے بعد دستیاب۔",
+    "webdavAlreadyOff": "WebDAV is already off"
   },
   "firewall": {
     "profiles": {
@@ -8954,7 +8956,12 @@
       "httpStatus": "HTTP",
       "latency": "تاخیر",
       "error": "خرابی",
-      "at": "پر چیک کیا۔"
+      "at": "پر چیک کیا۔",
+      "deployMode": "Deploy mode",
+      "edgeKind": "Edge",
+      "goLiveOk": "Go-live",
+      "goLiveAt": "Go-live at",
+      "degraded": "Degraded"
     },
     "railPhp": "پی ایچ پی / سائٹ",
     "railStatic": "جامد سائٹ",
@@ -9550,7 +9557,9 @@
     "netBoundCert": "منسلک سرٹیفکیٹ",
     "netBoundCertExpiry": "میعاد {{at}}",
     "netNoBoundCert": "اس میزبان نام کے لیے ڈسک پر سرٹیفکیٹ نہیں",
-    "netForceHttpsNeedCert": "HTTPS مجبور کرنے سے پہلے /ssl پر اس ڈومین کا سرٹیفکیٹ جاری کریں۔"
+    "netForceHttpsNeedCert": "HTTPS مجبور کرنے سے پہلے /ssl پر اس ڈومین کا سرٹیفکیٹ جاری کریں۔",
+    "goIsolation": "Open Isolation tab",
+    "netHstsNeedHttps": "Turn on force HTTPS first"
   },
   "protection": {
     "levels": {
@@ -11450,7 +11459,11 @@
     "mariadbNotInstalled": "MariaDB انسٹال نہیں",
     "mariadbNotInstalledMysqlOk": "Not installed: MariaDB (MySQL is installed)",
     "restartConfirmPanelTitle": "Restart YSK Server?",
-    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts."
+    "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
+    "unitNotFound": "Unit not installed",
+    "unitNa": "Not applicable",
+    "unitStatic": "static",
+    "unitIndirect": "indirect"
   },
   "software": {
     "title": "سافٹ ویئر",
@@ -11881,7 +11894,9 @@
     "domainRequired": "ڈومین درج کریں۔",
     "domainInvalid": "ڈومین فارمیٹ درست نہیں۔",
     "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔",
-    "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔"
+    "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔",
+    "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+    "openPanelTls": "Open panel HTTPS"
   },
   "stackWizard": {
     "purgeConfirm": "صاف کرنے کی تصدیق کریں؟ رجسٹرڈ ڈیٹا پاتھ (ڈیٹا بیس/میل) کو مستقل طور پر حذف کر دیا جائے گا۔",
@@ -12732,7 +12747,8 @@
     "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن",
     "panelRestarting": "نیا ورژن لوڈ کرنے کے لیے پینل دوبارہ شروع ہو رہا ہے…",
     "panelRestarted": "پینل واپس آ گیا · {{version}}",
-    "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔"
+    "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔",
+    "cveNotChecked": "Not checked"
   },
   "users": {
     "userCount": "{{count}} صارفین",

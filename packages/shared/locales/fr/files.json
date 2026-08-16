@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "L'identifiant du jeton n'a pas changé après la réémission : l'écriture n'a peut-être pas persisté. Essayer à nouveau.",
   "webdavDisableFailed": "WebDAV est toujours activé après la désactivation : l'écriture n'a peut-être pas persisté. Essayer à nouveau.",
   "dirNamedLikeFile": "(dossier résiduel ; le nom ressemble à un fichier)",
-  "webdavAfterEnable": "Disponible après activation de WebDAV et émission d’un jeton."
+  "webdavAfterEnable": "Disponible après activation de WebDAV et émission d’un jeton.",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

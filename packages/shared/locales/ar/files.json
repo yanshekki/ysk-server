@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "لم يتغير معرف الرمز المميز بعد إعادة الإصدار - ربما لم تستمر عملية الكتابة. حاول ثانية.",
   "webdavDisableFailed": "يظل WebDAV ممكنًا بعد التعطيل - ربما لم تستمر عملية الكتابة. حاول ثانية.",
   "dirNamedLikeFile": "(مجلد متبقٍ؛ الاسم يشبه ملفًا)",
-  "webdavAfterEnable": "متاح بعد تفعيل WebDAV وإصدار رمز."
+  "webdavAfterEnable": "متاح بعد تفعيل WebDAV وإصدار رمز.",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

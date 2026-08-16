@@ -106,5 +106,7 @@
   "domainRequired": "Saisissez un domaine.",
   "domainInvalid": "Le format du domaine n’est pas valide.",
   "domainKnownHint": "Choisissez un domaine projet / DNS / mail connu, ou saisissez-en un.",
-  "deleteNeedDomain": "Supprimez ce certificat — saisissez le nom de domaine pour confirmer"
+  "deleteNeedDomain": "Supprimez ce certificat — saisissez le nom de domaine pour confirmer",
+  "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+  "openPanelTls": "Open panel HTTPS"
 }

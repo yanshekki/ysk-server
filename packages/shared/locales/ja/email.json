@@ -507,5 +507,6 @@
   "healthUncheckedHint": "DNS / PTR / 25番はまだ未検査です。",
   "deliverabilityScore": "到達性パック",
   "opendkimNoReload": "OpenDKIM は reload 非対応です。鍵や表の変更後は再起動してください。",
-  "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません"
+  "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません",
+  "tlsRequestLeFor": "Request LE for {{host}}"
 }

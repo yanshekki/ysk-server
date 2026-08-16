@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "पुन: जारी करने के बाद टोकन आईडी नहीं बदली - लेखन जारी नहीं रह सकता है। पुनः प्रयास करें।",
   "webdavDisableFailed": "अक्षम करने के बाद भी WebDAV सक्षम है - लेखन जारी नहीं रह सकता है। पुनः प्रयास करें।",
   "dirNamedLikeFile": "(फ़ोल्डर अवशेष; नाम फ़ाइल जैसा है)",
-  "webdavAfterEnable": "WebDAV सक्षम कर टोकन जारी करने के बाद उपलब्ध।"
+  "webdavAfterEnable": "WebDAV सक्षम कर टोकन जारी करने के बाद उपलब्ध।",
+  "webdavAlreadyOff": "WebDAV is already off"
 }

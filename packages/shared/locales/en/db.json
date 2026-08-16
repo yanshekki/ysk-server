@@ -327,7 +327,7 @@
   "startAfterUnfreeze": "Start service (auto-runs repair plan on failure)",
   "serviceDownTitle": "Database service is down",
   "serviceDownBody": "Service is unhealthy",
-  "adoptHostDb": "Register {{name}}",
+  "adoptHostDb": "Register in panel (no create): {{name}}",
   "adoptHostDbTitle": "Registers the name in the control plane only — does not change host data",
   "cleanupExpiredTempUsersTitle": "Drops panel-issued temporary users that have expired"
 }

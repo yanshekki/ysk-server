@@ -72,7 +72,12 @@
     "httpStatus": "HTTP",
     "latency": "숨어 있음",
     "error": "오류",
-    "at": "확인 시간"
+    "at": "확인 시간",
+    "deployMode": "Deploy mode",
+    "edgeKind": "Edge",
+    "goLiveOk": "Go-live",
+    "goLiveAt": "Go-live at",
+    "degraded": "Degraded"
   },
   "railPhp": "PHP / 사이트",
   "railStatic": "정적 사이트",
@@ -668,5 +673,7 @@
   "netBoundCert": "바인딩된 인증서",
   "netBoundCertExpiry": "만료 {{at}}",
   "netNoBoundCert": "이 호스트 이름의 인증서가 디스크에 없습니다",
-  "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요."
+  "netForceHttpsNeedCert": "HTTPS를 강제하기 전에 /ssl에서 이 도메인 인증서를 발급하세요.",
+  "goIsolation": "Open Isolation tab",
+  "netHstsNeedHttps": "Turn on force HTTPS first"
 }

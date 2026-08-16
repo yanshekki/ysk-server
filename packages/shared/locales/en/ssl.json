@@ -16,6 +16,8 @@
   },
   "pillCount": "{{count}} cert(s)",
   "statCerts": "Certificates",
+  "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+  "openPanelTls": "Open panel HTTPS",
   "statWithFiles": "With files",
   "statBindings": "Bindings",
   "statFailed": "Failed",

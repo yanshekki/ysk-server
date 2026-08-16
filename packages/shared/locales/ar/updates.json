@@ -228,5 +228,6 @@
   "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
   "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
   "panelRestarted": "عادت اللوحة · {{version}}",
-  "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان."
+  "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
+  "cveNotChecked": "Not checked"
 }

@@ -5,6 +5,7 @@ import type { ProjectDto } from 'ysk-server-shared';
 import { Badge, Button } from '../../../shared/components/ui';
 import { useNavBookmarks } from '../../../shared/hooks/useNavBookmarks';
 import { notifyOk, notifyWarn } from '../../../shared/lib/notify';
+import { formatDateTime } from '../../../shared/lib/datetime';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
 
 /** List row only — delete is detail/advanced, not list (same as email domains). */
@@ -31,7 +32,7 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
           {project.port != null ? <span>:{project.port}</span> : null}
           {project.lastDeployAt ? (
             <span>
-              {t('projects.lastDeploy')}: {new Date(project.lastDeployAt).toLocaleString()}
+              {t('projects.lastDeploy')}: {formatDateTime(project.lastDeployAt)}
             </span>
           ) : (
             <span>{t('projects.neverDeployed')}</span>

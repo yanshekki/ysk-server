@@ -106,5 +106,7 @@
   "domainRequired": "ڈومین درج کریں۔",
   "domainInvalid": "ڈومین فارمیٹ درست نہیں۔",
   "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔",
-  "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔"
+  "deleteNeedDomain": "اس سرٹیفکیٹ کو حذف کریں - تصدیق کرنے کے لیے ڈومین کا نام ٹائپ کریں۔",
+  "panelCertHint": "Panel HTTPS uses {{path}} (expires {{exp}}). It is not listed as a site certificate.",
+  "openPanelTls": "Open panel HTTPS"
 }

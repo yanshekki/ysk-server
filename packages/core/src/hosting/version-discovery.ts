@@ -173,14 +173,23 @@ export async function discoverRuntimeVersions(
         ltsMajors.sort((a, b) => cmpSemver(b[1].full, a[1].full))[0] ??
         [...majors.entries()].sort((a, b) => cmpSemver(b[1].full, a[1].full))[0];
       if (pick) latestVersion = pick[0]; // major pin for panel install
-      // Offer recent majors (dynamic from index, not a fixed list)
-      const sorted = [...majors.entries()]
-        .sort((a, b) => cmpSemver(b[1].full, a[1].full))
-        .slice(0, 8);
-      for (const [major, info] of sorted) {
+      // Offer LTS majors plus the newest Current; skip odd EOL lines (19/21/23/25…).
+      const sorted = [...majors.entries()].sort((a, b) => cmpSemver(b[1].full, a[1].full));
+      const lts = sorted.filter(([, v]) => v.lts).slice(0, 6);
+      const newest = sorted[0];
+      const pool = [...lts];
+      if (newest && !newest[1].lts && !pool.some(([m]) => m === newest[0])) {
+        pool.unshift(newest);
+      }
+      for (const [major, info] of pool) {
+        const odd = Number(major) % 2 === 1;
         candidates.push({
           version: major,
-          label: info.lts ? `${major} (LTS · ${info.full})` : `${major} (${info.full})`,
+          label: info.lts
+            ? `${major} (LTS · ${info.full})`
+            : odd
+              ? `${major} (Current · ${info.full})`
+              : `${major} (${info.full})`,
           source,
         });
       }

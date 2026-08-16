@@ -327,7 +327,7 @@
   "startAfterUnfreeze": "啟動服務（失敗時會自動套用修復計劃）",
   "serviceDownTitle": "資料庫服務未運作",
   "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。",
-  "adoptHostDb": "登記 {{name}}",
+  "adoptHostDb": "登記到控制面（不建立）：{{name}}",
   "adoptHostDbTitle": "只在控制面登記名稱，不改主機資料",
   "cleanupExpiredTempUsersTitle": "清除已過期的面板臨時用戶"
 }

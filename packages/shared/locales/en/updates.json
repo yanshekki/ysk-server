@@ -24,6 +24,7 @@
   "reload": "Reload",
   "osvTitle": "Query OSV for top 12 suggested packages (needs network)",
   "scanOsv": "Scan + OSV",
+  "cveNotChecked": "Not checked",
   "scanPkgs": "Scan packages",
   "tabInventory": "Package inventory",
   "tabSelf": "Panel self",

@@ -351,5 +351,6 @@
   "webdavReissueUnchanged": "La identificación del token no cambió después de la reemisión; es posible que la escritura no haya persistido. Intentar otra vez.",
   "webdavDisableFailed": "WebDAV todavía está habilitado después de deshabilitarlo; es posible que la escritura no haya persistido. Intentar otra vez.",
   "dirNamedLikeFile": "(carpeta residual; el nombre parece un archivo)",
-  "webdavAfterEnable": "Disponible después de activar WebDAV y emitir un token."
+  "webdavAfterEnable": "Disponible después de activar WebDAV y emitir un token.",
+  "webdavAlreadyOff": "WebDAV is already off"
 }
