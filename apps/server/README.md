@@ -30,6 +30,12 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.3
+
+- Docker console is install-first (no Start / Stop / Prune without Engine). Last tab matches System 說明 / About.
+- Brand names stay English. `/ssl` includes the panel Let’s Encrypt cert. Deep links load real data.
+- One 24-hour timestamp format; disabled buttons explain why; software-plan counts are OS packages, not service units.
+
 ## Panel
 
 <p align="center">

@@ -37,6 +37,14 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.3
+
+- **Docker** is install-first: Start / Stop / Prune stay away until Engine exists. The last tab is the same 說明 / About guide as System.
+- **Names stay English** — PM2, WireGuard, SSE, Docker, chain names. `/ssl` lists the panel Let’s Encrypt cert. Deep links (`?tab=`) load real data.
+- **Honesty UX** from E2E-1111: one 24-hour clock (`YYYY-MM-DD HH:mm:ss`), disabled buttons explain why, software-plan counts are OS packages (not the service matrix).
+
+[Full changelog](./CHANGELOG.md)
+
 ## Panel
 
 <p align="center">
