@@ -288,7 +288,6 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       );
     },
     async runAutoProtection() {
-      const now = Date.now();
       const probe = await runProtectionProbes({
         requestCountLastMinute: ctx.requestHitsLastMinute(),
       });
