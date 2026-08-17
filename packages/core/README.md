@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/ysk-server-core"><img alt="ysk-server-core" src="https://img.shields.io/npm/v/ysk-server-core.svg?style=flat-square&color=2ea043" /></a>
   <a href="https://www.npmjs.com/package/ysk-server"><img alt="product" src="https://img.shields.io/npm/v/ysk-server.svg?style=flat-square&color=2ea043&label=ysk-server" /></a>
   <img alt="MIT" src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square" />
 </p>

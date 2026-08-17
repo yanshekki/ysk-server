@@ -7,8 +7,8 @@
 | 套件 | 用途 | 連結 |
 |------|------|------|
 | **`ysk-server`** | 產品 CLI + API + 面板 | https://www.npmjs.com/package/ysk-server |
-| **`ysk-server-shared`** | 型別 / locales | https://www.npmjs.com/package/ysk-server-shared |
-| **`ysk-server-core`** | 託管 / 安全核心 | https://www.npmjs.com/package/ysk-server-core |
+| **`ysk-server-shared`** | 型別 / locales（**1.1.0**） | https://www.npmjs.com/package/ysk-server-shared |
+| **`ysk-server-core`** | 託管 / 安全核心（**1.1.0**） | https://www.npmjs.com/package/ysk-server-core |
 
 用戶安裝：
 

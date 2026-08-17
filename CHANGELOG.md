@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Libraries
+- **ysk-server-shared@1.1.0** and **ysk-server-core@1.1.0** on npm — types/locales (Docker + validators DTOs) and hosting core (Docker, validators, leftover, Git control, self-update overlay) as of product 1.1.5. Product `ysk-server@1.1.5` already bundles this tree; next product release pins these versions.
+
 ## 1.1.5 — 2026-08-17
 
 ### Fix

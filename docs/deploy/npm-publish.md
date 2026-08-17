@@ -7,8 +7,8 @@
 | Package | Role | URL |
 |---------|------|-----|
 | **`ysk-server`** | Product CLI + API + panel | https://www.npmjs.com/package/ysk-server |
-| **`ysk-server-shared`** | Types / locales | https://www.npmjs.com/package/ysk-server-shared |
-| **`ysk-server-core`** | Hosting / security core | https://www.npmjs.com/package/ysk-server-core |
+| **`ysk-server-shared`** | Types / locales (**1.1.0**) | https://www.npmjs.com/package/ysk-server-shared |
+| **`ysk-server-core`** | Hosting / security core (**1.1.0**) | https://www.npmjs.com/package/ysk-server-core |
 
 Install (users):
 
