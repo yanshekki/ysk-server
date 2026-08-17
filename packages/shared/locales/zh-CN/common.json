@@ -128,5 +128,6 @@
   "hidePassword": "隐藏",
   "more": "更多的",
   "redirectedTo": "已转到 {{to}}（原为 {{from}}）",
-  "unavailable": "Not available right now"
+  "unavailable": "Not available right now",
+  "ok": "OK"
 }

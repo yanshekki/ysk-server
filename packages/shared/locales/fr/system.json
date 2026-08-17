@@ -87,7 +87,8 @@
     "cliNoSocket": "La CLI n'a pas de socket HTTP actif ; serveHttps est déduit des sockets de configuration et d'écoute (ss).",
     "listenHost": "Adresse d'écoute",
     "currentHost": "Cette séance",
-    "replaceCert": "Remplacer par un certificat de confiance"
+    "replaceCert": "Remplacer par un certificat de confiance",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "Heure et NTP",
   "clockStatus": "État de l’horloge système",
@@ -206,5 +207,9 @@
   "noScheduledPower": "Aucun redémarrage ou mise hors tension n'est prévu",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

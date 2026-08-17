@@ -164,5 +164,6 @@
   "writtenOnHostHint": "Lines already written to the host crontab",
   "registeredJobsHint": "Jobs registered in the panel (including pending install)",
   "pendingInstallCount": "{{n}} pending install",
-  "systemJobBadge": "No project · system user"
+  "systemJobBadge": "No project · system user",
+  "willNotRun": "Not written to system crontab — will not run."
 }

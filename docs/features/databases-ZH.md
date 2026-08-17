@@ -26,7 +26,7 @@
 | 讀取主控台 | `ysk-server db console --engine … --json` | read | |
 | 套用主控台設定 | `ysk-server db apply --engine … --set k=v --execute` | write-host | |
 | 生命週期啟停 | `ysk-server db lifecycle --engine … --action start --execute` | write-host | |
-| 安裝引擎套件 | `ysk-server db install --engine … --execute` | write-host | |
+| 安裝引擎套件 | `ysk-server db install --engine … --execute` | write-host | Redis 安裝會產生 `requirepass`（只顯示一次）。 |
 | SQL 引擎切換預覽 | `ysk-server db sql-engine preview --target mariadb --json` | read | MySQL 與 MariaDB 互斥 |
 | SQL 引擎切換 | `ysk-server db sql-engine switch --target … --confirm … --acknowledge-exclusive --execute` | write-host | 具破壞性 |
 | Redis 服務狀態 | `ysk-server redis status --json` | read | |
@@ -57,6 +57,8 @@ ysk-server hosting mysql-provision --execute --json
 - SQL 切換為 **互斥**（MySQL XOR MariaDB）；務必預覽並確認短語。  
 - 叢集模組不會靜默組成多節點叢集。  
 - 此主機未安裝 MySQL（可能是 MariaDB）時，MySQL 主從精靈停用。  
+- `/cluster` 落到**已安裝**引擎（MariaDB／PostgreSQL／Redis／MySQL）。MySQL 未裝時唔會開 MySQL 叢集分頁。計劃／草稿顯示建立時間＋「尚未套用」；超過 7 日可刪（唔會自動套用）。  
+- Redis 空 `requirepass` 會標成不安全，直至產生或設定密碼。安裝與主控台「產生」會寫入隨機密碼；**讀取探測唔會偷偷發明密碼**。  
 - Postgres 叢集探測以 `postgres` 系統用戶執行（`runuser -u postgres -- psql`）。  
 - 試跑叢集推送說明不會顯示成「系統變更已關閉」。  
 

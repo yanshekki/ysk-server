@@ -13,7 +13,12 @@ import {
 import { join, basename } from 'node:path';
 import type { YskDatabase } from '../db/database.js';
 import type { HostExecutor } from '../host/executor.js';
-import { listManagedNginxConfs, syncNginxConfigs } from './nginx-sync.js';
+import { classifyManagedNginxName } from './leftover-probe.js';
+import {
+  keepPublicFilesBasenameFromMeta,
+  listManagedNginxConfs,
+  syncNginxConfigs,
+} from './nginx-sync.js';
 
 export type ControlPlaneSnapshot = {
   exportedAt: string;
@@ -29,6 +34,7 @@ export type ManagedNginxConfInfo = {
   path: string;
   bytes: number;
   mtime?: string;
+  role?: 'managed' | 'leftover' | 'unused';
 };
 
 export type ExportArchiveInfo = {
@@ -66,6 +72,7 @@ export function exportControlPlaneSnapshot(db: YskDatabase): ControlPlaneSnapsho
 /** Managed nginx conf.d under dataDir (with mtime). */
 export function listManagedNginxDetailed(dataDir: string): ManagedNginxConfInfo[] {
   const base = listManagedNginxConfs(dataDir);
+  const keep = keepPublicFilesBasenameFromMeta(dataDir);
   return base.map((c) => {
     let mtime: string | undefined;
     try {
@@ -73,7 +80,7 @@ export function listManagedNginxDetailed(dataDir: string): ManagedNginxConfInfo[
     } catch {
       /* */
     }
-    return { ...c, mtime };
+    return { ...c, mtime, role: classifyManagedNginxName(c.name, keep) };
   });
 }
 

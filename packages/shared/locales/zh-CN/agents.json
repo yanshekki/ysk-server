@@ -11,7 +11,8 @@
     "failed": "失败",
     "error": "失败",
     "unknown": "未探测",
-    "fallback": "未知"
+    "fallback": "未知",
+    "activating": "Starting"
   },
   "liveN": "{{count}} 在线",
   "registeredOnly": "仅登记",

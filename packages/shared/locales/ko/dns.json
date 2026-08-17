@@ -230,5 +230,7 @@
   "installConfirmConsequence": "설치 후 시작하면 PowerDNS가 53번 포트를 바인딩합니다.",
   "installPort53Busy": "53번 포트가 이미 사용 중입니다. 해당 수신을 중지하거나 복구하기 전에는 PowerDNS 바인딩이 실패할 수 있습니다.",
   "installPort53BusyConsequence": "53번에서 응답을 기대하기 전에 바인드를 복구하거나 다른 수신을 중지하십시오.",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

@@ -13,6 +13,7 @@
   "hourAgo": "{{n}}h ago",
   "highRiskN": "{{count}} high-risk",
   "panelUpdate": "Panel update available",
+  "footerNewVersion": "New version {{version}}",
   "riskOk": "Risk manageable",
   "riskUnevaluated": "Not evaluated — run Scan + OSV",
   "pendingScan": "Awaiting scan",

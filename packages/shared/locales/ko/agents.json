@@ -11,7 +11,8 @@
     "failed": "실패한",
     "error": "오류",
     "unknown": "프로브되지 않음",
-    "fallback": "알 수 없음"
+    "fallback": "알 수 없음",
+    "activating": "Starting"
   },
   "liveN": "{{count}} 온라인",
   "registeredOnly": "등록만 됨",

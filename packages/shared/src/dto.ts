@@ -324,7 +324,14 @@ export interface AgentRuntimeDto {
   kind: AgentRuntimeKind;
   name: string;
   version?: string;
-  status: 'stopped' | 'running' | 'error' | 'unknown' | 'not_installed';
+  status:
+    | 'stopped'
+    | 'running'
+    | 'activating'
+    | 'failed'
+    | 'error'
+    | 'unknown'
+    | 'not_installed';
   installPath?: string;
 }
 

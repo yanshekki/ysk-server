@@ -365,6 +365,7 @@ export function NginxPage() {
             size="sm"
             className="u-mt-3"
             onDone={() => void refresh()}
+            stopDetail={t('nginx.stopSites', { n: sites.length })}
           />
         </div>
 

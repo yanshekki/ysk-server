@@ -40,6 +40,7 @@ export interface ProjectOverviewTabProps {
   busy?: boolean;
   onRetryDeploy?: () => void;
   onRetryPublish?: () => void;
+  onProvisionOs?: () => void;
   /** @deprecated */
   onPublishNginx?: () => void;
   onPublishSsl?: () => void;
@@ -51,7 +52,8 @@ export function ProjectOverviewTab({
   project,
   busy,
   onRetryDeploy,
-  onRetryPublish }: ProjectOverviewTabProps) {
+  onRetryPublish,
+  onProvisionOs }: ProjectOverviewTabProps) {
   const { t } = useTranslation();
   const copy = t('common.copy');
   const needRetry = projectNeedsLiveRetry(project);
@@ -201,9 +203,26 @@ export function ProjectOverviewTab({
                 value: (
                   <>
                     <PathValue value={project.homeDir} copyLabel={copy} />
-                    {homeExists === false ? (
+                    {homeExists === false || project.osProvisioned === false ? (
                       <p className="muted u-text-sm u-mt-1">
-                        <Badge tone="danger">{t('projects.homeMissing')}</Badge>
+                        <Badge tone="danger">
+                          {homeExists === false
+                            ? t('projects.homeMissing')
+                            : t('projects.resOsNotCreated')}
+                        </Badge>
+                        {onProvisionOs ? (
+                          <>
+                            {' · '}
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              loading={busy}
+                              onClick={onProvisionOs}
+                            >
+                              {t('projects.resProvisionUser')}
+                            </Button>
+                          </>
+                        ) : null}
                         {' · '}
                         <Link
                           to={`/projects/${encodeURIComponent(project.id)}?tab=isolation`}

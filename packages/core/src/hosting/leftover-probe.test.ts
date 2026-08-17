@@ -8,7 +8,10 @@ import {
   probeHostLeftovers,
   splitLeftoverNotes,
 } from './leftover-probe.js';
-import { applyHostLeftovers } from './leftover-apply.js';
+import { applyHostLeftovers, removeLeftoverManagedNginx } from './leftover-apply.js';
+import { mkdirSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 function host(opts: {
   files?: Record<string, string>;
@@ -85,6 +88,12 @@ describe('leftover-probe', () => {
     expect(classifyManagedNginxName('000-default.conf')).toBe('unused');
     expect(classifyManagedNginxName('ysk-000-default.conf')).toBe('unused');
     expect(classifyManagedNginxName('ysks_abc.conf')).toBe('managed');
+    expect(
+      classifyManagedNginxName(
+        'public-files-files-example-com.conf',
+        'public-files-files-example-com.conf',
+      ),
+    ).toBe('managed');
     expect(leftoverKindFromNote('Apache 000-default is still enabled')).toBe('apache');
     expect(
       leftoverKindFromNote('ysk-000-default.conf is not in /etc/nginx/conf.d'),
@@ -135,5 +144,44 @@ describe('leftover-probe', () => {
     expect(r.executed).toBe(true);
     expect(writes).toContain('/etc/vsftpd.conf');
     expect(files['/etc/vsftpd.conf']).toContain('ssl_enable=NO');
+  });
+
+  it('removes leftover public-files nginx and refuses unused/keep', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-leftover-ngx-'));
+    const confDir = join(dir, 'nginx', 'conf.d');
+    mkdirSync(confDir, { recursive: true });
+    mkdirSync(join(dir, 'files'), { recursive: true });
+    writeFileSync(
+      join(dir, 'files', 'public-files-meta.json'),
+      JSON.stringify({ serverName: 'files.example.com' }),
+    );
+    writeFileSync(join(confDir, 'public-files-files-example-com.conf'), 'keep\n');
+    writeFileSync(join(confDir, 'public-files-old-example-com.conf'), 'stale\n');
+    writeFileSync(join(confDir, '000-default.conf'), 'unused\n');
+
+    const unused = await removeLeftoverManagedNginx({
+      dataDir: dir,
+      name: '000-default.conf',
+      host: host({}),
+    });
+    expect(unused.ok).toBe(false);
+    expect(existsSync(join(confDir, '000-default.conf'))).toBe(true);
+
+    const keep = await removeLeftoverManagedNginx({
+      dataDir: dir,
+      name: 'public-files-files-example-com.conf',
+      host: host({}),
+    });
+    expect(keep.ok).toBe(false);
+    expect(existsSync(join(confDir, 'public-files-files-example-com.conf'))).toBe(true);
+
+    const stale = await removeLeftoverManagedNginx({
+      dataDir: dir,
+      name: 'public-files-old-example-com.conf',
+      host: host({}),
+    });
+    expect(stale.ok).toBe(true);
+    expect(existsSync(join(confDir, 'public-files-old-example-com.conf'))).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
   });
 });

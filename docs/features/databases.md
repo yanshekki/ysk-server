@@ -26,7 +26,7 @@ Operate **MySQL / MariaDB / PostgreSQL / Redis** as services and data planes on 
 | Service console get | `ysk-server db console --engine … --json` | read | |
 | Console settings apply | `ysk-server db apply --engine … --set k=v --execute` | write-host | |
 | Lifecycle start/stop/… | `ysk-server db lifecycle --engine … --action start --execute` | write-host | |
-| Install engine packages | `ysk-server db install --engine … --execute` | write-host | |
+| Install engine packages | `ysk-server db install --engine … --execute` | write-host | Redis install generates `requirepass` (shown once). |
 | SQL engine switch preview | `ysk-server db sql-engine preview --target mariadb --json` | read | MySQL XOR MariaDB |
 | SQL engine switch | `ysk-server db sql-engine switch --target … --confirm … --acknowledge-exclusive --execute` | write-host | destructive exclusive |
 | Redis service status | `ysk-server redis status --json` | read | |
@@ -57,6 +57,8 @@ Full argv: [../cli/reference.md](../cli/reference.md#db--redis--db-cluster).
 - SQL switch is **exclusive** (MySQL XOR MariaDB); always preview + confirm phrase.  
 - Cluster modules never silently form multi-node clusters.  
 - The MySQL replica wizard is disabled when MySQL is not the installed engine (this host may be MariaDB).  
+- `/cluster` lands on an **installed** engine (MariaDB / PostgreSQL / Redis / MySQL). It does not open a MySQL cluster tab when MySQL is missing. Planned/draft clusters show created time + “not applied”; stale plans older than 7 days can be deleted (no auto-apply).  
+- Redis with an empty `requirepass` stays marked insecure until you generate or set a password. Install and the console generate button write a random password; **read probes never invent one**.  
 - Postgres cluster probe runs as the `postgres` OS user (`runuser -u postgres -- psql`).  
 - Dry-run cluster push notes are not shown as “system change is off”.  
 

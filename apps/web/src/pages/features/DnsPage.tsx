@@ -459,7 +459,7 @@ export function DnsPage() {
   const [pdnsHealBusy, setPdnsHealBusy] = useState(false);
   const [lookupServer, setLookupServer] = useState('127.0.0.1');
 
-  const refreshHealth = useCallback(async () => {
+  const refreshHealth = useCallback(async (): Promise<DnsHealth | null> => {
     setHealthBusy(true);
     try {
       const digName =
@@ -469,8 +469,10 @@ export function DnsPage() {
       const q = digName ? `?name=${encodeURIComponent(digName)}` : '';
       const r = await api.requestRaw<DnsHealth>(`/api/v1/dns/health${q}`);
       setHealth(r);
+      return r;
     } catch {
       setHealth(null);
+      return null;
     } finally {
       setHealthBusy(false);
     }
@@ -1525,12 +1527,7 @@ export function DnsPage() {
                       variant="primary"
                       size="sm"
                       loading={pdnsHealBusy}
-                      disabled={health.unit === 'none'}
-                      title={
-                        health.unit === 'none'
-                          ? t('dns.healNeedInstall')
-                          : t('dns.healthHealPdns')
-                      }
+                      title={t('dns.healthHealPdns')}
                       onClick={() => {
                         setPdnsHealBusy(true);
                         void api
@@ -1603,6 +1600,21 @@ export function DnsPage() {
                         size="sm"
                         className="u-mt-2"
                         onDone={() => void refreshHealth()}
+                        verifyAfter={async (action) => {
+                          if (action !== 'start' && action !== 'restart') return;
+                          const h = await refreshHealth();
+                          if (!h) {
+                            return { ok: false, notes: [t('dns.startProbeFailed')] };
+                          }
+                          if (h.unitActive && (h.listenUdp53 || h.listenTcp53)) {
+                            return { ok: true };
+                          }
+                          const notes = (h.notes ?? []).slice(0, 4);
+                          return {
+                            ok: false,
+                            notes: notes.length ? notes : [t('dns.startNotListening')],
+                          };
+                        }}
                       />
                     </div>
                   </div>

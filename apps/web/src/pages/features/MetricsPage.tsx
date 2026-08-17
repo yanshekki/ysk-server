@@ -36,6 +36,8 @@ import {
   type ProjectsDiskUsageSnapshot } from '../../features/metrics/api';
 import { bindSet, bindInput, bindCheck, bindVoid, bindCall1, bindCall2 } from '../bind-handlers';
 import { formatDateTimeLocale } from '../../shared/lib/format-date';
+import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import {
   TopHeaderPanel,
   formatRes } from '../../features/metrics/TopHeaderPanel';
@@ -877,7 +879,10 @@ export function MetricsPage() {
                   {processes?.at ? (
                     <span className="met-live-at muted u-text-sm">
                       {follow ? 'LIVE · ' : ''}
-                      {new Date(processes.at).toLocaleTimeString()}
+                      {formatDateTime(processes.at, {
+                        locale: i18n.language,
+                        ...hostTimeZoneOpts({ withOffset: true }),
+                      })}
                     </span>
                   ) : null}
                 </div>

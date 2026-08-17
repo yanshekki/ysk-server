@@ -15,7 +15,8 @@
       "failed": "Gagal",
       "error": "Kesalahan",
       "unknown": "Tidak diselidiki",
-      "fallback": "Tidak dikenal"
+      "fallback": "Tidak dikenal",
+      "activating": "Starting"
     },
     "liveN": "{{count}} daring",
     "registeredOnly": "Hanya terdaftar",
@@ -262,7 +263,9 @@
     "sslTerminatedUpstream": "TLS berakhir di depan Nginx",
     "removeArtifactHint": "Hanya menghapus conf sisa di disk ini. Tidak menghapus proyek.",
     "sourceOrphan": "Leftover",
-    "orphanSite": "Project gone"
+    "orphanSite": "Project gone",
+    "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "applyStatus": {
     "draft": "Draf",
@@ -455,7 +458,23 @@
     "goLogs": "Open logs",
     "goAbout": "Backup notes",
     "skippedPendingOs": "Skipped — OS user / home not provisioned",
-    "latestFile": "Latest archive"
+    "latestFile": "Latest archive",
+    "tabTrash": "Recycle bin",
+    "trashTitle": "Recycle bin ({{count}})",
+    "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+    "trashEmpty": "Recycle bin is empty",
+    "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+    "trashRestore": "Restore",
+    "trashPurge": "Delete forever",
+    "trashEmptyAll": "Empty recycle bin",
+    "trashExpires": "Expires {{at}}",
+    "trashPurgeTitle": "Permanently delete this backup?",
+    "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+    "trashEmptyTitle": "Empty recycle bin?",
+    "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+    "trashRestored": "Restored from recycle bin",
+    "trashPurged": "Permanently deleted",
+    "trashedOk": "Moved to recycle bin"
   },
   "btTracker": {
     "title": "Pelacak BT",
@@ -653,7 +672,9 @@
     "statsLibraryHint": "Torrents in the panel library / file shares",
     "statsTrackerLeftover": "Tracker leftover",
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-    "statsAnnouncesHint": "Announce requests seen by the tracker process"
+    "statsAnnouncesHint": "Announce requests seen by the tracker process",
+    "leftoverHashesTitle": "Tracker leftover hashes",
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
   },
   "catalog": {
     "sw": {
@@ -2204,7 +2225,8 @@
     "hidePassword": "Bersembunyi",
     "more": "Lagi",
     "redirectedTo": "Membuka {{to}} (sebelumnya {{from}})",
-    "unavailable": "Not available right now"
+    "unavailable": "Not available right now",
+    "ok": "OK"
   },
   "cron": {
     "presetCdTrue": "cd aplikasi + benar (tes)",
@@ -2372,7 +2394,8 @@
     "writtenOnHostHint": "Lines already written to the host crontab",
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
-    "systemJobBadge": "No project · system user"
+    "systemJobBadge": "No project · system user",
+    "willNotRun": "Not written to system crontab — will not run."
   },
   "dashboard": {
     "title": "Dasbor",
@@ -2418,7 +2441,8 @@
     "mode": {
       "degraded": "terdegradasi",
       "production_capable": "siap produksi",
-      "normal": "normal"
+      "normal": "normal",
+      "blocked": "blocked"
     },
     "details": "Detail",
     "certExpiryTitle": "Masa berlaku sertifikat:",
@@ -2502,7 +2526,8 @@
       "warn": "Warning",
       "bad": "Problem"
     },
-    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+    "readinessBlocked": "{{n}} blocker(s)"
   },
   "dataTable": {
     "empty": "Tidak ada data",
@@ -2757,7 +2782,16 @@
       "fleetApplyTitle": "Enqueue berlaku untuk anggota armada?",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
       "roleUnassigned": "No role assigned",
-      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "notApplied": "Not applied",
+      "plannedAt": "Created {{when}}",
+      "clearStalePlans": "Clear stale plans",
+      "clearStalePlansTitle": "Delete stale planned clusters?",
+      "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+      "landingTitle": "Database cluster",
+      "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+      "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+      "openEngine": "Open {{engine}}"
     },
     "console": {
       "dataBrowse": "Telusuri data",
@@ -3090,7 +3124,9 @@
     "installConfirmConsequence": "Setelah pasang dan mulai, PowerDNS mengikat port 53.",
     "installPort53Busy": "Port 53 sudah dipakai. PowerDNS mungkin gagal bind sampai pendengar itu dihentikan atau diperbaiki.",
     "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53.",
-    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+    "startProbeFailed": "Could not re-check DNS health after start",
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
   },
   "docker": {
     "title": "Docker",
@@ -3142,7 +3178,8 @@
       "created": "Created",
       "dead": "Dead",
       "removing": "Removing",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "exitedCode": "Exited ({{n}})"
     },
     "actions": {
       "start": "Mulai",
@@ -3850,7 +3887,10 @@
     "opendkimNoReload": "OpenDKIM tidak mendukung reload — gunakan restart setelah mengubah kunci atau tabel.",
     "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini",
     "tlsRequestLeFor": "Request LE for {{host}}",
-    "deliverabilityChecks": "Checks"
+    "deliverabilityChecks": "Checks",
+    "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+    "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Tidak sah",
@@ -4381,7 +4421,8 @@
     "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
-    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+    "webdavOffNoToken": "Disabled (no active token)"
   },
   "firewall": {
     "profiles": {
@@ -4642,7 +4683,8 @@
     "detectPublicIpTitle": "Isi IPv4 non-loopback pertama dari host ini",
     "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat.",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-    "stateFailed": "Failed to start"
+    "stateFailed": "Failed to start",
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
   },
   "geo": {
     "continents": {
@@ -5755,7 +5797,8 @@
     "setHsts": "HSTS",
     "setCfRealIp": "IP Asli Cloudflare",
     "setIndexes": "Daftar direktori",
-    "bodyInherit": "Global"
+    "bodyInherit": "Global",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",
@@ -5830,10 +5873,18 @@
       "sidecarPushed": "Juga mendorong sespan SQL {{name}}",
       "controlPlaneDryRun": "Hanya pratinjau — tidak ada yang tertulis. Di panel, gunakan Pulihkan dan konfirmasikan frasa yang akan ditulis.",
       "controlPlaneNeedConfirm": "Pemulihan bidang kontrol penuh memerlukan frasa konfirmasi RESTORE-CONTROL-PLANE.",
-      "controlPlaneRestartAfter": "Mulai ulang API setelah pemulihan berhasil."
+      "controlPlaneRestartAfter": "Mulai ulang API setelah pemulihan berhasil.",
+      "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+      "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+      "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
     },
     "redis": {
-      "cliMissing": "redis-cli tidak diinstal"
+      "cliMissing": "redis-cli tidak diinstal",
+      "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+      "requirepassApplied": "requirepass applied at runtime",
+      "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+      "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
     },
     "nginx": {
       "reloaded": "nginx dimuat ulang",
@@ -5911,7 +5962,17 @@
       "applyDigOk": "PowerDNS BIND: daftar-zona + gali OK",
       "applyDigFail": "Zona terdaftar di conf tetapi penggalian masih kosong/DITOLAK — tidak ada penandaan yang diterapkan",
       "applySyncIncomplete": "Sinkronisasi pengikatan PowerDNS tidak lengkap — file zona hanya pada disk (tidak diterapkan). Perbaiki log EXECUTE/root atau pdns.",
-      "writeOnlyHint": "Hanya file zona yang ditulis — PowerDNS tidak akan menjawab sampai memuat/menerapkan register yang diberi nama"
+      "writeOnlyHint": "Hanya file zona yang ditulis — PowerDNS tidak akan menjawab sampai memuat/menerapkan register yang diberi nama",
+      "noActiveUnit": "No active named/bind9/pdns unit",
+      "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+      "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+      "port53Closed": "Port 53 is not listening (UDP/TCP)",
+      "udp53NotPublic": "UDP/53 is not listening on a public address",
+      "tcp53NotPublic": "TCP/53 is not listening on a public address",
+      "noManagedZones": "No managed zone files under dataDir/dns/zones",
+      "pdnsListZones": "PowerDNS list-zones: {{n}}",
+      "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+      "localAOk": "local A {{name}} → {{ip}}"
     },
     "db": {
       "needExecuteCreate": "Eksekusi host tidak aktif; tidak dapat membuat database dari panel",
@@ -8773,7 +8834,14 @@
       "linuxUserRolledBack": "Menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
       "linuxUserOrphan": "Tidak dapat menghapus sisa pengguna Linux {{user}} setelah kata sandi VNC gagal.",
       "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+      "hostnameResolves": "Hostname {{hostname}} resolves.",
+      "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+      "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+      "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+      "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+      "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+      "skipStartHostname": "Did not start the display — fix hostname resolution first."
     },
     "apache": {
       "needServerName": "Nama server diperlukan",
@@ -8858,7 +8926,12 @@
       "staleCliRemoved": "CLI sisa {{path}} dihapus.",
       "staleCliRemoveFailed": "Gagal menghapus CLI sisa {{path}}: {{detail}}",
       "vsftpdSslOff": "Sertifikat FTPS tidak ada: vsftpd disetel ssl_enable=NO lalu dimulai ulang.",
-      "dovecotSslOff": "{{path}} tidak ada: Dovecot disetel ssl=no lalu dimulai ulang."
+      "dovecotSslOff": "{{path}} tidak ada: Dovecot disetel ssl=no lalu dimulai ulang.",
+      "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+      "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+      "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+      "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
     },
     "git": {
       "missingBin": "git tidak ada di PATH",
@@ -10521,7 +10594,12 @@
     "scanCapped": "Showing the first {{n}} matches.",
     "dbOptionKeys": "DB {{i}} · {{n}} keys",
     "dbOptionEmpty": "DB {{i}} · empty",
-    "insecureShort": "No password"
+    "insecureShort": "No password",
+    "generateRequirepass": "Generate and apply password",
+    "generateRequirepassTitle": "Generate a Redis password?",
+    "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+    "generateRequirepassDone": "Redis password applied",
+    "generatedOnce": "Generated password (shown once): {{password}}"
   },
   "resources": {
     "created": "Dibuat",
@@ -11712,7 +11790,10 @@
       "tool": "Tool",
       "activating": "Starting"
     },
-    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+    "restartConfirmTitle": "Restart {{label}}?",
+    "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+    "startVerifyFailed": "{{label}} start did not stay healthy."
   },
   "software": {
     "title": "Perangkat lunak",
@@ -12308,7 +12389,8 @@
       "cliNoSocket": "CLI tidak memiliki soket HTTP langsung; serveHttps disimpulkan dari soket config dan mendengarkan (ss).",
       "listenHost": "Dengarkan alamatnya",
       "currentHost": "Sesi ini",
-      "replaceCert": "Ganti dengan sertifikat tepercaya"
+      "replaceCert": "Ganti dengan sertifikat tepercaya",
+      "needFqdn": "Need a FQDN (example.com), not a bare hostname"
     },
     "timeNtp": "Waktu & NTP",
     "clockStatus": "Status jam sistem",
@@ -12427,7 +12509,11 @@
     "noScheduledPower": "Tidak ada reboot atau mematikan yang dijadwalkan",
     "timezoneNow": "Host time now: {{time}} ({{tz}})",
     "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-    "notExported": "Not exported yet"
+    "notExported": "Not exported yet",
+    "nginxRemoveLeftover": "Remove leftover",
+    "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+    "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+    "needExecuteRoot": "Needs YSK_EXECUTE + root"
   },
   "systemd": {
     "enabled": "Diaktifkan",
@@ -13022,7 +13108,8 @@
     "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
-    "riskUnevaluated": "Not evaluated — run Scan + OSV"
+    "riskUnevaluated": "Not evaluated — run Scan + OSV",
+    "footerNewVersion": "New version {{version}}"
   },
   "users": {
     "userCount": "{{count}} pengguna",
@@ -13683,7 +13770,13 @@
     "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
     "bindRfbLine": "RFB {{bind}} :{{port}}",
     "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+    "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+    "hostnameFix": "Write hostname to /etc/hosts",
+    "hostnameFixTitle": "Append this line to /etc/hosts?",
+    "hostnameFixDesc": "{{line}}",
+    "hostnameFixDone": "Hostname /etc/hosts updated",
+    "startAfterCreateBlocked": "Disabled until the hostname resolves"
   },
   "vpn": {
     "pageDesc": "Server & klien VPN",

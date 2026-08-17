@@ -48,7 +48,8 @@
     "created": "Created",
     "dead": "Dead",
     "removing": "Removing",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "exitedCode": "Exited ({{n}})"
   },
   "actions": {
     "start": "چلائیں",

@@ -511,9 +511,18 @@ export async function fanOutCdnSite(input: {
     notes.push(tl('notes.auto.n0583'));
   }
 
+  const failNote = notes
+    .map((n) => String(n).trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(' · ');
   patchCdnSiteStatus(input.db, site.id, {
     apply_status,
-    edge_status });
+    edge_status,
+    lastApplyAt: new Date().toISOString(),
+    lastApplyError:
+      apply_status === 'failed' || apply_status === 'partial' ? failNote || apply_status : null,
+  });
 
   return {
     ok,

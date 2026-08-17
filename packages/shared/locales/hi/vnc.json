@@ -251,5 +251,11 @@
   "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
   "bindRfbLine": "RFB {{bind}} :{{port}}",
   "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-  "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+  "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+  "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+  "hostnameFix": "Write hostname to /etc/hosts",
+  "hostnameFixTitle": "Append this line to /etc/hosts?",
+  "hostnameFixDesc": "{{line}}",
+  "hostnameFixDone": "Hostname /etc/hosts updated",
+  "startAfterCreateBlocked": "Disabled until the hostname resolves"
 }

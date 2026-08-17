@@ -570,18 +570,26 @@ export function DashboardPage() {
             ) : null}
 
             {readiness?.score ? (
-              <Alert variant={readiness.productionReady ? 'ok' : 'info'}>
+              <Alert
+                variant={
+                  readiness.productionReady && readiness.score.missing === 0 ? 'ok' : 'warn'
+                }
+              >
                 <strong>{t('dashboard.readinessCheck')}</strong>
-                {readiness.productionReady ? t('dashboard.prodOk') : t('dashboard.notFullyReady')}
+                {readiness.score.missing > 0
+                  ? t('dashboard.readinessBlocked', { n: readiness.score.missing })
+                  : readiness.productionReady
+                    ? t('dashboard.prodOk')
+                    : t('dashboard.notFullyReady')}
                 {' · '}
                 {t('dashboard.modeScore', {
-                  mode: t(`dashboard.mode.${readiness.mode ?? 'degraded'}`, {
-                    defaultValue:
-                      readiness.mode === 'production_capable'
-                        ? t('dashboard.mode.production_capable')
-                        : t('dashboard.mode.degraded') }),
+                  mode:
+                    readiness.score.missing > 0
+                      ? t('dashboard.mode.blocked')
+                      : t(`dashboard.mode.${readiness.mode ?? 'degraded'}`),
                   ready: readiness.score.ready,
-                  total: readiness.score.total })}
+                  total: readiness.score.total,
+                })}
                 {' · '}
                 <Link to="/system/readiness">{t('dashboard.details')}</Link>
               </Alert>

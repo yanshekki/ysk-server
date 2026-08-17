@@ -58,6 +58,7 @@
     "disable": "Disable panel HTTPS",
     "disableNeedConfirm": "Needs confirmation — type DISABLE-HTTPS",
     "needDomain": "Enter hostname / domain first",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname",
     "urlHint": "After restart open {{url}}",
     "certMissing": "TLS enabled but cert/key files missing",
     "restartToApply": "Restart ysk-server to apply HTTPS",
@@ -206,5 +207,9 @@
   "nginxLeftover": "Leftover",
   "nginxUnused": "Unused",
   "nginxLeftoverHint": "Stale public-files or leftover conf. Still included in sync until you remove or replace it.",
-  "nginxUnusedHint": "Stock / catch-all conf (000-default). Still included in sync until you act."
+  "nginxUnusedHint": "Stock / catch-all conf (000-default). Still included in sync until you act.",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

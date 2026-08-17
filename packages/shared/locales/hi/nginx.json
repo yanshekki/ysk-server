@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "क्लाउडफ्लेयर रियल आईपी",
   "setIndexes": "निर्देशिका सूची",
-  "bodyInherit": "वैश्विक"
+  "bodyInherit": "वैश्विक",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

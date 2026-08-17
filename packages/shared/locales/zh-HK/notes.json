@@ -65,10 +65,18 @@
     "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。",
     "controlPlaneDryRun": "僅預覽——未寫入任何檔。在面板按還原並確認短語才會寫入。",
     "controlPlaneNeedConfirm": "完整還原控制平面需要確認短語 RESTORE-CONTROL-PLANE。",
-    "controlPlaneRestartAfter": "還原成功後請重啟 API。"
+    "controlPlaneRestartAfter": "還原成功後請重啟 API。",
+    "movedToTrash": "已將 {{name}} 移至回收區。{{days}} 日後永久刪除。",
+    "restoreNameExists": "無法還原 {{name}} — 已有同名備份檔。",
+    "restoredFromTrash": "已從回收區還原 {{name}}。",
+    "trashEmptied": "已從回收區永久刪除 {{n}} 個備份檔。"
   },
   "redis": {
-    "cliMissing": "未安裝 redis-cli"
+    "cliMissing": "未安裝 redis-cli",
+    "requirepassAlreadySet": "Redis 已有 requirepass — 未覆寫。",
+    "requirepassApplied": "已在執行中套用 requirepass",
+    "requirepassApplyFailed": "無法 CONFIG SET requirepass（將靠重啟與設定檔）",
+    "generatedRequirepass": "已產生 Redis 密碼（只顯示一次）：{{password}}"
   },
   "nginx": {
     "reloaded": "nginx 已 reload",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND：list-zones + dig OK",
     "applyDigFail": "conf 已註冊但 dig 仍空/REFUSED — 不標 applied",
     "applySyncIncomplete": "PowerDNS bind 同步未完 — 只寫入碟。請檢查 EXECUTE/root 或 pdns 日誌",
-    "writeOnlyHint": "只寫入 zone 檔 — 要 load/apply 掛 named.conf 先會答"
+    "writeOnlyHint": "只寫入 zone 檔 — 要 load/apply 掛 named.conf 先會答",
+    "noActiveUnit": "沒有運行中的 named／bind9／pdns 單元",
+    "pdnsUnitRestarts": "pdns 單元狀態／重啟次數：{{detail}}",
+    "port53LoopbackOnly": "53 埠只綁在 loopback（systemd-resolved 127.0.0.53）— 不是產品權威 nameserver",
+    "port53Closed": "53 埠未在聽（UDP／TCP）",
+    "udp53NotPublic": "UDP/53 未綁公網位址",
+    "tcp53NotPublic": "TCP/53 未綁公網位址",
+    "noManagedZones": "dataDir/dns/zones 沒有管理中的 zone 檔",
+    "pdnsListZones": "PowerDNS list-zones：{{n}}",
+    "lookupIgnoredAt": "dig 不可用 — 已忽略 @{{server}}。不會把系統 resolver 當成該伺服器的答案。",
+    "localAOk": "本機 A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "伺服器未開啟系統變更權限，無法在管理面板建立資料庫",
@@ -2953,6 +2971,13 @@
     "needInstall": "請安裝 {{stack}}",
     "needExecute": "未啟用 YSK_EXECUTE — 無法安裝套件或建立 Linux 用戶。",
     "needRoot": "非 root — 無法 useradd 或套用 vncserver。",
+    "hostnameResolves": "主機名 {{hostname}} 可解析。",
+    "hostnameUnresolvable": "此主機無法解析自己的主機名（{{hostname}}）。修好 /etc/hosts 之前，VNC 工作階段會啟動失敗。",
+    "hostnameAlreadyResolves": "主機名 {{hostname}} 已可解析 — 未改 /etc/hosts。",
+    "hostnameWouldAppend": "將會附加到 /etc/hosts：{{line}}",
+    "hostnameAppended": "已附加到 /etc/hosts：{{line}}",
+    "hostnameAppendFailed": "無法寫入 /etc/hosts：{{detail}}",
+    "skipStartHostname": "未啟動 display — 請先修好主機名解析。",
     "novncAssetsOnly": "已找到 noVNC 網頁資源；仍缺 websockify 執行檔。",
     "viewerNeedExecute": "要在瀏覽器開啟本機 VNC 桌面，需要 root 並啟用 YSK_EXECUTE",
     "browserSessionReady": "瀏覽器 VNC 工作階段已就緒：{{name}}",
@@ -3144,7 +3169,12 @@
     "dovecotSslOff": "因 {{path}} 不存在，已把 Dovecot 設為 ssl=no 並重新啟動。",
     "overlayDoesNotHeal": "產品 overlay 不會改寫 nginx、Apache、vsftpd 或 Dovecot。請用列出的套用命令（root + YSK_EXECUTE=1）。",
     "readinessTitle": "overlay 後主機遺留",
-    "readinessClean": "未偵測到 Apache 預設站、缺 nginx catch-all、vsftpd 失敗或舊 CLI。"
+    "readinessClean": "未偵測到 Apache 預設站、缺 nginx catch-all、vsftpd 失敗或舊 CLI。",
+    "nginxRemoved": "已移除殘留 nginx 設定 {{path}}。",
+    "nginxNotLeftover": "不是殘留 public-files 設定 — 拒絕刪除。",
+    "nginxUnusedKeep": "000-default 是未使用，不當殘留 — 未刪除。",
+    "nginxSystemCopy": "系統副本仍在：{{path}}。需要 YSK_EXECUTE + root 先可以移除。",
+    "nginxReloadFailed": "移除 {{path}} 後 nginx -t 或 reload 失敗。"
   },
   "defense": {
     "panelReqLabel": "面板請求／分鐘",

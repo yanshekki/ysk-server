@@ -235,5 +235,6 @@
   "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

@@ -93,6 +93,18 @@ export async function lookupDns(input: {
     notes.push(tl('notes.auto.n0251'));
   }
 
+  if (server) {
+    return {
+      ok: false,
+      name,
+      type,
+      answers: [],
+      notes: [...notes, tl('notes.dns.lookupIgnoredAt', { server })],
+      method: 'none',
+      latencyMs: Date.now() - t0,
+    };
+  }
+
   try {
     let answers: string[] = [];
     if (type === 'A') answers = await resolve4(name);

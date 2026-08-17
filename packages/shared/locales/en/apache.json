@@ -1,6 +1,7 @@
 {
   "pageDesc": "Apache sites (PHP projects + standalone)",
   "pillSites": "{{count}} sites",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
   "listTitle": "Sites ({{count}})",
   "emptyTitle": "No sites",
   "createSite": "+ Create site",
@@ -8,6 +9,7 @@
   "editTitle": "Edit site",
   "deleteTitle": "Delete site?",
   "deleteDesc": "Remove this Apache site?",
+  "stopSites": "{{n}} site(s) will stop answering HTTP.",
   "colServerName": "Server name",
   "colSource": "Source",
   "colKind": "Type",

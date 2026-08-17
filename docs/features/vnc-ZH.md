@@ -53,6 +53,7 @@ ysk-server vnc session mint --id ACCOUNT_ID --json
 
 - 帳戶建立／啟動／停止需 EXECUTE + root（`useradd`／`vncserver`）。  
 - 未安裝 TigerVNC 時，面板「建立帳號」維持停用。  
+- 建立前探測 `getent hosts $(hostname)`。短名／FQDN 解唔到時，「建立後啟動」維持關閉。確認對話可 **append** `127.0.1.1 <短名> [fqdn]` 到 `/etc/hosts`（EXECUTE + root）。已有該名就跳過；唔會改寫成個檔。  
 - 分享連結為短效 token；公開落地頁為 `/vnc-share/:token`（無需登入面板）。訪客兌換為 `POST /api/v1/vnc/share/:token/session`。關閉檢視器只結束本次 session，**不會**把訪客送到 `/login`。  
 - `session mint` 回傳 RFB 元資料，**不會**在終端開啟桌面畫布。  
 - 側欄與路由閘都要 `network.vnc`（不是 `firewall.edit`）。  

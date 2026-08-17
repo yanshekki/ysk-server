@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "Cloudflare 真实 IP",
   "setIndexes": "目录列表",
-  "bodyInherit": "跟随全局"
+  "bodyInherit": "跟随全局",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

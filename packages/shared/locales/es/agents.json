@@ -11,7 +11,8 @@
     "failed": "Fallido",
     "error": "Error",
     "unknown": "No investigado",
-    "fallback": "Desconocido"
+    "fallback": "Desconocido",
+    "activating": "Starting"
   },
   "liveN": "{{count}} en línea",
   "registeredOnly": "Sólo registrado",

@@ -251,7 +251,7 @@ async function ensureDefaultSelfSigned(
   return { cert, key };
 }
 
-function keepPublicFilesBasenameFromMeta(dataDir: string): string | undefined {
+export function keepPublicFilesBasenameFromMeta(dataDir: string): string | undefined {
   const metaPath = join(dataDir, 'files', 'public-files-meta.json');
   if (!existsSync(metaPath)) return undefined;
   try {

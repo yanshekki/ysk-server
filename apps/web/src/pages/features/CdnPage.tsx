@@ -31,6 +31,7 @@ import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { toast } from '../../shared/stores/toast-store';
 import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import {
   bindSet,
   bindInput,
@@ -836,7 +837,7 @@ export function CdnPage() {
 
   const online = countOnlineNodes(nodes);
   const edgeCount = countEdgeNodes(nodes);
-  const lastEdge = edgeCount <= 1;
+  const lastEdge = edgeCount <= 1 && sites.length > 0;
   const edgeNodes = filterEdgeOriginNodes(nodes);
 
   return (
@@ -1242,16 +1243,30 @@ export function CdnPage() {
                   key: 'status',
                   header: t('cdn.col.apply'),
                   render: (s) => (
-                    <Badge
-                      tone={statusTone(s.apply_status)}
-                      title={
-                        s.apply_status === 'failed'
-                          ? t('cdn.applyFailedHint')
-                          : t(`cdn.applyStatus.${s.apply_status}`)
-                      }
-                    >
-                      {t(`cdn.applyStatus.${s.apply_status}`)}
-                    </Badge>
+                    <span className="u-flex u-flex-col u-gap-1">
+                      <Badge
+                        tone={statusTone(s.apply_status)}
+                        title={
+                          s.lastApplyError ||
+                          (s.apply_status === 'failed'
+                            ? t('cdn.applyFailedHint')
+                            : t(`cdn.applyStatus.${s.apply_status}`))
+                        }
+                      >
+                        {t(`cdn.applyStatus.${s.apply_status}`)}
+                      </Badge>
+                      {s.lastApplyError ? (
+                        <span className="muted u-text-sm">
+                          {s.lastApplyAt
+                            ? `${formatDateTime(s.lastApplyAt, {
+                                locale: i18n.language,
+                                ...hostTimeZoneOpts({ withOffset: true }),
+                              })} · `
+                            : ''}
+                          {s.lastApplyError}
+                        </span>
+                      ) : null}
+                    </span>
                   ) },
                 {
                   key: 'actions',
@@ -1416,7 +1431,12 @@ export function CdnPage() {
                 title={t('cdn.dashboardTitle')}
                 description={
                   dashboard
-                    ? t('cdn.updatedAt', { at: formatDateTime(dashboard.at, { locale: i18n.language }) })
+                    ? t('cdn.updatedAt', {
+                        at: formatDateTime(dashboard.at, {
+                          locale: i18n.language,
+                          ...hostTimeZoneOpts({ withOffset: true }),
+                        }),
+                      })
                     : t('common.loading')
                 }
               >

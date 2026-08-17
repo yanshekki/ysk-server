@@ -44,10 +44,12 @@
   "readinessCheck": "Readiness:",
   "prodOk": "Production ready",
   "notFullyReady": "Not fully ready",
+  "readinessBlocked": "{{n}} blocker(s)",
   "modeScore": "Mode {{mode}} · score {{ready}}/{{total}}",
   "mode": {
     "degraded": "degraded",
-    "production_capable": "production ready",
+    "production_capable": "EXECUTE + root",
+    "blocked": "blocked",
     "normal": "normal"
   },
   "details": "Details",

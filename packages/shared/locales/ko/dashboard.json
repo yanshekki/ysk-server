@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "타락한",
     "production_capable": "생산 준비 완료",
-    "normal": "정상"
+    "normal": "정상",
+    "blocked": "blocked"
   },
   "details": "세부",
   "certExpiryTitle": "인증서 만료:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

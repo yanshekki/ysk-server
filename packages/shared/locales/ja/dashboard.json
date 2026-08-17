@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "貶められた",
     "production_capable": "生産準備完了",
-    "normal": "通常"
+    "normal": "通常",
+    "blocked": "blocked"
   },
   "details": "詳細",
   "certExpiryTitle": "証明書の有効期限:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

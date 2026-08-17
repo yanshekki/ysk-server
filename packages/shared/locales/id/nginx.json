@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "IP Asli Cloudflare",
   "setIndexes": "Daftar direktori",
-  "bodyInherit": "Global"
+  "bodyInherit": "Global",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

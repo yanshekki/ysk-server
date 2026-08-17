@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "अपमानित",
     "production_capable": "उत्पादन तैयार",
-    "normal": "सामान्य"
+    "normal": "सामान्य",
+    "blocked": "blocked"
   },
   "details": "विवरण",
   "certExpiryTitle": "प्रमाणपत्र की समाप्ति:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

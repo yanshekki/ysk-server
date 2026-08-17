@@ -2,8 +2,24 @@
 
 ## Unreleased
 
-### Libraries
-- **ysk-server-shared@1.1.0** and **ysk-server-core@1.1.0** on npm — types/locales (Docker + validators DTOs) and hosting core (Docker, validators, leftover, Git control, self-update overlay) as of product 1.1.5. Product `ysk-server@1.1.5` already bundles this tree; next product release pins these versions.
+## 1.1.6 — 2026-08-17
+
+### Feature
+- Backup delete moves the archive to a 7-day recycle bin (`dataDir/backups/.trash`) instead of unlinking. Restore, permanent delete, and empty-trash stay on `/backups`.
+- Redis install generates a `requirepass` (shown once). Already-installed empty-password Redis has an explicit generate-and-apply control — probes never invent a password.
+- VNC create probes hostname resolution. A ConfirmDialog can append `127.0.1.1 <short> [fqdn]` to `/etc/hosts` (EXECUTE + root). Start-after-create stays off until the name resolves.
+
+### Fix
+- PowerDNS start re-probes health; a crash-loop is not toasted as success.
+- DNS health notes are localized. When `dig @server` is unavailable, lookup does not pretend the system resolver is that server.
+- CDN sites persist last apply time and error (failed/partial).
+- OpenClaw badge follows systemd (`activating` / `failed` / `inactive`).
+- Docker list reconciles inspect Status vs State (exited hello-world is not “running”).
+- Email health 20/100 after DNS-only is labelled partial, not a full green score.
+
+### Improve
+- E2E-1115 (UX115-001–055): nginx/apache stop names site counts; email domain delete lists mailbox/DNS/alias counts; BT leftover hashes listed on the Tracker tab; project overview can provision the OS user; `/cluster` lands on an installed engine (not a missing MySQL tab); planned clusters show created time + “not applied” and can drop 7-day-stale plans; leftover `public-files-*` nginx on `/system` can be removed (000-default stays unused); footer links “new version x.y.z” to `/updates`.
+- Product `ysk-server@1.1.6` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
 
 ## 1.1.5 — 2026-08-17
 

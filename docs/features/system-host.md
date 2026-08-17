@@ -60,7 +60,9 @@ Full argv: [../cli/reference.md](../cli/reference.md).
 - **written** package plans ≠ applied apt.  
 - Readiness may exit non-zero while still returning full JSON.  
 - Product overlay does not heal leftover host files; leftovers stay visible until the matching apply command.  
+- On `/system` export, leftover `public-files-*` nginx confs can be removed (ConfirmDialog + EXECUTE + root). `000-default` is unused, not leftover, and is not deleted here. The live public-files conf (from meta) is treated as managed.  
 - Stopping the control-plane unit and disabling panel HTTPS require a confirm phrase. Pack uninstall is disabled when nothing is selected.  
+- The sidebar footer shows the panel version and, when the update hub has a newer candidate, a “new version x.y.z” link to `/updates`.  
 
 ## Panel-only ⚠️
 

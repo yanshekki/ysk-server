@@ -555,8 +555,8 @@ export function UpdatesPage() {
           { label: t('updates.packages'), value: statsSnap?.pkgs ?? inventory.length },
           {
             label: t('updates.highRisk'),
-            value: highRisk,
-            tone: highRisk > 0 ? 'danger' : 'ok' },
+            value: !osvChecked ? t('updates.riskUnevaluated') : highRisk,
+            tone: !osvChecked ? 'neutral' : highRisk > 0 ? 'danger' : 'ok' },
           {
             label: t('updates.needApproval'),
             value: (

@@ -57,5 +57,7 @@
   "sslTerminatedUpstream": "TLS سامنے Nginx پر ختم ہوتا ہے۔",
   "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔",
   "sourceOrphan": "Leftover",
-  "orphanSite": "Project gone"
+  "orphanSite": "Project gone",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

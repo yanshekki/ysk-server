@@ -30,6 +30,7 @@
   "unavailable": "Not available right now",
   "retry": "Retry",
   "success": "Success",
+  "ok": "OK",
   "failed": "Failed",
   "blocked": "Cannot run",
   "status": "Status",

@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM は reload 非対応です。鍵や表の変更後は再起動してください。",
   "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

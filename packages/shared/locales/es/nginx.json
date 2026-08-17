@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "IP real de Cloudflare",
   "setIndexes": "listado de directorio",
-  "bodyInherit": "Global"
+  "bodyInherit": "Global",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

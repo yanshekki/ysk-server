@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emailHealthUnprobed } from './health-display';
+import { emailHealthPartial, emailHealthUnprobed } from './health-display';
 
 describe('emailHealthUnprobed', () => {
   it('is true when no DNS/PTR/port probe has been stored', () => {
@@ -14,5 +14,10 @@ describe('emailHealthUnprobed', () => {
     expect(emailHealthUnprobed({ ptr_ok: true })).toBe(false);
     expect(emailHealthUnprobed({ port25_open: false })).toBe(false);
     expect(emailHealthUnprobed({ port25_open: true })).toBe(false);
+  });
+
+  it('is partial when DNS is stored but live/DNSBL are not', () => {
+    expect(emailHealthPartial({ dns_applied: true }, null, null)).toBe(true);
+    expect(emailHealthPartial({ dns_applied: true }, { ok: true }, null)).toBe(false);
   });
 });

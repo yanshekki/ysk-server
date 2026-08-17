@@ -11,7 +11,8 @@
     "failed": "Gagal",
     "error": "Kesalahan",
     "unknown": "Tidak diselidiki",
-    "fallback": "Tidak dikenal"
+    "fallback": "Tidak dikenal",
+    "activating": "Starting"
   },
   "liveN": "{{count}} daring",
   "registeredOnly": "Hanya terdaftar",

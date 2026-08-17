@@ -213,6 +213,8 @@
   "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
   "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
   "healthHealPdnsFailed": "PowerDNS 修復失敗",
+  "startProbeFailed": "啟動後無法再探測 DNS 健康",
+  "startNotListening": "PowerDNS 啟動已回報，但 53 埠未在答",
   "aboutTitle": "DNS 使用要點",
   "aboutSub": "區域為主；記錄／叢集／DNSSEC 要先選域名。",
   "aboutZonesTitle": "區域與域名範圍",

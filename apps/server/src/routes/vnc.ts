@@ -336,6 +336,19 @@ export async function handleVncRoutes(
       return true;
     }
 
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/hostname-hosts') {
+      const { applyHostnameToHosts } = await import('ysk-server-core');
+      const r = await applyHostnameToHosts(ctx.host);
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.hostname-hosts',
+        detail: { ok: r.ok, resolves: r.resolves },
+        ok: r.ok,
+      });
+      sendOpsResult(res, r);
+      return true;
+    }
+
     if (method === 'GET' && url.pathname === '/api/v1/vnc/settings') {
       sendJson(res, 200, { ok: true, settings: vnc.loadSettings() });
       return true;

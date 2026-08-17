@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM रीलोड नहीं करता — कुंजी या तालिका बदलने के बाद रीस्टार्ट करें।",
   "opendkimNoReloadTitle": "इस स्टैक पर systemctl reload opendkim समर्थित नहीं",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

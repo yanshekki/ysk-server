@@ -87,7 +87,8 @@
     "cliNoSocket": "CLI কোন লাইভ HTTP সকেট নেই; servingHttps কনফিগ এবং লিসেন সকেট (ss) থেকে অনুমান করা হয়েছে।",
     "listenHost": "ঠিকানা শুনুন",
     "currentHost": "এই অধিবেশন",
-    "replaceCert": "একটি বিশ্বস্ত শংসাপত্র দিয়ে প্রতিস্থাপন করুন"
+    "replaceCert": "একটি বিশ্বস্ত শংসাপত্র দিয়ে প্রতিস্থাপন করুন",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "সময় এবং NTP",
   "clockStatus": "সিস্টেম ঘড়ির অবস্থা",
@@ -206,5 +207,9 @@
   "noScheduledPower": "কোনো রিবুট বা পাওয়ার অফ নির্ধারিত নেই",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

@@ -11,7 +11,8 @@
     "failed": "असफल",
     "error": "गलती",
     "unknown": "जांच नहीं की गई",
-    "fallback": "अज्ञात"
+    "fallback": "अज्ञात",
+    "activating": "Starting"
   },
   "liveN": "{{count}} ऑनलाइन",
   "registeredOnly": "केवल पंजीकृत",

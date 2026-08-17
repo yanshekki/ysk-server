@@ -59,6 +59,7 @@
     "down": "已停止",
     "running": "運行中",
     "exited": "已結束",
+    "exitedCode": "已結束（{{n}}）",
     "restarting": "重啟中",
     "restartingCount": "重啟中 · {{n}} 次",
     "paused": "已暫停",

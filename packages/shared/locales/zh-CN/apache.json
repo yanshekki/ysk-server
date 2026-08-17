@@ -57,5 +57,7 @@
   "sslTerminatedUpstream": "TLS 在 Nginx 前面结束",
   "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。",
   "sourceOrphan": "Leftover",
-  "orphanSite": "Project gone"
+  "orphanSite": "Project gone",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

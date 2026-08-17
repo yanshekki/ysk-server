@@ -53,6 +53,7 @@
   "accountCount": "帳戶數",
   "loginBanner": "登入橫幅",
   "sslDomain": "SSL 網域",
+  "plaintextInsecure": "明文 FTP（未開 TLS）— 不安全。對外開放 21 埠前請先啟用 FTPS。",
   "pasvRange": "PASV 範圍",
   "forceTls": "強制 TLS",
   "allowWrite": "允許寫入",

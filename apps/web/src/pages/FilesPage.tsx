@@ -2251,12 +2251,12 @@ export function FilesPage() {
                   <Badge tone={webdavEnabled ? 'ok' : 'neutral'}>
                     {webdavEnabled ? t('files.webdavOn') : t('files.webdavOff')}
                   </Badge>
-                  {webdavTokenId ? (
-                    <Badge tone={webdavEnabled ? 'info' : 'neutral'}>
-                      {webdavEnabled
-                        ? t('files.webdavTokenId', { id: webdavTokenId })
-                        : t('files.webdavTokenInactive', { id: webdavTokenId })}
+                  {webdavEnabled && webdavTokenId ? (
+                    <Badge tone="info">
+                      {t('files.webdavTokenId', { id: webdavTokenId })}
                     </Badge>
+                  ) : !webdavEnabled ? (
+                    <Badge tone="neutral">{t('files.webdavOffNoToken')}</Badge>
                   ) : null}
                   {webdavUpdatedAt ? (
                     <span className="muted u-text-sm">

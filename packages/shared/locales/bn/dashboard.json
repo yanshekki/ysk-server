@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "অধঃপতন",
     "production_capable": "উত্পাদন প্রস্তুত",
-    "normal": "স্বাভাবিক"
+    "normal": "স্বাভাবিক",
+    "blocked": "blocked"
   },
   "details": "বিস্তারিত",
   "certExpiryTitle": "শংসাপত্রের মেয়াদ:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

@@ -65,10 +65,18 @@
     "sidecarPushed": "También se impulsó el sidecar SQL {{name}}",
     "controlPlaneDryRun": "Solo vista previa, nada escrito. En el panel, use Restaurar y confirme la frase a escribir.",
     "controlPlaneNeedConfirm": "La restauración total del plano de control necesita la frase de confirmación RESTAURAR-PLANO-CONTROL.",
-    "controlPlaneRestartAfter": "Reinicie la API después de una restauración exitosa."
+    "controlPlaneRestartAfter": "Reinicie la API después de una restauración exitosa.",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "redis-cli no está instalado"
+    "cliMissing": "redis-cli no está instalado",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx recargado",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND: listar zonas + excavar OK",
     "applyDigFail": "Zona registrada en conf pero la excavación aún está vacía/RECHAZADA: no se aplicó la marca",
     "applySyncIncomplete": "Sincronización de enlace de PowerDNS incompleta: archivo de zona solo en el disco (no aplicado). Repare los registros EXECUTE/root o pdns.",
-    "writeOnlyHint": "Archivo de zona escrito únicamente: PowerDNS no responderá hasta que cargue/aplique los registros nombrados"
+    "writeOnlyHint": "Archivo de zona escrito únicamente: PowerDNS no responderá hasta que cargue/aplique los registros nombrados",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "La ejecución del host está desactivada; No se puede crear una base de datos desde el panel.",
@@ -3008,7 +3026,14 @@
     "linuxUserRolledBack": "Se eliminó el usuario restante de Linux {{user}} después de que falló la contraseña de VNC.",
     "linuxUserOrphan": "No se pudo eliminar el usuario de Linux restante {{user}} después de que falló la contraseña de VNC.",
     "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first."
   },
   "apache": {
     "needServerName": "Nombre del servidor requerido",
@@ -3093,7 +3118,12 @@
     "staleCliRemoved": "Se eliminó el CLI residual {{path}}.",
     "staleCliRemoveFailed": "No se pudo eliminar el CLI residual {{path}}: {{detail}}",
     "vsftpdSslOff": "Sin certificado FTPS: se puso ssl_enable=NO en vsftpd y se reinició.",
-    "dovecotSslOff": "Falta {{path}}: Dovecot con ssl=no y reinicio."
+    "dovecotSslOff": "Falta {{path}}: Dovecot con ssl=no y reinicio.",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "git": {
     "missingBin": "git no está en la RUTA",

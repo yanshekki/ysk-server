@@ -65,10 +65,18 @@
     "targetOutside": "Restore target must be inside the project home or the public files root.",
     "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
     "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
-    "controlPlaneRestartAfter": "Restart the API after a successful restore."
+    "controlPlaneRestartAfter": "Restart the API after a successful restore.",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "redis-cli is not installed"
+    "cliMissing": "redis-cli is not installed",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx reloaded",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND: list-zones + dig OK",
     "applyDigFail": "Zone registered in conf but dig still empty/REFUSED — not marking applied",
     "applySyncIncomplete": "PowerDNS bind sync incomplete — zone file on disk only (not applied). Fix EXECUTE/root or pdns logs.",
-    "writeOnlyHint": "Zone file written only — PowerDNS will not answer until load/apply registers named"
+    "writeOnlyHint": "Zone file written only — PowerDNS will not answer until load/apply registers named",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "Host execute is off; cannot create database from the panel",
@@ -2953,6 +2971,13 @@
     "needInstall": "Install {{stack}}",
     "needExecute": "YSK_EXECUTE is disabled — cannot install packages or provision Linux users.",
     "needRoot": "Not running as root — system useradd and vncserver apply are blocked.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
     "novncAssetsOnly": "noVNC web assets found; websockify binary still missing.",
     "viewerNeedExecute": "Starting a local VNC desktop for browser view needs root + YSK_EXECUTE",
     "browserSessionReady": "Browser VNC session ready: {{name}}",
@@ -3144,7 +3169,12 @@
     "vsftpdSslOff": "Set vsftpd ssl_enable=NO because the FTPS certificate file is missing, then restarted vsftpd.",
     "dovecotSslOff": "Set Dovecot ssl=no because {{path}} is missing, then restarted Dovecot.",
     "readinessTitle": "Host leftovers after overlay",
-    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "defense": {
     "panelReqLabel": "Panel requests / min",

@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM no admite recarga — use reinicio tras cambiar claves o tablas.",
   "opendkimNoReloadTitle": "systemctl reload opendkim no está soportado en este conjunto",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

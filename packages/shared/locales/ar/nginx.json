@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "Cloudflare ريال IP",
   "setIndexes": "قائمة الدليل",
-  "bodyInherit": "عالمي"
+  "bodyInherit": "عالمي",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM 不支持重载 — 更改密钥或对照表后请用重启。",
   "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

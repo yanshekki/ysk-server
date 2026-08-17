@@ -305,7 +305,10 @@ export function SecurityPage() {
   const [totpPrompt, setTotpPrompt] = useState<
     null | { kind: 'backup' } | { kind: 'apiKey' }
   >(null);
-  const [sshCounts, setSshCounts] = useState({ identities: 0, loginKeys: 0 });
+  const [sshCounts, setSshCounts] = useState<{
+    identities: number;
+    loginKeys: number;
+  } | null>(null);
 
   // Legacy ?tab=identities|sftp → ssh workspace
   useEffect(() => {
@@ -461,10 +464,12 @@ export function SecurityPage() {
           },
           {
             label: t('security.statSsh'),
-            value: t('security.statSshValue', {
-              keys: sshCounts.identities,
-              auth: sshCounts.loginKeys,
-            }),
+            value: sshCounts
+              ? t('security.statSshValue', {
+                  keys: sshCounts.identities,
+                  auth: sshCounts.loginKeys,
+                })
+              : '…',
             hint: t('security.statSshHint'),
           },
           {
@@ -480,7 +485,7 @@ export function SecurityPage() {
           {
             id: 'ssh',
             label: t('security.tabSsh'),
-            badge: sshCounts.loginKeys || undefined },
+            badge: sshCounts?.loginKeys || undefined },
           { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
           { id: 'tools', label: t('security.tabAllowlist'), badge: tools.length || undefined },
           { id: 'about', label: t('common.about') },

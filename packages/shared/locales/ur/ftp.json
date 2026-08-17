@@ -146,5 +146,6 @@
   "detectPublicIpTitle": "اس میزبان سے پہلا نان لوپ بیک IPv4 پُر کریں۔",
   "pasvIpRequired": "لاگو کرنے سے پہلے PASV پبلک IP سیٹ کریں (NAT/کلاؤڈ)۔ پتہ لگائیں یا پتہ لکھیں۔",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-  "stateFailed": "Failed to start"
+  "stateFailed": "Failed to start",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
 }

@@ -6,8 +6,12 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { tl } from 'ysk-server-shared';
 import {
   listBackups,
+  listBackupTrash,
   filterBackupList,
   deleteProjectBackup,
+  restoreBackupTrash,
+  purgeBackupTrash,
+  emptyBackupTrash,
   resolveBackupDownloadPath,
   localizeLastBackupRun,
   CONTROL_PLANE_BACKUP_ID,
@@ -81,10 +85,66 @@ export async function handleBackupsListRoutes(
     const r = deleteProjectBackup(ctx.dataDir, data.projectId, data.name);
     ctx.audit.append({
       actor: user.username,
-      action: 'backup.delete',
+      action: 'backup.trash',
       resource: data.projectId,
       detail: { name: data.name, ...r },
       ok: r.ok });
+    sendOpsResult(res, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname === '/api/v1/backups/trash') {
+    ctx.auth.authenticate(getBearer(req));
+    sendJson(res, 200, { ok: true, items: listBackupTrash(ctx.dataDir) });
+    return true;
+  }
+  if (method === 'POST' && url.pathname === '/api/v1/backups/trash/restore') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { projectId?: string; name?: string };
+    if (!data.projectId || !data.name) {
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0049')] });
+      return true;
+    }
+    const r = restoreBackupTrash(ctx.dataDir, data.projectId, data.name);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'backup.trash-restore',
+      resource: data.projectId,
+      detail: { name: data.name, ...r },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+  if (method === 'DELETE' && url.pathname === '/api/v1/backups/trash/empty') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const r = emptyBackupTrash(ctx.dataDir);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'backup.trash-empty',
+      resource: 'backups',
+      detail: r,
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+  if (method === 'DELETE' && url.pathname === '/api/v1/backups/trash') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { projectId?: string; name?: string };
+    if (!data.projectId || !data.name) {
+      sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0049')] });
+      return true;
+    }
+    const r = purgeBackupTrash(ctx.dataDir, data.projectId, data.name);
+    ctx.audit.append({
+      actor: user.username,
+      action: 'backup.trash-purge',
+      resource: data.projectId,
+      detail: { name: data.name, ...r },
+      ok: r.ok,
+    });
     sendOpsResult(res, r);
     return true;
   }

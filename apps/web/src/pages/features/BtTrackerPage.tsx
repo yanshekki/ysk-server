@@ -67,6 +67,23 @@ export function btVisibleAndLeftover(opts: {
   return { visible, leftover: Math.max(leftoverFromStats, leftoverFromSwarm) };
 }
 
+/** Info-hashes announced by the tracker that are not library/share rows. */
+export function btLeftoverHashes(opts: {
+  library: Array<{ infoHash?: string }>;
+  swarm: Array<{ infoHash?: string; kind?: string }>;
+}): string[] {
+  const libHashes = new Set(
+    opts.library.map((i) => String(i.infoHash || '').toLowerCase()).filter(Boolean),
+  );
+  const out: string[] = [];
+  for (const s of opts.swarm) {
+    const h = String(s.infoHash || '').toLowerCase();
+    if (!h || libHashes.has(h) || s.kind !== 'library') continue;
+    if (!out.includes(h)) out.push(h);
+  }
+  return out;
+}
+
 type TorrentJobRow = {
   id: string;
   shareId: string;
@@ -167,6 +184,7 @@ export function BtTrackerPage() {
   const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'running').length;
   const announceList = status?.announceUrls ?? [];
   const hasPublicHost = Boolean(status?.settings?.publicAnnounceHost?.trim());
+  const leftoverHashes = btLeftoverHashes({ library, swarm: torrents });
   const { visible: torrentCount, leftover: leftoverSwarm } = btVisibleAndLeftover({
     library,
     swarm: torrents,
@@ -506,6 +524,29 @@ export function BtTrackerPage() {
           ) : null}
 
           {tab === 'tracker' ? (
+            <>
+            {leftoverHashes.length > 0 || leftoverSwarm > 0 ? (
+              <Card>
+                <CardSection
+                  title={t('btTracker.leftoverHashesTitle')}
+                  description={t('btTracker.leftoverHashesHint')}
+                >
+                  {leftoverHashes.length === 0 ? (
+                    <p className="muted u-text-sm">
+                      {t('btTracker.swarmLeftover', { count: leftoverSwarm })}
+                    </p>
+                  ) : (
+                    <ul className="u-pl-5 u-text-sm">
+                      {leftoverHashes.map((h) => (
+                        <li key={h}>
+                          <code>{h}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardSection>
+              </Card>
+            ) : null}
             <ExtraTrackersPanel
               settings={status?.settings ?? null}
               busy={busy}
@@ -520,6 +561,7 @@ export function BtTrackerPage() {
                 toast.ok(t('btTracker.extraTrackerApplyOk'));
               }}
             />
+            </>
           ) : null}
 
           {tab === 'settings' ? (

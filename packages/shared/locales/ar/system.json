@@ -87,7 +87,8 @@
     "cliNoSocket": "لا تحتوي واجهة سطر الأوامر (CLI) على مقبس HTTP مباشر؛ يتم استنتاجservingHttps من مآخذ التكوين والاستماع (ss).",
     "listenHost": "عنوان الاستماع",
     "currentHost": "هذه الجلسة",
-    "replaceCert": "استبدلها بشهادة موثوقة"
+    "replaceCert": "استبدلها بشهادة موثوقة",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "الوقت وNTP",
   "clockStatus": "حالة ساعة النظام",
@@ -206,5 +207,9 @@
   "noScheduledPower": "لم تتم جدولة إعادة التشغيل أو إيقاف التشغيل",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

@@ -279,7 +279,7 @@ export async function runDbCommand(
       );
       return 2;
     }
-    const result = await installServiceEngine(ctx.host, engine, ctx.dataDir);
+    const result = await installServiceEngine(ctx.host, engine, ctx.dataDir, ctx.db);
     h.printJson(result);
     return h.exitFromResult(result);
   }

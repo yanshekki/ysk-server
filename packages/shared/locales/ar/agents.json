@@ -11,7 +11,8 @@
     "failed": "فشل",
     "error": "خطأ",
     "unknown": "لم يتم التحقيق فيها",
-    "fallback": "مجهول"
+    "fallback": "مجهول",
+    "activating": "Starting"
   },
   "liveN": "{{count}} اونلاين",
   "registeredOnly": "مسجل فقط",

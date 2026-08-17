@@ -148,5 +148,21 @@
   "goLogs": "Open logs",
   "goAbout": "Backup notes",
   "skippedPendingOs": "Skipped — OS user / home not provisioned",
-  "latestFile": "Latest archive"
+  "latestFile": "Latest archive",
+  "tabTrash": "Recycle bin",
+  "trashTitle": "Recycle bin ({{count}})",
+  "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+  "trashEmpty": "Recycle bin is empty",
+  "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+  "trashRestore": "Restore",
+  "trashPurge": "Delete forever",
+  "trashEmptyAll": "Empty recycle bin",
+  "trashExpires": "Expires {{at}}",
+  "trashPurgeTitle": "Permanently delete this backup?",
+  "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+  "trashEmptyTitle": "Empty recycle bin?",
+  "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+  "trashRestored": "Restored from recycle bin",
+  "trashPurged": "Permanently deleted",
+  "trashedOk": "Moved to recycle bin"
 }

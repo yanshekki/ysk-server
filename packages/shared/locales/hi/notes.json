@@ -65,10 +65,18 @@
     "sidecarPushed": "SQL साइडकार {{name}} को भी धक्का दिया",
     "controlPlaneDryRun": "केवल पूर्वावलोकन - कुछ भी नहीं लिखा। पैनल में, रीस्टोर का उपयोग करें और लिखने के लिए वाक्यांश की पुष्टि करें।",
     "controlPlaneNeedConfirm": "पूर्ण नियंत्रण-प्लेन पुनर्स्थापना के लिए पुष्टिकरण वाक्यांश रीस्टोर-कंट्रोल-प्लेन की आवश्यकता होती है।",
-    "controlPlaneRestartAfter": "सफल पुनर्स्थापना के बाद एपीआई को पुनरारंभ करें।"
+    "controlPlaneRestartAfter": "सफल पुनर्स्थापना के बाद एपीआई को पुनरारंभ करें।",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "रेडिस-सीएलआई स्थापित नहीं है"
+    "cliMissing": "रेडिस-सीएलआई स्थापित नहीं है",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx पुनः लोड किया गया",
@@ -146,7 +154,17 @@
     "applyDigOk": "पॉवरडीएनएस बाइंड: सूची-क्षेत्र + डिग ओके",
     "applyDigFail": "ज़ोन कॉन्फ़ में पंजीकृत है लेकिन खुदाई अभी भी खाली है/अस्वीकृत - अंकन लागू नहीं किया गया है",
     "applySyncIncomplete": "PowerDNS बाइंड सिंक अपूर्ण - ज़ोन फ़ाइल केवल डिस्क पर (लागू नहीं)। EXECUTE/रूट या पीडीएनएस लॉग ठीक करें।",
-    "writeOnlyHint": "ज़ोन फ़ाइल केवल लिखी गई है - पावरडीएनएस नामांकित रजिस्टरों को लोड/लागू करने तक उत्तर नहीं देगा"
+    "writeOnlyHint": "ज़ोन फ़ाइल केवल लिखी गई है - पावरडीएनएस नामांकित रजिस्टरों को लोड/लागू करने तक उत्तर नहीं देगा",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "होस्ट निष्पादन बंद है; पैनल से डेटाबेस नहीं बनाया जा सकता",
@@ -3008,7 +3026,14 @@
     "linuxUserRolledBack": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को हटा दिया गया।",
     "linuxUserOrphan": "VNC पासवर्ड विफल होने के बाद बचे हुए Linux उपयोगकर्ता {{user}} को नहीं हटाया जा सका।",
     "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first."
   },
   "apache": {
     "needServerName": "सर्वर नाम आवश्यक है",
@@ -3093,7 +3118,12 @@
     "staleCliRemoved": "अवशिष्ट CLI {{path}} हटाया गया।",
     "staleCliRemoveFailed": "अवशिष्ट CLI {{path}} नहीं हटा सके: {{detail}}",
     "vsftpdSslOff": "FTPS प्रमाणपत्र नहीं मिला; vsftpd पर ssl_enable=NO कर के पुनः चालू किया।",
-    "dovecotSslOff": "{{path}} नहीं मिला; Dovecot पर ssl=no कर के पुनः चालू किया।"
+    "dovecotSslOff": "{{path}} नहीं मिला; Dovecot पर ssl=no कर के पुनः चालू किया।",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "git": {
     "missingBin": "Git PATH पर नहीं है",

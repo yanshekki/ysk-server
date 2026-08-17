@@ -128,5 +128,6 @@
   "hidePassword": "Esconder",
   "more": "Mais",
   "redirectedTo": "Aberto {{to}} (antes {{from}})",
-  "unavailable": "Not available right now"
+  "unavailable": "Not available right now",
+  "ok": "OK"
 }

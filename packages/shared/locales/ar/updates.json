@@ -235,5 +235,6 @@
   "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

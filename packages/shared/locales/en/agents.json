@@ -3,6 +3,7 @@
   "body": "OpenClaw / Hermes / IonClaw install and supervision; all tool calls go through Allowlist and approval.",
   "status": {
     "running": "Running",
+    "activating": "Starting",
     "connected": "Online",
     "registered": "Registered only",
     "stale": "Stale",

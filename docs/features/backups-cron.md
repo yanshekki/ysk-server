@@ -23,7 +23,7 @@
 | Panel action | CLI | Risk | Notes |
 |--------------|-----|------|-------|
 | Backup list/status/all | `ysk-server backup list\|status\|all` | write-host | all may need execute |
-| Restore / delete | `ysk-server backup restore\|delete` | write-host | |
+| Restore / delete | `ysk-server backup restore\|delete` | write-host | Delete **moves** the archive to `dataDir/backups/.trash` (7-day recycle). Permanent delete / restore / empty is the `/backups` trash tab (`GET/POST/DELETE /api/v1/backups/trash`). |
 | Schedule install | `ysk-server backup schedule --install --execute` | write-host | |
 | Restic helpers | `ysk-server backup restic …` | write-host | |
 | Remote dest (SFTP/S3/local) | `ysk-server backup settings get\|set\|test` | write-host | Panel test can send unsaved form values and the outbound SSH identity. Live connect needs `--execute`. Missing key/password is not “EXECUTE off”. Remote push `mkdir -p`s the dest and copies the `.sql` sidecar next to the tar. |
@@ -45,6 +45,7 @@ ysk-server cron install --execute --json
 
 - Schedule/install without EXECUTE is blocked.  
 - Backup “written” path ≠ verified offsite copy.  
+- Panel delete is not an immediate unlink: the file stays in trash for **7 days**, then `purgeExpired` removes it. Empty-trash and permanent delete still type-to-confirm.  
 - SFTP test uses the same outbound identity as `backup all`. A publickey denial is auth, not panel EXECUTE-off.  
 
 ## Panel-only ⚠️

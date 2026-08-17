@@ -230,5 +230,7 @@
   "installConfirmConsequence": "بعد التثبيت والتشغيل سيستخدم PowerDNS المنفذ 53.",
   "installPort53Busy": "يوجد بالفعل مستمع على المنفذ 53. قد يفشل ربط PowerDNS حتى يُوقف أو يُصلح ذلك المستمع.",
   "installPort53BusyConsequence": "أصلح الربط أو أوقف المستمع الآخر قبل توقع إجابات على المنفذ 53.",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

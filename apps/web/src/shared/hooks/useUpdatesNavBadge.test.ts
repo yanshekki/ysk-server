@@ -15,6 +15,8 @@ describe('useUpdatesNavBadge', () => {
     vi.mocked(updatesApi.summary).mockResolvedValue({
       badgeCount: 5,
       stale: false,
+      panelUpdateAvailable: true,
+      panelLatest: '1.1.6',
     });
   });
 
@@ -27,6 +29,8 @@ describe('useUpdatesNavBadge', () => {
     await waitFor(() => {
       expect(result.current.count).toBe(5);
       expect(result.current.stale).toBe(false);
+      expect(result.current.panelUpdateAvailable).toBe(true);
+      expect(result.current.panelLatest).toBe('1.1.6');
     });
   });
 });

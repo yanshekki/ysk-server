@@ -20,6 +20,19 @@ describe('docker parse', () => {
     expect(rows[0]!.yskInstance).toBe('eth-hoodi-1');
   });
 
+  it('prefers Status Exited over a stale running State', () => {
+    const rows = parseContainers(
+      JSON.stringify({
+        ID: 'deadbeef',
+        Names: '/hello',
+        Image: 'hello-world',
+        Status: 'Exited (0) 1 second ago',
+        State: 'running',
+      }),
+    );
+    expect(rows[0]!.state).toBe('exited');
+  });
+
   it('parses images and compose ls arrays', () => {
     expect(
       parseImages(JSON.stringify({ ID: 'sha256:1', Repository: 'alpine', Tag: '3.20', Size: '8MB' })),

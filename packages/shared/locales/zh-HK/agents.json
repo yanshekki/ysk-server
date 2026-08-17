@@ -3,6 +3,7 @@
   "body": "OpenClaw／Hermes／IonClaw 的安裝與監督；所有工具呼叫須經允許清單與審批。",
   "status": {
     "running": "運行中",
+    "activating": "啟動中",
     "connected": "上線",
     "registered": "僅登記",
     "stale": "逾時",

@@ -611,10 +611,13 @@ export function DockerPage() {
                 render: (row) => {
                   const key = dockerStateKey(row.state);
                   const restarts = parseRestartCount(row.status);
+                  const exit = String(row.status ?? '').match(/Exited\s*\((\d+)\)/i);
                   const label =
                     key === 'restarting' && restarts != null
                       ? t('docker.state.restartingCount', { n: restarts })
-                      : t(`docker.state.${key}`);
+                      : key === 'exited' && exit
+                        ? t('docker.state.exitedCode', { n: exit[1] })
+                        : t(`docker.state.${key}`);
                   return (
                     <Badge
                       tone={

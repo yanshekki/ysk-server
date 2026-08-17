@@ -87,7 +87,8 @@
     "cliNoSocket": "CLI tidak memiliki soket HTTP langsung; serveHttps disimpulkan dari soket config dan mendengarkan (ss).",
     "listenHost": "Dengarkan alamatnya",
     "currentHost": "Sesi ini",
-    "replaceCert": "Ganti dengan sertifikat tepercaya"
+    "replaceCert": "Ganti dengan sertifikat tepercaya",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "Waktu & NTP",
   "clockStatus": "Status jam sistem",
@@ -206,5 +207,9 @@
   "noScheduledPower": "Tidak ada reboot atau mematikan yang dijadwalkan",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

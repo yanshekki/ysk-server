@@ -358,5 +358,6 @@
   "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
   "pillTrash": "{{count}} in trash",
   "pillSpace": "{{used}} used",
-  "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+  "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+  "webdavOffNoToken": "Disabled (no active token)"
 }

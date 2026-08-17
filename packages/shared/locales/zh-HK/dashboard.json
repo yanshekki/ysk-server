@@ -44,10 +44,12 @@
   "readinessCheck": "就緒檢查：",
   "prodOk": "可作生產",
   "notFullyReady": "尚未完全就緒",
+  "readinessBlocked": "有 {{n}} 項阻擋",
   "modeScore": "模式 {{mode}} · 分數 {{ready}}/{{total}}",
   "mode": {
     "degraded": "降級",
-    "production_capable": "可生產",
+    "production_capable": "EXECUTE＋root",
+    "blocked": "有阻擋",
     "normal": "正常"
   },
   "details": "詳情",

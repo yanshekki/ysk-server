@@ -23,7 +23,7 @@
 | 面板操作 | CLI | 風險 | 備註 |
 |----------|-----|------|------|
 | 備份列表／狀態／全部 | `ysk-server backup list\|status\|all` | write-host | all 可能需 execute |
-| 還原／刪除 | `ysk-server backup restore\|delete` | write-host | |
+| 還原／刪除 | `ysk-server backup restore\|delete` | write-host | 刪除會**移去** `dataDir/backups/.trash`（7 日回收區）。永久刪／還原／清空喺 `/backups` 回收區分頁（`GET/POST/DELETE /api/v1/backups/trash`）。 |
 | 排程安裝 | `ysk-server backup schedule --install --execute` | write-host | |
 | Restic 輔助 | `ysk-server backup restic …` | write-host | |
 | 遠端目的地（SFTP／S3／local） | `ysk-server backup settings get\|set\|test` | write-host | 面板測試可送未儲存表單與出站 SSH 身分。真正連線需 `--execute`。缺金鑰／密碼不是「未開 EXECUTE」。遠端推送會 `mkdir -p` 目的目錄，並把 `.sql` sidecar 放在 tar 旁邊。 |
@@ -45,6 +45,7 @@ ysk-server cron install --execute --json
 
 - 無 EXECUTE 時排程／安裝會被阻擋。  
 - 備份「已寫入」路徑 ≠ 已驗證異地副本。  
+- 面板刪除唔會即刻 `unlink`：檔案留喺回收區 **7 日**，之後 `purgeExpired` 先清。清空與永久刪仍要打字確認。  
 - SFTP 測試與 `backup all` 使用同一出站身分。公鑰被拒是認證問題，不是面板未開 EXECUTE。  
 
 ## 僅面板 ⚠️

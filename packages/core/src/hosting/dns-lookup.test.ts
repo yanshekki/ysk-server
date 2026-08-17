@@ -9,6 +9,26 @@ describe('dns-lookup', () => {
     expect(r.notes.some((n) => /名稱|name/i.test(n))).toBe(true);
   });
 
+  it('does not treat system resolver as @server when dig is missing', async () => {
+    const r = await lookupDns({
+      host: {
+        runCommand: async (argv: string[]) => ({
+          stdout: argv.includes('dig') || String(argv).includes('dig') ? '' : 'YSK_NO_DIG',
+          stderr: '',
+          exitCode: 1,
+          argv,
+          dryRun: false,
+        }),
+      } as never,
+      name: 'example.com',
+      server: '127.0.0.1',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.method).toBe('none');
+    expect(r.answers).toEqual([]);
+    expect(r.notes.join(' ')).toMatch(/127\.0\.0\.1|ignored|忽略/i);
+  });
+
   it('looks up a public name via node-dns (no host)', async () => {
     const r = await lookupDns({ name: 'localhost', type: 'A' });
     // localhost may resolve to 127.0.0.1; network-independent enough for CI

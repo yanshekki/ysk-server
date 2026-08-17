@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "Cloudflare 실제 IP",
   "setIndexes": "디렉토리 목록",
-  "bodyInherit": "글로벌"
+  "bodyInherit": "글로벌",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

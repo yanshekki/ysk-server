@@ -514,6 +514,7 @@ export async function installServiceEngine(
   host: HostExecutor,
   engine: ServiceEngine,
   dataDir?: string,
+  db?: import('../db/store.js').JsonStore,
 ): Promise<{
   ok: boolean;
   notes: string[];
@@ -532,7 +533,7 @@ export async function installServiceEngine(
   let switchTarget: 'mysql' | 'mariadb' | undefined;
   let blockedByExclusive: string | undefined;
   for (const id of ids) {
-    const r = await installSoftware({ host, id, dataDir, enableUnits: true });
+    const r = await installSoftware({ host, id, dataDir, db, enableUnits: true });
     notes.push(...r.notes);
     if (r.blocked) {
       blocked = true;

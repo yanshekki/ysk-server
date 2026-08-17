@@ -146,5 +146,6 @@
   "detectPublicIpTitle": "Complete el primer IPv4 sin bucle invertido de este host",
   "pasvIpRequired": "Defina una IP pública PASV antes de aplicar (NAT/nube). Detecte o escriba una dirección.",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-  "stateFailed": "Failed to start"
+  "stateFailed": "Failed to start",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
 }

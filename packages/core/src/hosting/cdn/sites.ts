@@ -312,6 +312,8 @@ export function patchCdnSiteStatus(
   patch: {
     apply_status?: ApplyStatus;
     edge_status?: Record<string, ApplyStatus>;
+    lastApplyAt?: string;
+    lastApplyError?: string | null;
   },
 ): CdnSiteDto {
   const site = getCdnSite(db, id);
@@ -323,7 +325,13 @@ export function patchCdnSiteStatus(
   const updated: CdnSiteDto = {
     ...site,
     apply_status: patch.apply_status ?? site.apply_status,
-    edge_status: patch.edge_status ?? site.edge_status };
+    edge_status: patch.edge_status ?? site.edge_status,
+    lastApplyAt: patch.lastApplyAt ?? site.lastApplyAt,
+    lastApplyError:
+      patch.lastApplyError === null
+        ? undefined
+        : patch.lastApplyError ?? site.lastApplyError,
+  };
   const all = loadAll(db).map((s) => (s.id === id ? updated : s));
   saveAll(db, all);
   return updated;

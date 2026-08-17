@@ -279,7 +279,11 @@ export function initialSourceFromParams(
   const source = get('source');
   if (source) return source;
   const unit = get('unit');
-  if (unit) return `journal:${unit}`;
+  if (unit) {
+    const u = unit.replace(/\.service$/i, '');
+    if (u === 'nginx') return 'file:nginx-access';
+    return `journal:${u}.service`;
+  }
   return '';
 }
 

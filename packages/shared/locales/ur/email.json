@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM ری لوڈ نہیں کرتا — کلید یا جدول بدلنے کے بعد ری اسٹارٹ استعمال کریں۔",
   "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

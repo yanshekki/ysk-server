@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "dégradé",
     "production_capable": "prêt pour la production",
-    "normal": "normale"
+    "normal": "normale",
+    "blocked": "blocked"
   },
   "details": "Détails",
   "certExpiryTitle": "Expiration du certificat :",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

@@ -11,7 +11,8 @@
     "failed": "ব্যর্থ হয়েছে",
     "error": "ত্রুটি",
     "unknown": "তদন্ত করা হয়নি",
-    "fallback": "অজানা"
+    "fallback": "অজানা",
+    "activating": "Starting"
   },
   "liveN": "{{count}} অনলাইন",
   "registeredOnly": "শুধুমাত্র নিবন্ধিত",

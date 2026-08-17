@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "terdegradasi",
     "production_capable": "siap produksi",
-    "normal": "normal"
+    "normal": "normal",
+    "blocked": "blocked"
   },
   "details": "Detail",
   "certExpiryTitle": "Masa berlaku sertifikat:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

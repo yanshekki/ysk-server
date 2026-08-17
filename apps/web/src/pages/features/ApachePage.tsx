@@ -323,8 +323,20 @@ export function ApachePage() {
       subtitle={t('apache.pageDesc')}
       status={{
         pill: {
-          label: t('apache.pillSites', { count: sites.length }),
-          tone: sites.length ? 'ok' : 'warn',
+          label: (() => {
+            const leftover = sites.filter(isOrphanSite).length;
+            const managed = sites.length - leftover;
+            return leftover
+              ? t('apache.pillSitesSplit', { n: managed, leftover })
+              : t('apache.pillSites', { count: sites.length });
+          })(),
+          tone:
+            sites.filter(isOrphanSite).length &&
+            sites.filter(isOrphanSite).length === sites.length
+              ? 'warn'
+              : sites.length
+                ? 'ok'
+                : 'warn',
         },
       }}
       actions={
@@ -390,6 +402,7 @@ export function ApachePage() {
             label="Apache"
             danger="edge"
             actions={['start', 'stop', 'restart', 'reload']}
+            stopDetail={t('apache.stopSites', { n: sites.length })}
             size="sm"
             className="u-mt-3"
             onDone={() => void refresh()}

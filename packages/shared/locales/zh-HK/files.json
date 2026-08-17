@@ -102,6 +102,7 @@
   "webdavAfterEnable": "啟用 WebDAV 並簽發權杖後才可用。",
   "webdavOn": "已啟用",
   "webdavOff": "已關閉",
+  "webdavOffNoToken": "已停用（無有效權杖）",
   "webdavTokenId": "權杖 #{{id}}",
   "webdavTokenInactive": "已停用，權杖 #{{id}} 不生效",
   "webdavUpdated": "更新於 {{at}}",

@@ -18,6 +18,9 @@ export interface EmailDomainDeleteDialogProps {
   domain: EmailDomain | null;
   open: boolean;
   busy?: boolean;
+  mailboxCount?: number;
+  recordCount?: number;
+  aliasCount?: number;
   onClose: () => void;
   onDeleted: (result: {
     ok: boolean;
@@ -30,6 +33,9 @@ export function EmailDomainDeleteDialog({
   domain,
   open,
   busy: parentBusy,
+  mailboxCount = 0,
+  recordCount = 0,
+  aliasCount = 0,
   onClose,
   onDeleted }: EmailDomainDeleteDialogProps) {
   const { t } = useTranslation();
@@ -72,6 +78,11 @@ export function EmailDomainDeleteDialog({
 
   const applyLabel = String(domain.apply_status ?? 'draft');
   const impactItems = [
+    t('email.deleteImpact', {
+      mailboxes: mailboxCount,
+      records: recordCount,
+      aliases: aliasCount,
+    }),
     t('email.deleteDomainC1'),
     t('email.deleteDomainC2'),
     removeData ? t('email.deleteWillData') : t('email.deleteKeepData'),

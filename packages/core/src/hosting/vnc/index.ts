@@ -10,3 +10,4 @@ export * from './session-ticket.js';
 export * from './share-links.js';
 export * from './rfb-probe.js';
 export * from './service.js';
+export * from './hostname-hosts.js';

@@ -213,6 +213,8 @@
   "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0",
   "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",
   "healthHealPdnsFailed": "PowerDNS heal failed",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
   "aboutTitle": "DNS essentials",
   "aboutSub": "Zones first; records, cluster, and DNSSEC need a selected domain.",
   "aboutZonesTitle": "Zones and scope",

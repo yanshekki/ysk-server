@@ -87,7 +87,8 @@
     "cliNoSocket": "CLI کا کوئی لائیو HTTP ساکٹ نہیں ہے۔ servingHttps کا اندازہ config اور listen ساکٹ (ss) سے لگایا گیا ہے۔",
     "listenHost": "ایڈریس سنیں۔",
     "currentHost": "یہ سیشن",
-    "replaceCert": "ایک قابل اعتماد سرٹیفکیٹ کے ساتھ تبدیل کریں"
+    "replaceCert": "ایک قابل اعتماد سرٹیفکیٹ کے ساتھ تبدیل کریں",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "وقت اور این ٹی پی",
   "clockStatus": "سسٹم کی گھڑی کی حیثیت",
@@ -206,5 +207,9 @@
   "noScheduledPower": "کوئی ریبوٹ یا پاور آف شیڈول نہیں ہے۔",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

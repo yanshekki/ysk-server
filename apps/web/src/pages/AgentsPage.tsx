@@ -36,6 +36,7 @@ import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindVoid } from './bind
 
 export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';
+  if (status === 'activating') return 'warn';
   if (status === 'not_installed' || status === 'registered' || status === 'stale') return 'warn';
   if (status === 'failed' || status === 'error' || status === 'disconnected') return 'danger';
   if (status === 'unknown') return 'neutral';
@@ -92,6 +93,7 @@ export function fleetDisplayStatus(
 
 export function statusLabel(status: string | undefined, tr: (k: string) => string): string {
   if (status === 'running') return tr('agents.status.running');
+  if (status === 'activating') return tr('agents.status.activating');
   if (status === 'connected') return tr('agents.status.connected');
   if (status === 'registered') return tr('agents.status.registered');
   if (status === 'stale') return tr('agents.status.stale');

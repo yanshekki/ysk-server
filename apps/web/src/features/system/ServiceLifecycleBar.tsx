@@ -29,6 +29,10 @@ export type ServiceLifecycleBarProps = {
   onAction?: (action: ServiceLifecycleAction) => Promise<unknown>;
   /** Extra sentence on the stop confirm (e.g. container count). */
   stopDetail?: string;
+  /** After start/restart, re-probe. Return ok:false to avoid a success toast. */
+  verifyAfter?: (
+    action: ServiceLifecycleAction,
+  ) => Promise<{ ok: boolean; notes?: string[] } | void>;
 };
 
 const DEFAULT_ACTIONS: ServiceLifecycleAction[] = ['start', 'stop', 'restart'];
@@ -46,6 +50,7 @@ export function ServiceLifecycleBar({
   onDone,
   onAction,
   stopDetail,
+  verifyAfter,
 }: ServiceLifecycleBarProps) {
   const { t } = useTranslation();
   const { busy, run } = useFeatureAction();
@@ -152,10 +157,22 @@ export function ServiceLifecycleBar({
           }
         }
         await onDone?.();
+        if (
+          verifyAfter &&
+          (action === 'start' || action === 'restart')
+        ) {
+          const v = await verifyAfter(action);
+          if (v && v.ok === false) {
+            return {
+              ok: false,
+              notes: v.notes?.length ? v.notes : [t('services.startVerifyFailed', { label })],
+            };
+          }
+        }
         return r;
       }, okMessage(action));
     },
-    [canAct, onAction, onDone, okMessage, run, unit],
+    [canAct, onAction, onDone, okMessage, run, unit, verifyAfter, t, label],
   );
 
   if (!installed) return null;
@@ -190,7 +207,7 @@ export function ServiceLifecycleBar({
               ? t('services.needRunning', { label })
               : danger === 'panel'
                 ? t('services.stopConfirmPanelDesc')
-                : undefined
+                : t('services.stopConfirmTitle', { label })
           }
           onClick={() => setPendingStop(true)}
         >
@@ -203,9 +220,13 @@ export function ServiceLifecycleBar({
           size={size}
           loading={busy}
           disabled={!canAct || running === false}
-          title={danger === 'panel' ? t('services.stopConfirmPanelDesc') : undefined}
+          title={
+            danger === 'panel'
+              ? t('services.stopConfirmPanelDesc')
+              : t('services.restartConfirmTitle', { label })
+          }
           onClick={() => {
-            if (danger === 'panel') setPendingRestart(true);
+            if (danger === 'panel' || danger === 'edge') setPendingRestart(true);
             else void fire('restart');
           }}
         >
@@ -260,8 +281,16 @@ export function ServiceLifecycleBar({
           setPendingRestart(false);
           void fire('restart');
         }}
-        title={t('services.restartConfirmPanelTitle')}
-        description={t('services.restartConfirmPanelDesc')}
+        title={
+          danger === 'panel'
+            ? t('services.restartConfirmPanelTitle')
+            : t('services.restartConfirmTitle', { label })
+        }
+        description={
+          danger === 'panel'
+            ? t('services.restartConfirmPanelDesc')
+            : t('services.restartConfirmDesc', { label })
+        }
         consequences={confirmCopy.consequences}
         confirmText={confirmCopy.confirmText}
         severity={confirmCopy.severity}

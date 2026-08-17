@@ -133,6 +133,9 @@ export type VncOverviewStatus = {
   executeEnabled: boolean;
   isRoot: boolean;
   notes: string[];
+  hostnameResolves?: boolean;
+  hostnameFixLine?: string;
+  hostname?: string;
 };
 
 export const DEFAULT_VNC_SETTINGS: VncSettings = {

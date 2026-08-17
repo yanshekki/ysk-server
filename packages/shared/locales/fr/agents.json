@@ -11,7 +11,8 @@
     "failed": "Échoué",
     "error": "Erreur",
     "unknown": "Non sondé",
-    "fallback": "Inconnu"
+    "fallback": "Inconnu",
+    "activating": "Starting"
   },
   "liveN": "{{count}} en ligne",
   "registeredOnly": "Enregistré uniquement",

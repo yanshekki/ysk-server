@@ -146,5 +146,6 @@
   "detectPublicIpTitle": "填写来自该主机的第一个非环回 IPv4",
   "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-  "stateFailed": "Failed to start"
+  "stateFailed": "Failed to start",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
 }

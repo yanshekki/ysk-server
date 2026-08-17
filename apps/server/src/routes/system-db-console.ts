@@ -135,7 +135,7 @@ export async function handleSystemDbConsoleRoutes(
     const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb' | 'postgres' | 'redis';
     // prefer console install for postgres (catalog); mysql/redis already had install routes
     if (engine === 'postgres' || engine === 'mysql' || engine === 'mariadb' || engine === 'redis') {
-      const result = await installServiceEngine(ctx.host, engine, ctx.dataDir);
+      const result = await installServiceEngine(ctx.host, engine, ctx.dataDir, ctx.db);
       ctx.audit.append({
         actor: user.username,
         action: `system.db.${engine}.install`,

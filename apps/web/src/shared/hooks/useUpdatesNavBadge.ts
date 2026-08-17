@@ -7,12 +7,16 @@ import { updatesApi } from '../../features/updates';
 export type UpdatesNavBadge = {
   count: number;
   stale: boolean;
+  panelUpdateAvailable: boolean;
+  panelLatest?: string;
   refresh: () => Promise<void>;
 };
 
 export function useUpdatesNavBadge(): UpdatesNavBadge {
   const [count, setCount] = useState(0);
   const [stale, setStale] = useState(false);
+  const [panelUpdateAvailable, setPanelUpdateAvailable] = useState(false);
+  const [panelLatest, setPanelLatest] = useState<string | undefined>(undefined);
 
   const refresh = useCallback(async () => {
     try {
@@ -21,6 +25,9 @@ export function useUpdatesNavBadge(): UpdatesNavBadge {
       const n = Number(s.badgeCount ?? 0);
       setCount(Number.isFinite(n) && n > 0 ? n : 0);
       setStale(Boolean(s.stale));
+      setPanelUpdateAvailable(Boolean(s.panelUpdateAvailable));
+      const latest = String(s.panelLatest ?? '').trim();
+      setPanelLatest(latest || undefined);
     } catch {
       /* keep last known */
     }
@@ -32,5 +39,5 @@ export function useUpdatesNavBadge(): UpdatesNavBadge {
     return () => window.clearInterval(id);
   }, [refresh]);
 
-  return { count, stale, refresh };
+  return { count, stale, panelUpdateAvailable, panelLatest, refresh };
 }

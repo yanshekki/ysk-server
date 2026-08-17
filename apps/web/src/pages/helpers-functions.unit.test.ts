@@ -580,6 +580,12 @@ describe('Protection / Readiness / SqlEngine helpers', () => {
       'leftover',
     );
     expect(classifyManagedNginxName('000-default.conf')).toBe('unused');
+    expect(
+      classifyManagedNginxName(
+        'public-files-files-example-com.conf',
+        'public-files-files-example-com.conf',
+      ),
+    ).toBe('managed');
     expect(isUnusualProjectHome('/var/lib/ysk-server/projects/x')).toBe(true);
     expect(isUnusualProjectHome('/home/ysk-server-abc')).toBe(false);
   });

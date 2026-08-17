@@ -59,6 +59,7 @@
     "down": "Stopped",
     "running": "Running",
     "exited": "Exited",
+    "exitedCode": "Exited ({{n}})",
     "restarting": "Restarting",
     "restartingCount": "Restarting · {{n}} times",
     "paused": "Paused",

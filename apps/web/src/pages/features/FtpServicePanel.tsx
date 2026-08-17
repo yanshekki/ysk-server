@@ -198,6 +198,9 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               },
             ]}
           />
+          {installed && running && !settings.sslEnable ? (
+            <Alert variant="warn">{t('ftp.plaintextInsecure')}</Alert>
+          ) : null}
           <div className="ftps-overview-actions">
             {!installed ? (
               <Button

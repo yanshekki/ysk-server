@@ -128,5 +128,6 @@
   "hidePassword": "چھپائیں",
   "more": "مزید",
   "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})",
-  "unavailable": "Not available right now"
+  "unavailable": "Not available right now",
+  "ok": "OK"
 }

@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM tidak mendukung reload — gunakan restart setelah mengubah kunci atau tabel.",
   "opendkimNoReloadTitle": "systemctl reload opendkim tidak didukung pada tumpukan ini",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

@@ -2242,7 +2242,11 @@ export function ProtectionPage() {
                       size="md"
                       loading={busy}
                       disabled={!banIp.trim()}
-                      onClick={bindBanAndClear(banOne, banIp, banReason, () => setBanIp(''))}
+                      onClick={() => {
+                        const ip = banIp.trim();
+                        if (!ip) return;
+                        setPendingBan({ ip, reason: banReason });
+                      }}
                     >
                       {t('protection.ban')}
                     </Button>

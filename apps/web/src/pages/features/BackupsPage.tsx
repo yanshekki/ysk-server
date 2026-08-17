@@ -43,7 +43,7 @@ function localizeBackupNote(
   return s;
 }
 
-const BK_TABS = ['files', 'ops', 'remote', 'about'] as const;
+const BK_TABS = ['files', 'trash', 'ops', 'remote', 'about'] as const;
 
 type BackupItem = {
   projectId: string;
@@ -51,6 +51,12 @@ type BackupItem = {
   path: string;
   bytes: number;
   mtime: string;
+};
+
+type BackupTrashItem = BackupItem & {
+  deletedAt: string;
+  expiresAt: string;
+  trashName: string;
 };
 
 type RemoteSettings = {
@@ -146,6 +152,9 @@ export function BackupsPage() {
   const canRestore = can('backups.restore');
   const canRun = can('backups.run');
   const [items, setItems] = useState<BackupItem[]>([]);
+  const [trashItems, setTrashItems] = useState<BackupTrashItem[]>([]);
+  const [purgeTrashTarget, setPurgeTrashTarget] = useState<BackupTrashItem | null>(null);
+  const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
   const [lastRun, setLastRun] = useState<Record<string, unknown> | null>(null);
   const [liveProjectCount, setLiveProjectCount] = useState(0);
   const [headerReady, setHeaderReady] = useState(false);
@@ -182,7 +191,7 @@ export function BackupsPage() {
   const [identities, setIdentities] = useState<Array<{ id: string; name?: string }>>([]);
 
   const refresh = useCallback(async () => {
-    const [r, s, proj, ids] = await Promise.all([
+    const [r, s, proj, ids, trash] = await Promise.all([
       api.requestRaw<{
         items: BackupItem[];
         lastRun?: Record<string, unknown> | null;
@@ -194,9 +203,13 @@ export function BackupsPage() {
       }>('/api/v1/backups/settings'),
       api.listProjects().catch(() => ({ items: [] })),
       sshApi.listIdentities().catch(() => ({ items: [] as Array<{ id: string; name?: string }> })),
+      api
+        .requestRaw<{ items: BackupTrashItem[] }>('/api/v1/backups/trash')
+        .catch(() => ({ items: [] as BackupTrashItem[] })),
     ]);
     setIdentities(ids.items ?? []);
     setItems(r.items ?? []);
+    setTrashItems(trash.items ?? []);
     setLastRun(r.lastRun ?? null);
     setLiveProjectCount(proj.items?.length ?? 0);
     setHeaderReady(true);
@@ -422,9 +435,9 @@ export function BackupsPage() {
       <PageTabs
         tabs={[
           { id: 'files', label: t('backups.backupFiles'), badge: items.length || undefined },
+          { id: 'trash', label: t('backups.tabTrash'), badge: trashItems.length || undefined },
           { id: 'ops', label: t('common.operation') },
           { id: 'remote', label: t('backups.remoteExclude') },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -565,6 +578,86 @@ export function BackupsPage() {
                   ))}
             </div>
           )}
+            </section>
+          </div>
+        ) : null}
+
+        {tab === 'trash' ? (
+          <div className="tab-panel">
+            <section className="ops-panel">
+              <header className="ops-panel__head">
+                <div>
+                  <h3 className="ops-panel__title">{t('backups.trashTitle', { count: trashItems.length })}</h3>
+                  <p className="ops-panel__sub">{t('backups.trashSub')}</p>
+                </div>
+                {canRun && trashItems.length > 0 ? (
+                  <Button variant="danger" size="sm" onClick={() => setEmptyTrashOpen(true)}>
+                    {t('backups.trashEmptyAll')}
+                  </Button>
+                ) : null}
+              </header>
+              {trashItems.length === 0 ? (
+                <EmptyState title={t('backups.trashEmpty')} description={t('backups.trashEmptyDesc')} />
+              ) : (
+                <div className="ops-svc-list">
+                  {trashItems.map((b) => (
+                    <article key={`${b.projectId}:${b.trashName}`} className="ops-svc">
+                      <div className="ops-svc__body">
+                        <div className="ops-svc__head">
+                          <h4 className="ops-svc__name">{b.name}</h4>
+                          <Badge tone="neutral">{formatBytes(b.bytes)}</Badge>
+                        </div>
+                        <div className="ops-svc__meta">
+                          <span>
+                            {t('common.project')} <code>{shortProjectId(b.projectId)}</code>
+                          </span>
+                          <span>
+                            {t('backups.trashExpires', {
+                              at: b.expiresAt
+                                ? formatDateTime(b.expiresAt, { locale: i18n.language })
+                                : '—',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ops-svc__actions">
+                        {canRun ? (
+                          <>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={busy}
+                              onClick={() =>
+                                void run(async () => {
+                                  const r = await api.requestRaw('/api/v1/backups/trash/restore', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                      projectId: b.projectId,
+                                      name: b.trashName,
+                                    }),
+                                  });
+                                  await refresh();
+                                  return r as OpsResultLike;
+                                }, t('backups.trashRestored'))
+                              }
+                            >
+                              {t('backups.trashRestore')}
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => setPurgeTrashTarget(b)}
+                            >
+                              {t('backups.trashPurge')}
+                            </Button>
+                          </>
+                        ) : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
         ) : null}
@@ -1474,12 +1567,74 @@ export function BackupsPage() {
               const m = e instanceof Error ? e.message : t('common.deleteFailed');
               return { ok: false, notes: [m], blockMessage: m };
             }
-          }, t('redis.deleted'));
+          }, t('backups.trashedOk'));
         }}
         title={t('backups.deleteTitle')}
         description={deleteTarget ? t('backups.deleteDesc', { name: deleteTarget.name }) : ''}
         confirmText={deleteTarget?.name}
         confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        severity="destructive"
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(purgeTrashTarget)}
+        onClose={bindSet(setPurgeTrashTarget, null)}
+        onConfirm={() => {
+          if (!purgeTrashTarget) return;
+          void run(async () => {
+            try {
+              const r = await api.requestRaw('/api/v1/backups/trash', {
+                method: 'DELETE',
+                body: JSON.stringify({
+                  projectId: purgeTrashTarget.projectId,
+                  name: purgeTrashTarget.trashName,
+                }),
+              });
+              setPurgeTrashTarget(null);
+              await refresh();
+              return r as OpsResultLike;
+            } catch (e) {
+              const m = e instanceof Error ? e.message : t('common.deleteFailed');
+              return { ok: false, notes: [m], blockMessage: m };
+            }
+          }, t('backups.trashPurged'));
+        }}
+        title={t('backups.trashPurgeTitle')}
+        description={
+          purgeTrashTarget ? t('backups.trashPurgeDesc', { name: purgeTrashTarget.name }) : ''
+        }
+        confirmText={purgeTrashTarget?.name}
+        confirmLabel={t('backups.trashPurge')}
+        cancelLabel={t('common.cancel')}
+        severity="destructive"
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={emptyTrashOpen}
+        onClose={() => setEmptyTrashOpen(false)}
+        onConfirm={() => {
+          void run(async () => {
+            try {
+              const r = await api.requestRaw('/api/v1/backups/trash/empty', {
+                method: 'DELETE',
+                body: '{}',
+              });
+              setEmptyTrashOpen(false);
+              await refresh();
+              return r as OpsResultLike;
+            } catch (e) {
+              const m = e instanceof Error ? e.message : t('common.deleteFailed');
+              return { ok: false, notes: [m], blockMessage: m };
+            }
+          }, t('backups.trashPurged'));
+        }}
+        title={t('backups.trashEmptyTitle')}
+        description={t('backups.trashEmptyDescConfirm', { count: trashItems.length })}
+        confirmText={String(trashItems.length)}
+        confirmLabel={t('backups.trashEmptyAll')}
         cancelLabel={t('common.cancel')}
         severity="destructive"
         busy={busy}

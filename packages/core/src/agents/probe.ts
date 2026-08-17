@@ -84,11 +84,14 @@ export async function probeAgentRuntime(
 
   let status: AgentRuntimeDto['status'] = 'unknown';
   if (unitActive === 'active') {
-    // active unit with only placeholder is still "running" but probe notes honesty
     status = 'running';
     if (!binaryPath) {
       notes.push(tl('notes.auto.n1431'));
     }
+  } else if (unitActive === 'activating' || unitActive === 'reloading') {
+    status = 'activating';
+  } else if (unitActive === 'failed') {
+    status = 'failed';
   } else if (pathExists || binaryPath) status = 'stopped';
   else status = 'not_installed';
 

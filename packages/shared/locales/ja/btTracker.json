@@ -194,5 +194,7 @@
   "statsLibraryHint": "Torrents in the panel library / file shares",
   "statsTrackerLeftover": "Tracker leftover",
   "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-  "statsAnnouncesHint": "Announce requests seen by the tracker process"
+  "statsAnnouncesHint": "Announce requests seen by the tracker process",
+  "leftoverHashesTitle": "Tracker leftover hashes",
+  "leftoverHashesHint": "Read-only. These announces are not library or share rows."
 }

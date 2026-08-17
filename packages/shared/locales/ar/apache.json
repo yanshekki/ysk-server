@@ -57,5 +57,7 @@
   "sslTerminatedUpstream": "ينتهي TLS عند Nginx الأمامي",
   "removeArtifactHint": "يحذف إعداد القرص المتبقي هذا فقط. لا يحذف المشروع.",
   "sourceOrphan": "Leftover",
-  "orphanSite": "Project gone"
+  "orphanSite": "Project gone",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

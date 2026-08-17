@@ -435,6 +435,27 @@ export function ProjectDetailPage() {
                 phpVersion }).catch(() => undefined)
             }
             onRetryPublish={bindRun(run, 'publish-nginx', project.id)}
+            onProvisionOs={() => {
+              setBusy(true);
+              setError(null);
+              void projectsApi
+                .osProvision(project.id)
+                .then((r) => {
+                  const d = r.osProvision?.detail ?? '';
+                  if (r.ok) {
+                    setMsg(t('projects.osUserReadyMsg', { detail: d }));
+                  } else {
+                    setMsg(
+                      r.requiresRoot || r.requiresExecute
+                        ? t('projects.osUserNeedRoot', { detail: d })
+                        : d || t('projects.osUserIncomplete'),
+                    );
+                  }
+                  return refreshProject();
+                })
+                .catch((e: Error) => setError(e.message))
+                .finally(() => setBusy(false));
+            }}
           />
         ) : null}
         {activeTab === 'app' ? (

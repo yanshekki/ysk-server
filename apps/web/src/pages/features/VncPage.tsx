@@ -165,6 +165,10 @@ export function VncPage() {
   const [delTarget, setDelTarget] = useState<VncAccountSummary | null>(null);
   const [delRemoveUser, setDelRemoveUser] = useState(true);
   const [loaded, setLoaded] = useState(false);
+  const [hostnameResolves, setHostnameResolves] = useState(true);
+  const [hostnameFixLine, setHostnameFixLine] = useState('');
+  const [hostname, setHostname] = useState('');
+  const [fixHostsOpen, setFixHostsOpen] = useState(false);
 
   // Connection materials
   const [connTarget, setConnTarget] = useState<VncAccountSummary | null>(null);
@@ -180,6 +184,9 @@ export function VncPage() {
       setAccounts(s.accounts ?? []);
       setClients(s.clientProfiles ?? []);
       setVncStacks(s.stacks ?? []);
+      setHostnameResolves(s.hostnameResolves !== false);
+      setHostnameFixLine(s.hostnameFixLine ?? '');
+      setHostname(s.hostname ?? '');
       if (s.settings) {
         setDesktop(s.settings.defaultDesktop);
         setGeometry(s.settings.defaultGeometry);
@@ -320,6 +327,16 @@ export function VncPage() {
         onChange={(id) => setTab(id as (typeof TABS)[number])}
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
+        {loaded && !hostnameResolves ? (
+          <Alert variant="warn">
+            <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
+              <span>{t('vnc.hostnameBroken', { hostname: hostname || '—' })}</span>
+              <Button variant="secondary" size="sm" onClick={() => setFixHostsOpen(true)}>
+                {t('vnc.hostnameFix')}
+              </Button>
+            </div>
+          </Alert>
+        ) : null}
         {lastOps ? (
           <OpsResultPanel
             title={t('vnc.result')}
@@ -965,7 +982,7 @@ export function VncPage() {
                     geometry: cGeo,
                     depth: cDepth,
                     rfbBind: cBind,
-                    start: cStart,
+                    start: cStart && hostnameResolves,
                   }),
                 ).then((r) => {
                   if (r?.ok) setCreateOpen(false);
@@ -1052,7 +1069,9 @@ export function VncPage() {
           <label className="u-flex u-items-center u-gap-2">
             <input
               type="checkbox"
-              checked={cStart}
+              checked={cStart && hostnameResolves}
+              disabled={!hostnameResolves}
+              title={!hostnameResolves ? t('vnc.startAfterCreateBlocked') : undefined}
               onChange={(e) => setCStart(e.target.checked)}
             />
             {t('vnc.startAfterCreate')}
@@ -1342,6 +1361,20 @@ export function VncPage() {
           <Alert variant="warn">{t('vnc.deleteKeepUserWarn')}</Alert>
         ) : null}
       </ConfirmDialog>
+
+      <ConfirmDialog
+        open={fixHostsOpen}
+        onClose={() => setFixHostsOpen(false)}
+        title={t('vnc.hostnameFixTitle')}
+        description={t('vnc.hostnameFixDesc', { line: hostnameFixLine || '127.0.1.1 hostname' })}
+        confirmLabel={t('vnc.hostnameFix')}
+        cancelLabel={t('common.cancel')}
+        busy={busy}
+        onConfirm={() => {
+          setFixHostsOpen(false);
+          void runOps(() => vncApi.fixHostnameHosts()).then(() => void load());
+        }}
+      />
 
       <Modal
         open={clientOpen}

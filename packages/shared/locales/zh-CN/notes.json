@@ -65,10 +65,18 @@
     "sidecarPushed": "还推送了 SQL sidecar {{name}}",
     "controlPlaneDryRun": "仅预览 - 没有写任何东西。在面板中，使用“恢复”并确认要写入的短语。",
     "controlPlaneNeedConfirm": "完全控制平面恢复需要确认短语 RESTORE-CONTROL-PLANE。",
-    "controlPlaneRestartAfter": "恢复成功后重新启动API。"
+    "controlPlaneRestartAfter": "恢复成功后重新启动API。",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "未安装 redis-cli"
+    "cliMissing": "未安装 redis-cli",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx 已 reload",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND：list-zones + dig OK",
     "applyDigFail": "conf 已注册但 dig 仍空/REFUSED — 不标 applied",
     "applySyncIncomplete": "PowerDNS bind 同步未完 — 仅写盘。请检查 EXECUTE/root 或 pdns 日志",
-    "writeOnlyHint": "仅写了 zone 文件 — 需 load/apply 挂 named.conf 才会应答"
+    "writeOnlyHint": "仅写了 zone 文件 — 需 load/apply 挂 named.conf 才会应答",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "服务器未开启系统变更权限，无法在管理面板创建数据库",
@@ -3008,7 +3026,14 @@
     "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
     "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。",
     "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first."
   },
   "apache": {
     "needServerName": "需要域名",
@@ -3101,7 +3126,12 @@
     "staleCliRemoved": "已移除残留 CLI {{path}}。",
     "staleCliRemoveFailed": "无法移除残留 CLI {{path}}：{{detail}}",
     "vsftpdSslOff": "因 FTPS 证书文件不存在，已将 vsftpd 设为 ssl_enable=NO 并重新启动。",
-    "dovecotSslOff": "因 {{path}} 不存在，已将 Dovecot 设为 ssl=no 并重新启动。"
+    "dovecotSslOff": "因 {{path}} 不存在，已将 Dovecot 设为 ssl=no 并重新启动。",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "git": {
     "missingBin": "git 不在路径上",

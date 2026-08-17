@@ -58,6 +58,7 @@
     "disable": "關閉面板 HTTPS",
     "disableNeedConfirm": "需確認 — 請輸入 DISABLE-HTTPS",
     "needDomain": "請先填主機名稱／網域",
+    "needFqdn": "需要 FQDN（example.com），不要用裸主機名",
     "urlHint": "啟用並重啟後請用 {{url}} 開啟",
     "certMissing": "設定已開 TLS，但憑證或私鑰檔不存在",
     "restartToApply": "需重啟 ysk-server 服務才會改用 HTTPS",
@@ -206,5 +207,9 @@
   "nginxLeftover": "殘留",
   "nginxUnused": "未使用",
   "nginxLeftoverHint": "舊 public-files 或其他殘留設定。同步仍會一併寫入，除非操作員另行處理。",
-  "nginxUnusedHint": "預設／catch-all 設定（000-default）。同步仍會一併寫入，除非操作員另行處理。"
+  "nginxUnusedHint": "預設／catch-all 設定（000-default）。同步仍會一併寫入，除非操作員另行處理。",
+  "nginxRemoveLeftover": "移除殘留",
+  "nginxRemoveLeftoverTitle": "移除殘留 nginx 設定？",
+  "nginxRemoveLeftoverDesc": "將從面板清單刪除 {{name}}。本機 /etc/nginx 副本只在 YSK_EXECUTE + root 時一併刪除。000-default 不當殘留，不可以在此刪除。",
+  "needExecuteRoot": "需要 YSK_EXECUTE 與 root"
 }

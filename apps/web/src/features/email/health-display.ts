@@ -12,3 +12,17 @@ export function emailHealthUnprobed(d: {
     d.port25_open !== false
   );
 }
+
+/** DNS checklist written but no live / DNSBL probe yet. */
+export function emailHealthPartial(
+  d: {
+    dns_applied?: boolean;
+    ptr_ok?: boolean;
+    port25_open?: boolean | null;
+  } | null | undefined,
+  live?: unknown,
+  dnsbl?: unknown,
+): boolean {
+  if (!d || emailHealthUnprobed(d)) return false;
+  return live == null && dnsbl == null && d.port25_open == null;
+}

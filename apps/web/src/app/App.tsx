@@ -56,6 +56,11 @@ const VncSharePage = lazy(() =>
 const SystemPage = lazy(() =>
   import('../pages/SystemPage').then((m) => ({ default: m.SystemPage })),
 );
+const ClusterLandingPage = lazy(() =>
+  import('../pages/features/ClusterLandingPage').then((m) => ({
+    default: m.ClusterLandingPage,
+  })),
+);
 const NginxPage = lazy(() =>
   import('../pages/features/NginxPage').then((m) => ({ default: m.NginxPage })),
 );
@@ -312,7 +317,9 @@ export function App() {
             <Route
               path="cluster"
               element={
-                <Navigate to="/databases/mysql/service?tab=cluster&from=cluster" replace />
+                <Lazy>
+                  <ClusterLandingPage />
+                </Lazy>
               }
             />
             <Route

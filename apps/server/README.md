@@ -30,11 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
-## What's new in 1.1.5
+## What's new in 1.1.6
 
-- Self-update no longer toasts `Failed to fetch` after a successful apply.
-- E2E-1114 honesty: GeoIP no-db/stale/current, masked WireGuard keys, peer add/delete without restarting the server, VNC header from dpkg, no empty-state flash while loading.
-- Host-timezone clocks; dashboard warns when the panel is public and admin 2FA is off.
+- Backup delete moves to a 7-day recycle bin; restore or permanently delete from `/backups`.
+- Redis install generates `requirepass`; empty-password Redis has an explicit generate control.
+- VNC hostname probe + optional `/etc/hosts` append (EXECUTE + root). E2E-1115: PowerDNS start re-probe, CDN last-apply error, `/cluster` lands on an installed engine.
 
 ## Panel
 

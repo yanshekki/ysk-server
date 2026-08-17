@@ -350,6 +350,8 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | 'disable' | null>(null);
   const [focusRequirepass, setFocusRequirepass] = useState(false);
+  const [generatePassOpen, setGeneratePassOpen] = useState(false);
+  const [generatedOnce, setGeneratedOnce] = useState<string | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const link = DATA_LINK[engine];
   const svcId = exposureServiceId(engine);
@@ -830,9 +832,16 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                   setFocusRequirepass(true);
                 }}
               >
-                {t('redis.setRequirepass', { defaultValue: 'Set password' })}
+                {t('redis.setRequirepass')}
               </Button>
             ) : null}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setGeneratePassOpen(true)}
+            >
+              {t('redis.generateRequirepass')}
+            </Button>
           </div>
         </Alert>
       ) : null}
@@ -988,6 +997,46 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       </PageTabs>
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+
+      {generatedOnce ? (
+        <Alert variant="warn">
+          {t('redis.generatedOnce', { password: generatedOnce })}
+        </Alert>
+      ) : null}
+
+      <ConfirmDialog
+        open={generatePassOpen}
+        onClose={() => setGeneratePassOpen(false)}
+        title={t('redis.generateRequirepassTitle')}
+        description={t('redis.generateRequirepassDesc')}
+        confirmLabel={t('redis.generateRequirepass')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+        onConfirm={() => {
+          setGeneratePassOpen(false);
+          const password = generateRedisPassword();
+          void run(async () => {
+            try {
+              const r = await consoleApi.apply(engine, { requirepass: password });
+              setGeneratedOnce(password);
+              await refresh();
+              return r as unknown as OpsResultLike;
+            } catch (e) {
+              const m = e instanceof Error ? e.message : t('common.applyFailed');
+              return { ok: false, blocked: true, blockMessage: m, notes: [m] };
+            }
+          }, t('redis.generateRequirepassDone'));
+        }}
+      />
     </FeaturePageLayout>
   );
+}
+
+export function generateRedisPassword(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

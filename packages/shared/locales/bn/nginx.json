@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "ক্লাউডফ্লেয়ার রিয়েল আইপি",
   "setIndexes": "ডিরেক্টরি তালিকা",
-  "bodyInherit": "গ্লোবাল"
+  "bodyInherit": "গ্লোবাল",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

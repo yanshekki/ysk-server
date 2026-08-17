@@ -509,5 +509,8 @@
   "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
   "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다",
   "tlsRequestLeFor": "Request LE for {{host}}",
-  "deliverabilityChecks": "Checks"
+  "deliverabilityChecks": "Checks",
+  "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+  "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+  "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
 }

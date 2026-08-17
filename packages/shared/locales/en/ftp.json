@@ -53,6 +53,7 @@
   "accountCount": "Accounts",
   "loginBanner": "Login banner",
   "sslDomain": "SSL domain",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21.",
   "pasvRange": "PASV range",
   "forceTls": "Force TLS",
   "allowWrite": "Allow write",

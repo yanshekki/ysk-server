@@ -60,7 +60,9 @@ ysk-server network exposure sync --service nginx --execute --json
 - **已寫入** 套件計劃 ≠ 已套用 apt。  
 - 就緒可能非零結束，但仍回傳完整 JSON。  
 - 產品 overlay 不會自行修復殘留主機檔；殘留會繼續顯示，直至執行對應套用命令。  
+- `/system` 匯出分頁可移除殘留 `public-files-*` nginx 設定（確認對話 + EXECUTE + root）。`000-default` 係未使用、唔當殘留，唔會喺此刪除。現用 public-files（meta）當託管。  
 - 停止控制面服務與關閉面板 HTTPS 需確認字串。套餐移除在未勾選時停用。  
+- 側欄頁尾顯示面板版本；更新中心有新候選時會連到 `/updates` 顯示「有新版本 x.y.z」。  
 
 ## 僅面板 ⚠️
 

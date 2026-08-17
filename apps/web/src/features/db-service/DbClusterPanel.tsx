@@ -34,6 +34,9 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindInput, bindVoid, bindCall1, bindCall2 } from '../../pages/bind-handlers';
 import { agentsApi, type FleetAgent } from '../agents/api';
+import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
+import { isStaleClusterPlan } from '../../pages/features/cluster-landing';
 
 export function statusTone(
   s: string,
@@ -113,6 +116,7 @@ export function DbClusterPanel({
     | { kind: 'push'; id: string }
     | { kind: 'fleetSync'; id: string }
     | { kind: 'fleetApply'; id: string }
+    | { kind: 'clearStale' }
     | null
   >(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
@@ -341,6 +345,28 @@ export function DbClusterPanel({
     }, execute ? t('db.cluster.peerPushed') : t('db.cluster.pushPlanGenerated'));
   }
 
+  const stalePlans = items.filter((c) => isStaleClusterPlan(c));
+
+  async function clearStalePlans() {
+    await run(async () => {
+      const ids = items.filter((c) => isStaleClusterPlan(c)).map((c) => c.id);
+      const notes: string[] = [];
+      let ok = true;
+      for (const id of ids) {
+        const r = await dbClusterApi.remove(id);
+        if (!r.ok) ok = false;
+        notes.push(...(r.notes ?? []));
+        if (activeId === id) {
+          setActiveId(null);
+          setLastPlan(null);
+          setProbeFacts(null);
+        }
+      }
+      await refresh();
+      return { ok, notes } as OpsResultLike;
+    }, t('db.cluster.registrationDeleted'));
+  }
+
   async function removeCluster(id: string) {
     await run(async () => {
       const r = await dbClusterApi.remove(id);
@@ -405,6 +431,17 @@ export function DbClusterPanel({
             >
               {t('common.refresh')}
             </Button>
+            {stalePlans.length > 0 ? (
+              <Button
+                variant="danger"
+                size="md"
+                loading={busy}
+                title={t('db.cluster.clearStalePlansTitle')}
+                onClick={() => setPendingConfirm({ kind: 'clearStale' })}
+              >
+                {t('db.cluster.clearStalePlans')}
+              </Button>
+            ) : null}
           </ActionBar>
 
           <DataTable
@@ -428,6 +465,17 @@ export function DbClusterPanel({
                     <Badge tone={statusTone(c.status)}>
                       {clusterStatusLabel(c.status, t)}
                     </Badge>
+                    {c.status === 'planned' || c.status === 'draft' ? (
+                      <span className="muted u-text-sm">
+                        {' · '}
+                        {t('db.cluster.notApplied')}
+                        {c.createdAt
+                          ? ` · ${t('db.cluster.plannedAt', {
+                              when: formatDateTime(c.createdAt, hostTimeZoneOpts()),
+                            })}`
+                          : ''}
+                      </span>
+                    ) : null}
                     {c.status === 'failed' && c.notes?.[0] ? (
                       <span className="muted u-text-sm"> · {c.notes[0]}</span>
                     ) : null}
@@ -877,6 +925,8 @@ export function DbClusterPanel({
         title={
           pendingConfirm?.kind === 'remove'
             ? t('db.cluster.deleteClusterTitle')
+            : pendingConfirm?.kind === 'clearStale'
+              ? t('db.cluster.clearStalePlansTitle')
             : pendingConfirm?.kind === 'installPeers'
               ? t('db.cluster.remoteInstallTitle')
               : pendingConfirm?.kind === 'push'
@@ -890,6 +940,8 @@ export function DbClusterPanel({
         description={
           pendingConfirm?.kind === 'remove'
             ? t('db.cluster.deleteClusterDesc')
+            : pendingConfirm?.kind === 'clearStale'
+              ? t('db.cluster.clearStalePlansDesc', { n: stalePlans.length })
             : pendingConfirm?.kind === 'installPeers'
               ? t('db.cluster.remoteInstallDesc')
               : pendingConfirm?.kind === 'push'
@@ -902,13 +954,14 @@ export function DbClusterPanel({
         }
         confirmLabel={t('common.confirm')}
         cancelLabel={t('common.cancel')}
-        danger={pendingConfirm?.kind === 'remove'}
+        danger={pendingConfirm?.kind === 'remove' || pendingConfirm?.kind === 'clearStale'}
         busy={busy}
         onConfirm={() => {
           const p = pendingConfirm;
           setPendingConfirm(null);
           if (!p) return;
           if (p.kind === 'remove') void removeCluster(p.id);
+          if (p.kind === 'clearStale') void clearStalePlans();
           else if (p.kind === 'installPeers') {
             void run(async () => {
               const r = await dbClusterApi.installPeers(p.id, { execute: true });

@@ -82,5 +82,10 @@
   "scanCapped": "Showing the first {{n}} matches.",
   "dbOptionKeys": "DB {{i}} · {{n}} keys",
   "dbOptionEmpty": "DB {{i}} · empty",
-  "insecureShort": "No password"
+  "insecureShort": "No password",
+  "generateRequirepass": "Generate and apply password",
+  "generateRequirepassTitle": "Generate a Redis password?",
+  "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+  "generateRequirepassDone": "Redis password applied",
+  "generatedOnce": "Generated password (shown once): {{password}}"
 }

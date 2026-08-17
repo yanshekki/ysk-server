@@ -50,6 +50,11 @@ describe('usePageTab', () => {
       { wrapper: wrapRouter('/?tab=dash') },
     );
     expect(dash.result.current[0]).toBe('dashboard');
+    const geo = renderHook(
+      () => usePageTab(['command', 'geo', 'bans'] as const, 'command'),
+      { wrapper: wrapRouter('/?tab=ip') },
+    );
+    expect(geo.result.current[0]).toBe('geo');
   });
 
   it('rewrites unknown query tabs to the default', async () => {

@@ -230,5 +230,7 @@
   "installConfirmConsequence": "Après installation et démarrage, PowerDNS liera le port 53.",
   "installPort53Busy": "Le port 53 est déjà utilisé. PowerDNS peut échouer à se lier tant que cet écouteur n’est pas arrêté ou réparé.",
   "installPort53BusyConsequence": "Réparez la liaison ou arrêtez l’autre écouteur avant d’attendre des réponses sur 53.",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

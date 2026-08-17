@@ -80,5 +80,6 @@
   "setHsts": "HSTS",
   "setCfRealIp": "Cloudflare اصلی IP",
   "setIndexes": "ڈائریکٹری لسٹنگ",
-  "bodyInherit": "عالمی"
+  "bodyInherit": "عالمی",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

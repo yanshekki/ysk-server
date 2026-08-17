@@ -230,5 +230,7 @@
   "installConfirmConsequence": "Setelah pasang dan mulai, PowerDNS mengikat port 53.",
   "installPort53Busy": "Port 53 sudah dipakai. PowerDNS mungkin gagal bind sampai pendengar itu dihentikan atau diperbaiki.",
   "installPort53BusyConsequence": "Perbaiki bind atau hentikan pendengar lain sebelum mengharapkan jawaban di 53.",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

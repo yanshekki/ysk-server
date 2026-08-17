@@ -258,7 +258,7 @@ export async function probeDnsServiceHealth(input: {
     }
   }
   if (!unitActive) {
-    notes.push('No active named/bind9/pdns unit');
+    notes.push(tl('notes.dns.noActiveUnit'));
     // Diagnose pdns crash-loop vs systemd-resolved :53 conflict
     try {
       const jr = await input.host.runCommand(
@@ -280,7 +280,11 @@ export async function probeDnsServiceHealth(input: {
       );
       const fr = (failed.stdout || '').trim();
       if (fr.includes('failed') || /^[1-9]/.test(fr.split('\n').pop() || '')) {
-        notes.push(`pdns unit state/restarts: ${fr.replace(/\n/g, ' | ').slice(0, 120)}`);
+        notes.push(
+          tl('notes.dns.pdnsUnitRestarts', {
+            detail: fr.replace(/\n/g, ' | ').slice(0, 120),
+          }),
+        );
       }
     } catch {
       /* optional */
@@ -292,13 +296,11 @@ export async function probeDnsServiceHealth(input: {
   const listenUdp53 = udp53.public;
   const listenTcp53 = tcp53.public;
   if (udp53.loopbackOnly || tcp53.loopbackOnly) {
-    notes.push(
-      'Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver',
-    );
+    notes.push(tl('notes.dns.port53LoopbackOnly'));
   }
-  if (!udp53.any && !tcp53.any) notes.push('Port 53 not listening (UDP/TCP)');
-  else if (!listenUdp53 && !udp53.loopbackOnly) notes.push('UDP/53 not listening on a public address');
-  else if (!listenTcp53 && !tcp53.loopbackOnly) notes.push('TCP/53 not listening on a public address');
+  if (!udp53.any && !tcp53.any) notes.push(tl('notes.dns.port53Closed'));
+  else if (!listenUdp53 && !udp53.loopbackOnly) notes.push(tl('notes.dns.udp53NotPublic'));
+  else if (!listenTcp53 && !tcp53.loopbackOnly) notes.push(tl('notes.dns.tcp53NotPublic'));
 
   const zones = listManagedDnsZones(input.dataDir);
   const zoneFiles = zones.length;
@@ -321,7 +323,7 @@ export async function probeDnsServiceHealth(input: {
       /* */
     }
   }
-  if (zoneFiles === 0) notes.push('No managed zone files under dataDir/dns/zones');
+  if (zoneFiles === 0) notes.push(tl('notes.dns.noManagedZones'));
 
   // PowerDNS loaded zone count (honest: disk files ≠ list-zones)
   let pdnsZoneCount: number | undefined;
@@ -347,7 +349,7 @@ export async function probeDnsServiceHealth(input: {
         if (zoneFiles > 0 && pdnsZoneCount === 0) {
           notes.push(tl('notes.dns.zeroDomainsHint'));
         } else if (pdnsZoneCount != null) {
-          notes.push(`PowerDNS list-zones: ${pdnsZoneCount}`);
+          notes.push(tl('notes.dns.pdnsListZones', { n: pdnsZoneCount }));
         }
       }
     } catch {
@@ -400,7 +402,7 @@ export async function probeDnsServiceHealth(input: {
         answeringLocalA = true;
         digAName = aName;
         digAAnswers = aDig.answers;
-        notes.push(`local A ${aName} → ${aDig.answers[0]}`);
+        notes.push(tl('notes.dns.localAOk', { name: aName, ip: aDig.answers[0] }));
         break;
       }
       if (answeringLocalA == null) {

@@ -11,7 +11,8 @@
     "failed": "失敗しました",
     "error": "エラー",
     "unknown": "プローブされていない",
-    "fallback": "不明"
+    "fallback": "不明",
+    "activating": "Starting"
   },
   "liveN": "{{count}} オンライン",
   "registeredOnly": "登録済みのみ",

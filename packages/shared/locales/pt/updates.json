@@ -235,5 +235,6 @@
   "panelRestartWait": "Atualização aplicada. Se esta página não atualizar, recarregue após alguns segundos.",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

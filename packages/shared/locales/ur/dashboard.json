@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "تنزلی",
     "production_capable": "پیداوار تیار ہے",
-    "normal": "عام"
+    "normal": "عام",
+    "blocked": "blocked"
   },
   "details": "تفصیلات",
   "certExpiryTitle": "سرٹیفکیٹ کی میعاد:",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

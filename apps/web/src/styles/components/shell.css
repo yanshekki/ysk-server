@@ -163,6 +163,19 @@
   text-decoration: underline;
 }
 
+.shell__update {
+  display: block;
+  margin-top: 0.35rem;
+  text-align: center;
+  color: var(--brand-blue, #2563eb);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.shell__update:hover {
+  text-decoration: underline;
+}
+
 .shell__main {
   flex: 1;
   min-width: 0;

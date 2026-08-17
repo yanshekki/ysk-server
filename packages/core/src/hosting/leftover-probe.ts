@@ -67,10 +67,17 @@ export function splitLeftoverNotes(blob: string): string[] {
  * Export-tab nginx files: leftover public-files-* and unused 000-default.
  * Do not drop them from sync — operator must act.
  */
-export function classifyManagedNginxName(name: string): ManagedNginxRole {
+export function classifyManagedNginxName(
+  name: string,
+  keepPublicFiles?: string | null,
+): ManagedNginxRole {
   const base = String(name || '').replace(/^ysk-/i, '');
   if (/^000-default\.conf$/i.test(base)) return 'unused';
-  if (/^public-files-/i.test(base)) return 'leftover';
+  if (/^public-files-/i.test(base)) {
+    const keep = String(keepPublicFiles || '').replace(/^ysk-/i, '');
+    if (keep && base === keep) return 'managed';
+    return 'leftover';
+  }
   return 'managed';
 }
 

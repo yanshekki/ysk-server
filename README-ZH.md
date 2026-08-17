@@ -37,11 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
-## 1.1.5 新內容
+## 1.1.6 新內容
 
-- **自更新**成功後唔再 toast `Failed to fetch` — systemd 重啟會等 HTTP 200 先 flush。
-- **E2E-1114 誠實：** GeoIP 三態（無庫／過舊／最新）；WireGuard 金鑰預設遮罩；peer 增刪唔重啟伺服器；VNC 標頭跟 dpkg；載入期唔再閃 0／空狀態。
-- **時間**用主機時區加 offset。公網監聽但管理員未開 2FA 會喺儀表板警示。
+- **備份回收區（7 日）** — 刪除改為移入回收區；可喺 `/backups` 還原或永久刪除。
+- **Redis** 安裝時產生 `requirepass`；已裝但無密碼可用「產生並套用」（讀取探測唔會偷偷改密碼）。
+- **VNC** 建立前探測主機名，可在 EXECUTE + root 下一鍵 append `/etc/hosts`。E2E-1115 誠實：PowerDNS 啟動再探、CDN 上次套用錯誤、`/cluster` 落到已裝引擎、`/system` 可清殘留 public-files nginx。
 
 [完整變更紀錄](./CHANGELOG.md)
 

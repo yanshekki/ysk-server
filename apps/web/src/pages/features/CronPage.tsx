@@ -690,6 +690,7 @@ export function CronPage() {
                   <h3 className="ops-panel__title">
                     {t('cron.pendingInstall', { count: pendingManaged.length })}
                   </h3>
+                  <p className="ops-panel__sub">{t('cron.willNotRun')}</p>
                 </header>
                 <div className="ops-svc-list">
                   {pendingManaged.map((job) => (

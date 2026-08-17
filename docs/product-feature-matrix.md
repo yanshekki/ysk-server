@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-17 — **1.1.5** (npm latest after 1.1.4). E2E-1114 honesty: GeoIP freshness, masked WireGuard keys, no empty-state flash, host-timezone clocks. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-17 — **1.1.6** (npm latest after 1.1.5). E2E-1115: backup 7-day trash, Redis generated requirepass, VNC `/etc/hosts` append, PowerDNS start re-probe, `/cluster` lands on an installed engine. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 

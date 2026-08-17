@@ -52,11 +52,13 @@ export function formatSupportDiagnostic(
   const no = t('common.no');
   return [
     `YSK Server ${h.version}`,
-    `${t('support.diagStatus')}: ${h.status}`,
-    `${t('support.diagMode')}: ${h.mode ?? '—'}`,
+    `${t('support.diagStatus')}: ${h.status === 'ok' ? t('common.ok') : h.status}`,
+    `${t('support.diagMode')}: ${t(`dashboard.mode.${h.mode ?? 'degraded'}`)}`,
     `${t('system.executeLabel')}: ${h.executeEnabled ? on : off}`,
     `${t('system.rootLabel')}: ${h.isRoot ? yes : no}`,
-    `${t('support.diagProtection')}: ${h.protectionMode}`,
+    `${t('support.diagProtection')}: ${
+      h.protectionMode === 'normal' ? t('common.normal') : h.protectionMode
+    }`,
     host?.identity?.hostname
       ? `${t('support.diagHostname')}: ${host.identity.hostname}`
       : null,

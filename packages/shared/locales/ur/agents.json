@@ -11,7 +11,8 @@
     "failed": "ناکام",
     "error": "خرابی",
     "unknown": "تفتیش نہیں ہوئی۔",
-    "fallback": "نامعلوم"
+    "fallback": "نامعلوم",
+    "activating": "Starting"
   },
   "liveN": "{{count}} آن لائن",
   "registeredOnly": "صرف رجسٹرڈ",

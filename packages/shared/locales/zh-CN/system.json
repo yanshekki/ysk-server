@@ -87,7 +87,8 @@
     "cliNoSocket": "CLI 没有实时 HTTP 套接字； servingHttps 是从配置和监听套接字 (ss) 推断出来的。",
     "listenHost": "收听地址",
     "currentHost": "本次会议",
-    "replaceCert": "替换为受信任的证书"
+    "replaceCert": "替换为受信任的证书",
+    "needFqdn": "Need a FQDN (example.com), not a bare hostname"
   },
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",
@@ -206,5 +207,9 @@
   "noScheduledPower": "未安排重新启动或关机",
   "timezoneNow": "Host time now: {{time}} ({{tz}})",
   "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-  "notExported": "Not exported yet"
+  "notExported": "Not exported yet",
+  "nginxRemoveLeftover": "Remove leftover",
+  "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+  "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+  "needExecuteRoot": "Needs YSK_EXECUTE + root"
 }

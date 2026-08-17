@@ -146,5 +146,6 @@
   "detectPublicIpTitle": "このホストから最初の非ループバック IPv4 を入力します",
   "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-  "stateFailed": "Failed to start"
+  "stateFailed": "Failed to start",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
 }

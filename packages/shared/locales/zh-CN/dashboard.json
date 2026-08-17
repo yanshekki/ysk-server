@@ -42,7 +42,8 @@
   "mode": {
     "degraded": "降级",
     "production_capable": "可生产",
-    "normal": "正常"
+    "normal": "正常",
+    "blocked": "blocked"
   },
   "details": "详情",
   "certExpiryTitle": "证书到期：",
@@ -126,5 +127,6 @@
     "warn": "Warning",
     "bad": "Problem"
   },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+  "readinessBlocked": "{{n}} blocker(s)"
 }

@@ -146,5 +146,6 @@
   "detectPublicIpTitle": "이 호스트에서 첫 번째 비루프백 IPv4를 채웁니다.",
   "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다.",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-  "stateFailed": "Failed to start"
+  "stateFailed": "Failed to start",
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
 }

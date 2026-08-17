@@ -230,5 +230,7 @@
   "installConfirmConsequence": "स्थापना और प्रारंभ के बाद PowerDNS पोर्ट 53 बाँधेगा।",
   "installPort53Busy": "पोर्ट 53 पहले से सुन रहा है। उस श्रोता को रोके या ठीक किए बिना PowerDNS बाइंड विफल हो सकता है।",
   "installPort53BusyConsequence": "पोर्ट 53 पर उत्तर की अपेक्षा से पहले बाइंड सुधारें या दूसरा श्रोता रोकें।",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

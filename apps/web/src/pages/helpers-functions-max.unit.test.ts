@@ -227,7 +227,10 @@ describe('LogsPage helpers', () => {
     expect(initialSourceFromParams(() => null)).toBe('');
     expect(initialSourceFromParams((k) => (k === 'source' ? 'custom' : null))).toBe('custom');
     expect(initialSourceFromParams((k) => (k === 'unit' ? 'sshd' : null))).toBe(
-      'journal:sshd',
+      'journal:sshd.service',
+    );
+    expect(initialSourceFromParams((k) => (k === 'unit' ? 'nginx' : null))).toBe(
+      'file:nginx-access',
     );
     const items = [
       {

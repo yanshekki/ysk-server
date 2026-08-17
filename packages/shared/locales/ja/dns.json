@@ -230,5 +230,7 @@
   "installConfirmConsequence": "インストールして起動すると PowerDNS が 53 番をバインドします。",
   "installPort53Busy": "53番は既に使用中です。その待受を止めるか修復するまで PowerDNS はバインドに失敗することがあります。",
   "installPort53BusyConsequence": "53 番で応答を期待する前に、バインドを修復するか他の待受を止めてください。",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

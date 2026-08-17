@@ -8,6 +8,8 @@ import {
   readdirSync,
   writeFileSync,
   readFileSync,
+  renameSync,
+  copyFileSync,
   statSync,
   unlinkSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
@@ -68,6 +70,7 @@ export function listBackups(dataDir: string): BackupListItem[] {
   if (!existsSync(root)) return [];
   const out: BackupListItem[] = [];
   for (const projectId of readdirSync(root)) {
+    if (projectId === '.trash' || projectId.startsWith('.')) continue;
     const dir = join(root, projectId);
     try {
       if (!statSync(dir).isDirectory()) continue;
@@ -572,23 +575,259 @@ async function chownAfterRestore(input: {
     : [tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout).slice(0, 120) })];
 }
 
-/** Delete one managed backup archive (path constrained). */
+export const BACKUP_TRASH_DAYS = 7;
+export const BACKUP_TRASH_RETENTION_MS = BACKUP_TRASH_DAYS * 24 * 60 * 60 * 1000;
+const TRASH_DIR = '.trash';
+
+export type BackupTrashItem = BackupListItem & {
+  deletedAt: string;
+  expiresAt: string;
+  trashName: string;
+};
+
+type TrashMeta = { deletedAt: string; originalName: string; bytes: number; projectId: string };
+
+function trashRoot(dataDir: string): string {
+  return resolve(join(dataDir, 'backups', TRASH_DIR));
+}
+
+function resolveTrashArchive(
+  dataDir: string,
+  projectId: string,
+  archiveName: string,
+): { ok: true; root: string; path: string; name: string; metaPath: string } | { ok: false; notes: string[] } {
+  const id = String(projectId ?? '')
+    .replace(/[^a-zA-Z0-9_-]/g, '')
+    .slice(0, 80);
+  if (!id) return { ok: false, notes: [tl('notes.auto.n1115')] };
+  const safeName = String(archiveName ?? '')
+    .replace(/[/\\]/g, '')
+    .replace(/\0/g, '');
+  if (!safeName.endsWith('.tar.gz') || safeName.includes('..')) {
+    return { ok: false, notes: [tl('notes.auto.n1116')] };
+  }
+  const root = resolve(join(trashRoot(dataDir), id));
+  const archivePath = resolve(join(root, safeName));
+  const rootPrefix = root.endsWith(sep) ? root : root + sep;
+  if (archivePath !== root && !archivePath.startsWith(rootPrefix)) {
+    return { ok: false, notes: [tl('notes.auto.n1460')] };
+  }
+  return { ok: true, root, path: archivePath, name: safeName, metaPath: `${archivePath}.json` };
+}
+
+function moveFile(src: string, dest: string): void {
+  try {
+    renameSync(src, dest);
+  } catch {
+    copyFileSync(src, dest);
+    unlinkSync(src);
+  }
+}
+
+function writeTrashMeta(metaPath: string, meta: TrashMeta): void {
+  writeFileSync(metaPath, JSON.stringify(meta), 'utf8');
+}
+
+function readTrashMeta(metaPath: string, fallback: TrashMeta): TrashMeta {
+  try {
+    const parsed = JSON.parse(readFileSync(metaPath, 'utf8')) as Partial<TrashMeta>;
+    if (parsed.deletedAt && parsed.originalName) {
+      return {
+        deletedAt: String(parsed.deletedAt),
+        originalName: String(parsed.originalName),
+        bytes: Number(parsed.bytes) || fallback.bytes,
+        projectId: String(parsed.projectId || fallback.projectId),
+      };
+    }
+  } catch {
+    /* use fallback */
+  }
+  return fallback;
+}
+
+export function purgeExpiredBackupTrash(dataDir: string, nowMs = Date.now()): number {
+  const root = trashRoot(dataDir);
+  if (!existsSync(root)) return 0;
+  let n = 0;
+  for (const projectId of readdirSync(root)) {
+    const dir = join(root, projectId);
+    try {
+      if (!statSync(dir).isDirectory()) continue;
+      for (const name of readdirSync(dir).filter((f) => f.endsWith('.tar.gz'))) {
+        const path = join(dir, name);
+        const metaPath = `${path}.json`;
+        const st = statSync(path);
+        const meta = readTrashMeta(metaPath, {
+          deletedAt: st.mtime.toISOString(),
+          originalName: name,
+          bytes: st.size,
+          projectId,
+        });
+        const deletedMs = Date.parse(meta.deletedAt);
+        if (!Number.isFinite(deletedMs) || nowMs - deletedMs < BACKUP_TRASH_RETENTION_MS) continue;
+        try {
+          unlinkSync(path);
+          if (existsSync(metaPath)) unlinkSync(metaPath);
+          n += 1;
+        } catch {
+          /* keep */
+        }
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return n;
+}
+
+export function listBackupTrash(dataDir: string, nowMs = Date.now()): BackupTrashItem[] {
+  purgeExpiredBackupTrash(dataDir, nowMs);
+  const root = trashRoot(dataDir);
+  if (!existsSync(root)) return [];
+  const out: BackupTrashItem[] = [];
+  for (const projectId of readdirSync(root)) {
+    const dir = join(root, projectId);
+    try {
+      if (!statSync(dir).isDirectory()) continue;
+      for (const name of readdirSync(dir).filter((f) => f.endsWith('.tar.gz'))) {
+        const path = join(dir, name);
+        const st = statSync(path);
+        const meta = readTrashMeta(`${path}.json`, {
+          deletedAt: st.mtime.toISOString(),
+          originalName: name,
+          bytes: st.size,
+          projectId,
+        });
+        const deletedMs = Date.parse(meta.deletedAt);
+        const expiresAt = new Date(
+          (Number.isFinite(deletedMs) ? deletedMs : st.mtimeMs) + BACKUP_TRASH_RETENTION_MS,
+        ).toISOString();
+        out.push({
+          projectId,
+          name: meta.originalName,
+          trashName: name,
+          path,
+          bytes: st.size,
+          mtime: st.mtime.toISOString(),
+          deletedAt: meta.deletedAt,
+          expiresAt,
+        });
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return out.sort((a, b) => (a.deletedAt < b.deletedAt ? 1 : -1));
+}
+
+/** Move one managed backup into the 7-day trash (path constrained). */
 export function deleteProjectBackup(
   dataDir: string,
   projectId: string,
   archiveName: string,
-): { ok: boolean; notes: string[] } {
+): { ok: boolean; notes: string[]; trashed?: boolean; expiresAt?: string } {
+  purgeExpiredBackupTrash(dataDir);
   const resolved = resolveManagedBackupArchive(dataDir, projectId, archiveName);
   if (!resolved.ok) return { ok: false, notes: resolved.notes };
   if (!existsSync(resolved.path)) {
     return { ok: false, notes: [tl('notes.backup.fileNotFound')] };
   }
   try {
-    unlinkSync(resolved.path);
-    return { ok: true, notes: [tl('notes.tpl.deleted', { name: resolved.name })] };
+    const st = statSync(resolved.path);
+    let trashName = resolved.name;
+    let dest = resolveTrashArchive(dataDir, projectId, trashName);
+    if (!dest.ok) return { ok: false, notes: dest.notes };
+    if (existsSync(dest.path)) {
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      trashName = resolved.name.replace(/\.tar\.gz$/i, `-${stamp}.tar.gz`);
+      dest = resolveTrashArchive(dataDir, projectId, trashName);
+      if (!dest.ok) return { ok: false, notes: dest.notes };
+    }
+    mkdirSync(dest.root, { recursive: true });
+    moveFile(resolved.path, dest.path);
+    const deletedAt = new Date().toISOString();
+    writeTrashMeta(dest.metaPath, {
+      deletedAt,
+      originalName: resolved.name,
+      bytes: st.size,
+      projectId,
+    });
+    const expiresAt = new Date(Date.parse(deletedAt) + BACKUP_TRASH_RETENTION_MS).toISOString();
+    return {
+      ok: true,
+      trashed: true,
+      expiresAt,
+      notes: [tl('notes.backup.movedToTrash', { name: resolved.name, days: BACKUP_TRASH_DAYS })],
+    };
   } catch (e) {
     return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
   }
+}
+
+export function restoreBackupTrash(
+  dataDir: string,
+  projectId: string,
+  trashName: string,
+): { ok: boolean; notes: string[] } {
+  const dest = resolveTrashArchive(dataDir, projectId, trashName);
+  if (!dest.ok) return { ok: false, notes: dest.notes };
+  if (!existsSync(dest.path)) {
+    return { ok: false, notes: [tl('notes.backup.fileNotFound')] };
+  }
+  const meta = readTrashMeta(dest.metaPath, {
+    deletedAt: new Date().toISOString(),
+    originalName: dest.name,
+    bytes: 0,
+    projectId,
+  });
+  const live = resolveManagedBackupArchive(dataDir, projectId, meta.originalName);
+  if (!live.ok) return { ok: false, notes: live.notes };
+  if (existsSync(live.path)) {
+    return { ok: false, notes: [tl('notes.backup.restoreNameExists', { name: meta.originalName })] };
+  }
+  try {
+    mkdirSync(live.root, { recursive: true });
+    moveFile(dest.path, live.path);
+    if (existsSync(dest.metaPath)) unlinkSync(dest.metaPath);
+    return { ok: true, notes: [tl('notes.backup.restoredFromTrash', { name: meta.originalName })] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
+  }
+}
+
+export function purgeBackupTrash(
+  dataDir: string,
+  projectId: string,
+  trashName: string,
+): { ok: boolean; notes: string[] } {
+  const dest = resolveTrashArchive(dataDir, projectId, trashName);
+  if (!dest.ok) return { ok: false, notes: dest.notes };
+  if (!existsSync(dest.path)) {
+    return { ok: false, notes: [tl('notes.backup.fileNotFound')] };
+  }
+  try {
+    unlinkSync(dest.path);
+    if (existsSync(dest.metaPath)) unlinkSync(dest.metaPath);
+    return { ok: true, notes: [tl('notes.tpl.deleted', { name: dest.name })] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : String(e)] };
+  }
+}
+
+export function emptyBackupTrash(dataDir: string): { ok: boolean; notes: string[]; purged: number } {
+  const items = listBackupTrash(dataDir);
+  let purged = 0;
+  const notes: string[] = [];
+  for (const item of items) {
+    const r = purgeBackupTrash(dataDir, item.projectId, item.trashName);
+    if (r.ok) purged += 1;
+    else notes.push(...r.notes);
+  }
+  return {
+    ok: notes.length === 0,
+    purged,
+    notes: notes.length ? notes : [tl('notes.backup.trashEmptied', { n: purged })],
+  };
 }
 
 /** Resolve a managed backup path for download (path constrained). */

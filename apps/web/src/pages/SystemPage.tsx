@@ -28,7 +28,7 @@ import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { toast } from '../shared/stores/toast-store';
 import { formatDateTime } from '../shared/lib/datetime';
-import { setHostTimeZone } from '../shared/lib/host-timezone';
+import { hostTimeZoneOpts, setHostTimeZone } from '../shared/lib/host-timezone';
 import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
@@ -44,7 +44,13 @@ type ExportSnapshot = {
   users: number;
 };
 
-type ManagedConf = { name: string; path: string; bytes: number; mtime?: string };
+type ManagedConf = {
+  name: string;
+  path: string;
+  bytes: number;
+  mtime?: string;
+  role?: 'managed' | 'leftover' | 'unused';
+};
 type ExportFile = { name: string; path: string; bytes: number; mtime: string };
 
 type RebuildResult = OpsResultLike & {
@@ -104,10 +110,15 @@ export function formatNtpServiceLabel(
 /** Export-tab nginx: leftover public-files-* / unused 000-default. Keep in sync. */
 export function classifyManagedNginxName(
   name: string,
+  keepPublicFiles?: string | null,
 ): 'managed' | 'leftover' | 'unused' {
   const base = String(name || '').replace(/^ysk-/i, '');
   if (/^000-default\.conf$/i.test(base)) return 'unused';
-  if (/^public-files-/i.test(base)) return 'leftover';
+  if (/^public-files-/i.test(base)) {
+    const keep = String(keepPublicFiles || '').replace(/^ysk-/i, '');
+    if (keep && base === keep) return 'managed';
+    return 'leftover';
+  }
   return 'managed';
 }
 
@@ -154,6 +165,7 @@ export function SystemPage() {
   const [tzQuery, setTzQuery] = useState('');
 
   const [hostname, setHostname] = useState('');
+  const [panelDomain, setPanelDomain] = useState('');
   const [prettyHostname, setPrettyHostname] = useState('');
   const [timezone, setTimezone] = useState('');
   const [timezoneOptions, setTimezoneOptions] = useState<string[]>([]);
@@ -182,6 +194,7 @@ export function SystemPage() {
     null,
   );
   const [confPreviewLoading, setConfPreviewLoading] = useState(false);
+  const [leftoverDelName, setLeftoverDelName] = useState<string | null>(null);
   const [opsResult, setOpsResult] = useState<RebuildResult | null>(null);
   const [caps, setCaps] = useState<{ executeEnabled?: boolean; isRoot?: boolean }>({});
   const [panelTls, setPanelTls] = useState<Awaited<
@@ -217,9 +230,12 @@ export function SystemPage() {
       isRoot: o.caps.isRoot });
     if (tls) {
       setPanelTls(tls);
-      if (tls.panelDomain && !hostname) {
-        /* keep hostname from host overview */
-      }
+      const fqdn =
+        (tls.panelDomain && tls.panelDomain.includes('.') ? tls.panelDomain : '') ||
+        (typeof window !== 'undefined' && window.location.hostname.includes('.')
+          ? window.location.hostname
+          : '');
+      setPanelDomain(fqdn);
     }
   }, []);
 
@@ -725,8 +741,8 @@ export function SystemPage() {
                         >
                           <input
                             id="panel-tls-domain"
-                            value={hostname}
-                            onChange={bindInput(setHostname)}
+                            value={panelDomain}
+                            onChange={bindInput(setPanelDomain)}
                             spellCheck={false}
                             placeholder={
                               window.location.hostname.includes('.')
@@ -836,10 +852,11 @@ export function SystemPage() {
                           variant="primary"
                           size="md"
                           loading={tlsBusy}
-                          disabled={!hostname.trim()}
+                          disabled={!panelDomain.includes('.')}
+                          title={!panelDomain.includes('.') ? t('system.panelTls.needFqdn') : undefined}
                           onClick={() => {
-                            if (!hostname.trim()) {
-                              setErr(t('system.panelTls.needDomain'));
+                            if (!panelDomain.includes('.')) {
+                              setErr(t('system.panelTls.needFqdn'));
                               return;
                             }
                             if (
@@ -851,13 +868,13 @@ export function SystemPage() {
                             setTlsBusy(true);
                             setErr(null);
                             setMsg(null);
-                            const httpsHint = `https://${hostname.trim()}:${panelTls?.listenPort ?? 9287}`;
+                            const httpsHint = `https://${panelDomain.trim()}:${panelTls?.listenPort ?? 9287}`;
                             void systemApi
                               .panelTlsIssue({
-                                domain: hostname.trim(),
+                                domain: panelDomain.trim(),
                                 email:
                                   panelEmail.trim() ||
-                                  `admin@${hostname.trim().replace(/^\*\./, '')}`,
+                                  `admin@${panelDomain.trim().replace(/^\*\./, '')}`,
                                 restart: tlsRestart })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
@@ -899,7 +916,8 @@ export function SystemPage() {
                           variant="secondary"
                           size="md"
                           loading={tlsBusy}
-                          disabled={!hostname.trim()}
+                          disabled={!panelDomain.includes('.')}
+                          title={!panelDomain.includes('.') ? t('system.panelTls.needFqdn') : undefined}
                           onClick={() => {
                             if (
                               tlsRestart &&
@@ -910,10 +928,10 @@ export function SystemPage() {
                             setTlsBusy(true);
                             setErr(null);
                             setMsg(null);
-                            const httpsHint = `https://${hostname.trim()}:${panelTls?.listenPort ?? 9287}`;
+                            const httpsHint = `https://${panelDomain.trim()}:${panelTls?.listenPort ?? 9287}`;
                             void systemApi
                               .panelTlsEnable({
-                                domain: hostname.trim(),
+                                domain: panelDomain.trim(),
                                 restart: tlsRestart })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
@@ -1442,7 +1460,7 @@ export function SystemPage() {
                 {snapshot ? (
                   <div className="sys-preview">
                     <div className="sys-preview__meta">
-                      {t('system.snapshotMeta', { at: formatDateTimeLocale(snapshot.exportedAt, i18n.language), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
+                      {t('system.snapshotMeta', { at: formatDateTime(snapshot.exportedAt, { locale: i18n.language, ...hostTimeZoneOpts({ withOffset: true }) }), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
                     </div>
                     <LogViewer
                       text={JSON.stringify(snapshot, null, 2)}
@@ -1480,7 +1498,9 @@ export function SystemPage() {
                   <>
                     <div className="sys-conf-list">
                       {managedPageItems.map((c) => {
-                        const nginxRole = classifyManagedNginxName(c.name);
+                        const nginxRole = c.role ?? classifyManagedNginxName(c.name);
+                        const canRemove = nginxRole === 'leftover';
+                        const locked = !caps.executeEnabled || !caps.isRoot;
                         return (
                         <div key={c.name} className="sys-conf-row">
                           <div className="sys-conf-row__main">
@@ -1502,6 +1522,7 @@ export function SystemPage() {
                                 : ''}
                             </span>
                           </div>
+                          <div className="u-flex u-gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1510,6 +1531,18 @@ export function SystemPage() {
                           >
                             {t('system.preview')}
                           </Button>
+                          {canRemove ? (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={locked || busy}
+                              title={locked ? t('system.needExecuteRoot') : undefined}
+                              onClick={() => setLeftoverDelName(c.name)}
+                            >
+                              {t('system.nginxRemoveLeftover')}
+                            </Button>
+                          ) : null}
+                          </div>
                         </div>
                         );
                       })}
@@ -1731,6 +1764,40 @@ export function SystemPage() {
             writeExport: true,
             syncNginx: true,
             dryRun: false });
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(leftoverDelName)}
+        onClose={() => !busy && setLeftoverDelName(null)}
+        title={t('system.nginxRemoveLeftoverTitle')}
+        description={t('system.nginxRemoveLeftoverDesc', { name: leftoverDelName ?? '' })}
+        confirmLabel={t('system.nginxRemoveLeftover')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+        onConfirm={() => {
+          const name = leftoverDelName;
+          setLeftoverDelName(null);
+          if (!name) return;
+          setBusy(true);
+          void api
+            .requestRaw<{
+              ok: boolean;
+              notes?: string[];
+              blocked?: boolean;
+            }>(`/api/v1/system/managed-nginx/${encodeURIComponent(name)}`, {
+              method: 'DELETE',
+            })
+            .then((r) => {
+              if (r.ok) {
+                setMsg(t('common.completed'));
+              } else {
+                setErr((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
+              }
+              return refreshExportMeta();
+            })
+            .catch((e: Error) => setErr(e.message))
+            .finally(() => setBusy(false));
         }}
       />
       <ConfirmDialog

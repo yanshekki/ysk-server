@@ -10,7 +10,8 @@ import {
   type EmailBundle,
   type EmailDomain,
 } from '../features/email';
-import { emailHealthUnprobed } from '../features/email/health-display';
+import { emailHealthPartial, emailHealthUnprobed } from '../features/email/health-display';
+import { usePageTab } from '../shared/hooks/usePageTab';
 import {
   PageGuide,
   ActionBar,
@@ -362,7 +363,21 @@ export function EmailDomainPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState('dns');
+  const [tab, setTab] = usePageTab(
+    [
+      'dns',
+      'mailbox',
+      'aliases',
+      'health',
+      'deliverability',
+      'relay',
+      'sieve',
+      'advanced',
+      'stack',
+      'about',
+    ] as const,
+    'dns',
+  );
   const [bundle, setBundle] = useState<EmailBundle | null>(null);
   const [live, setLive] = useState<Record<string, unknown> | null>(null);
   const [dnsbl, setDnsbl] = useState<Record<string, unknown> | null>(null);
@@ -590,11 +605,15 @@ export function EmailDomainPage() {
             label: t('email.statHealth'),
             value: emailHealthUnprobed(domain)
               ? t('email.healthUnchecked')
-              : `${domain.health_score}/100`,
+              : emailHealthPartial(domain, live, dnsbl)
+                ? t('email.healthPartialScore', { n: domain.health_score })
+                : `${domain.health_score}/100`,
             hint: emailHealthUnprobed(domain)
               ? t('email.healthUncheckedHint')
-              : t('email.healthLiveHint'),
-            tone: emailHealthUnprobed(domain)
+              : emailHealthPartial(domain, live, dnsbl)
+                ? t('email.healthPartialHint')
+                : t('email.healthLiveHint'),
+            tone: emailHealthUnprobed(domain) || emailHealthPartial(domain, live, dnsbl)
               ? 'warn'
               : healthScoreTone(domain.health_score) },
           {
@@ -2153,6 +2172,9 @@ export function EmailDomainPage() {
         domain={domain}
         open={deleteOpen}
         busy={deleteBusy}
+        mailboxCount={mailboxes.length}
+        recordCount={(bundle?.records ?? []).length}
+        aliasCount={aliases.length}
         onClose={() => {
           if (!deleteBusy) setDeleteOpen(false);
         }}

@@ -57,5 +57,7 @@
   "sslTerminatedUpstream": "TLS はフロント Nginx で終了します",
   "removeArtifactHint": "この残留ディスク conf だけ削除します。プロジェクトは消しません。",
   "sourceOrphan": "Leftover",
-  "orphanSite": "Project gone"
+  "orphanSite": "Project gone",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

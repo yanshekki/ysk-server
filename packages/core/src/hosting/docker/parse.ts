@@ -56,6 +56,19 @@ function str(o: Record<string, unknown>, ...keys: string[]): string {
   return '';
 }
 
+export function reconcileDockerState(state: string, status: string): string {
+  const st = String(status ?? '');
+  if (/^exited\b/i.test(st) || /\bexited\b/i.test(st)) return 'exited';
+  if (/^up\b/i.test(st) || /\bup\b/i.test(st)) {
+    if (/paused/i.test(st)) return 'paused';
+    if (/restarting/i.test(st)) return 'restarting';
+    return 'running';
+  }
+  if (/^created\b/i.test(st)) return 'created';
+  if (/^dead\b/i.test(st)) return 'dead';
+  return String(state ?? '').toLowerCase();
+}
+
 function labelsOf(o: Record<string, unknown>): Record<string, string> {
   const raw = o.Labels ?? o.labels;
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
@@ -77,12 +90,15 @@ export function parseContainers(text: string): DockerContainerRow[] {
       str(o, 'Label', 'Project') ||
       null;
     const ysk = labels[YSK_DOCKER_MANAGED_LABEL] === 'true' || Boolean(validatorIdFromComposeProject(compose ?? ''));
+    const status = str(o, 'Status', 'status');
+    const rawState = str(o, 'State', 'state').toLowerCase();
+    const state = reconcileDockerState(rawState, status);
     return {
       id: str(o, 'ID', 'Id', 'id').slice(0, 64),
       name,
       image: str(o, 'Image', 'image'),
-      status: str(o, 'Status', 'status'),
-      state: str(o, 'State', 'state').toLowerCase(),
+      status,
+      state,
       ports: str(o, 'Ports', 'ports'),
       created: str(o, 'CreatedAt', 'Created', 'created'),
       labels,

@@ -87,4 +87,6 @@ export interface CdnSiteDto {
   };
   apply_status: ApplyStatus;
   edge_status: Record<string, ApplyStatus>;
+  lastApplyAt?: string;
+  lastApplyError?: string;
 }

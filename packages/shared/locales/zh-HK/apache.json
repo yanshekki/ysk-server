@@ -1,6 +1,7 @@
 {
   "pageDesc": "Apache 站點（PHP 專案 + 獨立站）",
   "pillSites": "{{count}} 站點",
+  "pillSitesSplit": "{{n}} 站點 · 殘留 {{leftover}}",
   "listTitle": "站點（{{count}}）",
   "emptyTitle": "未有站點",
   "createSite": "+ 建立站點",
@@ -8,6 +9,7 @@
   "editTitle": "編輯站點",
   "deleteTitle": "刪除站點？",
   "deleteDesc": "刪除此 Apache 站點？",
+  "stopSites": "將有 {{n}} 個站點停止回應 HTTP。",
   "colServerName": "域名",
   "colSource": "來源",
   "colKind": "類型",

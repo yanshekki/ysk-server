@@ -6,6 +6,7 @@ import { tl } from 'ysk-server-shared';
 
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
 import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 import { panelBlockMessage, type BlockReason } from './system-apply.js';
@@ -280,6 +281,17 @@ export async function applyRedisServiceConfig(input: {
     ['redis-cli', 'CONFIG', 'SET', 'maxmemory-policy', settings.maxmemoryPolicy],
     { timeoutMs: 10_000 },
   );
+  if (settings.requirepass) {
+    const pw = await input.host.runCommand(
+      ['redis-cli', 'CONFIG', 'SET', 'requirepass', settings.requirepass],
+      { timeoutMs: 10_000 },
+    );
+    if (pw.exitCode === 0 && pw.stdout.trim().toUpperCase() === 'OK') {
+      notes.push(tl('notes.redis.requirepassApplied'));
+    } else {
+      notes.push(tl('notes.redis.requirepassApplyFailed'));
+    }
+  }
 
   let restartOk = true;
   if (input.restart !== false) {
@@ -299,6 +311,47 @@ export async function applyRedisServiceConfig(input: {
     notes,
     written,
     settings };
+}
+
+export function generateRedisPassword(): string {
+  return randomBytes(18).toString('base64url');
+}
+
+export async function ensureGeneratedRedisRequirepass(input: {
+  db: JsonStore;
+  dataDir: string;
+  host: HostExecutor;
+  force?: boolean;
+}): Promise<{
+  generated: boolean;
+  password?: string;
+  apply: ServiceApplyResult | null;
+  notes: string[];
+}> {
+  const current = loadRedisSettings(input.db);
+  if (current.requirepass.trim() && !input.force) {
+    return {
+      generated: false,
+      apply: null,
+      notes: [tl('notes.redis.requirepassAlreadySet')],
+    };
+  }
+  const password = generateRedisPassword();
+  const apply = await applyRedisServiceConfig({
+    db: input.db,
+    dataDir: input.dataDir,
+    host: input.host,
+    settings: { requirepass: password },
+    restart: true,
+  });
+  const notes = [...apply.notes];
+  if (apply.ok) notes.push(tl('notes.redis.generatedRequirepass', { password }));
+  return {
+    generated: apply.ok,
+    password: apply.ok ? password : undefined,
+    apply,
+    notes,
+  };
 }
 
 export async function applySqlServiceConfig(input: {

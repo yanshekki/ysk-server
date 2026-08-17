@@ -65,10 +65,18 @@
     "sidecarPushed": "এছাড়াও ধাক্কা SQL সাইডকার {{name}}",
     "controlPlaneDryRun": "শুধুমাত্র পূর্বরূপ — কিছুই লেখা নেই। প্যানেলে, পুনরুদ্ধার ব্যবহার করুন এবং বাক্যাংশটি লিখতে নিশ্চিত করুন।",
     "controlPlaneNeedConfirm": "সম্পূর্ণ কন্ট্রোল-প্লেন পুনরুদ্ধারের জন্য নিশ্চিত বাক্যাংশ রিস্টোর-কন্ট্রোল-প্লেন প্রয়োজন।",
-    "controlPlaneRestartAfter": "সফল পুনরুদ্ধারের পরে API পুনরায় চালু করুন।"
+    "controlPlaneRestartAfter": "সফল পুনরুদ্ধারের পরে API পুনরায় চালু করুন।",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "redis-cli ইনস্টল করা নেই"
+    "cliMissing": "redis-cli ইনস্টল করা নেই",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx পুনরায় লোড করা হয়েছে",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND: তালিকা-জোন + ডিগ ঠিক আছে",
     "applyDigFail": "conf-এ নিবন্ধিত অঞ্চল কিন্তু খনন এখনও খালি/অস্বীকৃত — মার্কিং প্রয়োগ করা হয়নি",
     "applySyncIncomplete": "PowerDNS বাইন্ড সিঙ্ক অসম্পূর্ণ — শুধুমাত্র ডিস্কে জোন ফাইল (প্রযোজ্য নয়)। EXECUTE/root বা pdns লগ ঠিক করুন।",
-    "writeOnlyHint": "শুধুমাত্র জোন ফাইল লিখিত — নামের রেজিস্টার লোড/আবেদন না করা পর্যন্ত PowerDNS উত্তর দেবে না"
+    "writeOnlyHint": "শুধুমাত্র জোন ফাইল লিখিত — নামের রেজিস্টার লোড/আবেদন না করা পর্যন্ত PowerDNS উত্তর দেবে না",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "হোস্ট এক্সিকিউট বন্ধ আছে; প্যানেল থেকে ডাটাবেস তৈরি করতে পারে না",
@@ -3008,7 +3026,14 @@
     "linuxUserRolledBack": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো হয়েছে৷",
     "linuxUserOrphan": "VNC পাসওয়ার্ড ব্যর্থ হওয়ার পরে অবশিষ্ট Linux ব্যবহারকারী {{user}} সরানো যায়নি।",
     "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first."
   },
   "apache": {
     "needServerName": "সার্ভার নাম প্রয়োজন",
@@ -3093,7 +3118,12 @@
     "staleCliRemoved": "অবশিষ্ট CLI {{path}} সরানো হয়েছে।",
     "staleCliRemoveFailed": "অবশিষ্ট CLI {{path}} সরানো যায়নি: {{detail}}",
     "vsftpdSslOff": "FTPS সনদ নেই; vsftpd-এ ssl_enable=NO করে পুনরায় চালু করা হয়েছে।",
-    "dovecotSslOff": "{{path}} নেই; Dovecot-এ ssl=no করে পুনরায় চালু করা হয়েছে।"
+    "dovecotSslOff": "{{path}} নেই; Dovecot-এ ssl=no করে পুনরায় চালু করা হয়েছে।",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "git": {
     "missingBin": "git PATH-এ নেই",

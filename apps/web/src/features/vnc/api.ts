@@ -73,6 +73,9 @@ export type VncStatusResponse = {
   notes: string[];
   accounts: VncAccountSummary[];
   clientProfiles: VncClientProfile[];
+  hostnameResolves?: boolean;
+  hostnameFixLine?: string;
+  hostname?: string;
 };
 
 export type VncOpsResult = {
@@ -87,6 +90,12 @@ export type VncOpsResult = {
 
 export const vncApi = {
   status: () => api.requestRaw<VncStatusResponse>('/api/v1/vnc/status'),
+  fixHostnameHosts: () =>
+    api.requestRawAllowStatus<VncOpsResult>('/api/v1/vnc/hostname-hosts', {
+      method: 'POST',
+      body: '{}',
+      allowStatuses: [403, 422],
+    }),
   getSettings: () =>
     api.requestRaw<{ ok: boolean; settings: VncSettings }>('/api/v1/vnc/settings'),
   patchSettings: (body: Partial<VncSettings>) =>

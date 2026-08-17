@@ -37,11 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
-## What's new in 1.1.5
+## What's new in 1.1.6
 
-- **Self-update** no longer toasts `Failed to fetch` after a successful apply — restart waits until the HTTP 200 has flushed.
-- **E2E-1114 honesty:** GeoIP freshness is no-db / stale / current; WireGuard keys stay masked until reveal; peer add/delete does not restart the server; VNC header follows dpkg; loading pages do not flash empty/0.
-- **Host clocks** render in the host timezone with offset. Public listen without admin 2FA is a dashboard warning.
+- **Backup recycle bin (7 days)** — delete moves the archive; restore or permanently delete from `/backups`.
+- **Redis** generates `requirepass` on install; empty-password hosts get an explicit generate control (probes never invent a password).
+- **VNC** probes hostname resolve and can append `/etc/hosts` with EXECUTE + root. E2E-1115 honesty: PowerDNS start re-probe, CDN last-apply error, `/cluster` lands on an installed engine, leftover public-files nginx can be removed.
 
 [Full changelog](./CHANGELOG.md)
 

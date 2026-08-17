@@ -106,6 +106,8 @@ export async function installSoftware(input: {
   exclusiveSwitchAuth?: ExclusiveSwitchAuth;
   /** Live log sink for SSE UIs */
   onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
+  /** Control-plane store — used to seed Redis requirepass after install */
+  db?: import('../db/store.js').JsonStore;
 }): Promise<SoftwareInstallResult> {
   const log = (
     stream: 'stdout' | 'stderr' | 'status',
@@ -551,6 +553,24 @@ export async function installSoftware(input: {
       ? tl('notes.software.installedSpec', { title: resolveSoftwareTitle(spec) })
       : tl('notes.auto.t0151', { v0: resolveSoftwareTitle(spec) }),
   );
+  if (ok && spec.id === 'redis-server' && input.db && input.dataDir) {
+    try {
+      const { ensureGeneratedRedisRequirepass } = await import('./db-service-config.js');
+      const seeded = await ensureGeneratedRedisRequirepass({
+        db: input.db,
+        dataDir: input.dataDir,
+        host: input.host,
+      });
+      notes.push(...seeded.notes);
+      steps.push({
+        name: 'redis requirepass',
+        status: seeded.generated ? 'ok' : seeded.apply?.blocked ? 'blocked' : 'failed',
+        detail: seeded.generated ? 'generated' : seeded.notes.slice(-1)[0],
+      });
+    } catch (e) {
+      notes.push(e instanceof Error ? e.message : String(e));
+    }
+  }
   return {
     ok,
     executed: true,
@@ -654,6 +674,7 @@ export async function installSoftwareBatch(input: {
   host: HostExecutor;
   ids: string[];
   dataDir?: string;
+  db?: import('../db/store.js').JsonStore;
   onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
 }): Promise<{
   ok: boolean;
@@ -670,6 +691,7 @@ export async function installSoftwareBatch(input: {
         host: input.host,
         id,
         dataDir: input.dataDir,
+        db: input.db,
         enableUnits: true,
         onLog: input.onLog,
       }),
@@ -692,6 +714,7 @@ export async function installForFeature(input: {
   host: HostExecutor;
   feature: string;
   dataDir?: string;
+  db?: import('../db/store.js').JsonStore;
   /** only missing (default true) */
   onlyMissing?: boolean;
   onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
@@ -724,6 +747,7 @@ export async function installForFeature(input: {
     host: input.host,
     ids,
     dataDir: input.dataDir,
+    db: input.db,
     onLog: input.onLog,
   });
   const switchHit = batch.results.find((r) => r.code === 'needs_exclusive_switch');

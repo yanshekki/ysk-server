@@ -136,6 +136,7 @@
   "noHostJobs": "No crontab jobs in this scope",
   "hostPartial": "Could not read every user crontab (root required)",
   "pendingInstall": "Pending install ({{count}})",
+  "willNotRun": "Not written to system crontab — will not run.",
   "hourRange": "Hour must be 0–23.",
   "minuteRange": "Minute must be 0–59.",
   "hoursCommon": "Common hours",

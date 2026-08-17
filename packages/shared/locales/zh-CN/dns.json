@@ -230,5 +230,7 @@
   "installConfirmConsequence": "安装并启动后，PowerDNS 会绑定 53 端口。",
   "installPort53Busy": "53 端口已有程序在监听。未停止或修复该监听前，PowerDNS 可能无法绑定。",
   "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。",
-  "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+  "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+  "startProbeFailed": "Could not re-check DNS health after start",
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
 }

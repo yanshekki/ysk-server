@@ -57,5 +57,7 @@
   "sslTerminatedUpstream": "TLS se termine à l'avant de Nginx",
   "removeArtifactHint": "Supprime seulement ce conf disque reliquat. Ne supprime pas le projet.",
   "sourceOrphan": "Leftover",
-  "orphanSite": "Project gone"
+  "orphanSite": "Project gone",
+  "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+  "stopSites": "{{n}} site(s) will stop answering HTTP."
 }

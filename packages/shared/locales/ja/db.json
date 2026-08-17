@@ -247,7 +247,16 @@
     "fleetApplyTitle": "フリートメンバーにエンキューを適用しますか?",
     "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
     "roleUnassigned": "No role assigned",
-    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+    "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+    "notApplied": "Not applied",
+    "plannedAt": "Created {{when}}",
+    "clearStalePlans": "Clear stale plans",
+    "clearStalePlansTitle": "Delete stale planned clusters?",
+    "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+    "landingTitle": "Database cluster",
+    "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+    "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+    "openEngine": "Open {{engine}}"
   },
   "console": {
     "dataBrowse": "データを閲覧する",

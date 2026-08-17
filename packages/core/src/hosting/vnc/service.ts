@@ -521,6 +521,19 @@ export class VncService {
 
     let startFailed = false;
     if (input.start) {
+      try {
+        const { probeHostnameResolves } = await import('./hostname-hosts.js');
+        const hn = await probeHostnameResolves(this.host);
+        if (!hn.resolves) {
+          startFailed = true;
+          notes.push(...hn.notes);
+          notes.push(tl('notes.vnc.skipStartHostname'));
+        }
+      } catch {
+        /* still try start */
+      }
+    }
+    if (input.start && !startFailed) {
       const st = await startVncSession({
         host: this.host,
         linuxUser,
@@ -1125,6 +1138,19 @@ export class VncService {
     const notes: string[] = [];
     if (!this.host.executeEnabled()) notes.push(tl('notes.vnc.needExecute'));
     if (!this.host.isRoot()) notes.push(tl('notes.vnc.needRoot'));
+    let hostnameResolves = true;
+    let hostnameFixLine: string | undefined;
+    let hostname: string | undefined;
+    try {
+      const { probeHostnameResolves } = await import('./hostname-hosts.js');
+      const hn = await probeHostnameResolves(this.host);
+      hostnameResolves = hn.resolves;
+      hostnameFixLine = hn.line;
+      hostname = hn.hostname;
+      if (!hn.resolves) notes.push(...hn.notes);
+    } catch {
+      /* keep default */
+    }
 
     let endpointHint: string | null = null;
     try {
@@ -1157,6 +1183,9 @@ export class VncService {
       notes,
       accounts,
       clientProfiles,
+      hostnameResolves,
+      hostnameFixLine,
+      hostname,
     };
   }
 }

@@ -235,5 +235,6 @@
   "panelRestartWait": "अद्यतन लागू हो गया। यदि यह पृष्ठ नहीं बदला, कुछ सेकंड बाद फिर लोड करें।",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

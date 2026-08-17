@@ -73,6 +73,24 @@ export async function handleSystemMigrateExportRoutes(
     sendOpsResult(res, r, { notFound: true });
     return true;
   }
+  if (method === 'DELETE' && url.pathname.startsWith('/api/v1/system/managed-nginx/')) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const name = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const { removeLeftoverManagedNginx } = await import('ysk-server-core');
+    const r = await removeLeftoverManagedNginx({
+      dataDir: ctx.dataDir,
+      name,
+      host: ctx.host,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'system.nginx.leftover_remove',
+      detail: { name, ok: r.ok, blocked: r.blocked, removed: r.removed },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
   if (method === 'POST' && url.pathname === '/api/v1/system/rebuild') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);

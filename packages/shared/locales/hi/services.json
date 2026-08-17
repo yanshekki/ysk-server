@@ -94,5 +94,8 @@
     "tool": "Tool",
     "activating": "Starting"
   },
-  "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+  "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+  "restartConfirmTitle": "Restart {{label}}?",
+  "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+  "startVerifyFailed": "{{label}} start did not stay healthy."
 }

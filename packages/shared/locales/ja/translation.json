@@ -15,7 +15,8 @@
       "failed": "失敗しました",
       "error": "エラー",
       "unknown": "プローブされていない",
-      "fallback": "不明"
+      "fallback": "不明",
+      "activating": "Starting"
     },
     "liveN": "{{count}} オンライン",
     "registeredOnly": "登録済みのみ",
@@ -262,7 +263,9 @@
     "sslTerminatedUpstream": "TLS はフロント Nginx で終了します",
     "removeArtifactHint": "この残留ディスク conf だけ削除します。プロジェクトは消しません。",
     "sourceOrphan": "Leftover",
-    "orphanSite": "Project gone"
+    "orphanSite": "Project gone",
+    "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "applyStatus": {
     "draft": "下書き",
@@ -455,7 +458,23 @@
     "goLogs": "Open logs",
     "goAbout": "Backup notes",
     "skippedPendingOs": "Skipped — OS user / home not provisioned",
-    "latestFile": "Latest archive"
+    "latestFile": "Latest archive",
+    "tabTrash": "Recycle bin",
+    "trashTitle": "Recycle bin ({{count}})",
+    "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+    "trashEmpty": "Recycle bin is empty",
+    "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+    "trashRestore": "Restore",
+    "trashPurge": "Delete forever",
+    "trashEmptyAll": "Empty recycle bin",
+    "trashExpires": "Expires {{at}}",
+    "trashPurgeTitle": "Permanently delete this backup?",
+    "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+    "trashEmptyTitle": "Empty recycle bin?",
+    "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+    "trashRestored": "Restored from recycle bin",
+    "trashPurged": "Permanently deleted",
+    "trashedOk": "Moved to recycle bin"
   },
   "btTracker": {
     "title": "BTトラッカー",
@@ -653,7 +672,9 @@
     "statsLibraryHint": "Torrents in the panel library / file shares",
     "statsTrackerLeftover": "Tracker leftover",
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-    "statsAnnouncesHint": "Announce requests seen by the tracker process"
+    "statsAnnouncesHint": "Announce requests seen by the tracker process",
+    "leftoverHashesTitle": "Tracker leftover hashes",
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
   },
   "catalog": {
     "sw": {
@@ -2204,7 +2225,8 @@
     "hidePassword": "隠れる",
     "more": "もっと",
     "redirectedTo": "{{to}} を開きました（元: {{from}}）",
-    "unavailable": "Not available right now"
+    "unavailable": "Not available right now",
+    "ok": "OK"
   },
   "cron": {
     "presetCdTrue": "cd アプリ + true (テスト)",
@@ -2372,7 +2394,8 @@
     "writtenOnHostHint": "Lines already written to the host crontab",
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
-    "systemJobBadge": "No project · system user"
+    "systemJobBadge": "No project · system user",
+    "willNotRun": "Not written to system crontab — will not run."
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -2418,7 +2441,8 @@
     "mode": {
       "degraded": "貶められた",
       "production_capable": "生産準備完了",
-      "normal": "通常"
+      "normal": "通常",
+      "blocked": "blocked"
     },
     "details": "詳細",
     "certExpiryTitle": "証明書の有効期限:",
@@ -2502,7 +2526,8 @@
       "warn": "Warning",
       "bad": "Problem"
     },
-    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+    "readinessBlocked": "{{n}} blocker(s)"
   },
   "dataTable": {
     "empty": "データがありません",
@@ -2757,7 +2782,16 @@
       "fleetApplyTitle": "フリートメンバーにエンキューを適用しますか?",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
       "roleUnassigned": "No role assigned",
-      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "notApplied": "Not applied",
+      "plannedAt": "Created {{when}}",
+      "clearStalePlans": "Clear stale plans",
+      "clearStalePlansTitle": "Delete stale planned clusters?",
+      "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+      "landingTitle": "Database cluster",
+      "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+      "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+      "openEngine": "Open {{engine}}"
     },
     "console": {
       "dataBrowse": "データを閲覧する",
@@ -3090,7 +3124,9 @@
     "installConfirmConsequence": "インストールして起動すると PowerDNS が 53 番をバインドします。",
     "installPort53Busy": "53番は既に使用中です。その待受を止めるか修復するまで PowerDNS はバインドに失敗することがあります。",
     "installPort53BusyConsequence": "53 番で応答を期待する前に、バインドを修復するか他の待受を止めてください。",
-    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+    "startProbeFailed": "Could not re-check DNS health after start",
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
   },
   "docker": {
     "title": "Docker",
@@ -3142,7 +3178,8 @@
       "created": "Created",
       "dead": "Dead",
       "removing": "Removing",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "exitedCode": "Exited ({{n}})"
     },
     "actions": {
       "start": "起動",
@@ -3850,7 +3887,10 @@
     "opendkimNoReload": "OpenDKIM は reload 非対応です。鍵や表の変更後は再起動してください。",
     "opendkimNoReloadTitle": "この構成では systemctl reload opendkim は使えません",
     "tlsRequestLeFor": "Request LE for {{host}}",
-    "deliverabilityChecks": "Checks"
+    "deliverabilityChecks": "Checks",
+    "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+    "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未認証",
@@ -4381,7 +4421,8 @@
     "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
-    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+    "webdavOffNoToken": "Disabled (no active token)"
   },
   "firewall": {
     "profiles": {
@@ -4642,7 +4683,8 @@
     "detectPublicIpTitle": "このホストから最初の非ループバック IPv4 を入力します",
     "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-    "stateFailed": "Failed to start"
+    "stateFailed": "Failed to start",
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
   },
   "geo": {
     "continents": {
@@ -5755,7 +5797,8 @@
     "setHsts": "HSTS",
     "setCfRealIp": "CloudflareのリアルIP",
     "setIndexes": "ディレクトリリスト",
-    "bodyInherit": "グローバル"
+    "bodyInherit": "グローバル",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "notFound": {
     "title": "ページが見つかりません",
@@ -5830,10 +5873,18 @@
       "sidecarPushed": "SQL サイドカー {{name}} もプッシュされました",
       "controlPlaneDryRun": "プレビューのみ - 何も書かれていません。パネルで復元を使用して、書き込むフレーズを確認します。",
       "controlPlaneNeedConfirm": "完全なコントロール プレーンの復元には、確認フレーズ RESTORE-CONTROL-PLANE が必要です。",
-      "controlPlaneRestartAfter": "復元が成功したら API を再起動します。"
+      "controlPlaneRestartAfter": "復元が成功したら API を再起動します。",
+      "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+      "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+      "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
     },
     "redis": {
-      "cliMissing": "redis-cli がインストールされていません"
+      "cliMissing": "redis-cli がインストールされていません",
+      "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+      "requirepassApplied": "requirepass applied at runtime",
+      "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+      "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
     },
     "nginx": {
       "reloaded": "nginxがリロードされました",
@@ -5911,7 +5962,17 @@
       "applyDigOk": "PowerDNS BIND: list-zones + dig OK",
       "applyDigFail": "ゾーンは conf に登録されていますが、dig はまだ空です/拒否されました — マーキングが適用されていません",
       "applySyncIncomplete": "PowerDNS バインド同期が不完全 — ディスク上のゾーン ファイルのみ (適用されていません)。 EXECUTE/root または pdns ログを修正します。",
-      "writeOnlyHint": "ゾーン ファイルは書き込みのみ — PowerDNS は、指定されたレジスタをロード/適用するまで応答しません。"
+      "writeOnlyHint": "ゾーン ファイルは書き込みのみ — PowerDNS は、指定されたレジスタをロード/適用するまで応答しません。",
+      "noActiveUnit": "No active named/bind9/pdns unit",
+      "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+      "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+      "port53Closed": "Port 53 is not listening (UDP/TCP)",
+      "udp53NotPublic": "UDP/53 is not listening on a public address",
+      "tcp53NotPublic": "TCP/53 is not listening on a public address",
+      "noManagedZones": "No managed zone files under dataDir/dns/zones",
+      "pdnsListZones": "PowerDNS list-zones: {{n}}",
+      "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+      "localAOk": "local A {{name}} → {{ip}}"
     },
     "db": {
       "needExecuteCreate": "ホストの実行はオフです。パネルからデータベースを作成できません",
@@ -8773,7 +8834,14 @@
       "linuxUserRolledBack": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除しました。",
       "linuxUserOrphan": "VNC パスワードが失敗した後、残った Linux ユーザー {{user}} を削除できませんでした。",
       "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+      "hostnameResolves": "Hostname {{hostname}} resolves.",
+      "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+      "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+      "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+      "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+      "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+      "skipStartHostname": "Did not start the display — fix hostname resolution first."
     },
     "apache": {
       "needServerName": "サーバー名は必須です",
@@ -8858,7 +8926,12 @@
       "staleCliRemoved": "残留 CLI {{path}} を削除しました。",
       "staleCliRemoveFailed": "残留 CLI {{path}} を削除できませんでした: {{detail}}",
       "vsftpdSslOff": "FTPS 証明書がないため vsftpd を ssl_enable=NO にして再起動しました。",
-      "dovecotSslOff": "{{path}} がないため Dovecot を ssl=no にして再起動しました。"
+      "dovecotSslOff": "{{path}} がないため Dovecot を ssl=no にして再起動しました。",
+      "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+      "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+      "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+      "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
     },
     "git": {
       "missingBin": "git が PATH 上にありません",
@@ -10521,7 +10594,12 @@
     "scanCapped": "Showing the first {{n}} matches.",
     "dbOptionKeys": "DB {{i}} · {{n}} keys",
     "dbOptionEmpty": "DB {{i}} · empty",
-    "insecureShort": "No password"
+    "insecureShort": "No password",
+    "generateRequirepass": "Generate and apply password",
+    "generateRequirepassTitle": "Generate a Redis password?",
+    "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+    "generateRequirepassDone": "Redis password applied",
+    "generatedOnce": "Generated password (shown once): {{password}}"
   },
   "resources": {
     "created": "作成済み",
@@ -11712,7 +11790,10 @@
       "tool": "Tool",
       "activating": "Starting"
     },
-    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+    "restartConfirmTitle": "Restart {{label}}?",
+    "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+    "startVerifyFailed": "{{label}} start did not stay healthy."
   },
   "software": {
     "title": "ソフトウェア",
@@ -12308,7 +12389,8 @@
       "cliNoSocket": "CLI にはライブ HTTP ソケットがありません。 servingHttps は、config および listen ソケット (ss) から推論されます。",
       "listenHost": "リッスンアドレス",
       "currentHost": "このセッション",
-      "replaceCert": "信頼できる証明書に置き換えます"
+      "replaceCert": "信頼できる証明書に置き換えます",
+      "needFqdn": "Need a FQDN (example.com), not a bare hostname"
     },
     "timeNtp": "時間とNTP",
     "clockStatus": "システムクロックのステータス",
@@ -12427,7 +12509,11 @@
     "noScheduledPower": "再起動または電源オフはスケジュールされていません",
     "timezoneNow": "Host time now: {{time}} ({{tz}})",
     "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-    "notExported": "Not exported yet"
+    "notExported": "Not exported yet",
+    "nginxRemoveLeftover": "Remove leftover",
+    "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+    "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+    "needExecuteRoot": "Needs YSK_EXECUTE + root"
   },
   "systemd": {
     "enabled": "有効",
@@ -13022,7 +13108,8 @@
     "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
-    "riskUnevaluated": "Not evaluated — run Scan + OSV"
+    "riskUnevaluated": "Not evaluated — run Scan + OSV",
+    "footerNewVersion": "New version {{version}}"
   },
   "users": {
     "userCount": "{{count}} ユーザー",
@@ -13683,7 +13770,13 @@
     "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
     "bindRfbLine": "RFB {{bind}} :{{port}}",
     "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+    "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+    "hostnameFix": "Write hostname to /etc/hosts",
+    "hostnameFixTitle": "Append this line to /etc/hosts?",
+    "hostnameFixDesc": "{{line}}",
+    "hostnameFixDone": "Hostname /etc/hosts updated",
+    "startAfterCreateBlocked": "Disabled until the hostname resolves"
   },
   "vpn": {
     "pageDesc": "VPNサーバーとクライアント",

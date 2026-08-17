@@ -33,6 +33,7 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   torrent: 'torrents',
   admission: 'geo',
   ipacl: 'geo',
+  ip: 'geo',
   processes: 'live',
   maintenance: 'ops',
 };

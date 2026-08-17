@@ -256,6 +256,7 @@ export async function handleSoftwareCatalogRoutes(
           host: ctx.host,
           feature: data.feature,
           dataDir: ctx.dataDir,
+          db: ctx.db,
           onLog: hooks?.onLog,
         })) as unknown as Record<string, unknown>;
       } else {
@@ -264,6 +265,7 @@ export async function handleSoftwareCatalogRoutes(
           host: ctx.host,
           ids,
           dataDir: ctx.dataDir,
+          db: ctx.db,
           onLog: hooks?.onLog,
         })) as unknown as Record<string, unknown>;
       }
@@ -312,6 +314,7 @@ export async function handleSoftwareCatalogRoutes(
       host: ctx.host,
       id,
       dataDir: ctx.dataDir,
+      db: ctx.db,
       enableUnits: true,
     });
     ctx.audit.append({

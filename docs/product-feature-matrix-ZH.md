@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-17 — 對齊 **1.1.5**（1.1.4 之後的 npm latest）。E2E-1114 誠實：GeoIP 新鮮度、WireGuard 金鑰遮罩、載入唔閃空狀態、主機時區。標記對齊已交付程式（面板 + CLI + API），不是行銷。  
+**重計：** 2026-08-17 — 對齊 **1.1.6**（1.1.5 之後的 npm latest）。E2E-1115：備份 7 日回收區、Redis 產生 requirepass、VNC 寫 `/etc/hosts`、PowerDNS 啟動再探、`/cluster` 落到已裝引擎。標記對齊已交付程式（面板 + CLI + API），不是行銷。  
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

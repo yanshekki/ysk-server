@@ -235,5 +235,6 @@
   "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

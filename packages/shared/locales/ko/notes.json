@@ -65,10 +65,18 @@
     "sidecarPushed": "SQL 사이드카도 푸시됨 {{name}}",
     "controlPlaneDryRun": "미리보기만 가능 - 작성된 내용이 없습니다. 패널에서 복원을 사용하고 작성할 문구를 확인하세요.",
     "controlPlaneNeedConfirm": "전체 제어 영역 복원에는 RESTORE-Control-PLANE 확인 문구가 필요합니다.",
-    "controlPlaneRestartAfter": "복원에 성공한 후 API를 다시 시작하세요."
+    "controlPlaneRestartAfter": "복원에 성공한 후 API를 다시 시작하세요.",
+    "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+    "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+    "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
   },
   "redis": {
-    "cliMissing": "redis-cli가 설치되지 않았습니다"
+    "cliMissing": "redis-cli가 설치되지 않았습니다",
+    "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+    "requirepassApplied": "requirepass applied at runtime",
+    "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+    "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
   },
   "nginx": {
     "reloaded": "nginx가 다시 로드됨",
@@ -146,7 +154,17 @@
     "applyDigOk": "PowerDNS BIND: 목록 영역 + 발굴 확인",
     "applyDigFail": "conf에 영역이 등록되었지만 여전히 비어 있음/REFUSED — 표시가 적용되지 않음",
     "applySyncIncomplete": "PowerDNS 바인드 동기화 미완료 — 디스크에만 영역 파일이 있습니다(적용되지 않음). EXECUTE/root 또는 pdns 로그를 수정합니다.",
-    "writeOnlyHint": "영역 파일 쓰기 전용 - PowerDNS는 다음 이름의 레지스터를 로드/적용할 때까지 응답하지 않습니다."
+    "writeOnlyHint": "영역 파일 쓰기 전용 - PowerDNS는 다음 이름의 레지스터를 로드/적용할 때까지 응답하지 않습니다.",
+    "noActiveUnit": "No active named/bind9/pdns unit",
+    "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+    "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+    "port53Closed": "Port 53 is not listening (UDP/TCP)",
+    "udp53NotPublic": "UDP/53 is not listening on a public address",
+    "tcp53NotPublic": "TCP/53 is not listening on a public address",
+    "noManagedZones": "No managed zone files under dataDir/dns/zones",
+    "pdnsListZones": "PowerDNS list-zones: {{n}}",
+    "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
     "needExecuteCreate": "호스트 실행이 꺼져 있습니다. 패널에서 데이터베이스를 생성할 수 없습니다.",
@@ -3008,7 +3026,14 @@
     "linuxUserRolledBack": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거했습니다.",
     "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다.",
     "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+    "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+    "hostnameResolves": "Hostname {{hostname}} resolves.",
+    "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+    "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+    "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+    "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+    "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "skipStartHostname": "Did not start the display — fix hostname resolution first."
   },
   "apache": {
     "needServerName": "서버 이름이 필요합니다",
@@ -3093,7 +3118,12 @@
     "staleCliRemoved": "잔여 CLI {{path}}을(를) 제거했습니다.",
     "staleCliRemoveFailed": "잔여 CLI {{path}}을(를) 제거하지 못했습니다: {{detail}}",
     "vsftpdSslOff": "FTPS 인증서 파일이 없어 vsftpd를 ssl_enable=NO로 설정한 뒤 다시 시작했습니다.",
-    "dovecotSslOff": "{{path}}이(가) 없어 Dovecot을 ssl=no로 설정한 뒤 다시 시작했습니다."
+    "dovecotSslOff": "{{path}}이(가) 없어 Dovecot을 ssl=no로 설정한 뒤 다시 시작했습니다.",
+    "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+    "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+    "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+    "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
   },
   "git": {
     "missingBin": "자식이 PATH에 없습니다",

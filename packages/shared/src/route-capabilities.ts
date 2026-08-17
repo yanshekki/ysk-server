@@ -141,6 +141,16 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   { methods: ['DELETE'], pattern: /^\/api\/v1\/backups$/, cap: 'backups.run' },
   {
     methods: ['POST'],
+    pattern: /^\/api\/v1\/backups\/trash\/restore$/,
+    cap: 'backups.run',
+  },
+  {
+    methods: ['DELETE'],
+    pattern: /^\/api\/v1\/backups\/trash(\/empty)?$/,
+    cap: 'backups.run',
+  },
+  {
+    methods: ['POST'],
     pattern: /^\/api\/v1\/system\/firewall\/(apply|allow-port)$/,
     cap: 'firewall.edit',
   },

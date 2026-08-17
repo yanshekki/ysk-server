@@ -15,7 +15,8 @@
       "failed": "失败",
       "error": "失败",
       "unknown": "未探测",
-      "fallback": "未知"
+      "fallback": "未知",
+      "activating": "Starting"
     },
     "liveN": "{{count}} 在线",
     "registeredOnly": "仅登记",
@@ -262,7 +263,9 @@
     "sslTerminatedUpstream": "TLS 在 Nginx 前面结束",
     "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。",
     "sourceOrphan": "Leftover",
-    "orphanSite": "Project gone"
+    "orphanSite": "Project gone",
+    "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "applyStatus": {
     "draft": "草稿",
@@ -455,7 +458,23 @@
     "goLogs": "Open logs",
     "goAbout": "Backup notes",
     "skippedPendingOs": "Skipped — OS user / home not provisioned",
-    "latestFile": "Latest archive"
+    "latestFile": "Latest archive",
+    "tabTrash": "Recycle bin",
+    "trashTitle": "Recycle bin ({{count}})",
+    "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+    "trashEmpty": "Recycle bin is empty",
+    "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+    "trashRestore": "Restore",
+    "trashPurge": "Delete forever",
+    "trashEmptyAll": "Empty recycle bin",
+    "trashExpires": "Expires {{at}}",
+    "trashPurgeTitle": "Permanently delete this backup?",
+    "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+    "trashEmptyTitle": "Empty recycle bin?",
+    "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+    "trashRestored": "Restored from recycle bin",
+    "trashPurged": "Permanently deleted",
+    "trashedOk": "Moved to recycle bin"
   },
   "btTracker": {
     "title": "BT追踪器",
@@ -653,7 +672,9 @@
     "statsLibraryHint": "Torrents in the panel library / file shares",
     "statsTrackerLeftover": "Tracker leftover",
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-    "statsAnnouncesHint": "Announce requests seen by the tracker process"
+    "statsAnnouncesHint": "Announce requests seen by the tracker process",
+    "leftoverHashesTitle": "Tracker leftover hashes",
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
   },
   "catalog": {
     "sw": {
@@ -2204,7 +2225,8 @@
     "hidePassword": "隐藏",
     "more": "更多的",
     "redirectedTo": "已转到 {{to}}（原为 {{from}}）",
-    "unavailable": "Not available right now"
+    "unavailable": "Not available right now",
+    "ok": "OK"
   },
   "cron": {
     "presetCdTrue": "cd app + true（测试）",
@@ -2372,7 +2394,8 @@
     "writtenOnHostHint": "Lines already written to the host crontab",
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
-    "systemJobBadge": "No project · system user"
+    "systemJobBadge": "No project · system user",
+    "willNotRun": "Not written to system crontab — will not run."
   },
   "dashboard": {
     "title": "控制台",
@@ -2418,7 +2441,8 @@
     "mode": {
       "degraded": "降级",
       "production_capable": "可生产",
-      "normal": "正常"
+      "normal": "正常",
+      "blocked": "blocked"
     },
     "details": "详情",
     "certExpiryTitle": "证书到期：",
@@ -2502,7 +2526,8 @@
       "warn": "Warning",
       "bad": "Problem"
     },
-    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+    "readinessBlocked": "{{n}} blocker(s)"
   },
   "dataTable": {
     "empty": "没有数据",
@@ -2765,7 +2790,16 @@
       "fleetApplyTitle": "队列适用于车队成员吗？",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
       "roleUnassigned": "No role assigned",
-      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "notApplied": "Not applied",
+      "plannedAt": "Created {{when}}",
+      "clearStalePlans": "Clear stale plans",
+      "clearStalePlansTitle": "Delete stale planned clusters?",
+      "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+      "landingTitle": "Database cluster",
+      "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+      "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+      "openEngine": "Open {{engine}}"
     },
     "console": {
       "dataBrowse": "资料浏览",
@@ -3090,7 +3124,9 @@
     "installConfirmConsequence": "安装并启动后，PowerDNS 会绑定 53 端口。",
     "installPort53Busy": "53 端口已有程序在监听。未停止或修复该监听前，PowerDNS 可能无法绑定。",
     "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。",
-    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+    "startProbeFailed": "Could not re-check DNS health after start",
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
   },
   "docker": {
     "title": "Docker",
@@ -3142,7 +3178,8 @@
       "created": "Created",
       "dead": "Dead",
       "removing": "Removing",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "exitedCode": "Exited ({{n}})"
     },
     "actions": {
       "start": "启动",
@@ -3850,7 +3887,10 @@
     "opendkimNoReload": "OpenDKIM 不支持重载 — 更改密钥或对照表后请用重启。",
     "opendkimNoReloadTitle": "此堆栈不支持 systemctl reload opendkim",
     "tlsRequestLeFor": "Request LE for {{host}}",
-    "deliverabilityChecks": "Checks"
+    "deliverabilityChecks": "Checks",
+    "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+    "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -4381,7 +4421,8 @@
     "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
-    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+    "webdavOffNoToken": "Disabled (no active token)"
   },
   "firewall": {
     "profiles": {
@@ -4642,7 +4683,8 @@
     "detectPublicIpTitle": "填写来自该主机的第一个非环回 IPv4",
     "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-    "stateFailed": "Failed to start"
+    "stateFailed": "Failed to start",
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
   },
   "geo": {
     "continents": {
@@ -5755,7 +5797,8 @@
     "setHsts": "HSTS",
     "setCfRealIp": "Cloudflare 真实 IP",
     "setIndexes": "目录列表",
-    "bodyInherit": "跟随全局"
+    "bodyInherit": "跟随全局",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "notFound": {
     "title": "找不到页面",
@@ -5830,10 +5873,18 @@
       "sidecarPushed": "还推送了 SQL sidecar {{name}}",
       "controlPlaneDryRun": "仅预览 - 没有写任何东西。在面板中，使用“恢复”并确认要写入的短语。",
       "controlPlaneNeedConfirm": "完全控制平面恢复需要确认短语 RESTORE-CONTROL-PLANE。",
-      "controlPlaneRestartAfter": "恢复成功后重新启动API。"
+      "controlPlaneRestartAfter": "恢复成功后重新启动API。",
+      "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+      "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+      "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
     },
     "redis": {
-      "cliMissing": "未安装 redis-cli"
+      "cliMissing": "未安装 redis-cli",
+      "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+      "requirepassApplied": "requirepass applied at runtime",
+      "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+      "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
     },
     "nginx": {
       "reloaded": "nginx 已 reload",
@@ -5911,7 +5962,17 @@
       "applyDigOk": "PowerDNS BIND：list-zones + dig OK",
       "applyDigFail": "conf 已注册但 dig 仍空/REFUSED — 不标 applied",
       "applySyncIncomplete": "PowerDNS bind 同步未完 — 仅写盘。请检查 EXECUTE/root 或 pdns 日志",
-      "writeOnlyHint": "仅写了 zone 文件 — 需 load/apply 挂 named.conf 才会应答"
+      "writeOnlyHint": "仅写了 zone 文件 — 需 load/apply 挂 named.conf 才会应答",
+      "noActiveUnit": "No active named/bind9/pdns unit",
+      "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+      "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+      "port53Closed": "Port 53 is not listening (UDP/TCP)",
+      "udp53NotPublic": "UDP/53 is not listening on a public address",
+      "tcp53NotPublic": "TCP/53 is not listening on a public address",
+      "noManagedZones": "No managed zone files under dataDir/dns/zones",
+      "pdnsListZones": "PowerDNS list-zones: {{n}}",
+      "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+      "localAOk": "local A {{name}} → {{ip}}"
     },
     "db": {
       "needExecuteCreate": "服务器未开启系统变更权限，无法在管理面板创建数据库",
@@ -8773,7 +8834,14 @@
       "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
       "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。",
       "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+      "hostnameResolves": "Hostname {{hostname}} resolves.",
+      "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+      "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+      "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+      "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+      "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+      "skipStartHostname": "Did not start the display — fix hostname resolution first."
     },
     "apache": {
       "needServerName": "需要域名",
@@ -8866,7 +8934,12 @@
       "staleCliRemoved": "已移除残留 CLI {{path}}。",
       "staleCliRemoveFailed": "无法移除残留 CLI {{path}}：{{detail}}",
       "vsftpdSslOff": "因 FTPS 证书文件不存在，已将 vsftpd 设为 ssl_enable=NO 并重新启动。",
-      "dovecotSslOff": "因 {{path}} 不存在，已将 Dovecot 设为 ssl=no 并重新启动。"
+      "dovecotSslOff": "因 {{path}} 不存在，已将 Dovecot 设为 ssl=no 并重新启动。",
+      "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+      "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+      "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+      "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
     },
     "git": {
       "missingBin": "git 不在路径上",
@@ -10521,7 +10594,12 @@
     "scanCapped": "Showing the first {{n}} matches.",
     "dbOptionKeys": "DB {{i}} · {{n}} keys",
     "dbOptionEmpty": "DB {{i}} · empty",
-    "insecureShort": "No password"
+    "insecureShort": "No password",
+    "generateRequirepass": "Generate and apply password",
+    "generateRequirepassTitle": "Generate a Redis password?",
+    "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+    "generateRequirepassDone": "Redis password applied",
+    "generatedOnce": "Generated password (shown once): {{password}}"
   },
   "resources": {
     "created": "已创建",
@@ -11712,7 +11790,10 @@
       "tool": "Tool",
       "activating": "Starting"
     },
-    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+    "restartConfirmTitle": "Restart {{label}}?",
+    "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+    "startVerifyFailed": "{{label}} start did not stay healthy."
   },
   "software": {
     "title": "软件中心",
@@ -12308,7 +12389,8 @@
       "cliNoSocket": "CLI 没有实时 HTTP 套接字； servingHttps 是从配置和监听套接字 (ss) 推断出来的。",
       "listenHost": "收听地址",
       "currentHost": "本次会议",
-      "replaceCert": "替换为受信任的证书"
+      "replaceCert": "替换为受信任的证书",
+      "needFqdn": "Need a FQDN (example.com), not a bare hostname"
     },
     "timeNtp": "时间与 NTP",
     "clockStatus": "系统时钟状态",
@@ -12427,7 +12509,11 @@
     "noScheduledPower": "未安排重新启动或关机",
     "timezoneNow": "Host time now: {{time}} ({{tz}})",
     "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-    "notExported": "Not exported yet"
+    "notExported": "Not exported yet",
+    "nginxRemoveLeftover": "Remove leftover",
+    "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+    "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+    "needExecuteRoot": "Needs YSK_EXECUTE + root"
   },
   "systemd": {
     "enabled": "已启用",
@@ -13022,7 +13108,8 @@
     "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
-    "riskUnevaluated": "Not evaluated — run Scan + OSV"
+    "riskUnevaluated": "Not evaluated — run Scan + OSV",
+    "footerNewVersion": "New version {{version}}"
   },
   "users": {
     "userCount": "{{count}} 用户",
@@ -13683,7 +13770,13 @@
     "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
     "bindRfbLine": "RFB {{bind}} :{{port}}",
     "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+    "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+    "hostnameFix": "Write hostname to /etc/hosts",
+    "hostnameFixTitle": "Append this line to /etc/hosts?",
+    "hostnameFixDesc": "{{line}}",
+    "hostnameFixDone": "Hostname /etc/hosts updated",
+    "startAfterCreateBlocked": "Disabled until the hostname resolves"
   },
   "vpn": {
     "pageDesc": "VPN 服务器／客户端",

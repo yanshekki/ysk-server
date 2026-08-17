@@ -235,5 +235,6 @@
   "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
   "cveNotChecked": "Not checked",
   "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV"
+  "riskUnevaluated": "Not evaluated — run Scan + OSV",
+  "footerNewVersion": "New version {{version}}"
 }

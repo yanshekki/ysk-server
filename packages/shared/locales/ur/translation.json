@@ -15,7 +15,8 @@
       "failed": "ناکام",
       "error": "خرابی",
       "unknown": "تفتیش نہیں ہوئی۔",
-      "fallback": "نامعلوم"
+      "fallback": "نامعلوم",
+      "activating": "Starting"
     },
     "liveN": "{{count}} آن لائن",
     "registeredOnly": "صرف رجسٹرڈ",
@@ -262,7 +263,9 @@
     "sslTerminatedUpstream": "TLS سامنے Nginx پر ختم ہوتا ہے۔",
     "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔",
     "sourceOrphan": "Leftover",
-    "orphanSite": "Project gone"
+    "orphanSite": "Project gone",
+    "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "applyStatus": {
     "draft": "مسودہ",
@@ -455,7 +458,23 @@
     "goLogs": "Open logs",
     "goAbout": "Backup notes",
     "skippedPendingOs": "Skipped — OS user / home not provisioned",
-    "latestFile": "Latest archive"
+    "latestFile": "Latest archive",
+    "tabTrash": "Recycle bin",
+    "trashTitle": "Recycle bin ({{count}})",
+    "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+    "trashEmpty": "Recycle bin is empty",
+    "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+    "trashRestore": "Restore",
+    "trashPurge": "Delete forever",
+    "trashEmptyAll": "Empty recycle bin",
+    "trashExpires": "Expires {{at}}",
+    "trashPurgeTitle": "Permanently delete this backup?",
+    "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+    "trashEmptyTitle": "Empty recycle bin?",
+    "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+    "trashRestored": "Restored from recycle bin",
+    "trashPurged": "Permanently deleted",
+    "trashedOk": "Moved to recycle bin"
   },
   "btTracker": {
     "title": "بی ٹی ٹریکر",
@@ -653,7 +672,9 @@
     "statsLibraryHint": "Torrents in the panel library / file shares",
     "statsTrackerLeftover": "Tracker leftover",
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-    "statsAnnouncesHint": "Announce requests seen by the tracker process"
+    "statsAnnouncesHint": "Announce requests seen by the tracker process",
+    "leftoverHashesTitle": "Tracker leftover hashes",
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
   },
   "catalog": {
     "sw": {
@@ -2204,7 +2225,8 @@
     "hidePassword": "چھپائیں",
     "more": "مزید",
     "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})",
-    "unavailable": "Not available right now"
+    "unavailable": "Not available right now",
+    "ok": "OK"
   },
   "cron": {
     "presetCdTrue": "سی ڈی ایپ + سچ (ٹیسٹ)",
@@ -2372,7 +2394,8 @@
     "writtenOnHostHint": "Lines already written to the host crontab",
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
-    "systemJobBadge": "No project · system user"
+    "systemJobBadge": "No project · system user",
+    "willNotRun": "Not written to system crontab — will not run."
   },
   "dashboard": {
     "title": "ڈیش بورڈ",
@@ -2418,7 +2441,8 @@
     "mode": {
       "degraded": "تنزلی",
       "production_capable": "پیداوار تیار ہے",
-      "normal": "عام"
+      "normal": "عام",
+      "blocked": "blocked"
     },
     "details": "تفصیلات",
     "certExpiryTitle": "سرٹیفکیٹ کی میعاد:",
@@ -2502,7 +2526,8 @@
       "warn": "Warning",
       "bad": "Problem"
     },
-    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+    "readinessBlocked": "{{n}} blocker(s)"
   },
   "dataTable": {
     "empty": "کوئی ڈیٹا نہیں۔",
@@ -2757,7 +2782,16 @@
       "fleetApplyTitle": "بحری بیڑے کے اراکین پر قطار کا اطلاق ہوتا ہے؟",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
       "roleUnassigned": "No role assigned",
-      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "notApplied": "Not applied",
+      "plannedAt": "Created {{when}}",
+      "clearStalePlans": "Clear stale plans",
+      "clearStalePlansTitle": "Delete stale planned clusters?",
+      "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+      "landingTitle": "Database cluster",
+      "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+      "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+      "openEngine": "Open {{engine}}"
     },
     "console": {
       "dataBrowse": "ڈیٹا براؤز کریں۔",
@@ -3090,7 +3124,9 @@
     "installConfirmConsequence": "انسٹال اور شروع کے بعد PowerDNS پورٹ 53 باندھے گا۔",
     "installPort53Busy": "پورٹ 53 پہلے سے سن رہا ہے۔ اس سننے والے کو روکے یا ٹھیک کیے بغیر PowerDNS بائنڈ ناکام ہو سکتا ہے۔",
     "installPort53BusyConsequence": "پورٹ 53 پر جواب کی توقع سے پہلے بائنڈ ٹھیک کریں یا دوسرا سننے والا روکیں۔",
-    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+    "startProbeFailed": "Could not re-check DNS health after start",
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
   },
   "docker": {
     "title": "Docker",
@@ -3142,7 +3178,8 @@
       "created": "Created",
       "dead": "Dead",
       "removing": "Removing",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "exitedCode": "Exited ({{n}})"
     },
     "actions": {
       "start": "چلائیں",
@@ -3850,7 +3887,10 @@
     "opendkimNoReload": "OpenDKIM ری لوڈ نہیں کرتا — کلید یا جدول بدلنے کے بعد ری اسٹارٹ استعمال کریں۔",
     "opendkimNoReloadTitle": "اس اسٹیک پر systemctl reload opendkim معاون نہیں",
     "tlsRequestLeFor": "Request LE for {{host}}",
-    "deliverabilityChecks": "Checks"
+    "deliverabilityChecks": "Checks",
+    "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+    "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",
@@ -4381,7 +4421,8 @@
     "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
-    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+    "webdavOffNoToken": "Disabled (no active token)"
   },
   "firewall": {
     "profiles": {
@@ -4642,7 +4683,8 @@
     "detectPublicIpTitle": "اس میزبان سے پہلا نان لوپ بیک IPv4 پُر کریں۔",
     "pasvIpRequired": "لاگو کرنے سے پہلے PASV پبلک IP سیٹ کریں (NAT/کلاؤڈ)۔ پتہ لگائیں یا پتہ لکھیں۔",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-    "stateFailed": "Failed to start"
+    "stateFailed": "Failed to start",
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
   },
   "geo": {
     "continents": {
@@ -5755,7 +5797,8 @@
     "setHsts": "HSTS",
     "setCfRealIp": "Cloudflare اصلی IP",
     "setIndexes": "ڈائریکٹری لسٹنگ",
-    "bodyInherit": "عالمی"
+    "bodyInherit": "عالمی",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "notFound": {
     "title": "صفحہ نہیں ملا",
@@ -5830,10 +5873,18 @@
       "sidecarPushed": "ایس کیو ایل سائڈ کار {{name}} کو بھی دھکیل دیا",
       "controlPlaneDryRun": "صرف پیش نظارہ - کچھ نہیں لکھا۔ پینل میں، Restore کا استعمال کریں اور لکھنے کے لیے جملہ کی تصدیق کریں۔",
       "controlPlaneNeedConfirm": "مکمل کنٹرول-ہوائی جہاز کی بحالی کے لیے تصدیقی جملے کی ضرورت ہے RESTORE-CONTROL-PLANE۔",
-      "controlPlaneRestartAfter": "کامیاب بحالی کے بعد API کو دوبارہ شروع کریں۔"
+      "controlPlaneRestartAfter": "کامیاب بحالی کے بعد API کو دوبارہ شروع کریں۔",
+      "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+      "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+      "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
     },
     "redis": {
-      "cliMissing": "redis-cli انسٹال نہیں ہے۔"
+      "cliMissing": "redis-cli انسٹال نہیں ہے۔",
+      "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+      "requirepassApplied": "requirepass applied at runtime",
+      "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+      "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
     },
     "nginx": {
       "reloaded": "nginx دوبارہ لوڈ کیا گیا۔",
@@ -5911,7 +5962,17 @@
       "applyDigOk": "PowerDNS BIND: list-zones + dig OK",
       "applyDigFail": "conf میں رجسٹرڈ زون لیکن کھودیں پھر بھی خالی/انکار - نشان زد نہیں کیا گیا۔",
       "applySyncIncomplete": "پاور ڈی این ایس بائنڈ سنک نامکمل — صرف ڈسک پر زون فائل (لاگو نہیں کیا گیا)۔ EXECUTE/root یا pdns لاگز کو درست کریں۔",
-      "writeOnlyHint": "صرف زون فائل لکھی گئی — پاور ڈی این ایس اس وقت تک جواب نہیں دے گا جب تک کہ رجسٹروں کو لوڈ/اپلائی نہیں کیا جاتا"
+      "writeOnlyHint": "صرف زون فائل لکھی گئی — پاور ڈی این ایس اس وقت تک جواب نہیں دے گا جب تک کہ رجسٹروں کو لوڈ/اپلائی نہیں کیا جاتا",
+      "noActiveUnit": "No active named/bind9/pdns unit",
+      "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+      "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+      "port53Closed": "Port 53 is not listening (UDP/TCP)",
+      "udp53NotPublic": "UDP/53 is not listening on a public address",
+      "tcp53NotPublic": "TCP/53 is not listening on a public address",
+      "noManagedZones": "No managed zone files under dataDir/dns/zones",
+      "pdnsListZones": "PowerDNS list-zones: {{n}}",
+      "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+      "localAOk": "local A {{name}} → {{ip}}"
     },
     "db": {
       "needExecuteCreate": "میزبان عمل بند ہے؛ پینل سے ڈیٹا بیس نہیں بنا سکتا",
@@ -8773,7 +8834,14 @@
       "linuxUserRolledBack": "VNC پاس ورڈ ناکام ہونے کے بعد بچا ہوا لینکس صارف {{user}} ہٹا دیا گیا۔",
       "linuxUserOrphan": "VNC پاس ورڈ ناکام ہونے کے بعد بچ جانے والے لینکس صارف {{user}} کو ہٹایا نہیں جا سکا۔",
       "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+      "hostnameResolves": "Hostname {{hostname}} resolves.",
+      "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+      "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+      "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+      "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+      "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+      "skipStartHostname": "Did not start the display — fix hostname resolution first."
     },
     "apache": {
       "needServerName": "سرور کا نام درکار ہے۔",
@@ -8858,7 +8926,12 @@
       "staleCliRemoved": "بقیہ CLI {{path}} ہٹا دیا گیا۔",
       "staleCliRemoveFailed": "بقیہ CLI {{path}} ہٹ نہیں سکا: {{detail}}",
       "vsftpdSslOff": "FTPS سرٹیفکیٹ نہیں؛ vsftpd پر ssl_enable=NO کر کے دوبارہ چلایا۔",
-      "dovecotSslOff": "{{path}} نہیں؛ Dovecot پر ssl=no کر کے دوبارہ چلایا۔"
+      "dovecotSslOff": "{{path}} نہیں؛ Dovecot پر ssl=no کر کے دوبارہ چلایا۔",
+      "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+      "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+      "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+      "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
     },
     "git": {
       "missingBin": "git PATH پر نہیں ہے۔",
@@ -10521,7 +10594,12 @@
     "scanCapped": "Showing the first {{n}} matches.",
     "dbOptionKeys": "DB {{i}} · {{n}} keys",
     "dbOptionEmpty": "DB {{i}} · empty",
-    "insecureShort": "No password"
+    "insecureShort": "No password",
+    "generateRequirepass": "Generate and apply password",
+    "generateRequirepassTitle": "Generate a Redis password?",
+    "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+    "generateRequirepassDone": "Redis password applied",
+    "generatedOnce": "Generated password (shown once): {{password}}"
   },
   "resources": {
     "created": "بنایا",
@@ -11712,7 +11790,10 @@
       "tool": "Tool",
       "activating": "Starting"
     },
-    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+    "restartConfirmTitle": "Restart {{label}}?",
+    "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+    "startVerifyFailed": "{{label}} start did not stay healthy."
   },
   "software": {
     "title": "سافٹ ویئر",
@@ -12308,7 +12389,8 @@
       "cliNoSocket": "CLI کا کوئی لائیو HTTP ساکٹ نہیں ہے۔ servingHttps کا اندازہ config اور listen ساکٹ (ss) سے لگایا گیا ہے۔",
       "listenHost": "ایڈریس سنیں۔",
       "currentHost": "یہ سیشن",
-      "replaceCert": "ایک قابل اعتماد سرٹیفکیٹ کے ساتھ تبدیل کریں"
+      "replaceCert": "ایک قابل اعتماد سرٹیفکیٹ کے ساتھ تبدیل کریں",
+      "needFqdn": "Need a FQDN (example.com), not a bare hostname"
     },
     "timeNtp": "وقت اور این ٹی پی",
     "clockStatus": "سسٹم کی گھڑی کی حیثیت",
@@ -12427,7 +12509,11 @@
     "noScheduledPower": "کوئی ریبوٹ یا پاور آف شیڈول نہیں ہے۔",
     "timezoneNow": "Host time now: {{time}} ({{tz}})",
     "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-    "notExported": "Not exported yet"
+    "notExported": "Not exported yet",
+    "nginxRemoveLeftover": "Remove leftover",
+    "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+    "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+    "needExecuteRoot": "Needs YSK_EXECUTE + root"
   },
   "systemd": {
     "enabled": "فعال",
@@ -13022,7 +13108,8 @@
     "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔",
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
-    "riskUnevaluated": "Not evaluated — run Scan + OSV"
+    "riskUnevaluated": "Not evaluated — run Scan + OSV",
+    "footerNewVersion": "New version {{version}}"
   },
   "users": {
     "userCount": "{{count}} صارفین",
@@ -13683,7 +13770,13 @@
     "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
     "bindRfbLine": "RFB {{bind}} :{{port}}",
     "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+    "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+    "hostnameFix": "Write hostname to /etc/hosts",
+    "hostnameFixTitle": "Append this line to /etc/hosts?",
+    "hostnameFixDesc": "{{line}}",
+    "hostnameFixDone": "Hostname /etc/hosts updated",
+    "startAfterCreateBlocked": "Disabled until the hostname resolves"
   },
   "vpn": {
     "pageDesc": "VPN سرور اور کلائنٹ",

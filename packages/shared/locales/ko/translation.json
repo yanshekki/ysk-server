@@ -15,7 +15,8 @@
       "failed": "실패한",
       "error": "오류",
       "unknown": "프로브되지 않음",
-      "fallback": "알 수 없음"
+      "fallback": "알 수 없음",
+      "activating": "Starting"
     },
     "liveN": "{{count}} 온라인",
     "registeredOnly": "등록만 됨",
@@ -262,7 +263,9 @@
     "sslTerminatedUpstream": "TLS는 전면 Nginx에서 끝납니다.",
     "removeArtifactHint": "이 잔여 디스크 conf만 삭제하며 프로젝트는 지우지 않습니다.",
     "sourceOrphan": "Leftover",
-    "orphanSite": "Project gone"
+    "orphanSite": "Project gone",
+    "pillSitesSplit": "{{n}} sites · {{leftover}} leftover",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "applyStatus": {
     "draft": "초안",
@@ -455,7 +458,23 @@
     "goLogs": "Open logs",
     "goAbout": "Backup notes",
     "skippedPendingOs": "Skipped — OS user / home not provisioned",
-    "latestFile": "Latest archive"
+    "latestFile": "Latest archive",
+    "tabTrash": "Recycle bin",
+    "trashTitle": "Recycle bin ({{count}})",
+    "trashSub": "Deleted archives stay here for 7 days, then they are removed permanently.",
+    "trashEmpty": "Recycle bin is empty",
+    "trashEmptyDesc": "Deleted backup files appear here for 7 days.",
+    "trashRestore": "Restore",
+    "trashPurge": "Delete forever",
+    "trashEmptyAll": "Empty recycle bin",
+    "trashExpires": "Expires {{at}}",
+    "trashPurgeTitle": "Permanently delete this backup?",
+    "trashPurgeDesc": "Permanently delete {{name}}. This cannot be undone.",
+    "trashEmptyTitle": "Empty recycle bin?",
+    "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
+    "trashRestored": "Restored from recycle bin",
+    "trashPurged": "Permanently deleted",
+    "trashedOk": "Moved to recycle bin"
   },
   "btTracker": {
     "title": "블루투스 트래커",
@@ -653,7 +672,9 @@
     "statsLibraryHint": "Torrents in the panel library / file shares",
     "statsTrackerLeftover": "Tracker leftover",
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
-    "statsAnnouncesHint": "Announce requests seen by the tracker process"
+    "statsAnnouncesHint": "Announce requests seen by the tracker process",
+    "leftoverHashesTitle": "Tracker leftover hashes",
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
   },
   "catalog": {
     "sw": {
@@ -2204,7 +2225,8 @@
     "hidePassword": "숨다",
     "more": "더",
     "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})",
-    "unavailable": "Not available right now"
+    "unavailable": "Not available right now",
+    "ok": "OK"
   },
   "cron": {
     "presetCdTrue": "CD 앱 + true(테스트)",
@@ -2372,7 +2394,8 @@
     "writtenOnHostHint": "Lines already written to the host crontab",
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
-    "systemJobBadge": "No project · system user"
+    "systemJobBadge": "No project · system user",
+    "willNotRun": "Not written to system crontab — will not run."
   },
   "dashboard": {
     "title": "대시보드",
@@ -2418,7 +2441,8 @@
     "mode": {
       "degraded": "타락한",
       "production_capable": "생산 준비 완료",
-      "normal": "정상"
+      "normal": "정상",
+      "blocked": "blocked"
     },
     "details": "세부",
     "certExpiryTitle": "인증서 만료:",
@@ -2502,7 +2526,8 @@
       "warn": "Warning",
       "bad": "Problem"
     },
-    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA."
+    "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
+    "readinessBlocked": "{{n}} blocker(s)"
   },
   "dataTable": {
     "empty": "데이터 없음",
@@ -2757,7 +2782,16 @@
       "fleetApplyTitle": "함대 구성원에게 대기열을 적용하시겠습니까?",
       "redirectedFromCluster": "You were redirected here from /cluster. This is the database cluster tab.",
       "roleUnassigned": "No role assigned",
-      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}."
+      "standaloneOtherEngines": "This engine is standalone. Other engines have clusters: {{names}}.",
+      "notApplied": "Not applied",
+      "plannedAt": "Created {{when}}",
+      "clearStalePlans": "Clear stale plans",
+      "clearStalePlansTitle": "Delete stale planned clusters?",
+      "clearStalePlansDesc": "Deletes {{n}} planned/draft registration(s) older than 7 days. Does not apply or push. System conf is not touched.",
+      "landingTitle": "Database cluster",
+      "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
+      "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
+      "openEngine": "Open {{engine}}"
     },
     "console": {
       "dataBrowse": "데이터 찾아보기",
@@ -3090,7 +3124,9 @@
     "installConfirmConsequence": "설치 후 시작하면 PowerDNS가 53번 포트를 바인딩합니다.",
     "installPort53Busy": "53번 포트가 이미 사용 중입니다. 해당 수신을 중지하거나 복구하기 전에는 PowerDNS 바인딩이 실패할 수 있습니다.",
     "installPort53BusyConsequence": "53번에서 응답을 기대하기 전에 바인드를 복구하거나 다른 수신을 중지하십시오.",
-    "createZoneNeedValid": "Enter a valid zone name and IPv4 address"
+    "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
+    "startProbeFailed": "Could not re-check DNS health after start",
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
   },
   "docker": {
     "title": "Docker",
@@ -3142,7 +3178,8 @@
       "created": "Created",
       "dead": "Dead",
       "removing": "Removing",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "exitedCode": "Exited ({{n}})"
     },
     "actions": {
       "start": "시작",
@@ -3850,7 +3887,10 @@
     "opendkimNoReload": "OpenDKIM은 다시 로드를 지원하지 않습니다. 키나 테이블 변경 후 재시작하십시오.",
     "opendkimNoReloadTitle": "이 스택에서는 systemctl reload opendkim을 지원하지 않습니다",
     "tlsRequestLeFor": "Request LE for {{host}}",
-    "deliverabilityChecks": "Checks"
+    "deliverabilityChecks": "Checks",
+    "healthPartialScore": "Partial {{n}}/100 (DNS only)",
+    "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -4381,7 +4421,8 @@
     "unshareDesc": "Revoke the link for {{name}} ({{url}}). The link stops working immediately.",
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
-    "webdavTokenInactive": "Disabled — token #{{id}} is not active"
+    "webdavTokenInactive": "Disabled — token #{{id}} is not active",
+    "webdavOffNoToken": "Disabled (no active token)"
   },
   "firewall": {
     "profiles": {
@@ -4642,7 +4683,8 @@
     "detectPublicIpTitle": "이 호스트에서 첫 번째 비루프백 IPv4를 채웁니다.",
     "pasvIpRequired": "적용 전에 PASV 공인 IP를 지정하세요(NAT/클라우드). 감지하거나 주소를 입력합니다.",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
-    "stateFailed": "Failed to start"
+    "stateFailed": "Failed to start",
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
   },
   "geo": {
     "continents": {
@@ -5755,7 +5797,8 @@
     "setHsts": "HSTS",
     "setCfRealIp": "Cloudflare 실제 IP",
     "setIndexes": "디렉토리 목록",
-    "bodyInherit": "글로벌"
+    "bodyInherit": "글로벌",
+    "stopSites": "{{n}} site(s) will stop answering HTTP."
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",
@@ -5830,10 +5873,18 @@
       "sidecarPushed": "SQL 사이드카도 푸시됨 {{name}}",
       "controlPlaneDryRun": "미리보기만 가능 - 작성된 내용이 없습니다. 패널에서 복원을 사용하고 작성할 문구를 확인하세요.",
       "controlPlaneNeedConfirm": "전체 제어 영역 복원에는 RESTORE-Control-PLANE 확인 문구가 필요합니다.",
-      "controlPlaneRestartAfter": "복원에 성공한 후 API를 다시 시작하세요."
+      "controlPlaneRestartAfter": "복원에 성공한 후 API를 다시 시작하세요.",
+      "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
+      "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
+      "restoredFromTrash": "Restored {{name}} from the recycle bin.",
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
     },
     "redis": {
-      "cliMissing": "redis-cli가 설치되지 않았습니다"
+      "cliMissing": "redis-cli가 설치되지 않았습니다",
+      "requirepassAlreadySet": "Redis already has requirepass — not overwritten.",
+      "requirepassApplied": "requirepass applied at runtime",
+      "requirepassApplyFailed": "Could not CONFIG SET requirepass (will rely on restart + conf)",
+      "generatedRequirepass": "Generated Redis password (shown once): {{password}}"
     },
     "nginx": {
       "reloaded": "nginx가 다시 로드됨",
@@ -5911,7 +5962,17 @@
       "applyDigOk": "PowerDNS BIND: 목록 영역 + 발굴 확인",
       "applyDigFail": "conf에 영역이 등록되었지만 여전히 비어 있음/REFUSED — 표시가 적용되지 않음",
       "applySyncIncomplete": "PowerDNS 바인드 동기화 미완료 — 디스크에만 영역 파일이 있습니다(적용되지 않음). EXECUTE/root 또는 pdns 로그를 수정합니다.",
-      "writeOnlyHint": "영역 파일 쓰기 전용 - PowerDNS는 다음 이름의 레지스터를 로드/적용할 때까지 응답하지 않습니다."
+      "writeOnlyHint": "영역 파일 쓰기 전용 - PowerDNS는 다음 이름의 레지스터를 로드/적용할 때까지 응답하지 않습니다.",
+      "noActiveUnit": "No active named/bind9/pdns unit",
+      "pdnsUnitRestarts": "pdns unit state/restarts: {{detail}}",
+      "port53LoopbackOnly": "Port 53 is only on loopback (systemd-resolved 127.0.0.53) — not a product authoritative nameserver",
+      "port53Closed": "Port 53 is not listening (UDP/TCP)",
+      "udp53NotPublic": "UDP/53 is not listening on a public address",
+      "tcp53NotPublic": "TCP/53 is not listening on a public address",
+      "noManagedZones": "No managed zone files under dataDir/dns/zones",
+      "pdnsListZones": "PowerDNS list-zones: {{n}}",
+      "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+      "localAOk": "local A {{name}} → {{ip}}"
     },
     "db": {
       "needExecuteCreate": "호스트 실행이 꺼져 있습니다. 패널에서 데이터베이스를 생성할 수 없습니다.",
@@ -8773,7 +8834,14 @@
       "linuxUserRolledBack": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거했습니다.",
       "linuxUserOrphan": "VNC 비밀번호 실패 후 남은 Linux 사용자 {{user}}를 제거할 수 없습니다.",
       "sessionStartHostname": "Failed to start display :{{display}}: this host cannot resolve its own hostname. Add the hostname to /etc/hosts (or fix DNS) then start the session again.",
-      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host."
+      "userdelLeftover": "Panel account removed, but Linux user {{user}} is still on the host. Remove it from Users or the host.",
+      "hostnameResolves": "Hostname {{hostname}} resolves.",
+      "hostnameUnresolvable": "This host cannot resolve its own hostname ({{hostname}}). VNC session start will fail until /etc/hosts is fixed.",
+      "hostnameAlreadyResolves": "Hostname {{hostname}} already resolves — /etc/hosts unchanged.",
+      "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
+      "hostnameAppended": "Appended to /etc/hosts: {{line}}",
+      "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+      "skipStartHostname": "Did not start the display — fix hostname resolution first."
     },
     "apache": {
       "needServerName": "서버 이름이 필요합니다",
@@ -8858,7 +8926,12 @@
       "staleCliRemoved": "잔여 CLI {{path}}을(를) 제거했습니다.",
       "staleCliRemoveFailed": "잔여 CLI {{path}}을(를) 제거하지 못했습니다: {{detail}}",
       "vsftpdSslOff": "FTPS 인증서 파일이 없어 vsftpd를 ssl_enable=NO로 설정한 뒤 다시 시작했습니다.",
-      "dovecotSslOff": "{{path}}이(가) 없어 Dovecot을 ssl=no로 설정한 뒤 다시 시작했습니다."
+      "dovecotSslOff": "{{path}}이(가) 없어 Dovecot을 ssl=no로 설정한 뒤 다시 시작했습니다.",
+      "nginxRemoved": "Removed leftover nginx conf {{path}}.",
+      "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
+      "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
+      "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
     },
     "git": {
       "missingBin": "자식이 PATH에 없습니다",
@@ -10521,7 +10594,12 @@
     "scanCapped": "Showing the first {{n}} matches.",
     "dbOptionKeys": "DB {{i}} · {{n}} keys",
     "dbOptionEmpty": "DB {{i}} · empty",
-    "insecureShort": "No password"
+    "insecureShort": "No password",
+    "generateRequirepass": "Generate and apply password",
+    "generateRequirepassTitle": "Generate a Redis password?",
+    "generateRequirepassDesc": "Writes requirepass and restarts Redis. The password is shown once. Host change needs EXECUTE.",
+    "generateRequirepassDone": "Redis password applied",
+    "generatedOnce": "Generated password (shown once): {{password}}"
   },
   "resources": {
     "created": "생성됨",
@@ -11712,7 +11790,10 @@
       "tool": "Tool",
       "activating": "Starting"
     },
-    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path."
+    "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
+    "restartConfirmTitle": "Restart {{label}}?",
+    "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+    "startVerifyFailed": "{{label}} start did not stay healthy."
   },
   "software": {
     "title": "소프트웨어",
@@ -12308,7 +12389,8 @@
       "cliNoSocket": "CLI에는 라이브 HTTP 소켓이 없습니다. ServingHttps는 구성 및 청취 소켓(ss)에서 추론됩니다.",
       "listenHost": "청취 주소",
       "currentHost": "이번 세션",
-      "replaceCert": "신뢰할 수 있는 인증서로 교체"
+      "replaceCert": "신뢰할 수 있는 인증서로 교체",
+      "needFqdn": "Need a FQDN (example.com), not a bare hostname"
     },
     "timeNtp": "시간 및 NTP",
     "clockStatus": "시스템 시계 상태",
@@ -12427,7 +12509,11 @@
     "noScheduledPower": "재부팅이나 전원 끄기가 예약되지 않았습니다.",
     "timezoneNow": "Host time now: {{time}} ({{tz}})",
     "timezoneBrowserDiff": "This host uses {{host}}; your browser uses {{browser}}. Changing timezone here changes the host clock, not the browser.",
-    "notExported": "Not exported yet"
+    "notExported": "Not exported yet",
+    "nginxRemoveLeftover": "Remove leftover",
+    "nginxRemoveLeftoverTitle": "Remove leftover nginx conf?",
+    "nginxRemoveLeftoverDesc": "Deletes {{name}} from the panel inventory. The live /etc/nginx copy is removed only with YSK_EXECUTE + root. 000-default is not leftover and cannot be deleted here.",
+    "needExecuteRoot": "Needs YSK_EXECUTE + root"
   },
   "systemd": {
     "enabled": "사용",
@@ -13022,7 +13108,8 @@
     "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
-    "riskUnevaluated": "Not evaluated — run Scan + OSV"
+    "riskUnevaluated": "Not evaluated — run Scan + OSV",
+    "footerNewVersion": "New version {{version}}"
   },
   "users": {
     "userCount": "{{count}} 사용자",
@@ -13683,7 +13770,13 @@
     "deleteKeepUserWarn": "The Linux user will stay on the host as an orphan. You must clean it up later.",
     "bindRfbLine": "RFB {{bind}} :{{port}}",
     "bindNovncLine": "noVNC 127.0.0.1:{{port}}",
-    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces."
+    "bindNovncHint": "noVNC listens on localhost. The desktop is reached through this panel, not the public internet, unless RFB bind is all interfaces.",
+    "hostnameBroken": "This host cannot resolve its own hostname ({{hostname}}). Session start will fail.",
+    "hostnameFix": "Write hostname to /etc/hosts",
+    "hostnameFixTitle": "Append this line to /etc/hosts?",
+    "hostnameFixDesc": "{{line}}",
+    "hostnameFixDone": "Hostname /etc/hosts updated",
+    "startAfterCreateBlocked": "Disabled until the hostname resolves"
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",

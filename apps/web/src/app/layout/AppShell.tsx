@@ -346,6 +346,11 @@ export function AppShell() {
               <span className="shell__version muted"> v{panelVersion}</span>
             ) : null}
           </p>
+          {updatesBadge.panelUpdateAvailable && updatesBadge.panelLatest ? (
+            <NavLink to="/updates" className="shell__update">
+              {t('updates.footerNewVersion', { version: updatesBadge.panelLatest })}
+            </NavLink>
+          ) : null}
         </div>
       </aside>
 

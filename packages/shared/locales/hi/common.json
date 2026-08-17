@@ -128,5 +128,6 @@
   "hidePassword": "छिपाना",
   "more": "अधिक",
   "redirectedTo": "{{to}} खोला गया (पहले {{from}})",
-  "unavailable": "Not available right now"
+  "unavailable": "Not available right now",
+  "ok": "OK"
 }
