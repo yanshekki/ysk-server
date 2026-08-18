@@ -27,6 +27,11 @@ SHARED_VER="$(node -p "require('./packages/shared/package.json').version")"
 CORE_VER="$(node -p "require('./packages/core/package.json').version")"
 log "versions: shared=$SHARED_VER core=$CORE_VER server=$SERVER_VER"
 
+if [[ "$SHARED_VER" != "$SERVER_VER" || "$CORE_VER" != "$SERVER_VER" ]]; then
+  log "ERROR: shared ($SHARED_VER), core ($CORE_VER), and ysk-server ($SERVER_VER) must be the same version"
+  exit 1
+fi
+
 # Ensure package READMEs exist (npm page content)
 for f in packages/shared/README.md packages/core/README.md apps/server/README.md; do
   if [[ ! -f "$f" ]]; then
@@ -61,14 +66,14 @@ if [[ "$PUBLISH" -eq 1 ]]; then
     log "skip ysk-server-shared@$SHARED_VER (already on npm)"
   else
     log "PUBLISH ysk-server-shared@$SHARED_VER…"
-    (cd packages/shared && npm publish --access public)
+    pnpm --filter ysk-server-shared publish --access public --no-git-checks
   fi
 
   if npm_version_exists ysk-server-core "$CORE_VER"; then
     log "skip ysk-server-core@$CORE_VER (already on npm)"
   else
     log "PUBLISH ysk-server-core@$CORE_VER…"
-    (cd packages/core && npm publish --access public)
+    pnpm --filter ysk-server-core publish --access public --no-git-checks
   fi
 else
   log "dry-run: would publish ysk-server-shared + ysk-server-core"
@@ -139,8 +144,12 @@ if (!fs.existsSync(stage + '/README.md')) throw new Error('README missing in sta
 NODE
 
 if [[ "$PUBLISH" -eq 1 ]]; then
-  log "PUBLISH ysk-server@$SERVER_VER…"
-  (cd "$STAGE" && npm publish --access public)
+  if npm_version_exists ysk-server "$SERVER_VER"; then
+    log "skip ysk-server@$SERVER_VER (already on npm)"
+  else
+    log "PUBLISH ysk-server@$SERVER_VER…"
+    (cd "$STAGE" && npm publish --access public)
+  fi
   log "done"
   log "  https://www.npmjs.com/package/ysk-server"
   log "  https://www.npmjs.com/package/ysk-server-shared"

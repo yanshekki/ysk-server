@@ -7,8 +7,8 @@
 | Package | Role | URL |
 |---------|------|-----|
 | **`ysk-server`** | Product CLI + API + panel | https://www.npmjs.com/package/ysk-server |
-| **`ysk-server-shared`** | Types / locales (**1.1.0**) | https://www.npmjs.com/package/ysk-server-shared |
-| **`ysk-server-core`** | Hosting / security core (**1.1.0**) | https://www.npmjs.com/package/ysk-server-core |
+| **`ysk-server-shared`** | Types / locales (**same version as product**) | https://www.npmjs.com/package/ysk-server-shared |
+| **`ysk-server-core`** | Hosting / security core (**same version as product**) | https://www.npmjs.com/package/ysk-server-core |
 
 Install (users):
 
@@ -29,4 +29,4 @@ Order: **shared → core → ysk-server** (server bundles shared+core).
 
 Each package ships a **README.md** for the npm package page.
 
-Bump `version` in `packages/shared`, `packages/core`, and `apps/server` `package.json` before a new release. Verify with `npm view ysk-server version` and `ysk-server help`.
+Bump `version` in `packages/shared`, `packages/core`, and `apps/server` `package.json` to the **same** number before a new release. The publish script refuses a mismatch. Verify with `npm view ysk-server version`, `npm view ysk-server-shared version`, `npm view ysk-server-core version`, and `ysk-server help`.

@@ -14,7 +14,7 @@
 
 ### Improve
 - E2E-1118: `data-confirm` on files trash, email domain delete, cron pending delete, migrate orphan delete, protection ban, services/nginx/docker lifecycle. Validator leftover table always shown (empty copy). Auto-clear checkbox shows threshold + candidate and uses `data-confirm=AUTO-CLEAR`. Orphan homes list `entryCount`. Confirm titles include stop detail / full path.
-- Product `ysk-server@1.1.9` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
+- Product `ysk-server@1.1.9` bundles workspace shared/core. npm `ysk-server-shared` and `ysk-server-core` ship the **same version (1.1.9)**.
 
 ## 1.1.8 — 2026-08-18
 

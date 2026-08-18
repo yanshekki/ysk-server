@@ -7,8 +7,8 @@
 | 套件 | 用途 | 連結 |
 |------|------|------|
 | **`ysk-server`** | 產品 CLI + API + 面板 | https://www.npmjs.com/package/ysk-server |
-| **`ysk-server-shared`** | 型別 / locales（**1.1.0**） | https://www.npmjs.com/package/ysk-server-shared |
-| **`ysk-server-core`** | 託管 / 安全核心（**1.1.0**） | https://www.npmjs.com/package/ysk-server-core |
+| **`ysk-server-shared`** | 型別 / locales（**與產品同一版本**） | https://www.npmjs.com/package/ysk-server-shared |
+| **`ysk-server-core`** | 託管 / 安全核心（**與產品同一版本**） | https://www.npmjs.com/package/ysk-server-core |
 
 用戶安裝：
 
@@ -29,4 +29,4 @@ bash scripts/publish-ysk-server-npm.sh --publish
 
 每個套件都帶 **README.md**，方便 npm 產品頁顯示。
 
-新版本前請 bump `packages/shared`、`packages/core`、`apps/server` 的 `package.json` `version`。發布後用 `npm view ysk-server version` 同 `ysk-server help` 驗證。
+新版本前請把 `packages/shared`、`packages/core`、`apps/server` 的 `package.json` `version` 調成**同一個號碼**。三個不一致時發布腳本會拒絕。發布後用 `npm view ysk-server version`、`npm view ysk-server-shared version`、`npm view ysk-server-core version` 同 `ysk-server help` 驗證。
