@@ -41,5 +41,9 @@
   "serverNameMismatch": "لائیو کنف {{live}} ہے؛ فارم میں {{draft}} ہے۔ بدلنے کے لیے لاگو کریں۔",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

@@ -3,6 +3,7 @@
  */
 import type { AdviceRow, InventoryMeta } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
+import { postSseJson } from '../runtimes/stream-sse';
 
 export type { AdviceRow, InventoryMeta } from 'ysk-server-shared';
 
@@ -213,19 +214,31 @@ export const updatesApi = {
         notes: r.notes ?? ops.notes ?? [],
       };
     }),
-  self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
-  selfApply: () =>
-    api.requestRawAllowStatus<{
-      ok?: boolean;
-      notes?: string[];
-      applied?: boolean;
-      restarting?: boolean;
-      blockMessage?: string;
-      message?: string;
-    }>('/api/v1/updates/self/apply', {
-      method: 'POST',
-      body: JSON.stringify({ apply: true }),
+  self: () =>
+    api.requestRawAllowStatus<Record<string, unknown>>('/api/v1/updates/self', {
       allowStatuses: [422, 502],
+    }),
+  selfApply: (opts?: {
+    onLog?: (line: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void;
+    signal?: AbortSignal;
+  }) =>
+    postSseJson('/api/v1/updates/self/apply', { apply: true }, opts).then(({ ops, raw }) => {
+      const r = (raw ?? {}) as {
+        ok?: boolean;
+        notes?: string[];
+        applied?: boolean;
+        restarting?: boolean;
+        blockMessage?: string;
+        message?: string;
+      };
+      return {
+        ok: ops.ok !== false && r.ok !== false,
+        notes: ops.notes?.length ? ops.notes : r.notes ?? [],
+        applied: Boolean(r.applied),
+        restarting: Boolean(r.restarting),
+        blockMessage: ops.blockMessage ?? r.blockMessage,
+        message: r.message,
+      };
     }),
   scheduler: () =>
     api.requestRaw<{ jobs: Array<Record<string, unknown>> }>('/api/v1/scheduler'),

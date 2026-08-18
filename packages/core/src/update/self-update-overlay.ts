@@ -279,6 +279,8 @@ export function scheduleYskServerRestart(delayMs = 2500): boolean {
   return true;
 }
 
+export type OverlayLogFn = (ev: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void;
+
 export async function applyNpmOverlayToDest(input: {
   spec: string;
   destDir: string;
@@ -287,6 +289,7 @@ export async function applyNpmOverlayToDest(input: {
   tarballPath?: string;
   unpackedDir?: string;
   shasum?: string;
+  onLog?: OverlayLogFn;
 }): Promise<OverlayResult> {
   const notes: string[] = [];
   const commandResults: OverlayCommandResult[] = [];
@@ -311,6 +314,13 @@ export async function applyNpmOverlayToDest(input: {
   }
 
   const tmp = mkdtempSync(join(tmpdir(), 'ysk-self-upd-'));
+  const log = (line: string, stream: 'stdout' | 'stderr' | 'status' = 'status') => {
+    try {
+      input.onLog?.({ stream, line });
+    } catch {
+      /* */
+    }
+  };
   commandResults.push({
     argv: ['npm-overlay', input.spec, dest],
     exitCode: 0,
@@ -341,9 +351,11 @@ export async function applyNpmOverlayToDest(input: {
           input.tarballUrl?.trim() ||
           officialTarballUrl(input.spec.split('@')[0] || 'ysk-server', latest);
         tgz = join(tmp, 'pkg.tgz');
+        log(`download ${url}`);
         await downloadTarball(url, tgz);
       }
       if (input.shasum && input.shasum.length === 40) {
+        log('verify shasum');
         const got = sha1File(tgz);
         if (got !== input.shasum.toLowerCase()) {
           notes.push(
@@ -355,16 +367,19 @@ export async function applyNpmOverlayToDest(input: {
           return { applied: false, destDir: dest, notes, commandResults };
         }
       }
+      log('extract tarball');
       extractTarball(tgz, tmp);
       pkgRoot = join(tmp, 'package');
     }
 
+    log(`write overlay ${dest}`);
     copyOverlayTrees(pkgRoot, dest);
     if (!versionFileContains(dest, latest)) {
       notes.push(tl('notes.auto.selfVerifyFail', { v0: latest }));
       commandResults[0]!.exitCode = 1;
       return { applied: false, destDir: dest, notes, commandResults };
     }
+    log(`applied ${input.spec}`);
     notes.push(tl('notes.auto.selfApplied', { v0: input.spec, v1: dest }));
     commandResults[0]!.stdout = readFileSync(join(dest, 'dist', 'version.js'), 'utf8').slice(
       0,

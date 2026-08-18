@@ -9,6 +9,7 @@ import {
   Alert,
   Badge,
   Button,
+  buttonClassName,
   Card,
   CardSection,
   ConfirmDialog,
@@ -30,6 +31,11 @@ import {
   migrateApi,
   type MigrateJob,
   type MigrateOpsResult } from '../../features/migrate/api';
+import {
+  inventoryPillKind,
+  otherInventoryWarnings,
+  orphanHomeName,
+} from './migrate-inventory';
 
 const TABS = ['wizard', 'jobs', 'about'] as const;
 
@@ -130,12 +136,64 @@ export function MigrateHostPage() {
 
   const counts = inventory?.manifest?.counts ?? {};
   const warnings = (inventory?.manifest?.warnings as string[] | undefined) ?? [];
+  const orphanHomes =
+    (inventory?.manifest as { orphanHomes?: string[] } | undefined)?.orphanHomes ?? [];
+  const orphanHomeStats =
+    (
+      inventory?.manifest as
+        | { orphanHomeStats?: Record<string, { mtime?: string }> }
+        | undefined
+    )?.orphanHomeStats ?? {};
+  const otherWarnings = otherInventoryWarnings(warnings, orphanHomes);
   const softwareNeeded =
     (inventory?.manifest?.softwareNeeded as string[] | undefined) ?? [];
+  const dbCount =
+    (counts.mysql_databases ?? 0) + (counts.postgres_databases ?? 0);
+  const redisCount = counts.redis_instances ?? 0;
+  const source = (
+    inventory?.manifest as
+      | { source?: { hostname?: string; os?: string; dataDir?: string } }
+      | undefined
+  )?.source;
   const cutover =
     (last?.manifest?.cutoverHostnames as string[] | undefined) ??
     (inventory?.manifest?.cutoverHostnames as string[] | undefined) ??
     [];
+  const pillKind = inventoryPillKind({
+    loading: invLoading,
+    hasInventory: Boolean(inventory?.ok),
+    otherWarningCount: otherWarnings.length,
+    orphanCount: orphanHomes.length,
+    hasError: Boolean(err),
+  });
+  const pillLabel =
+    pillKind === 'loading'
+      ? t('migrate.inventorying')
+      : pillKind === 'ok'
+        ? t('migrate.inventoried')
+        : pillKind === 'warn'
+          ? t('migrate.inventoriedWarn', { n: otherWarnings.length })
+          : pillKind === 'orphans'
+            ? t('migrate.inventoriedOrphans', { n: orphanHomes.length })
+            : pillKind === 'both'
+              ? t('migrate.inventoriedWarnAndOrphans', {
+                  w: otherWarnings.length,
+                  n: orphanHomes.length,
+                })
+              : pillKind === 'failed'
+                ? t('migrate.inventoryFailed')
+                : t('migrate.pendingInventory');
+  const pillTone =
+    pillKind === 'ok'
+      ? 'ok'
+      : pillKind === 'warn' || pillKind === 'orphans' || pillKind === 'both'
+        ? 'warn'
+        : pillKind === 'failed'
+          ? 'danger'
+          : 'neutral';
+  const orphanMtime = orphanTarget
+    ? orphanHomeStats[orphanTarget]?.mtime
+    : undefined;
 
   const canRun = useMemo(() => {
     if (!target.trim()) return false;
@@ -159,20 +217,16 @@ export function MigrateHostPage() {
       subtitle={t('migrate.subtitle')}
       status={{
         pill: {
-          label: invLoading
-            ? t('migrate.inventorying')
-            : inventory?.ok
-              ? warnings.length
-                ? t('migrate.inventoriedWarn', { n: warnings.length })
-                : t('migrate.inventoried')
-              : err
-                ? t('migrate.inventoryFailed')
-                : t('migrate.pendingInventory'),
-          tone: inventory?.ok ? (warnings.length ? 'warn' : 'ok') : err ? 'danger' : 'neutral' },
+          label: pillLabel,
+          tone: pillTone },
         items: [
           { label: t('common.project'), value: counts.projects ?? '—' },
           { label: t('users.mailboxes'), value: counts.mailboxes ?? '—' },
           { label: t('common.user'), value: counts.users ?? '—' },
+          {
+            label: t('migrate.orphanKpi'),
+            value: orphanHomes.length,
+            tone: orphanHomes.length ? 'warn' : undefined },
           {
             label: t('migrate.software'),
             value: softwareNeeded.length || '—' },
@@ -236,7 +290,7 @@ export function MigrateHostPage() {
               ))}
             </nav>
 
-            {/* 1 Inventory */}
+            {/* 1 Inventory — facts once; leftover homes are their own table */}
             <Card>
               <CardSection
                 title={t('migrate.sourceInventory')}
@@ -245,67 +299,64 @@ export function MigrateHostPage() {
                 {invLoading && !inventory ? (
                   <LoadingBlock label={t('migrate.inventoryRunning')} />
                 ) : inventory?.ok ? (
-                  <>
+                  <div className="mig-inv">
                     <DescriptionList
+                      className="mig-facts"
                       columns={2}
                       items={[
                         {
                           label: t('common.host'),
-                          value: String(
-                            (inventory.manifest as { source?: { hostname?: string } })
-                              ?.source?.hostname ?? '—',
-                          ) },
+                          value: source?.hostname || '—',
+                        },
                         {
-                          label: 'dataDir',
+                          label: t('migrate.sourceOs'),
+                          value: source?.os || '—',
+                        },
+                        {
+                          label: t('migrate.sourceDataDir'),
                           value: (
                             <code className="u-break-all u-text-sm">
-                              {String(
-                                (inventory.manifest as { source?: { dataDir?: string } })
-                                  ?.source?.dataDir ?? '—',
-                              )}
+                              {source?.dataDir || '—'}
                             </code>
-                          ) },
+                          ),
+                        },
                         {
-                          label: t('migrate.projectHome'),
-                          value: `${counts.projects ?? 0} / ${counts.homes_on_disk ?? '—'}` },
-                        {
-                          label: t('users.mailboxes'),
-                          value: String(counts.mailboxes ?? 0) },
-                        {
-                          label: 'DB / Redis',
-                          value: `${
-                            (counts.mysql_databases ?? 0) +
-                            (counts.postgres_databases ?? 0)
-                          } / ${counts.redis_instances ?? 0}` },
-                        {
-                          label: t('migrate.needSoftware'),
-                          value: softwareNeeded.length
-                            ? softwareNeeded
-                                .slice(0, 6)
-                                .map((s) =>
-                                  s.toLowerCase() === 'pm2' ? 'PM2' : s,
-                                )
-                                .join(', ') +
-                              (softwareNeeded.length > 6 ? '…' : '')
-                            : '—' },
+                          label: t('migrate.sourceDbRedis'),
+                          value: t('migrate.sourceDbRedisValue', {
+                            db: dbCount,
+                            redis: redisCount,
+                          }),
+                        },
                       ]}
                     />
-                    {inventory.notes?.length ? (
-                      <p className="muted u-text-sm u-mt-3 u-mb-0">
-                        {inventory.notes.join(' · ')}
-                      </p>
+                    {softwareNeeded.length ? (
+                      <div className="mig-inv__block">
+                        <p className="mig-inv__label">{t('migrate.needSoftware')}</p>
+                        <ul className="mig-soft">
+                          {softwareNeeded.map((s) => (
+                            <li key={s} className="mig-soft__chip">
+                              {s.toLowerCase() === 'pm2' ? 'PM2' : s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ) : null}
-                    {warnings.length > 0 ? (
-                      <Alert variant="info" className="u-mt-3">
-                        <strong>{t('migrate.inventoryWarnings', { count: warnings.length })}</strong>
+                    {otherWarnings.length > 0 ? (
+                      <Alert variant="warn" className="mig-inv__warn">
+                        <strong>
+                          {t('migrate.inventoryWarnings', { count: otherWarnings.length })}
+                        </strong>
                         <ul className="mig-warn-list">
-                          {(warnExpanded ? warnings : warnings.slice(0, 6)).map((w) => (
+                          {(warnExpanded
+                            ? otherWarnings
+                            : otherWarnings.slice(0, 6)
+                          ).map((w) => (
                             <li key={w} className="u-break-all">
                               {w}
                             </li>
                           ))}
                         </ul>
-                        {warnings.length > 6 ? (
+                        {otherWarnings.length > 6 ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -313,56 +364,14 @@ export function MigrateHostPage() {
                           >
                             {warnExpanded
                               ? t('migrate.collapseWarnings')
-                              : t('migrate.expandAllWarnings', { n: warnings.length })}
+                              : t('migrate.expandAllWarnings', {
+                                  n: otherWarnings.length,
+                                })}
                           </Button>
                         ) : null}
                       </Alert>
                     ) : null}
-                    {((inventory.manifest as { orphanHomes?: string[] } | undefined)?.orphanHomes ?? [])
-                      .length > 0 ? (
-                      <div className="u-mt-3">
-                        <p className="muted u-text-sm">{t('migrate.orphanHomesHint')}</p>
-                        <p className="muted u-text-sm">
-                          <Link to="/backups">{t('migrate.orphanBackupFirst')}</Link>
-                        </p>
-                        <ul className="list-plain">
-                          {((inventory.manifest as { orphanHomes?: string[] }).orphanHomes ?? []).map(
-                            (p) => {
-                              const stats = (
-                                inventory.manifest as {
-                                  orphanHomeStats?: Record<string, { mtime?: string }>;
-                                }
-                              ).orphanHomeStats?.[p];
-                              return (
-                              <li key={p} className="u-flex u-justify-between u-gap-2 u-items-center">
-                                <span>
-                                <code className="inline u-text-sm u-break-all">
-                                  {p}
-                                </code>
-                                {stats?.mtime ? (
-                                  <span className="muted u-text-sm">
-                                    {' '}
-                                    {t('migrate.orphanMtime', { at: stats.mtime })}
-                                  </span>
-                                ) : null}
-                                </span>
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  title={t('migrate.orphanRemoveNeedConfirm')}
-                                  aria-label={`${t('migrate.orphanRemove')} ${p}`}
-                                  onClick={() => setOrphanTarget(p)}
-                                >
-                                  {t('migrate.orphanRemove')}
-                                </Button>
-                              </li>
-                            );
-                            },
-                          )}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </>
+                  </div>
                 ) : (
                   <EmptyState
                     title={t('migrate.noInventory')}
@@ -371,6 +380,63 @@ export function MigrateHostPage() {
                 )}
               </CardSection>
             </Card>
+
+            {inventory?.ok && orphanHomes.length > 0 ? (
+              <DataTable
+                className="mig-orphan-table"
+                dense={false}
+                title={t('migrate.orphanHomesTitle', { count: orphanHomes.length })}
+                description={t('migrate.orphanHomesSummary', {
+                  count: orphanHomes.length,
+                })}
+                toolbar={
+                  <Link
+                    to="/backups"
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    {t('migrate.orphanBackupFirst')}
+                  </Link>
+                }
+                columns={[
+                  {
+                    key: 'home',
+                    header: t('migrate.orphanColHome'),
+                    mobile: 'lead',
+                    render: (p) => (
+                      <div className="mig-orphan-path">
+                        <span className="mig-orphan-path__name">
+                          {orphanHomeName(p)}
+                        </span>
+                        <code className="mig-orphan-path__full">{p}</code>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'mtime',
+                    header: t('migrate.orphanColModified'),
+                    nowrap: true,
+                    mobile: 'meta',
+                    render: (p) =>
+                      orphanHomeStats[p]?.mtime
+                        ? formatDateTime(orphanHomeStats[p]!.mtime)
+                        : '—',
+                  },
+                ]}
+                rows={orphanHomes}
+                rowKey={(p) => p}
+                rowActions={(p) => (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    title={t('migrate.orphanRemoveNeedConfirm')}
+                    aria-label={`${t('migrate.orphanRemove')} ${p}`}
+                    onClick={() => setOrphanTarget(p)}
+                  >
+                    {t('migrate.orphanRemove')}
+                  </Button>
+                )}
+              />
+            ) : null}
 
             {/* 2 Target */}
             <Card>
@@ -726,15 +792,13 @@ export function MigrateHostPage() {
             .finally(() => setBusy(false));
         }}
         title={t('migrate.orphanRemoveTitle')}
-        description={`${t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })} ${
-          (inventory?.manifest as { orphanHomeStats?: Record<string, { mtime?: string }> } | undefined)
-            ?.orphanHomeStats?.[orphanTarget ?? '']?.mtime
-            ? t('migrate.orphanMtime', {
-                at: (inventory?.manifest as { orphanHomeStats?: Record<string, { mtime?: string }> })
-                  .orphanHomeStats?.[orphanTarget ?? '']?.mtime,
-              })
-            : ''
-        } ${t('migrate.orphanBackupFirst')}`}
+        description={t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })}
+        consequences={[
+          orphanMtime
+            ? t('migrate.orphanMtime', { at: formatDateTime(orphanMtime) })
+            : '',
+          t('migrate.orphanBackupFirst'),
+        ].filter(Boolean)}
         confirmText={orphanTarget?.split('/').filter(Boolean).pop() || 'DELETE'}
         severity="critical"
         confirmLabel={t('migrate.orphanRemove')}

@@ -257,5 +257,6 @@
   "hostnameFixTitle": "Append this line to /etc/hosts?",
   "hostnameFixDesc": "{{line}}",
   "hostnameFixDone": "Hostname /etc/hosts updated",
-  "startAfterCreateBlocked": "Disabled until the hostname resolves"
+  "startAfterCreateBlocked": "Disabled until the hostname resolves",
+  "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
 }

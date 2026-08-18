@@ -449,5 +449,7 @@
   "policyNeedSelf2fa": "पहले इस खाते पर 2FA सक्षम करें, फिर TOTP कोड से पुष्टि करें",
   "revokeAllDevicesTitle": "प्रत्येक याद किए गए डिवाइस को रद्द करें - आपको और अन्य व्यवस्थापकों को 2FA को फिर से सत्यापित करना होगा",
   "statSshValue": "{{keys}} keys · {{auth}} authorized",
-  "statSshHint": "Outbound identities / authorized login keys"
+  "statSshHint": "Outbound identities / authorized login keys",
+  "needCurrentPassword": "Enter the current password first",
+  "passwordMin8": "New password must be at least 8 characters"
 }

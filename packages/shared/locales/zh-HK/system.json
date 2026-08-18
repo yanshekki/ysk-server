@@ -27,7 +27,7 @@
   "optional": "可選",
   "prettyPh": "友善顯示名稱",
   "timezone": "時區",
-  "timezoneHint": "從清單選擇時區（例如 Asia/Hong_Kong）",
+  "timezoneHint": "IANA 時區（例如 Asia/Hong_Kong）。此為主機鐘，cron 與 vsftpd 本地時間會跟隨。已存時間戳仍為 UTC。",
   "timezoneNow": "主機現在時間：{{time}}（{{tz}}）",
   "timezoneBrowserDiff": "此主機時區是 {{host}}；你的瀏覽器是 {{browser}}。這裡改的是主機時鐘，不是瀏覽器。",
   "timezoneSelect": "請選擇時區",

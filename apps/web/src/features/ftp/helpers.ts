@@ -33,6 +33,7 @@ export const EMPTY_FTPS_SETTINGS: FtpsSettings = {
   listen: true,
   listenIpv6: false,
   listenPort: 21,
+  bindAddress: 'localhost',
   sslEnable: false,
   forceSsl: false,
   sslDomain: '',

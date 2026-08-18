@@ -5,6 +5,7 @@
   "tab": {
     "nodes": "節點",
     "disk": "磁碟",
+    "stack": "軟件",
     "about": "說明"
   },
   "empty": {
@@ -12,18 +13,44 @@
     "desc": "用建立精靈幾個步驟即可建立測試網節點。"
   },
   "refresh": "重新整理",
+  "software": {
+    "engine": "Docker Engine",
+    "engineDesc": "驗證者節點以 Compose 專案運行。引擎未裝可在此安裝。映像清理請到 Docker 頁。",
+    "client": "客戶端",
+    "image": "映像",
+    "present": "本機",
+    "local": "已拉取",
+    "missing": "未拉取",
+    "size": "大小",
+    "usedBy": "使用中",
+    "unused": "無實例",
+    "pull": "拉取",
+    "pulling": "正在拉取 {{ref}}",
+    "empty": "沒有釘選客戶端映像",
+    "emptyDesc": "目錄不應為空。",
+    "daemonDown": "Docker Engine 未運行"
+  },
   "disk": {
     "title": "驗證者節點磁碟",
     "root": "資料目錄",
     "free": "可用",
-    "used": "已用",
+    "used": "驗證者目錄",
+    "fsUsed": "檔案系統已用",
+    "leftoverTitle": "殘留資料（{{count}}）",
+    "leftoverDesc": "驗證者根目錄下、不在 store 的資料夾。確認無用後再刪。",
+    "leftoverRemove": "刪除",
+    "leftoverRemoveTitle": "刪除此殘留驗證者資料？",
+    "leftoverRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是列表中的節點。",
     "none": "尚未有實例資料",
     "warn": "磁碟用量偏高（70% 或以上）",
     "danger": "磁碟用量危急（85% 或以上）",
     "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）",
     "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。",
     "autoClearConfirmTitle": "啟用自動清空？",
-    "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。"
+    "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。",
+    "autoClearThreshold": "觸發條件：檔案系統用量達 85% 或以上。",
+    "autoClearCandidate": "目前候選：{{id}}",
+    "autoClearNone": "目前沒有已停止實例可作為候選。"
   },
   "chain": {
     "eth": "Ethereum",
@@ -58,6 +85,14 @@
     "validator-ready": "驗證者就緒",
     "rpc": "RPC"
   },
+  "profileHelp": {
+    "title": "設定檔說明",
+    "desc": "建立精靈第三步的四個選項，主要分別是磁碟預算與用途。各鏈建議容量會在精靈顯示；面板不會保管質押私鑰。",
+    "minimal": "佔用磁碟最少。適合測試網或先試安裝。不是完整歷史，也不適合作為正式驗證者。",
+    "pruned": "保留近期鏈狀態，刪去過舊區塊資料（Pruned）。磁碟多於精簡、少於完整節點。適合長期跟隨鏈頭。",
+    "validatorReady": "預留較大磁碟，供日後以驗證者身分出塊。金鑰須自行離線產生；離線或設定錯誤可能損失質押金。",
+    "rpc": "供本機或其他服務查詢鏈資料。RPC 預設只聽 127.0.0.1，不會公開到互聯網。"
+  },
   "col": {
     "id": "識別碼",
     "chain": "鏈",
@@ -67,7 +102,7 @@
     "disk": "磁碟"
   },
   "cli": {
-    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--accept-low-disk] [--execute] [--json]"
   },
   "clients": {
     "el": "執行層客戶端",
@@ -133,7 +168,8 @@
     "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
     "nativePrune": "已執行客戶端原生清理指令",
     "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
-    "deleted": "已刪除節點"
+    "deleted": "已刪除節點",
+    "leftoverRemoved": "已刪除殘留 {{path}}"
   },
   "create": "建立節點",
   "wizard": {
@@ -145,12 +181,19 @@
     "stepSummary": "摘要",
     "needDocker": "未安裝 Docker Engine。請先安裝 — 此按鈕保持停用。",
     "diskNeed": "此設定檔約需 {{need}} · 可用 {{free}}",
+    "diskNeedNetwork": "此網絡預設精簡約需 {{need}} · 可用 {{free}}",
     "diskShort": "可用磁碟不足以建立此鏈／網絡／設定檔",
+    "diskShortDetail": "需要 {{need}} · 可用 {{free}} · 還差 {{short}}",
+    "needCustomPath": "請輸入絕對資料路徑",
+    "previewId": "節點識別碼",
+    "previewCompose": "Compose 專案",
+    "profileSeeAbout": "各設定檔含義見「說明」分頁。",
     "back": "上一步",
     "next": "下一步",
     "install": "安裝",
     "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
-    "mainnetAck": "我明白磁碟與罰沒風險，仍要建立主網節點。",
+    "mainnetAck": "確認建立主網節點。我已了解主網會佔用大量磁碟；若以驗證者身分出塊，離線或設定錯誤可能損失質押金。",
+    "lowDiskAcked": "可用磁碟低於建議值。你已確認仍要建立；空間不足時同步可能中斷。",
     "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
     "memory": "記憶體上限",
     "cpus": "CPU 上限",
@@ -162,7 +205,14 @@
     "installConfirmTitle": "安裝此節點？",
     "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}。約需 {{disk}} 磁碟。拉取映像可能需時頗長。",
     "installC1": "可能下載數 GiB 映像。",
-    "installC2": "可取消面板任務；已拉取的映像不會自動刪除。"
+    "installC2": "可取消面板任務；已拉取的映像不會自動刪除。",
+    "dockerAbout": "安裝與啟動節點需要 Docker Engine。",
+    "dockerAboutOk": "已安裝 Docker Engine。",
+    "dockerAboutMissing": "未安裝 Docker Engine。請到 Docker 頁安裝。",
+    "rewriteCompose": "重寫 compose",
+    "rewriteComposeTitle": "用目前 adapter 重寫 compose.yml？",
+    "rewriteComposeDesc": "會覆寫 {{id}} 的產生檔，只使用本產品為此鏈附帶的旗標。",
+    "chainMeta": "最少 {{disk}} · {{clients}} 個客戶端"
   },
   "actions": {
     "detail": "詳情",
@@ -259,6 +309,7 @@
   "state": {
     "unknown": "未知",
     "stopped": "已停止",
+    "starting": "啟動中",
     "running": "運行中",
     "syncing": "同步中",
     "error": "錯誤"

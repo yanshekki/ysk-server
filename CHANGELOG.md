@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+## 1.1.7 — 2026-08-18
+
+### Feature
+- Validators Software tab (`stack`, `?tab=software`): Docker Engine status plus pinned client images; pull is allowlisted and streamed.
+- FTP listen scope `localhost` | `public`. New installs bind loopback. Public cleartext start needs typed `PLAINTEXT`. One-click Enable FTPS picks the first issued cert.
+- Panel self-update apply can stream overlay steps (download / verify / write) in the ops dock. systemd restart still drops the stream — that is expected.
+
+### Fix
+- Validator disk `usedBytes` is `du` of the validators root, not the whole filesystem Used column.
+- Fresh nodes: RPC not ready is **starting**, not error. List no longer shows remote GitHub tags as upgrades. Avalanche compose passes flags only (no duplicated ENTRYPOINT binary).
+- Panel clocks default to the host timezone from System (`timedatectl`). Metrics `top` no longer uses the browser zone.
+- Self-update no longer toasts leftover-probe / npm-channel notes as apply failure. `GET /updates/self` stays HTTP 200 when the channel check fails. Leftover probe is skipped on apply.
+- VNC `/etc/hosts` write matches the short hostname (not an FQDN grep). Idle (0 accounts) hostname banner is info, not a session-fail alarm.
+- `/cluster` treats a running service as installed even when `softwareVersions` lags.
+- Updates package card shows unevaluated risk as — when OSV was not scanned (not `0`).
+- PowerDNS start shows an ops result; bind clash notes point at Heal bind. Zone apply when DNS is down links to the tools tab.
+- Public-files header splits live vs draft server name and can discard the draft.
+- CDN failed apply shows a reason on the row (or “no stored reason”).
+- Backups files tab shows a loader instead of flashing “0 / none”.
+- Network `lo` is “always on”; service matrix tab count matches the header unit list.
+
+### Improve
+- E2E-1116: validator wizard disk copy, install titles, leftover cleanup, rewrite-compose, migrate inventory layout, cron pending-stale hint, 2FA/password disabled titles, services stop as danger, browse clear-session, agents activating>5m as failed + journal, project pending-OS row exits, BT leftover hashes clickable + unset announce-host warn.
+- Product `ysk-server@1.1.7` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
+
 ## 1.1.6 — 2026-08-17
 
 ### Feature

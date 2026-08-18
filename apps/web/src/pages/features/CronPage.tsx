@@ -131,8 +131,18 @@ type CronJob = {
   projectId?: string;
   project_id?: string;
   enabled?: boolean;
+  created_at?: string;
+  createdAt?: string;
   last_install?: { ok?: boolean; at?: string };
 };
+
+function pendingAgeDays(job: CronJob, now = Date.now()): number | null {
+  const raw = job.created_at || job.createdAt || job.last_install?.at;
+  if (!raw) return null;
+  const t = Date.parse(raw);
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, Math.floor((now - t) / 86_400_000));
+}
 
 type CronStatus = {
   managedPath: string;
@@ -713,6 +723,13 @@ export function CronPage() {
                           </span>
                         </div>
                         <p className="ops-svc__cmd">{job.command}</p>
+                        {pendingAgeDays(job) != null && pendingAgeDays(job)! >= 1 ? (
+                          <p className="muted u-text-sm u-mt-1">
+                            {t('cron.pendingStale', { days: pendingAgeDays(job) })}
+                          </p>
+                        ) : (
+                          <p className="muted u-text-sm u-mt-1">{t('cron.willNotRun')}</p>
+                        )}
                       </div>
                       <div className="ops-svc__actions">
                         <Button

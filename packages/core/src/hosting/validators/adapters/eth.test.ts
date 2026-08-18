@@ -88,6 +88,7 @@ describe('avax adapter', () => {
       ports: { rpc: 9650, p2p: 9651 },
     });
     expect(y).toContain('avalanchego');
+    expect(y).not.toContain('/avalanchego/build/avalanchego');
     expect(y).toContain('fuji');
     expect(y).toContain('--state-sync-enabled=true');
     expect(y).toContain('127.0.0.1:9650:9650');

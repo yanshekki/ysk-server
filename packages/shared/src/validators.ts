@@ -23,7 +23,13 @@ export type ValidatorUpgradePolicy = 'manual' | 'notify' | 'auto-safe' | 'auto-a
 
 export type ValidatorDesiredState = 'stopped' | 'running';
 
-export type ValidatorRuntimeStatus = 'unknown' | 'stopped' | 'running' | 'syncing' | 'error';
+export type ValidatorRuntimeStatus =
+  | 'unknown'
+  | 'stopped'
+  | 'starting'
+  | 'running'
+  | 'syncing'
+  | 'error';
 
 export type ValidatorClientRole = 'el' | 'cl' | 'node';
 
@@ -108,6 +114,29 @@ export type ValidatorSettingsDto = {
   autoClear: boolean;
 };
 
+export type ValidatorSoftwareImageDto = {
+  chain: string;
+  clientId: string;
+  role: string;
+  image: string;
+  tag: string;
+  ref: string;
+  present: boolean | null;
+  size?: string | null;
+  usedBy: string[];
+};
+
+export type ValidatorSoftwareReportDto = {
+  dockerInstalled: boolean;
+  dockerRunning: boolean;
+  composeAvailable: boolean;
+  dockerVersion: string | null;
+  composeVersion: string | null;
+  images: ValidatorSoftwareImageDto[];
+  executeEnabled: boolean;
+  isRoot: boolean;
+};
+
 export const DEFAULT_VALIDATOR_SETTINGS: ValidatorSettingsDto = { autoClear: false };
 
 export function isSafeValidatorLimitMemory(value: string): boolean {
@@ -157,11 +186,26 @@ export type ValidatorDiskInstance = {
   usedBytes: number;
 };
 
+export type ValidatorDiskLeftover = {
+  name: string;
+  path: string;
+  usedBytes: number;
+};
+
 export type ValidatorDiskReport = {
   rootPath: string;
-  totalBytes: number | null;
+  /** du of the validators root (not the whole filesystem). */
   usedBytes: number | null;
+  leftoverBytes: number;
+  leftovers: ValidatorDiskLeftover[];
+  /** Filesystem that holds rootPath — used for create-gate free space. */
+  fsUsedBytes: number | null;
+  fsAvailBytes: number | null;
+  fsTotalBytes: number | null;
+  fsUsePct: number | null;
+  /** Alias of fsAvailBytes (wizard / KPI free space). */
   availBytes: number | null;
+  totalBytes: number | null;
   usePct: number | null;
   tone: ValidatorDiskTone;
   instances: ValidatorDiskInstance[];
@@ -204,7 +248,19 @@ export const VALIDATOR_NETWORK_PROPER: Record<string, string> = {
   sepolia: 'Sepolia',
   fuji: 'Fuji',
   westend: 'Westend',
+  preview: 'Preview',
+  preprod: 'Preprod',
 };
+
+/** Display name for a (chain, network) pair. Generic `testnet` includes the chain. */
+export function validatorNetworkLabelFor(chain: string, network: string): string | null {
+  const proper = VALIDATOR_NETWORK_PROPER[network];
+  if (proper) return proper;
+  if (network === 'testnet' && isValidatorChainId(chain)) {
+    return `${VALIDATOR_CHAIN_LABEL[chain]} Testnet`;
+  }
+  return null;
+}
 
 export function validatorChainLabel(id: string, title?: string | null): string {
   if (title && title.trim()) return title.trim();

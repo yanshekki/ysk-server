@@ -201,5 +201,6 @@
   "hitMiss": "Hits {{hits}} / misses {{misses}}",
   "cacheBytes": "Cache ≈ {{n}} B",
   "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
-  "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
+  "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
+  "applyFailedNoNote": "No stored reason. Re-apply to capture the error."
 }

@@ -165,5 +165,6 @@
   "registeredJobsHint": "Jobs registered in the panel (including pending install)",
   "pendingInstallCount": "{{n}} pending install",
   "systemJobBadge": "No project · system user",
-  "willNotRun": "Not written to system crontab — will not run."
+  "willNotRun": "Not written to system crontab — will not run.",
+  "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run."
 }

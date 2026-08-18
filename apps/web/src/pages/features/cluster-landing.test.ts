@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  clusterEngineFromServiceRow,
   clusterServicePath,
   isStaleClusterPlan,
   pickClusterLandingPath,
+  serviceRowLooksInstalled,
 } from './cluster-landing';
 
 describe('pickClusterLandingPath', () => {
@@ -31,6 +33,15 @@ describe('pickClusterLandingPath', () => {
         installed: { mysql: false, mariadb: false, postgres: false, redis: false },
       }),
     ).toBeNull();
+  });
+});
+
+describe('service row install probe', () => {
+  it('treats a running Redis unit as installed', () => {
+    expect(clusterEngineFromServiceRow({ id: 'redis', unit: 'redis-server.service' })).toBe(
+      'redis',
+    );
+    expect(serviceRowLooksInstalled({ installed: false, active: 'active' })).toBe(true);
   });
 });
 

@@ -32,7 +32,11 @@ export const ftpApi = {
       `/api/v1/system/ftps/options${q}`,
     );
   },
-  apply: (body?: { settings?: Partial<FtpsSettings>; applySystem?: boolean }) =>
+  apply: (body?: {
+    settings?: Partial<FtpsSettings>;
+    applySystem?: boolean;
+    allowPlaintextPublic?: boolean;
+  }) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/system/ftps/apply', {
       method: 'POST',
       body: JSON.stringify({ applySystem: true, ...body }),

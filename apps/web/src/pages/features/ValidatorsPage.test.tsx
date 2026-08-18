@@ -48,6 +48,34 @@ describe('ValidatorsPage', () => {
           { status: 200, headers: { 'Content-Type': 'application/json' } },
         );
       }
+      if (url.includes('/api/v1/validators/software')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            dockerInstalled: true,
+            dockerRunning: true,
+            composeAvailable: true,
+            dockerVersion: '29.1.3',
+            composeVersion: '2.40.3',
+            images: [
+              {
+                chain: 'eth',
+                clientId: 'reth',
+                role: 'el',
+                image: 'ghcr.io/paradigmxyz/reth',
+                tag: 'v1.4.8',
+                ref: 'ghcr.io/paradigmxyz/reth:v1.4.8',
+                present: false,
+                size: null,
+                usedBy: [],
+              },
+            ],
+            executeEnabled: true,
+            isRoot: true,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
       if (url.includes('/api/v1/validators')) {
         return new Response(JSON.stringify({ ok: true, instances: [] }), {
           status: 200,
@@ -81,6 +109,10 @@ describe('ValidatorsPage', () => {
     await user.click(screen.getByRole('tab', { name: /disk/i }));
     await waitFor(() => {
       expect(screen.getByText('/tmp/ysk/validators')).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('tab', { name: /software/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/ghcr.io\/paradigmxyz\/reth:v1.4.8/)).toBeInTheDocument();
     });
     await user.click(screen.getByRole('tab', { name: /about/i }));
   });

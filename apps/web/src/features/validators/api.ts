@@ -7,6 +7,7 @@ import type {
   ValidatorDiskReport,
   ValidatorInstanceDto,
   ValidatorSettingsDto,
+  ValidatorSoftwareReportDto,
   ValidatorSummaryDto,
 } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
@@ -55,6 +56,7 @@ export const validatorsApi = {
     cpus?: string;
     dataPath?: string;
     rpcPort?: number;
+    acceptLowDisk?: boolean;
     execute?: boolean;
   }) =>
     api.requestRaw<ValidatorOpsResponse>('/api/v1/validators', {
@@ -125,6 +127,28 @@ export const validatorsApi = {
       method: 'PATCH',
       body: JSON.stringify({ autoClear }),
     }),
+  removeLeftover: (path: string, confirm: string, execute = true) =>
+    api.requestRaw<ValidatorOpsResponse>('/api/v1/validators/leftovers/remove', {
+      method: 'POST',
+      body: JSON.stringify({ path, confirm, execute }),
+    }),
+  rewriteCompose: (id: string, execute = true) =>
+    api.requestRaw<ValidatorOpsResponse>(
+      `/api/v1/validators/${encodeURIComponent(id)}/rewrite-compose`,
+      { method: 'POST', body: JSON.stringify({ execute }) },
+    ),
+  software: () =>
+    api.requestRaw<{ ok: boolean } & ValidatorSoftwareReportDto>('/api/v1/validators/software'),
+  pullSoftware: (
+    image: string,
+    tag: string,
+    opts?: { onLog?: (line: InstallLogLine) => void; signal?: AbortSignal; execute?: boolean },
+  ) =>
+    postSseJson(
+      '/api/v1/validators/software/pull',
+      { image, tag, execute: opts?.execute !== false },
+      { onLog: opts?.onLog, signal: opts?.signal },
+    ),
 };
 
 export type ValidatorStatusResponse = {
@@ -174,4 +198,5 @@ export type {
   ValidatorDiskInstance,
   ValidatorDiskReport,
   ValidatorInstanceDto,
+  ValidatorSoftwareReportDto,
 };

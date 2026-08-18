@@ -315,6 +315,17 @@ export function BtTrackerPage() {
     >
       <div className="bt-page">
         {error ? <Alert variant="error">{error}</Alert> : null}
+        {running && !hasPublicHost ? (
+          <Alert variant="warn">{t('btTracker.publicHostMissingLive')}</Alert>
+        ) : null}
+        {leftoverSwarm > 0 ? (
+          <Alert variant="warn">
+            {t('btTracker.swarmLeftover', { count: leftoverSwarm })}{' '}
+            <Button size="sm" variant="secondary" onClick={() => setTab('tracker')}>
+              {t('btTracker.leftoverHashesTitle')}
+            </Button>
+          </Alert>
+        ) : null}
         {msg ? <Alert variant="ok">{msg}</Alert> : null}
         {result ? <OpsResultPanel result={result as OpsResultLike} /> : null}
 

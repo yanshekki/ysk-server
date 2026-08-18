@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpd শুরু হয়েছে",
     "openPortsStep": "ফায়ারওয়াল পোর্ট (ম্যানুয়াল)",
     "openPortsReminder": "হোস্ট ফায়ারওয়াল এবং ক্লাউড সিকিউরিটি গ্রুপে TCP পোর্ট খুলুন: {{ports}}। FTPS আবেদন আপনার জন্য পোর্ট খুলবে না।",
-    "openPortsPasvHint": "যদি লগইন কাজ করে কিন্তু ডিরেক্টরি LIST বার হয়ে যায়, PASV ডেটা পরিসর ব্লক করা হয় — পূর্ণ খুলুন"
+    "openPortsPasvHint": "যদি লগইন কাজ করে কিন্তু ডিরেক্টরি LIST বার হয়ে যায়, PASV ডেটা পরিসর ব্লক করা হয় — পূর্ণ খুলুন",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "বিচ্ছিন্ন স্থাপনার জন্য নোড বাইনারি অনুপস্থিত: {{path}} — নোড {{version}} টুলচেইন ইনস্টল করুন তারপর পুনরায় স্থাপন করুন। 203/EXEC হবে এমন একটি ইউনিট লিখতে অস্বীকার করা।",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "সার্ভার নাম প্রয়োজন",

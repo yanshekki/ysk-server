@@ -32,7 +32,8 @@
   "statNodes": "節點",
   "hitNoStats": "尚無邊緣統計",
   "loopbackOriginBlocked": "不會把回環 origin {{url}} 寫到遠端邊緣。請先改成可達的 origin。",
-  "applyFailedHint": "套用失敗 — 見下方備註",
+  "applyFailedHint": "套用失敗",
+  "applyFailedNoNote": "沒有存下失敗原因。請再套用一次以記錄錯誤。",
   "applyStatus": {
     "draft": "草稿",
     "planned": "已計劃",

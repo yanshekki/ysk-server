@@ -41,5 +41,9 @@
   "publicRootNote": "公開根目錄：{{path}}",
   "applyConfirmTitle": "套用公開檔案站點？",
   "applyConfirmDesc": "寫入 Nginx server_name {{name}} 並重載 Nginx。",
-  "serverNameMismatch": "現行設定檔為 {{live}}；表單為 {{draft}}。套用後會覆蓋。"
+  "serverNameMismatch": "現行設定檔為 {{live}}；表單為 {{draft}}。套用後會覆蓋。",
+  "liveName": "生效名稱",
+  "draftName": "草稿名稱",
+  "draftUnapplied": "此草稿尚未套用。Nginx 仍以生效名稱對外。",
+  "discardDraft": "捨棄草稿"
 }

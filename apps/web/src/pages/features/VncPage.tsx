@@ -222,6 +222,7 @@ export function VncPage() {
     try {
       const r = await fn();
       setLastOps(opsToPanel(r));
+      if (r.resolves === true) setHostnameResolves(true);
       if (r.ok && !r.blocked && r.apply_status !== 'partial') {
         notifyOk(r.notes?.[0] || t('common.completed'));
       } else {
@@ -328,9 +329,13 @@ export function VncPage() {
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
         {loaded && !hostnameResolves ? (
-          <Alert variant="warn">
+          <Alert variant={accounts.length > 0 ? 'warn' : 'info'}>
             <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
-              <span>{t('vnc.hostnameBroken', { hostname: hostname || '—' })}</span>
+              <span>
+                {accounts.length > 0
+                  ? t('vnc.hostnameBroken', { hostname: hostname || '—' })
+                  : t('vnc.hostnameBrokenIdle', { hostname: hostname || '—' })}
+              </span>
               <Button variant="secondary" size="sm" onClick={() => setFixHostsOpen(true)}>
                 {t('vnc.hostnameFix')}
               </Button>
@@ -643,9 +648,6 @@ export function VncPage() {
               showReadyActions={false}
               onInstalled={() => void load()}
             />
-            <Alert variant="info">{t('vnc.clientNeedNovnc')}</Alert>
-            <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
-            <Alert variant="info">{t('vnc.clientPathCompare')}</Alert>
             <DataTable
               rowKey={(c) => c.id}
               title={t('vnc.clientListTitle', { count: clients.length })}

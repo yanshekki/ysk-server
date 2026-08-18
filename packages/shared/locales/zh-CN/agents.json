@@ -12,7 +12,8 @@
     "error": "失败",
     "unknown": "未探测",
     "fallback": "未知",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} 在线",
   "registeredOnly": "仅登记",
@@ -137,5 +138,6 @@
   "historyTitleShort": "打开命令历史记录（只读）",
   "expEdge": "在边缘：",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

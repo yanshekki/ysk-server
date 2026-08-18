@@ -87,8 +87,13 @@ export function PublicFilesPage() {
         },
         items: [
           {
-            label: t('publicFiles.serverName'),
+            label: t('publicFiles.liveName'),
             value: liveName || t('common.noneSelectedShort'),
+          },
+          {
+            label: t('publicFiles.draftName'),
+            value: serverName.trim() || t('common.noneSelectedShort'),
+            tone: draftDiffers ? 'warn' : undefined,
             hint: draftDiffers
               ? t('publicFiles.serverNameMismatch', {
                   live: liveName,
@@ -157,7 +162,11 @@ export function PublicFilesPage() {
               columns={2}
               items={[
                 {
-                  label: t('publicFiles.serverName'),
+                  label: t('publicFiles.liveName'),
+                  value: liveName || t('common.noneSelectedShort'),
+                },
+                {
+                  label: t('publicFiles.draftName'),
                   value: serverName || t('common.noneSelectedShort'),
                 },
                 {
@@ -276,13 +285,14 @@ export function PublicFilesPage() {
               />
               <span>{t('publicFiles.autoindex', { defaultValue: 'Directory listing (autoindex)' })}</span>
             </label>
-            {status?.serverName &&
-            serverName.trim() &&
-            status.serverName !== serverName.trim() ? (
-              <Alert variant="warn">{t('publicFiles.serverNameMismatch', {
-                live: status.serverName,
-                draft: serverName.trim(),
-              })}</Alert>
+            {draftDiffers ? (
+              <Alert variant="warn">
+                {t('publicFiles.serverNameMismatch', {
+                  live: liveName,
+                  draft: serverName.trim(),
+                })}{' '}
+                {t('publicFiles.draftUnapplied')}
+              </Alert>
             ) : null}
             <FormHint>{t('publicFiles.applyHint')}</FormHint>
             <FormActions>
@@ -300,6 +310,20 @@ export function PublicFilesPage() {
               >
                 {t('publicFiles.applyReload')}
               </Button>
+              {draftDiffers ? (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  disabled={busy}
+                  title={t('publicFiles.discardDraft')}
+                  onClick={() => {
+                    setServerName(liveName);
+                    setServerContext({ domain: liveName.replace(/^files\./, '') });
+                  }}
+                >
+                  {t('publicFiles.discardDraft')}
+                </Button>
+              ) : null}
             </FormActions>
           </CardSection>
         </Card>

@@ -90,6 +90,19 @@ export async function probeAgentRuntime(
     }
   } else if (unitActive === 'activating' || unitActive === 'reloading') {
     status = 'activating';
+    try {
+      const ts = await host.runCommand(
+        ['systemctl', 'show', unitName, '-p', 'ActiveEnterTimestamp', '--value'],
+        { timeoutMs: 5_000 },
+      );
+      const entered = Date.parse(String(ts.stdout || '').trim());
+      if (Number.isFinite(entered) && Date.now() - entered > 5 * 60_000) {
+        status = 'failed';
+        notes.push(tl('notes.agents.activatingStuck'));
+      }
+    } catch {
+      /* keep activating */
+    }
   } else if (unitActive === 'failed') {
     status = 'failed';
   } else if (pathExists || binaryPath) status = 'stopped';

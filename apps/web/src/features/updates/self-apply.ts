@@ -3,13 +3,16 @@
  */
 
 export function isPanelRestartDisconnect(err: unknown): boolean {
-  if (err && typeof err === 'object' && 'name' in err) {
-    const n = String((err as { name?: string }).name);
+  if (err && typeof err === 'object') {
+    const n = String((err as { name?: string }).name ?? '');
     if (n === 'AbortError' || n === 'TimeoutError' || n === 'NetworkError') return true;
+    const status = Number((err as { status?: number }).status);
+    // Dying process / proxy during systemd bounce — not an apply failure.
+    if (status === 502 || status === 503 || status === 504) return true;
   }
   const m = err instanceof Error ? err.message : String(err ?? '');
   if (!m.trim() && err instanceof TypeError) return true;
-  return /failed to fetch|networkerror|load failed|err_connection|econnrefused|econnreset|network request failed|connection (reset|refused|closed)|the user aborted|aborted a request/i.test(
+  return /failed to fetch|networkerror|load failed|err_connection|econnrefused|econnreset|network request failed|connection (reset|refused|closed)|the user aborted|aborted a request|unexpected (end of|token)|invalid json|not valid json|failed to parse/i.test(
     m,
   );
 }

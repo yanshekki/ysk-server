@@ -97,6 +97,8 @@
   "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user.",
   "resumeHint": "Resume previous session ({{count}} tabs)",
   "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
+  "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
+  "clearSessionData": "Clear session data",
   "resume": "Resume",
   "resumeDismiss": "Dismiss",
   "resumeDone": "Session resumed",

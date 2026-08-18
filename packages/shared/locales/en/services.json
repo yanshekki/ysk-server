@@ -40,6 +40,7 @@
   "reloadedOk": "{{label}} reloaded",
   "stopNeedConfirm": "Needs confirmation",
   "stopNeedConfirmPhrase": "Needs confirmation phrase",
+  "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",
   "stopConfirmTitle": "Stop {{label}}?",
   "stopConfirmDesc": "{{label}} will stop listening. Start it again from this page when needed.",
   "stopConfirmEdgeDesc": "Stopping {{label}} takes sites and reverse-proxy traffic offline until it is started again.",

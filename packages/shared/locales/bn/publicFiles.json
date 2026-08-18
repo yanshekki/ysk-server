@@ -41,5 +41,9 @@
   "serverNameMismatch": "লাইভ কনফ {{live}}; ফর্মে {{draft}}। প্রতিস্থাপনে প্রয়োগ করুন।",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

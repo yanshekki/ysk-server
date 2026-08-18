@@ -66,10 +66,14 @@ function errorMessageFromBody(data: unknown, status: number): string {
       const isProbe = (n: string) =>
         /npm 頻道|頻道：|channel：|channel:|GitHub release/i.test(n);
       const isNoticeDump = (n: string) => ((n.match(/npm notice/gi) || []).length >= 2);
+      const isLeftover = (n: string) =>
+        /leftover|overlay does not|000-default|stale CLI|舊 CLI|殘留|vsftpd is failed|vsftpd 失敗/i.test(
+          n,
+        );
       const isFail = (n: string) =>
         /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|找不到|未包含|無法寫入|無法下載/i.test(
           n,
-        );
+        ) && !isLeftover(n);
       const fail = notes.filter((n) => isFail(n) && !isProbe(n) && !isNoticeDump(n));
       if (fail.length) return fail[fail.length - 1]!;
       const meaningful = notes.filter((n) => !isProbe(n) && !isNoticeDump(n));

@@ -1,4 +1,7 @@
 {
+  "agents": {
+    "activatingStuck": "systemd unit has been activating for more than 5 minutes — treating as failed. Check journal."
+  },
   "notFound": "Not found",
   "needPath": "Specify a path",
   "needName": "Enter a name",
@@ -99,7 +102,8 @@
     "vsftpdStarted": "vsftpd started",
     "openPortsStep": "Firewall ports (manual)",
     "openPortsReminder": "Open TCP ports on host firewall and cloud security group: {{ports}}. FTPS apply does not open ports for you.",
-    "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the ful"
+    "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the ful",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "Node binary missing for isolated deploy: {{path}} — install Node {{version}} toolchain then redeploy. Refusing to write a unit that would 203/EXEC.",
@@ -2977,6 +2981,8 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files.",
     "skipStartHostname": "Did not start the display — fix hostname resolution first.",
     "novncAssetsOnly": "noVNC web assets found; websockify binary still missing.",
     "viewerNeedExecute": "Starting a local VNC desktop for browser view needs root + YSK_EXECUTE",

@@ -273,6 +273,51 @@ textarea:disabled {
   margin-top: var(--space-card-block, var(--space-6));
 }
 
+.val-net {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.1rem 0;
+}
+
+.val-net__name {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.val-net__kind {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+
+.val-net__kind--testnet {
+  color: #047857;
+}
+
+.val-net__kind--mainnet {
+  color: #b45309;
+}
+
+.val-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+}
+
+.val-status__meta {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .val-wizard {
   padding: var(--space-2) 0 var(--space-3);
 }

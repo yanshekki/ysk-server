@@ -16,7 +16,8 @@
       "error": "失败",
       "unknown": "未探测",
       "fallback": "未知",
-      "activating": "Starting"
+      "activating": "Starting",
+      "stuck": "Start stuck"
     },
     "liveN": "{{count}} 在线",
     "registeredOnly": "仅登记",
@@ -141,7 +142,8 @@
     "historyTitleShort": "打开命令历史记录（只读）",
     "expEdge": "在边缘：",
     "noteAllowlist": "Agent tool calls must pass the allowlist.",
-    "noteRbacCap": "Agent role is capped at write-low."
+    "noteRbacCap": "Agent role is capped at write-low.",
+    "journal": "journal"
   },
   "ai": {
     "status": {
@@ -674,7 +676,8 @@
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
     "statsAnnouncesHint": "Announce requests seen by the tracker process",
     "leftoverHashesTitle": "Tracker leftover hashes",
-    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows.",
+    "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed."
   },
   "catalog": {
     "sw": {
@@ -911,7 +914,8 @@
     "hitMiss": "Hits {{hits}} / misses {{misses}}",
     "cacheBytes": "Cache ≈ {{n}} B",
     "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
-    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
+    "applyFailedNoNote": "No stored reason. Re-apply to capture the error."
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
@@ -2395,7 +2399,8 @@
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
     "systemJobBadge": "No project · system user",
-    "willNotRun": "Not written to system crontab — will not run."
+    "willNotRun": "Not written to system crontab — will not run.",
+    "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run."
   },
   "dashboard": {
     "title": "控制台",
@@ -3126,7 +3131,9 @@
     "installPort53BusyConsequence": "请先修复绑定或停止其他监听，才可预期 53 端口有响应。",
     "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
     "startProbeFailed": "Could not re-check DNS health after start",
-    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
+    "goStartService": "Start DNS service",
+    "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again."
   },
   "docker": {
     "title": "Docker",
@@ -4684,7 +4691,22 @@
     "pasvIpRequired": "套用前请填写 PASV 公网 IP（NAT／云主机）。可探测或手动输入。",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
     "stateFailed": "Failed to start",
-    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21.",
+    "plaintextPublicLive": "vsftpd is listening on a public address without FTPS. Credentials travel in the clear. Enable FTPS, bind to this host only, or confirm PLAINTEXT to keep this posture.",
+    "bindAddress": "Listen scope",
+    "bindAddressHint": "New installs bind to this host only. Public listen without FTPS needs a typed confirmation.",
+    "bindLocal": "This host only",
+    "bindLocalHint": "127.0.0.1 — fine without TLS for local tests",
+    "bindPublic": "Public",
+    "bindPublicHint": "All interfaces — enable FTPS or confirm PLAINTEXT",
+    "enableFtpsAndStart": "Enable FTPS and start",
+    "publicPlainNeedConfirm": "Public cleartext FTP needs a PLAINTEXT confirmation",
+    "plainConfirmTitle": "Start public FTP without FTPS?",
+    "plainConfirmDesc": "Port 21 will accept logins and data in the clear on the public address.",
+    "plainConfirmC1": "Usernames and passwords are visible on the network.",
+    "plainConfirmC2": "PASV will advertise the configured public IP.",
+    "plainConfirmC3": "Host firewall and cloud security group are not opened for you.",
+    "plainConfirmAction": "Start cleartext FTP"
   },
   "geo": {
     "continents": {
@@ -4983,7 +5005,9 @@
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
     "closeNoSession": "No session yet",
-    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
+    "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
+    "clearSessionData": "Clear session data"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -5444,7 +5468,18 @@
     "expandAllWarnings": "Show all {{n}} warnings",
     "collapseWarnings": "Show fewer",
     "inventoriedWarn": "Inventoried · {{n}} warnings",
-    "orphanMtime": "Last modified {{at}}"
+    "orphanMtime": "Last modified {{at}}",
+    "inventoriedOrphans": "Inventoried · {{n}} leftover homes",
+    "inventoriedWarnAndOrphans": "Inventoried · {{w}} warnings · {{n}} leftover",
+    "orphanHomesTitle": "Leftover project homes ({{count}})",
+    "orphanHomesSummary": "{{count}} path(s) on disk are not in the store. Back up first if unsure, then remove unused paths.",
+    "orphanColHome": "Home",
+    "orphanColModified": "Modified",
+    "orphanKpi": "Leftover",
+    "sourceOs": "OS",
+    "sourceDataDir": "dataDir",
+    "sourceDbRedis": "Databases / Redis",
+    "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis"
   },
   "multiCheck": {
     "customPlaceholder": "自定义代码",
@@ -5712,7 +5747,9 @@
       "up": "Up",
       "down": "Down",
       "unknown": "Unknown",
-      "other": "Other"
+      "other": "Other",
+      "loopback": "Always on",
+      "loopbackHint": "Loopback is always available and cannot be changed."
     }
   },
   "nginx": {
@@ -5907,7 +5944,8 @@
       "vsftpdStarted": "vsftpd 已启动",
       "openPortsStep": "防火墙端口（需手动）",
       "openPortsReminder": "请在主机防火墙和云安全组放行 TCP：{{ports}}。套用 FTPS 不会代你开端口。",
-      "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。"
+      "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。",
+      "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
     },
     "deploy": {
       "nodeMissingIsolated": "隔离部署找不到 Node：{{path}} — 请先安装 Node {{version}} toolchain 再部署。拒绝写入会 203/EXEC 的 unit。",
@@ -8841,7 +8879,9 @@
       "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
       "hostnameAppended": "Appended to /etc/hosts: {{line}}",
       "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-      "skipStartHostname": "Did not start the display — fix hostname resolution first."
+      "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+      "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+      "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
     },
     "apache": {
       "needServerName": "需要域名",
@@ -10253,7 +10293,11 @@
     "serverNameMismatch": "现行配置为 {{live}}；表单为 {{draft}}。套用后会覆盖。",
     "executeFlag": "Execute",
     "asRoot": "Root",
-    "statusDraft": "Draft / not applied"
+    "statusDraft": "Draft / not applied",
+    "liveName": "Live name",
+    "draftName": "Draft name",
+    "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+    "discardDraft": "Discard draft"
   },
   "rbac": {
     "permissions": "权限",
@@ -11649,7 +11693,9 @@
     "policyNeedSelf2fa": "首先在此帐户上启用 2FA，然后使用 TOTP 代码进行确认",
     "revokeAllDevicesTitle": "撤销每个记住的设备 - 您和其他管理员必须再次验证 2FA",
     "statSshValue": "{{keys}} keys · {{auth}} authorized",
-    "statSshHint": "Outbound identities / authorized login keys"
+    "statSshHint": "Outbound identities / authorized login keys",
+    "needCurrentPassword": "Enter the current password first",
+    "passwordMin8": "New password must be at least 8 characters"
   },
   "serviceExposure": {
     "title": "网络访问",
@@ -11793,7 +11839,8 @@
     "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
     "restartConfirmTitle": "Restart {{label}}?",
     "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
-    "startVerifyFailed": "{{label}} start did not stay healthy."
+    "startVerifyFailed": "{{label}} start did not stay healthy.",
+    "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop."
   },
   "software": {
     "title": "软件中心",
@@ -13258,7 +13305,8 @@
     "tab": {
       "nodes": "节点",
       "disk": "磁盘",
-      "about": "说明"
+      "about": "说明",
+      "stack": "Software"
     },
     "empty": {
       "title": "尚未建立验证者节点",
@@ -13276,7 +13324,16 @@
       "autoClear": "磁盘危急时自动清空最大的已停止实例（默认关闭）",
       "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
       "autoClearConfirmTitle": "Enable auto-clear?",
-      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
+      "fsUsed": "Filesystem used",
+      "leftoverTitle": "Leftover data ({{count}})",
+      "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
+      "leftoverRemove": "Remove",
+      "leftoverRemoveTitle": "Delete leftover validator data?",
+      "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
+      "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
+      "autoClearCandidate": "Current candidate: {{id}}",
+      "autoClearNone": "No stopped instance is a candidate right now."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13310,6 +13367,14 @@
       "pruned": "Pruned",
       "validator-ready": "验证者就绪",
       "rpc": "RPC"
+    },
+    "profileHelp": {
+      "title": "配置档说明",
+      "desc": "创建向导第三步的四个选项，主要差别是磁盘预算与用途。各链建议容量会在向导显示；面板不会保管质押私钥。",
+      "minimal": "占用磁盘最少。适合测试网或先试安装。不是完整历史，也不适合作为正式验证者。",
+      "pruned": "保留近期链状态，删除过旧区块数据（Pruned）。磁盘多于精简、少于完整节点。适合长期跟随链头。",
+      "validatorReady": "预留较大磁盘，供日后以验证者身份出块。密钥须自行离线生成；离线或设置错误可能损失质押金。",
+      "rpc": "供本机或其他服务查询链数据。RPC 默认只监听 127.0.0.1，不会公开到互联网。"
     },
     "col": {
       "id": "标识",
@@ -13386,7 +13451,8 @@
       "snapshotNear": "已清空 NEAR 数据；compose 会重新用官方 genesis 与 epoch sync 初始化",
       "nativePrune": "已执行客户端原生清理命令",
       "dryDelete": "删除属预演。真正套用须 --execute 与 YSK_EXECUTE=1。",
-      "deleted": "已删除节点"
+      "deleted": "已删除节点",
+      "leftoverRemoved": "Removed leftover {{path}}"
     },
     "create": "建立节点",
     "wizard": {
@@ -13395,7 +13461,8 @@
       "next": "下一步",
       "install": "安装",
       "mainnetWarn": "主网需要大量可用磁盘（ETH 常达 800 GiB 或以上）。建议先用测试网。",
-      "mainnetAck": "我明白磁盘与罚没风险，仍要建立主网节点。",
+      "mainnetAck": "确认建立主网节点。我已了解主网会占用大量磁盘；若以验证者身份出块，离线或设置错误可能损失质押金。",
+      "lowDiskAcked": "可用磁盘低于建议值。你已确认仍要建立；空间不足时同步可能中断。",
       "heavyWarn": "此链负载很重（大量磁盘与高 IOPS）。Solana 主网通常需要 2 TiB 或以上。",
       "memory": "内存上限（例如 4g）",
       "cpus": "CPU 上限（例如 2.0）",
@@ -13415,7 +13482,20 @@
       "installConfirmTitle": "Install this node?",
       "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
       "installC1": "Several gigabytes of images may be downloaded.",
-      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
+      "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
+      "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
+      "needCustomPath": "Enter an absolute data path",
+      "previewId": "Node id",
+      "previewCompose": "Compose project",
+      "profileSeeAbout": "What each profile means is on the About tab.",
+      "dockerAbout": "Docker Engine is required to install and start nodes.",
+      "dockerAboutOk": "Docker Engine is installed.",
+      "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
+      "rewriteCompose": "Rewrite compose",
+      "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
+      "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
+      "chainMeta": "{{disk}} min · {{clients}} clients"
     },
     "actions": {
       "detail": "详情",
@@ -13512,9 +13592,27 @@
     "state": {
       "unknown": "未知",
       "stopped": "已停止",
+      "starting": "启动中",
       "running": "运行中",
       "syncing": "同步中",
       "error": "错误"
+    },
+    "software": {
+      "engine": "Docker Engine",
+      "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
+      "client": "Client",
+      "image": "Image",
+      "present": "Local",
+      "local": "Pulled",
+      "missing": "Not pulled",
+      "size": "Size",
+      "usedBy": "Used by",
+      "unused": "No instance",
+      "pull": "Pull",
+      "pulling": "Pull {{ref}}",
+      "empty": "No pinned client images",
+      "emptyDesc": "The catalog is empty. This should not happen.",
+      "daemonDown": "Docker Engine is not running"
     }
   },
   "vnc": {
@@ -13776,7 +13874,8 @@
     "hostnameFixTitle": "Append this line to /etc/hosts?",
     "hostnameFixDesc": "{{line}}",
     "hostnameFixDone": "Hostname /etc/hosts updated",
-    "startAfterCreateBlocked": "Disabled until the hostname resolves"
+    "startAfterCreateBlocked": "Disabled until the hostname resolves",
+    "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
   },
   "vpn": {
     "pageDesc": "VPN 服务器／客户端",

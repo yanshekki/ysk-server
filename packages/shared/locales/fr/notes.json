@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpd démarré",
     "openPortsStep": "Ports du pare-feu (manuel)",
     "openPortsReminder": "Ouvrez les ports TCP sur le pare-feu hôte et le groupe de sécurité cloud : {{ports}}. L'application FTPS n'ouvre pas les ports pour vous.",
-    "openPortsPasvHint": "Si la connexion fonctionne mais que le LIST du répertoire expire, la plage de données PASV est bloquée — ouvrez le ful"
+    "openPortsPasvHint": "Si la connexion fonctionne mais que le LIST du répertoire expire, la plage de données PASV est bloquée — ouvrez le ful",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "Binaire Node manquant pour le déploiement isolé : {{path}} — installez la chaîne d'outils Node {{version}} puis redéployez. Refus d'écrire une unit qui provoquerait un 203/EXEC.",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "Nom du serveur requis",

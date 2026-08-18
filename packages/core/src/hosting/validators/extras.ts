@@ -238,6 +238,32 @@ export function writeValidatorCompose(input: {
   return appliedValidatorOp({ instanceId: inst.id, written: [path], notes: [tl('validators.notes.composeWrote')] });
 }
 
+export function regenerateValidatorCompose(input: {
+  dataDir: string;
+  id: string;
+  execute: boolean;
+}): ValidatorOpsResult {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  }
+  const path = composeFilePath(instanceDir(input.dataDir, inst.id));
+  const plan = planInstallFor(inst);
+  if (!input.execute) {
+    return writtenValidatorOp({
+      instanceId: inst.id,
+      written: [path],
+      notes: [tl('validators.notes.dryCompose')],
+    });
+  }
+  writeComposeFile(path, plan.composeYaml, inst.id, inst.limits);
+  return appliedValidatorOp({
+    instanceId: inst.id,
+    written: [path],
+    notes: [tl('validators.notes.composeWrote')],
+  });
+}
+
 export function snapshotOffer(chain: string, network: string): {
   kind: 'mithril' | 'checkpoint' | 'archive' | 'epoch' | 'none';
   notes: string[];

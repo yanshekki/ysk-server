@@ -449,5 +449,7 @@
   "policyNeedSelf2fa": "پہلے اس اکاؤنٹ پر 2FA کو فعال کریں، پھر TOTP کوڈ کے ساتھ تصدیق کریں۔",
   "revokeAllDevicesTitle": "ہر یاد رکھنے والے آلے کو منسوخ کریں — آپ اور دیگر منتظمین کو دوبارہ 2FA کی تصدیق کرنی ہوگی۔",
   "statSshValue": "{{keys}} keys · {{auth}} authorized",
-  "statSshHint": "Outbound identities / authorized login keys"
+  "statSshHint": "Outbound identities / authorized login keys",
+  "needCurrentPassword": "Enter the current password first",
+  "passwordMin8": "New password must be at least 8 characters"
 }

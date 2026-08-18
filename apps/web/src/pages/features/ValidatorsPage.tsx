@@ -2,12 +2,15 @@
  * Validators (Beta) — list, create wizard, disk, about.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ActionBar,
   Alert,
   Badge,
   Button,
+  buttonClassName,
+  Card,
   CardSection,
   CheckboxField,
   ConfirmDialog,
@@ -32,11 +35,22 @@ import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
+  isSafeValidatorDataPath,
   isValidatorUpgradePolicy,
   validatorChainLabel,
   validatorNetworkLabel,
+  validatorNetworkLabelFor,
+  VALIDATOR_DISK_DANGER_PCT,
+  type ValidatorDiskLeftover,
 } from 'ysk-server-shared';
 import { dockerApi } from '../../features/docker';
+import {
+  defaultDataPath,
+  previewComposeProject,
+  previewInstanceId,
+  validatorWizardBlockReason,
+  validatorWizardCanInstall,
+} from './validators-wizard';
 import {
   streamValidatorAction,
   validatorsApi,
@@ -45,11 +59,12 @@ import {
   type ValidatorDiskReport,
   type ValidatorInstanceDto,
   type ValidatorOpsResponse,
+  type ValidatorSoftwareReportDto,
   type ValidatorStatusResponse,
   type ValidatorSummaryDto,
 } from '../../features/validators';
 
-const TABS = ['nodes', 'disk', 'about'] as const;
+const TABS = ['nodes', 'disk', 'stack', 'about'] as const;
 
 function profileLabel(id: string, t: (k: string) => string): string {
   const key = `validators.profile.${id}`;
@@ -57,7 +72,7 @@ function profileLabel(id: string, t: (k: string) => string): string {
   return out === key ? id : out;
 }
 
-const RUNTIME_STATES = ['unknown', 'stopped', 'running', 'syncing', 'error'] as const;
+const RUNTIME_STATES = ['unknown', 'stopped', 'starting', 'running', 'syncing', 'error'] as const;
 
 function runtimeStateLabel(code: string | undefined, t: (k: string) => string): string {
   if (!code) return '—';
@@ -69,8 +84,9 @@ function runtimeStateLabel(code: string | undefined, t: (k: string) => string): 
 function networkDisplay(
   network: string,
   t: (k: string) => string,
+  chain?: string,
 ): { name: string; kind: 'mainnet' | 'testnet'; kindLabel: string; showName: boolean } {
-  const proper = validatorNetworkLabel(network);
+  const proper = (chain ? validatorNetworkLabelFor(chain, network) : null) ?? validatorNetworkLabel(network);
   const named = proper ?? t(`validators.network.${network}`);
   const kind = network === 'mainnet' ? 'mainnet' : 'testnet';
   const kindLabel = t(`validators.networkKind.${kind}`);
@@ -132,6 +148,8 @@ export function ValidatorsPage() {
   const [pendingSwitch, setPendingSwitch] = useState(false);
   const [pendingInstall, setPendingInstall] = useState(false);
   const [pendingAutoClear, setPendingAutoClear] = useState(false);
+  const [leftoverTarget, setLeftoverTarget] = useState<ValidatorDiskLeftover | null>(null);
+  const [pendingRewrite, setPendingRewrite] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
   const [detail, setDetail] = useState<ValidatorInstanceDto | null>(null);
@@ -139,6 +157,9 @@ export function ValidatorsPage() {
   const [logs, setLogs] = useState<string[]>([]);
 
   const [dockerInstalled, setDockerInstalled] = useState<boolean | null>(null);
+  const [software, setSoftware] = useState<ValidatorSoftwareReportDto | null>(null);
+  const [softwareErr, setSoftwareErr] = useState<string | null>(null);
+  const [pullingRef, setPullingRef] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -156,7 +177,9 @@ export function ValidatorsPage() {
       for (const s of list.summaries ?? []) map[s.id] = s;
       setSummaries(map);
       setAutoClear(list.settings?.autoClear === true);
-      setDockerInstalled(dock?.status?.installed === true);
+      setDockerInstalled(
+        dock?.status?.installed === true || (list.instances?.length ?? 0) > 0,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -167,6 +190,21 @@ export function ValidatorsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadSoftware = useCallback(async () => {
+    setSoftwareErr(null);
+    try {
+      const r = await validatorsApi.software();
+      setSoftware(r);
+      if (typeof r.dockerInstalled === 'boolean') setDockerInstalled(r.dockerInstalled);
+    } catch (e) {
+      setSoftwareErr(e instanceof Error ? e.message : String(e));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'stack') void loadSoftware();
+  }, [tab, loadSoftware]);
 
   useEffect(() => {
     if (!followLogs || !detail) return;
@@ -184,11 +222,58 @@ export function ValidatorsPage() {
     null;
   const diskShort =
     needBytes != null && disk?.availBytes != null && disk.availBytes < needBytes;
-  const canCreate =
-    dockerInstalled === true &&
-    Boolean(chainSpec && netSpec) &&
-    (netSpec?.kind !== 'mainnet' || mainnetOk) &&
-    !diskShort;
+  const canCreate = validatorWizardCanInstall({
+    dockerInstalled,
+    hasSpec: Boolean(chainSpec && netSpec),
+    isMainnet: netSpec?.kind === 'mainnet',
+    mainnetAck: mainnetOk,
+    diskShort,
+    customPath,
+    dataPath,
+  });
+  const blockReason = validatorWizardBlockReason({
+    dockerInstalled,
+    hasSpec: Boolean(chainSpec && netSpec),
+    isMainnet: netSpec?.kind === 'mainnet',
+    mainnetAck: mainnetOk,
+    diskShort,
+    customPath,
+    dataPath,
+  });
+  const previewId = previewInstanceId(
+    instances.map((i) => i.id),
+    chain,
+    network,
+  );
+  const resolvedPath = customPath
+    ? dataPath.trim()
+    : defaultDataPath(disk?.rootPath, previewId);
+  const diskShortTitle =
+    diskShort && needBytes != null
+      ? t('validators.wizard.diskShortDetail', {
+          need: formatBytes(needBytes),
+          free: formatBytes(disk?.availBytes),
+          short: formatBytes(Math.max(0, needBytes - (disk?.availBytes ?? 0))),
+        })
+      : t('validators.wizard.diskShort');
+  const installDisabledTitle =
+    blockReason === 'docker'
+      ? t('validators.wizard.needDocker')
+      : blockReason === 'disk'
+        ? diskShortTitle
+        : blockReason === 'mainnet'
+          ? t('validators.wizard.mainnetAck')
+          : blockReason === 'path'
+            ? t('validators.wizard.needCustomPath')
+            : undefined;
+  const canAdvanceFromDisk =
+    !diskShort || (netSpec?.kind === 'mainnet' && mainnetOk);
+  const autoClearCandidate = [...instances]
+    .filter((i) => (summaries[i.id]?.status ?? i.desiredState) === 'stopped')
+    .sort(
+      (a, b) =>
+        (summaries[b.id]?.diskUsedBytes ?? 0) - (summaries[a.id]?.diskUsedBytes ?? 0),
+    )[0];
 
   const openWizard = () => {
     setWizard(true);
@@ -222,6 +307,7 @@ export function ValidatorsPage() {
         cpus: cpus.trim() || undefined,
         dataPath: customPath ? dataPath.trim() || undefined : undefined,
         rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
+        acceptLowDisk: netSpec?.kind === 'mainnet' && mainnetOk,
         execute,
       });
       setOps(toOps(r));
@@ -275,6 +361,38 @@ export function ValidatorsPage() {
       if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
     } finally {
       setBusy(false);
+    }
+  };
+
+  const pullImage = async (image: string, tag: string) => {
+    const ref = `${image}:${tag}`;
+    setPullingRef(ref);
+    const job = stream?.begin({
+      kind: 'install',
+      title: t('validators.software.pulling', { ref }),
+    });
+    try {
+      const r = await validatorsApi.pullSoftware(image, tag, {
+        onLog: (line) => {
+          if (job) stream?.appendLog(job.id, line);
+        },
+        signal: job?.signal,
+      });
+      setOps(r.ops);
+      if (job) {
+        stream?.finish(job.id, {
+          ok: r.ops.ok !== false && !r.ops.blocked,
+          error: r.ops.blockMessage,
+          toast: false,
+        });
+      }
+      await loadSoftware();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setSoftwareErr(msg);
+      if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
+    } finally {
+      setPullingRef(null);
     }
   };
 
@@ -373,12 +491,18 @@ export function ValidatorsPage() {
                 key: 'network',
                 header: t('validators.col.network'),
                 render: (row) => {
-                  const net = networkDisplay(row.network, t);
+                  const net = networkDisplay(row.network, t, row.chain);
                   return (
-                    <span>
-                      {net.showName ? <>{net.name} </> : null}
-                      <Badge tone={net.kind === 'mainnet' ? 'warn' : 'ok'}>{net.kindLabel}</Badge>
-                    </span>
+                    <div className="val-net">
+                      <span className="val-net__name">
+                        {net.showName ? net.name : net.kindLabel}
+                      </span>
+                      {net.showName ? (
+                        <span className={`val-net__kind val-net__kind--${net.kind}`}>
+                          {net.kindLabel}
+                        </span>
+                      ) : null}
+                    </div>
                   );
                 },
               },
@@ -392,30 +516,25 @@ export function ValidatorsPage() {
                 header: t('validators.col.status'),
                 render: (row) => {
                   const s = summaries[row.id];
-                  const label = runtimeStateLabel(
-                    s?.status ?? row.lastStatus?.status ?? row.desiredState,
-                    t,
-                  );
+                  const code = s?.status ?? row.lastStatus?.status ?? row.desiredState;
+                  const label = runtimeStateLabel(code, t);
+                  const tone =
+                    code === 'error'
+                      ? 'danger'
+                      : code === 'syncing' || code === 'starting'
+                        ? 'warn'
+                        : s?.running || code === 'running'
+                          ? 'ok'
+                          : 'neutral';
                   return (
-                    <span>
-                      <Badge
-                        tone={
-                          s?.status === 'error'
-                            ? 'danger'
-                            : s?.status === 'syncing'
-                              ? 'warn'
-                              : s?.running
-                                ? 'ok'
-                                : 'neutral'
-                        }
-                      >
-                        {label}
-                      </Badge>
-                      {s?.syncProgress != null ? ` ${Math.round(s.syncProgress * 100)}%` : ''}
-                      {s?.upgrade ? (
-                        <Badge tone="warn">{t('validators.actions.upgrade')}</Badge>
+                    <div className="val-status">
+                      <Badge tone={tone}>{label}</Badge>
+                      {s?.syncProgress != null && s.syncProgress < 1 ? (
+                        <span className="val-status__meta">
+                          {Math.round(s.syncProgress * 100)}%
+                        </span>
                       ) : null}
-                    </span>
+                    </div>
                   );
                 },
               },
@@ -427,7 +546,7 @@ export function ValidatorsPage() {
             ]}
             rows={instances}
             rowActions={(row) => (
-              <>
+              <ActionBar>
                 <Button size="sm" onClick={() => void openDetail(row)}>
                   {t('validators.actions.detail')}
                 </Button>
@@ -440,7 +559,7 @@ export function ValidatorsPage() {
                 <Button size="sm" variant="danger" onClick={() => setPendingDelete(row)}>
                   {t('validators.actions.delete')}
                 </Button>
-              </>
+              </ActionBar>
             )}
           />
         ) : null}
@@ -482,12 +601,11 @@ export function ValidatorsPage() {
                 },
                 {
                   label: t('validators.disk.used'),
-                  value: formatBytes(
-                    disk?.usedBytes ??
-                      (disk?.totalBytes != null && disk.availBytes != null
-                        ? disk.totalBytes - disk.availBytes
-                        : null),
-                  ),
+                  value: formatBytes(disk?.usedBytes),
+                },
+                {
+                  label: t('validators.disk.fsUsed'),
+                  value: formatBytes(disk?.fsUsedBytes ?? disk?.totalBytes),
                 },
                 {
                   label: t('validators.disk.free'),
@@ -511,10 +629,218 @@ export function ValidatorsPage() {
             ) : (
               <EmptyState title={t('validators.disk.none')} />
             )}
+            {(disk?.leftovers?.length ?? 0) > 0 ? (
+              <DataTable<ValidatorDiskLeftover>
+                title={t('validators.disk.leftoverTitle', { count: disk!.leftovers.length })}
+                description={t('validators.disk.leftoverDesc')}
+                rowKey={(row) => row.path}
+                columns={[
+                  {
+                    key: 'name',
+                    header: t('validators.col.id'),
+                    render: (row) => (
+                      <div>
+                        <strong>{row.name}</strong>
+                        <code className="u-block u-text-sm u-break-all">{row.path}</code>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'disk',
+                    header: t('validators.col.disk'),
+                    render: (row) => formatBytes(row.usedBytes),
+                  },
+                ]}
+                rows={disk!.leftovers}
+                rowActions={(row) => (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setLeftoverTarget(row)}
+                  >
+                    {t('validators.disk.leftoverRemove')}
+                  </Button>
+                )}
+              />
+            ) : null}
           </>
         ) : null}
 
-        {tab === 'about' ? <PageGuide guideId="validators" /> : null}
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            {softwareErr ? <Alert variant="error">{softwareErr}</Alert> : null}
+            <Card>
+              <CardSection
+                title={t('validators.software.engine')}
+                description={t('validators.software.engineDesc')}
+              >
+                <DescriptionList
+                  columns={2}
+                  items={[
+                    {
+                      label: 'Docker',
+                      value: software
+                        ? software.dockerInstalled
+                          ? software.dockerVersion || t('common.installed')
+                          : t('common.notInstalled')
+                        : '…',
+                    },
+                    {
+                      label: 'Compose',
+                      value: software
+                        ? software.composeAvailable
+                          ? software.composeVersion || t('common.installed')
+                          : t('common.notInstalled')
+                        : '…',
+                    },
+                    {
+                      label: t('common.status'),
+                      value: software?.dockerRunning
+                        ? t('common.running')
+                        : software
+                          ? t('common.stopped')
+                          : '…',
+                    },
+                  ]}
+                />
+                <ActionBar className="u-mt-3">
+                  <Link
+                    to="/docker"
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    Docker
+                  </Link>
+                  <Button size="sm" onClick={() => void loadSoftware()}>
+                    {t('common.refresh')}
+                  </Button>
+                </ActionBar>
+              </CardSection>
+            </Card>
+            <DataTable
+              rowKey={(row) => `${row.chain}:${row.clientId}:${row.ref}`}
+              empty={
+                <EmptyState
+                  title={t('validators.software.empty')}
+                  description={t('validators.software.emptyDesc')}
+                />
+              }
+              columns={[
+                {
+                  key: 'chain',
+                  header: t('validators.col.chain'),
+                  render: (row) => validatorChainLabel(row.chain),
+                },
+                {
+                  key: 'client',
+                  header: t('validators.software.client'),
+                  render: (row) => `${row.clientId} · ${row.role}`,
+                },
+                {
+                  key: 'ref',
+                  header: t('validators.software.image'),
+                  render: (row) => <code className="inline">{row.ref}</code>,
+                },
+                {
+                  key: 'present',
+                  header: t('validators.software.present'),
+                  render: (row) =>
+                    row.present == null ? (
+                      <Badge tone="neutral">{t('common.unknown')}</Badge>
+                    ) : row.present ? (
+                      <Badge tone="ok">{t('validators.software.local')}</Badge>
+                    ) : (
+                      <Badge tone="warn">{t('validators.software.missing')}</Badge>
+                    ),
+                },
+                {
+                  key: 'size',
+                  header: t('validators.software.size'),
+                  render: (row) => row.size || '—',
+                },
+                {
+                  key: 'used',
+                  header: t('validators.software.usedBy'),
+                  render: (row) =>
+                    row.usedBy.length ? row.usedBy.join(', ') : t('validators.software.unused'),
+                },
+              ]}
+              rows={software?.images ?? []}
+              rowActions={(row) => (
+                <Button
+                  size="sm"
+                  loading={pullingRef === row.ref}
+                  disabled={
+                    !software?.dockerInstalled ||
+                    !software.dockerRunning ||
+                    pullingRef != null
+                  }
+                  title={
+                    !software?.dockerInstalled
+                      ? t('validators.wizard.needDocker')
+                      : !software.dockerRunning
+                        ? t('validators.software.daemonDown')
+                        : t('validators.software.pull')
+                  }
+                  onClick={() => void pullImage(row.image, row.tag)}
+                >
+                  {t('validators.software.pull')}
+                </Button>
+              )}
+            />
+          </div>
+        ) : null}
+
+        {tab === 'about' ? (
+          <div className="stack">
+            <PageGuide guideId="validators" />
+            <Card>
+              <CardSection title="Docker">
+                <p>
+                  {dockerInstalled
+                    ? t('validators.wizard.dockerAboutOk')
+                    : t('validators.wizard.dockerAboutMissing')}
+                </p>
+                <p className="muted u-text-sm u-mt-2">{t('validators.wizard.dockerAbout')}</p>
+                <ActionBar className="u-mt-3">
+                  <Link
+                    to="/docker"
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    Docker
+                  </Link>
+                </ActionBar>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection
+                title={t('validators.profileHelp.title')}
+                description={t('validators.profileHelp.desc')}
+              >
+                <DescriptionList
+                  columns={1}
+                  items={[
+                    {
+                      label: t('validators.profile.minimal'),
+                      value: t('validators.profileHelp.minimal'),
+                    },
+                    {
+                      label: t('validators.profile.pruned'),
+                      value: t('validators.profileHelp.pruned'),
+                    },
+                    {
+                      label: t('validators.profile.validator-ready'),
+                      value: t('validators.profileHelp.validatorReady'),
+                    },
+                    {
+                      label: t('validators.profile.rpc'),
+                      value: t('validators.profileHelp.rpc'),
+                    },
+                  ]}
+                />
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
       </PageTabs>
 
       <Modal
@@ -540,7 +866,20 @@ export function ValidatorsPage() {
             {step < 3 ? (
               <Button
                 variant="primary"
-                disabled={step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk}
+                disabled={
+                  (step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk) ||
+                  (step >= 1 && !canAdvanceFromDisk) ||
+                  (step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim()))
+                }
+                title={
+                  step >= 1 && !canAdvanceFromDisk
+                    ? diskShortTitle
+                    : step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim())
+                      ? t('validators.wizard.needCustomPath')
+                      : step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk
+                        ? t('validators.wizard.mainnetAck')
+                        : undefined
+                }
                 onClick={() => setStep((s) => s + 1)}
               >
                 {t('validators.wizard.next')}
@@ -549,13 +888,7 @@ export function ValidatorsPage() {
               <Button
                 variant="primary"
                 disabled={busy || !canCreate}
-                title={
-                  dockerInstalled === false
-                    ? t('validators.wizard.needDocker')
-                    : diskShort
-                      ? t('validators.wizard.diskShort')
-                      : undefined
-                }
+                title={installDisabledTitle}
                 onClick={() => setPendingInstall(true)}
               >
                 {t('validators.wizard.install')}
@@ -592,17 +925,22 @@ export function ValidatorsPage() {
                   ]
               ).map((c) => {
                 const spec = chains.find((x) => x.id === c.id);
-                const hasMain = spec?.networks.some((n) => n.kind === 'mainnet');
-                const hasTest = spec?.networks.some((n) => n.kind !== 'mainnet');
-                const kind =
-                  hasMain && hasTest
-                    ? t('validators.networkKind.mixed')
-                    : hasMain
-                      ? t('validators.networkKind.mainnet')
-                      : t('validators.networkKind.testnet');
+                let minNeed = Infinity;
+                for (const n of spec?.networks ?? []) {
+                  const v = spec?.minFreeBytes?.[n.id]?.minimal;
+                  if (typeof v === 'number' && v < minNeed) minNeed = v;
+                }
+                const diskBit = Number.isFinite(minNeed)
+                  ? t('validators.wizard.chainMeta', {
+                      disk: formatBytes(minNeed),
+                      clients: spec?.clients.length ?? 0,
+                    })
+                  : '';
                 return {
                   value: c.id,
-                  label: `${validatorChainLabel(c.id)} · ${kind}`,
+                  label: diskBit
+                    ? `${validatorChainLabel(c.id)} · ${diskBit}`
+                    : validatorChainLabel(c.id),
                 };
               })}
             />
@@ -618,9 +956,12 @@ export function ValidatorsPage() {
               name="network"
               aria-label={t('validators.wizard.stepNetwork')}
               value={network}
-              onChange={setNetwork}
+              onChange={(v) => {
+                setNetwork(v);
+                setMainnetOk(false);
+              }}
               options={(chainSpec?.networks ?? []).map((n) => {
-                const d = networkDisplay(n.id, t);
+                const d = networkDisplay(n.id, t, chain);
                 return {
                   value: n.id,
                   label: d.showName ? `${d.name} · ${d.kindLabel}` : d.kindLabel,
@@ -629,10 +970,12 @@ export function ValidatorsPage() {
             />
             {needBytes != null ? (
               <Alert variant={diskShort ? 'error' : 'info'}>
-                {t(diskShort ? 'validators.wizard.diskShort' : 'validators.wizard.diskNeed', {
-                  need: formatBytes(needBytes),
-                  free: formatBytes(disk?.availBytes),
-                })}
+                {diskShort
+                  ? `${t('validators.wizard.diskShort')} ${diskShortTitle}`
+                  : t('validators.wizard.diskNeedNetwork', {
+                      need: formatBytes(needBytes),
+                      free: formatBytes(disk?.availBytes),
+                    })}
               </Alert>
             ) : null}
             {netSpec?.kind === 'mainnet' ? (
@@ -662,12 +1005,15 @@ export function ValidatorsPage() {
                 label: profileLabel(p, t),
               }))}
             />
+            <p className="muted u-text-sm">{t('validators.wizard.profileSeeAbout')}</p>
             {needBytes != null ? (
               <Alert variant={diskShort ? 'error' : 'info'}>
-                {t(diskShort ? 'validators.wizard.diskShort' : 'validators.wizard.diskNeed', {
-                  need: formatBytes(needBytes),
-                  free: formatBytes(disk?.availBytes),
-                })}
+                {diskShort
+                  ? `${t('validators.wizard.diskShort')} ${diskShortTitle}`
+                  : t('validators.wizard.diskNeed', {
+                      need: formatBytes(needBytes),
+                      free: formatBytes(disk?.availBytes),
+                    })}
               </Alert>
             ) : null}
             {chain === 'eth' ? (
@@ -767,12 +1113,21 @@ export function ValidatorsPage() {
               <span>{t('validators.wizard.customPath')}</span>
             </label>
             {customPath ? (
-              <Field htmlFor="val-datapath" label={t('validators.wizard.dataPath')}>
+              <Field
+                htmlFor="val-datapath"
+                label={t('validators.wizard.dataPath')}
+                hint={
+                  dataPath.trim() && !isSafeValidatorDataPath(dataPath.trim())
+                    ? t('validators.wizard.needCustomPath')
+                    : undefined
+                }
+              >
                 <input
                   id="val-datapath"
                   value={dataPath}
                   onChange={(e) => setDataPath(e.target.value)}
                   placeholder="/var/lib/ysk-server/validators/…"
+                  required
                 />
               </Field>
             ) : null}
@@ -789,11 +1144,17 @@ export function ValidatorsPage() {
                 {
                   label: t('validators.col.network'),
                   value:
-                    validatorNetworkLabel(network) ?? t(`validators.network.${network}`),
+                    validatorNetworkLabelFor(chain, network) ??
+                    validatorNetworkLabel(network) ??
+                    t(`validators.network.${network}`),
                   hint:
-                    netSpec?.kind === 'mainnet'
-                      ? t('validators.networkKind.mainnet')
-                      : t('validators.networkKind.testnet'),
+                    (validatorNetworkLabelFor(chain, network) ??
+                      validatorNetworkLabel(network)) ===
+                    t(`validators.networkKind.${netSpec?.kind === 'mainnet' ? 'mainnet' : 'testnet'}`)
+                      ? undefined
+                      : netSpec?.kind === 'mainnet'
+                        ? t('validators.networkKind.mainnet')
+                        : t('validators.networkKind.testnet'),
                 },
                 {
                   label: t('validators.col.profile'),
@@ -830,11 +1191,37 @@ export function ValidatorsPage() {
                   label: t('validators.wizard.rpcPort'),
                   value: rpcPort || t('validators.wizard.rpcDefault'),
                 },
-                ...(customPath && dataPath
-                  ? [{ label: t('validators.wizard.dataPath'), value: dataPath }]
-                  : []),
+                {
+                  label: t('validators.wizard.previewId'),
+                  value: previewId,
+                },
+                {
+                  label: t('validators.wizard.previewCompose'),
+                  value: previewComposeProject(previewId),
+                },
+                {
+                  label: t('validators.wizard.dataPath'),
+                  value: resolvedPath || '—',
+                },
+                {
+                  label: t('validators.disk.used'),
+                  value:
+                    needBytes != null
+                      ? t('validators.wizard.diskNeed', {
+                          need: formatBytes(needBytes),
+                          free: formatBytes(disk?.availBytes),
+                        })
+                      : '—',
+                },
               ]}
             />
+            {diskShort ? (
+              <Alert variant={mainnetOk ? 'warn' : 'error'}>
+                {mainnetOk
+                  ? t('validators.wizard.lowDiskAcked')
+                  : t('validators.wizard.diskShort')}
+              </Alert>
+            ) : null}
           </>
         ) : null}
         </div>
@@ -1106,6 +1493,9 @@ export function ValidatorsPage() {
                 >
                   {t('validators.compose.save')}
                 </Button>
+                <Button onClick={() => setPendingRewrite(true)}>
+                  {t('validators.wizard.rewriteCompose')}
+                </Button>
               </ActionBar>
             </CardSection>
 
@@ -1233,11 +1623,60 @@ export function ValidatorsPage() {
         confirmText="AUTO-CLEAR"
         confirmLabel={t('common.confirm')}
         severity="critical"
-        consequences={[t('validators.disk.autoClearC1')]}
+        consequences={[
+          t('validators.disk.autoClearC1'),
+          t('validators.disk.autoClearThreshold', { n: VALIDATOR_DISK_DANGER_PCT }),
+          autoClearCandidate
+            ? t('validators.disk.autoClearCandidate', { id: autoClearCandidate.id })
+            : t('validators.disk.autoClearNone'),
+        ]}
         onConfirm={() => {
           setPendingAutoClear(false);
           setAutoClear(true);
           void validatorsApi.saveSettings(true);
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(leftoverTarget)}
+        onClose={() => setLeftoverTarget(null)}
+        title={t('validators.disk.leftoverRemoveTitle')}
+        description={t('validators.disk.leftoverRemoveDesc', {
+          path: leftoverTarget?.path ?? '',
+        })}
+        confirmText={leftoverTarget?.name ?? 'DELETE'}
+        confirmLabel={t('validators.disk.leftoverRemove')}
+        severity="critical"
+        danger
+        busy={busy}
+        onConfirm={() => {
+          const row = leftoverTarget;
+          if (!row) return;
+          setBusy(true);
+          void validatorsApi
+            .removeLeftover(row.path, row.name)
+            .then((r) => {
+              setOps(toOps(r));
+              setLeftoverTarget(null);
+              return load();
+            })
+            .catch((e: Error) => setError(e.message))
+            .finally(() => setBusy(false));
+        }}
+      />
+      <ConfirmDialog
+        open={pendingRewrite}
+        onClose={() => setPendingRewrite(false)}
+        title={t('validators.wizard.rewriteComposeTitle')}
+        description={t('validators.wizard.rewriteComposeDesc', { id: detail?.id ?? '' })}
+        confirmLabel={t('validators.wizard.rewriteCompose')}
+        danger
+        busy={busy}
+        onConfirm={() => {
+          if (!detail) return;
+          setPendingRewrite(false);
+          void runAction(() => validatorsApi.rewriteCompose(detail.id)).then(() => {
+            if (detail) void openDetail(detail);
+          });
         }}
       />
     </FeaturePageLayout>

@@ -51,20 +51,28 @@ export function formatBytes(n?: number): string {
 
 export function operTone(s: string): 'ok' | 'warn' | 'danger' | 'neutral' {
   const u = s.toUpperCase();
-  if (u === 'UP') return 'ok';
+  if (u === 'UP' || u === 'LOOPBACK') return 'ok';
   if (u === 'DOWN') return 'neutral';
   return 'warn';
 }
 
-export function operLabelKey(s: string): 'up' | 'down' | 'unknown' | 'other' {
+export function operLabelKey(s: string): 'up' | 'down' | 'unknown' | 'other' | 'loopback' {
   const u = String(s ?? '').toUpperCase();
   if (u === 'UP') return 'up';
   if (u === 'DOWN') return 'down';
+  if (u === 'LOOPBACK' || u === 'LO') return 'loopback';
   if (u === 'UNKNOWN') return 'unknown';
   return 'other';
 }
 
+export function isLoopbackIface(iface: { name?: string; flags?: string[] }): boolean {
+  const n = String(iface.name ?? '').toLowerCase();
+  if (n === 'lo' || n.startsWith('lo:')) return true;
+  return Boolean(iface.flags?.includes('LOOPBACK'));
+}
+
 export function isUp(iface: NetInterface): boolean {
+  if (isLoopbackIface(iface)) return true;
   const oper = String(iface.operstate ?? '').trim().toUpperCase();
   if (oper === 'UP') return true;
   if (oper === 'DOWN') return false;
@@ -414,20 +422,33 @@ export function NetworkPage() {
                       key: 'state',
                       header: t('network.colStatus'),
                       nowrap: true,
-                      render: (r) => (
+                      render: (r) => {
+                        const key = isLoopbackIface(r)
+                          ? 'loopback'
+                          : isUp(r)
+                            ? 'up'
+                            : operLabelKey(r.operstate);
+                        return (
                         <Badge
-                          tone={operTone(r.operstate)}
+                          tone={
+                            isLoopbackIface(r) || isUp(r)
+                              ? 'ok'
+                              : operTone(r.operstate)
+                          }
                           title={
-                            String(r.operstate).toUpperCase() === 'UNKNOWN'
-                              ? t('network.operUnknownHint')
-                              : r.operstate
+                            isLoopbackIface(r)
+                              ? t('network.oper.loopbackHint')
+                              : String(r.operstate).toUpperCase() === 'UNKNOWN'
+                                ? t('network.operUnknownHint')
+                                : r.operstate
                           }
                         >
                           <span title={r.operstate}>
-                            {t(`network.oper.${operLabelKey(r.operstate)}`)}
+                            {t(`network.oper.${key}`)}
                           </span>
                         </Badge>
-                      ),
+                        );
+                      },
                     },
                     {
                       key: 'v4',

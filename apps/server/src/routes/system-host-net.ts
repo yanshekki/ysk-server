@@ -161,6 +161,7 @@ export async function handleSystemHostNetRoutes(
       domain?: string;
       install?: boolean;
       applySystem?: boolean;
+      allowPlaintextPublic?: boolean;
       settings?: Record<string, unknown>;
     };
     // Prefer full service apply with store; fall back to legacy domain-only
@@ -172,6 +173,7 @@ export async function handleSystemHostNetRoutes(
         dataDir: ctx.dataDir,
         host: ctx.host,
         applySystem,
+        allowPlaintextPublic: data.allowPlaintextPublic === true,
         settingsPatch: {
           ...(data.settings as object),
           ...(data.domain ? { sslDomain: data.domain } : {}),

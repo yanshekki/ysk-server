@@ -12,7 +12,8 @@
     "error": "오류",
     "unknown": "프로브되지 않음",
     "fallback": "알 수 없음",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} 온라인",
   "registeredOnly": "등록만 됨",
@@ -137,5 +138,6 @@
   "historyTitleShort": "명령 기록 열기(읽기 전용)",
   "expEdge": "가장자리에서:",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

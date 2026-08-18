@@ -26,6 +26,10 @@ describe('isPanelRestartDisconnect', () => {
     abort.name = 'AbortError';
     expect(isPanelRestartDisconnect(abort)).toBe(true);
     expect(isPanelRestartDisconnect(new TypeError(''))).toBe(true);
+    expect(isPanelRestartDisconnect(new Error('Unexpected end of JSON input'))).toBe(true);
+    expect(isPanelRestartDisconnect(Object.assign(new Error('Bad Gateway'), { status: 502 }))).toBe(
+      true,
+    );
     expect(shouldToastUpdateError(new TypeError('Failed to fetch'))).toBe(false);
     expect(shouldToastUpdateError(new Error('Host execute is off'))).toBe(true);
   });

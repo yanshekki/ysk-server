@@ -2,6 +2,8 @@
  * top(1)-style summary: load, tasks, %Cpu (aggregate / per-core), Mem, Swap.
  */
 import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '../../shared/lib/datetime';
+import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import type { CpuTimesPct, TopHeader } from './api';
 
 export function formatUptime(sec: number, t: (k: string, o?: Record<string, unknown>) => string): string {
@@ -95,7 +97,7 @@ export function TopHeaderPanel({
         <div className="top-panel__title">
           <strong>top</strong>
           <span className="muted">
-            {new Date(header.at).toLocaleTimeString()} · up{' '}
+            {formatDateTime(header.at, hostTimeZoneOpts({ withOffset: true }))} · up{' '}
             {formatUptime(uptimeSec, t)} · load{' '}
             {loadavg.map((n) => n.toFixed(2)).join(', ')}
           </span>

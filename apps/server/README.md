@@ -30,11 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
-## What's new in 1.1.6
+## What's new in 1.1.7
 
-- Backup delete moves to a 7-day recycle bin; restore or permanently delete from `/backups`.
-- Redis install generates `requirepass`; empty-password Redis has an explicit generate control.
-- VNC hostname probe + optional `/etc/hosts` append (EXECUTE + root). E2E-1115: PowerDNS start re-probe, CDN last-apply error, `/cluster` lands on an installed engine.
+- Validators: honest disk usage, starting vs error, Software tab, Avalanche compose flags only.
+- Host-timezone clocks. FTP localhost until FTPS or typed `PLAINTEXT`. Self-update streams overlay steps.
+- E2E-1116: migrate inventory, VNC hosts write, DNS start result, public-files live/draft.
 
 ## Panel
 

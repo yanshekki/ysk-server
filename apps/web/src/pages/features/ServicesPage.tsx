@@ -383,7 +383,7 @@ export function ServicesPage() {
 
           <PageTabs
             tabs={[
-              { id: 'matrix', label: t('services.matrixTab', { count: items.length }) },
+              { id: 'matrix', label: t('services.matrixTab', { count: serviceRows.length }) },
               { id: 'stack', label: t('services.stackTab') },
               { id: 'about', label: t('common.about') },
             ]}
@@ -587,7 +587,7 @@ export function ServicesPage() {
                                 </Button>
                               ) : null}
                               <Button
-                                variant="ghost"
+                                variant="danger"
                                 size="sm"
                                 loading={busy}
                                 disabled={!canMutate || !row.installed}
@@ -597,7 +597,7 @@ export function ServicesPage() {
                                     : lifecycleDangerForUnit(row.unit) === 'panel' ||
                                         lifecycleDangerForUnit(row.unit) === 'sshd'
                                       ? t('services.stopNeedConfirmPhrase')
-                                      : t('services.stopNeedConfirm')
+                                      : t('services.stopNeedConfirmImpact', { label: row.label })
                                 }
                                 onClick={() =>
                                   setPendingLc({

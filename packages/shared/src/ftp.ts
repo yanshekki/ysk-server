@@ -2,11 +2,18 @@
  * FTPS / vsftpd service settings — API contract.
  */
 
+export type FtpBindAddress = 'localhost' | 'public';
+
 export interface FtpsSettingsDto {
   listen: boolean;
   /** vsftpd listen_ipv6; mutually exclusive with classic listen on many builds */
   listenIpv6?: boolean;
   listenPort: number;
+  /**
+   * Where vsftpd binds. New installs default to localhost.
+   * Stored settings without this field are treated as public (legacy).
+   */
+  bindAddress?: FtpBindAddress;
   sslEnable: boolean;
   forceSsl: boolean;
   sslDomain: string;

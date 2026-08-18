@@ -12,7 +12,8 @@
     "error": "ত্রুটি",
     "unknown": "তদন্ত করা হয়নি",
     "fallback": "অজানা",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} অনলাইন",
   "registeredOnly": "শুধুমাত্র নিবন্ধিত",
@@ -137,5 +138,6 @@
   "historyTitleShort": "কমান্ড ইতিহাস খুলুন (কেবল-পঠন)",
   "expEdge": "একটি প্রান্তে:",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

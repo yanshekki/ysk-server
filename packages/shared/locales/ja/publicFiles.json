@@ -41,5 +41,9 @@
   "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

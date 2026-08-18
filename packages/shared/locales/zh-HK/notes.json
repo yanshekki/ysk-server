@@ -1,4 +1,7 @@
 {
+  "agents": {
+    "sessionNotFound": "找不到 工作階段：{{sessionId}}"
+  },
   "notFound": "找不到",
   "needPath": "請指定路徑",
   "needName": "請填寫名稱",
@@ -99,7 +102,8 @@
     "vsftpdStarted": "vsftpd 已啟動",
     "openPortsStep": "防火牆埠（需手動）",
     "openPortsReminder": "請在主機防火牆同雲安全組放行 TCP：{{ports}}。套用 FTPS 不會代你開埠。",
-    "openPortsPasvHint": "若登入成功但列目錄 LIST 逾時，多半是 PASV 資料埠被擋——要開齊 PASV 範圍，不是僅開啟 21。"
+    "openPortsPasvHint": "若登入成功但列目錄 LIST 逾時，多半是 PASV 資料埠被擋——要開齊 PASV 範圍，不是僅開啟 21。",
+    "publicPlaintextBlocked": "拒絕在未啟用 FTPS 時對外啟動 FTP。請改為僅本機監聽、選憑證啟用 FTPS，或輸入 PLAINTEXT 確認後才公開明文服務。"
   },
   "deploy": {
     "nodeMissingIsolated": "隔離部署找不到 Node：{{path}} — 請先裝 Node {{version}} toolchain 再部署。拒絕寫入會 203/EXEC 的 unit。",
@@ -212,9 +216,6 @@
     "postqueueSetgidBroken": "Postfix 佇列工具失敗：main.cf 中 setgid_group 為空。應設為 postdrop（有 YSK_EXECUTE 時面板會嘗試自動修復）。",
     "postqueueMailDown": "Postfix 未運行（showq 不可用）。有 YSK_EXECUTE 時面板會嘗試啟動 — 請檢查軟件分頁或 systemctl status postfix。",
     "postqueueSpoolMissing": "Postfix 佇列目錄缺失（例如 hold/）。有 YSK_EXECUTE 時面板會嘗試建立 spool 並啟動 Postfix。"
-  },
-  "agents": {
-    "sessionNotFound": "找不到 工作階段：{{sessionId}}"
   },
   "software": {
     "startUnit": "啟動 {{u}}",
@@ -2977,6 +2978,8 @@
     "hostnameWouldAppend": "將會附加到 /etc/hosts：{{line}}",
     "hostnameAppended": "已附加到 /etc/hosts：{{line}}",
     "hostnameAppendFailed": "無法寫入 /etc/hosts：{{detail}}",
+    "hostnameAliasPresent": "主機名 {{hostname}} 已在 /etc/hosts 列為完整別名 — 未再附加。",
+    "hostnameStillUnresolvable": "已寫入 /etc/hosts，但 {{hostname}} 仍無法解析。請確認 nsswitch 的 hosts 包含 files。",
     "skipStartHostname": "未啟動 display — 請先修好主機名解析。",
     "novncAssetsOnly": "已找到 noVNC 網頁資源；仍缺 websockify 執行檔。",
     "viewerNeedExecute": "要在瀏覽器開啟本機 VNC 桌面，需要 root 並啟用 YSK_EXECUTE",

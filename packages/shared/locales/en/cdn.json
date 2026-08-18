@@ -32,7 +32,8 @@
   "statNodes": "Nodes",
   "hitNoStats": "No edge stats yet",
   "loopbackOriginBlocked": "Will not apply loopback origin {{url}} to a remote edge. Set a reachable origin first.",
-  "applyFailedHint": "Apply failed — see notes below",
+  "applyFailedHint": "Apply failed",
+  "applyFailedNoNote": "No stored reason. Re-apply to capture the error.",
   "applyStatus": {
     "draft": "Draft",
     "planned": "Planned",

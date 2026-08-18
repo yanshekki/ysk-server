@@ -8,6 +8,7 @@ import {
   validatorChainLabel,
   validatorDiskTone,
   validatorNetworkLabel,
+  validatorNetworkLabelFor,
 } from './validators.js';
 
 describe('validators DTO helpers', () => {
@@ -37,6 +38,9 @@ describe('validators DTO helpers', () => {
     expect(validatorNetworkLabel('hoodi')).toBe('Hoodi');
     expect(validatorNetworkLabel('sepolia')).toBe('Sepolia');
     expect(validatorNetworkLabel('mainnet')).toBeNull();
+    expect(validatorNetworkLabelFor('near', 'testnet')).toBe('NEAR Testnet');
+    expect(validatorNetworkLabelFor('sol', 'testnet')).toBe('Solana Testnet');
+    expect(validatorNetworkLabelFor('avax', 'fuji')).toBe('Fuji');
   });
 
   it('validates instance ids', () => {

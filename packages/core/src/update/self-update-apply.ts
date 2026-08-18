@@ -112,10 +112,14 @@ export function pickSelfUpdateUserNote(
   const isProbe = (n: string) =>
     /npm 頻道|頻道：|channel：|channel:|GitHub release：|GitHub release:/i.test(n);
   const isHint = (n: string) => /install\.sh --upgrade/i.test(n);
+  const isLeftover = (n: string) =>
+    /leftover|overlay does not|000-default|stale CLI|舊 CLI|殘留|vsftpd is failed|vsftpd 失敗/i.test(
+      n,
+    );
   const isFail = (n: string) =>
     /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|no_execute|找不到|未包含|無法寫入|無法下載|目錄/i.test(
       n,
-    );
+    ) && !isLeftover(n);
   if (failed) {
     const fails = list.filter((n) => isFail(n) && !isProbe(n) && !isNpmNoticeDump(n) && !isHint(n));
     if (fails.length) return fails[fails.length - 1];
@@ -541,6 +545,7 @@ export async function runSelfUpdate(input: {
   tarballPath?: string;
   /** Test: already-unpacked npm package directory (contains dist/cli.js) */
   unpackedDir?: string;
+  onLog?: (ev: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void;
 }): Promise<{
   registry?: RegistryVersion;
   plan: ReturnType<typeof planSelfUpdate>;
@@ -615,6 +620,7 @@ export async function runSelfUpdate(input: {
     }
 
     // Node overlay writes our own package dir — does not require YSK_EXECUTE.
+    input.onLog?.({ stream: 'status', line: `overlay ${spec}` });
     const overlay = await applyNpmOverlayToDest({
       spec,
       destDir: overlayDest,
@@ -623,6 +629,7 @@ export async function runSelfUpdate(input: {
       tarballPath: input.tarballPath,
       unpackedDir: input.unpackedDir,
       shasum: registry?.shasum,
+      onLog: input.onLog,
     });
     commandResults.push(...overlay.commandResults);
     notes.push(...overlay.notes);
@@ -664,26 +671,11 @@ export async function runSelfUpdate(input: {
     }
 
     if (applied) {
-      // Do not start the systemd timer here — leftover probe + HTTP 200 must
-      // finish first. Callers schedule after they flush (panel sendJson / CLI).
+      // Do not restart here — HTTP 200 must flush first. Do not run leftover
+      // probe on this path: it delays the response and its notes say "failed"
+      // (vsftpd leftover) which the panel toasts as an apply error.
       restarted = canScheduleYskServerRestart();
       if (!restarted) notes.push(tl('notes.auto.n1219'));
-      try {
-        const { collectStaleCliNotes, probeHostLeftovers } = await import(
-          '../hosting/leftover-probe.js'
-        );
-        notes.push(...collectStaleCliNotes({ host: input.host, currentVersion: latest }));
-        const leftovers = await probeHostLeftovers({
-          host: input.host,
-          currentVersion: latest,
-        });
-        if (!leftovers.ok) {
-          notes.push(tl('notes.leftover.overlayDoesNotHeal'));
-          notes.push(...leftovers.notes.slice(0, 6));
-        }
-      } catch {
-        /* leftover scan is best-effort */
-      }
     }
 
     if (

@@ -31,6 +31,7 @@ import {
   composeFilePath,
   composeLogs,
   composeProjectName,
+  composePsInfo,
   composePsRunning,
   composeUp,
   probeDockerCompose,
@@ -66,7 +67,7 @@ import { allocateValidatorPorts, usedValidatorPorts } from './ports.js';
 import { syncServiceExposure } from '../service-exposure/sync.js';
 import type { ValidatorNodeStatus } from './adapters/base.js';
 import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
-import { loadRemoteClientTags } from './releases.js';
+import { deriveValidatorRuntimeStatus } from './runtime-status.js';
 import type { OpsLogFn } from '../ops-log.js';
 
 export type ValidatorMutateOpts = {
@@ -90,6 +91,7 @@ export async function createValidatorInstance(
     memory?: string;
     cpus?: string;
     rpcPort?: number;
+    acceptLowDisk?: boolean;
   },
 ): Promise<ValidatorOpsResult> {
   if (!isValidatorChainId(input.chain)) {
@@ -107,7 +109,9 @@ export async function createValidatorInstance(
 
   const disk = await collectValidatorDisk({ dataDir: input.dataDir, host: input.host });
   const need = minFreeBytesFor(chain, input.network, profile);
-  if (need && disk.availBytes != null && disk.availBytes < need) {
+  const lowDisk =
+    Boolean(need && disk.availBytes != null && disk.availBytes < need);
+  if (lowDisk && !(net.kind === 'mainnet' && input.acceptLowDisk)) {
     return blockedValidatorOp({
       reason: 'validation',
       notes: [
@@ -188,11 +192,18 @@ export async function createValidatorInstance(
   upsertValidatorInstance(input.dataDir, inst);
   const written = [join(dir, '..', 'instances.json'), composePath, inst.dataPath];
 
+  const diskAckNotes =
+    lowDisk && input.acceptLowDisk ? [tl('validators.wizard.lowDiskAcked')] : [];
+
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenValidatorOp({
       instanceId: inst.id,
       written,
-      notes: [tl('validators.notes.dryCreate'), tl('validators.notes.beta')],
+      notes: [
+        ...diskAckNotes,
+        tl('validators.notes.dryCreate'),
+        tl('validators.notes.beta'),
+      ],
     });
   }
 
@@ -221,7 +232,7 @@ export async function createValidatorInstance(
   }
   upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'running' });
   await maybeSyncExposure(input, inst, 'start');
-  const notes = [tl('validators.notes.created')];
+  const notes = [...diskAckNotes, tl('validators.notes.created')];
   if (input.mithril && inst.chain === 'ada') {
     const { restoreAdaMithril } = await import('./mithril.js');
     const m = await restoreAdaMithril({
@@ -444,11 +455,12 @@ export async function statusValidatorInstance(input: {
       notes: [],
     };
   }
-  const running = await composePsRunning({
+  const ps = await composePsInfo({
     host: input.host,
     file: composeFilePath(instanceDir(input.dataDir, inst.id)),
     project: composeProjectName(inst.id),
   });
+  const running = ps.running;
   let extra: Pick<ValidatorNodeStatus, 'syncProgress' | 'peers' | 'version' | 'lastError'> = {
     syncProgress: null,
     peers: null,
@@ -465,20 +477,21 @@ export async function statusValidatorInstance(input: {
   else if (running && inst.chain === 'aptos') extra = await probeAptosStatus(inst);
   else if (running && inst.chain === 'dot') extra = await probeDotStatus(inst);
   else if (running && inst.chain === 'sol') extra = await probeSolStatus(inst);
-  const status: ValidatorNodeStatus['status'] = !running
-    ? 'stopped'
-    : extra.syncProgress != null && extra.syncProgress < 1
-      ? 'syncing'
-      : extra.lastError
-        ? 'error'
-        : 'running';
+  const status = deriveValidatorRuntimeStatus({
+    running,
+    restarting: ps.restarting,
+    syncProgress: extra.syncProgress,
+    lastError: extra.lastError,
+  });
   return {
     status,
     running,
     diskUsedBytes: null,
     notes: [],
     instance: inst,
-    upgrade: detectUpgradeForInstance(inst, loadRemoteClientTags(input.dataDir)),
+    // List / status: only when this instance is behind the shipped pin.
+    // Remote GitHub tags must not paint a brand-new node as "upgrade".
+    upgrade: detectUpgradeForInstance(inst),
     ...extra,
   };
 }

@@ -147,5 +147,20 @@
   "pasvIpRequired": "Isi IP publik PASV sebelum menerapkan (NAT/cloud). Deteksi atau ketik alamat.",
   "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
   "stateFailed": "Failed to start",
-  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
+  "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21.",
+  "plaintextPublicLive": "vsftpd is listening on a public address without FTPS. Credentials travel in the clear. Enable FTPS, bind to this host only, or confirm PLAINTEXT to keep this posture.",
+  "bindAddress": "Listen scope",
+  "bindAddressHint": "New installs bind to this host only. Public listen without FTPS needs a typed confirmation.",
+  "bindLocal": "This host only",
+  "bindLocalHint": "127.0.0.1 — fine without TLS for local tests",
+  "bindPublic": "Public",
+  "bindPublicHint": "All interfaces — enable FTPS or confirm PLAINTEXT",
+  "enableFtpsAndStart": "Enable FTPS and start",
+  "publicPlainNeedConfirm": "Public cleartext FTP needs a PLAINTEXT confirmation",
+  "plainConfirmTitle": "Start public FTP without FTPS?",
+  "plainConfirmDesc": "Port 21 will accept logins and data in the clear on the public address.",
+  "plainConfirmC1": "Usernames and passwords are visible on the network.",
+  "plainConfirmC2": "PASV will advertise the configured public IP.",
+  "plainConfirmC3": "Host firewall and cloud security group are not opened for you.",
+  "plainConfirmAction": "Start cleartext FTP"
 }

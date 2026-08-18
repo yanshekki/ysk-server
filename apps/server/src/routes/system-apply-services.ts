@@ -21,6 +21,7 @@ import {
   sendJsonAndWait,
   sendOpsResult,
 } from '../http/util.js';
+import { sendMaybeStreamedOps, wantsSse } from '../http/sse-ops.js';
 
 export async function handleSystemApplyServicesRoutes(
   ctx: AppContext,
@@ -75,6 +76,30 @@ export async function handleSystemApplyServicesRoutes(
       sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0458')] });
       return true;
     }
+    const unitBase = String(data.unit).replace(/\.service$/, '');
+    if (
+      (data.action === 'start' || data.action === 'restart') &&
+      unitBase === 'vsftpd'
+    ) {
+      const { loadFtpsSettings, resolveCertPaths, assertFtpStartAllowed } = await import(
+        'ysk-server-core'
+      );
+      const settings = loadFtpsSettings(ctx.db);
+      const certs = resolveCertPaths(ctx.dataDir, settings);
+      const gate = assertFtpStartAllowed({
+        settings,
+        sslReady: Boolean(settings.sslEnable && certs.ok),
+      });
+      if (!gate.ok) {
+        sendOpsResult(res, {
+          ok: false,
+          blocked: true,
+          blockMessage: gate.blockMessage,
+          notes: [gate.blockMessage],
+        });
+        return true;
+      }
+    }
     const result = await lifecycleServiceUnit(ctx.host, data.unit, data.action);
     // Reclaim / re-apply ysk-svc firewall rules when unit lifecycle changes
     if (
@@ -115,32 +140,55 @@ export async function handleSystemApplyServicesRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/updates/self/apply') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { apply?: boolean; latest?: string };
+    const data = JSON.parse(raw || '{}') as { apply?: boolean; latest?: string; stream?: boolean };
     // Panel always applies unless explicitly dry-run
     const apply = data.apply !== false;
-    const result = await runSelfUpdate({
-      currentVersion: VERSION,
-      host: ctx.host,
-      apply,
-      latestOverride: data.latest,
-    });
-    ctx.audit.append({
-      actor: user.username,
-      action: 'update.self.apply',
-      detail: {
-        applied: result.applied,
+    let result: Awaited<ReturnType<typeof runSelfUpdate>> | undefined;
+    const run = async (onLog?: (ev: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => void) => {
+      result = await runSelfUpdate({
+        currentVersion: VERSION,
+        host: ctx.host,
+        apply,
+        latestOverride: data.latest,
+        onLog,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'update.self.apply',
+        detail: {
+          applied: result.applied,
+          ok: result.ok,
+          checked: result.checked,
+          updateAvailable: result.updateAvailable,
+          channel: result.channel,
+        },
         ok: result.ok,
-        checked: result.checked,
-        updateAvailable: result.updateAvailable,
-        channel: result.channel,
-      },
-      ok: result.ok,
-    });
-    // Honest HTTP: do not 200 when apply failed or channel check failed.
-    // Flush first, then bounce systemd — otherwise the browser sees Failed to fetch.
-    await sendJsonAndWait(res, result.ok ? 200 : result.checked === false ? 502 : 422, result);
-    if (result.applied && result.restarting) {
-      scheduleYskServerRestart();
+      });
+      const { commandResults: _cmds, ...payload } = result;
+      void _cmds;
+      if (result.applied && result.restarting) {
+        onLog?.({ stream: 'status', line: 'restarting — stream will drop' });
+      }
+      return payload;
+    };
+    if (wantsSse(req, url, data as Record<string, unknown>)) {
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body: data as Record<string, unknown>,
+        run: async (hooks) => run(hooks.onLog),
+      });
+    } else {
+      const payload = await run();
+      await sendJsonAndWait(
+        res,
+        result?.ok ? 200 : result?.checked === false ? 502 : 422,
+        payload,
+      );
+    }
+    if (result?.applied && result.restarting) {
+      scheduleYskServerRestart(4_000);
     }
     return true;
   }

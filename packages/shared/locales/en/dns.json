@@ -209,6 +209,8 @@
   "healthHealPdns": "Heal PowerDNS bind",
   "healNeedInstall": "PowerDNS is not installed — install it on the Software tab first",
   "applyNeedService": "DNS service is not running — start or install it before apply",
+  "goStartService": "Start DNS service",
+  "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again.",
   "deleteZoneNeedName": "Delete this zone — you will type the zone name to confirm",
   "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0",
   "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",

@@ -4,6 +4,7 @@
   "status": {
     "running": "運行中",
     "activating": "啟動中",
+    "stuck": "啟動卡住",
     "connected": "上線",
     "registered": "僅登記",
     "stale": "逾時",
@@ -14,6 +15,7 @@
     "unknown": "未探測",
     "fallback": "未知"
   },
+  "journal": "journal",
   "liveN": "{{count}} 上線",
   "registeredOnly": "僅登記",
   "awaitProbe": "待探測",

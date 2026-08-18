@@ -21,6 +21,7 @@ import {
   createProjectFtpAccount,
   isFtpHomeAllowed,
   DEFAULT_FTPS_SETTINGS,
+  FTPS_SETTINGS_KEY,
   ftpsPaths,
   hashFtpPassword,
   isCryptPasswordHash,
@@ -30,6 +31,9 @@ import {
   listFtpDomainOptions,
   listFtpHomeOptions,
   loadFtpsSettings,
+  normalizeFtpBindAddress,
+  assertFtpStartAllowed,
+  ftpBindIsPublic,
   probeFtpsStatus,
   resolveCertPaths,
   saveFtpsSettings,
@@ -103,7 +107,14 @@ describe('ftps-service pure helpers', () => {
     expect(conf).toContain('pasv_min_port=31000');
     expect(conf).toContain('ftpd_banner=YSK FTPS');
     expect(conf).toContain('ssl_enable=NO');
+    expect(conf).toContain('listen_address=127.0.0.1');
     expect(conf).toContain(join(dir, 'ftps', 'homes'));
+
+    const pub = buildVsftpdConf({
+      dataDir: dir,
+      settings: { ...DEFAULT_FTPS_SETTINGS, bindAddress: 'public', sslEnable: false },
+    });
+    expect(pub).not.toContain('listen_address=');
 
     const v6 = buildVsftpdConf({
       dataDir: dir,
@@ -213,6 +224,50 @@ describe('ftps-service pure helpers', () => {
     expect(domains.map((d) => d.value)).toEqual(
       expect.arrayContaining(['mail.example.com', 'demo.example.com']),
     );
+  });
+
+  it('treats missing stored bindAddress as public and new defaults as localhost', () => {
+    const { db } = setup();
+    expect(loadFtpsSettings(db).bindAddress).toBe('localhost');
+    expect(ftpBindIsPublic(DEFAULT_FTPS_SETTINGS)).toBe(false);
+    expect(normalizeFtpBindAddress(undefined, false)).toBe('public');
+    expect(normalizeFtpBindAddress('127.0.0.1', true)).toBe('localhost');
+    db.snapshot.settings[FTPS_SETTINGS_KEY] = JSON.stringify({
+      listenPort: 21,
+      sslEnable: false,
+    });
+    db.persist();
+    expect(loadFtpsSettings(db).bindAddress).toBe('public');
+  });
+
+  it('blocks public plaintext start unless the operator allows it', () => {
+    const publicPlain = { bindAddress: 'public' as const, sslEnable: false };
+    expect(assertFtpStartAllowed({ settings: publicPlain, sslReady: false }).ok).toBe(false);
+    expect(
+      assertFtpStartAllowed({
+        settings: publicPlain,
+        sslReady: false,
+        allowPlaintextPublic: true,
+      }).ok,
+    ).toBe(true);
+    expect(
+      assertFtpStartAllowed({
+        settings: { bindAddress: 'localhost', sslEnable: false },
+        sslReady: false,
+      }).ok,
+    ).toBe(true);
+    expect(
+      assertFtpStartAllowed({
+        settings: { bindAddress: 'public', sslEnable: true },
+        sslReady: true,
+      }).ok,
+    ).toBe(true);
+    expect(
+      assertFtpStartAllowed({
+        settings: { bindAddress: 'public', sslEnable: true },
+        sslReady: false,
+      }).ok,
+    ).toBe(false);
   });
 });
 
@@ -488,6 +543,24 @@ describe('ftps-service apply with execute mock', () => {
     expect(r.blocked).toBe(false);
     expect(r.ok).toBe(true);
     expect(r.steps?.some((s) => s.name)).toBe(true);
+  });
+
+  it('applyFtpsService does not start public plaintext without allow', async () => {
+    const { host, dir, cleanup } = rootHost(mkdtempSync(join(tmpdir(), 'ysk-ftps-pub-')));
+    cleanups.push(cleanup);
+    const db = openDatabase(join(dir, 'db.json'));
+    cleanups.push(() => closeDatabase(db));
+    const r = await applyFtpsService({
+      db,
+      dataDir: dir,
+      host,
+      applySystem: true,
+      settingsPatch: { bindAddress: 'public', sslEnable: false },
+    });
+    expect(r.blocked).toBe(true);
+    expect(r.executed).toBe(false);
+    expect(r.ok).toBe(false);
+    expect(r.blockMessage).toMatch(/FTPS|PLAINTEXT|public/i);
     const accounts = listResources(db, 'ftp_accounts');
     expect(accounts.every((a) => a.apply_status === 'applied')).toBe(true);
   });

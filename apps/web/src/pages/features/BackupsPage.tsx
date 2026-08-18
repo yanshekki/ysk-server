@@ -14,6 +14,7 @@ import {
   DataTable,
   DescriptionList,
   EmptyState,
+  LoadingBlock,
   FeaturePageLayout,
   Field,
   FormLayout,
@@ -460,7 +461,9 @@ export function BackupsPage() {
                   </Button>
                 ) : null}
               </header>
-          {items.length === 0 ? (
+          {!headerReady ? (
+            <LoadingBlock label={t('common.loading')} />
+          ) : items.length === 0 ? (
             <EmptyState
               title={t('backups.noBackups')}
               description={t('backups.noBackupsDesc')}

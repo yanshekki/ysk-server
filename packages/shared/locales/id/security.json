@@ -449,5 +449,7 @@
   "policyNeedSelf2fa": "Aktifkan 2FA pada akun ini terlebih dahulu, lalu konfirmasi dengan kode TOTP",
   "revokeAllDevicesTitle": "Cabut setiap perangkat yang diingat — Anda dan admin lain harus memverifikasi 2FA lagi",
   "statSshValue": "{{keys}} keys · {{auth}} authorized",
-  "statSshHint": "Outbound identities / authorized login keys"
+  "statSshHint": "Outbound identities / authorized login keys",
+  "needCurrentPassword": "Enter the current password first",
+  "passwordMin8": "New password must be at least 8 characters"
 }

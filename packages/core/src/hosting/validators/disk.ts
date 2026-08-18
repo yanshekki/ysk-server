@@ -2,14 +2,29 @@
  * Disk usage for the validators data root + per-instance dirs.
  * Read-only host commands (df / du) — no EXECUTE required.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
 import {
+  tl,
   validatorDiskTone,
   type ValidatorDiskInstance,
+  type ValidatorDiskLeftover,
   type ValidatorDiskReport,
 } from 'ysk-server-shared';
+import {
+  appliedValidatorOp,
+  blockedValidatorOp,
+  type ValidatorOpsResult,
+} from './honesty.js';
 import type { HostExecutor } from '../../host/executor.js';
 import { listValidatorInstances, validatorsRoot } from './store.js';
+
+const RESERVED_ROOT_NAMES = new Set([
+  'instances.json',
+  'upgrade-offers.json',
+  'remote-tags.json',
+  'settings.json',
+]);
 
 export type DfBytesRow = {
   filesystem: string;
@@ -89,6 +104,7 @@ export async function collectValidatorDisk(input: {
 
   const mount = pickMountForPath(rows, rootPath);
   const instancesMeta = listValidatorInstances(input.dataDir);
+  const instanceIds = new Set(instancesMeta.map((i) => i.id));
   const instances: ValidatorDiskInstance[] = [];
   for (const inst of instancesMeta) {
     const dataPath = inst.dataPath;
@@ -105,15 +121,105 @@ export async function collectValidatorDisk(input: {
     instances.push({ id: inst.id, dataPath, usedBytes });
   }
 
+  let rootUsed = 0;
+  if (existsSync(rootPath)) {
+    try {
+      const du = await input.host.runCommand(['du', '-sb', rootPath], { timeoutMs: 20_000 });
+      if (du.exitCode === 0) rootUsed = parseDuBytes(du.stdout);
+      else notes.push('du failed for validators root');
+    } catch {
+      notes.push('du unavailable for validators root');
+    }
+  }
+
+  const leftovers: ValidatorDiskLeftover[] = [];
+  if (existsSync(rootPath)) {
+    try {
+      for (const name of readdirSync(rootPath)) {
+        if (RESERVED_ROOT_NAMES.has(name) || instanceIds.has(name)) continue;
+        const abs = join(rootPath, name);
+        try {
+          if (!statSync(abs).isDirectory()) continue;
+        } catch {
+          continue;
+        }
+        let usedBytes = 0;
+        try {
+          const du = await input.host.runCommand(['du', '-sb', abs], { timeoutMs: 15_000 });
+          if (du.exitCode === 0) usedBytes = parseDuBytes(du.stdout);
+        } catch {
+          /* size unknown */
+        }
+        leftovers.push({ name, path: abs, usedBytes });
+      }
+    } catch {
+      notes.push('could not list leftover validator dirs');
+    }
+  }
+
   const usePct = mount ? mount.usePct : null;
   return {
     rootPath,
-    totalBytes: mount?.totalBytes ?? null,
-    usedBytes: mount?.usedBytes ?? null,
+    usedBytes: existsSync(rootPath) ? rootUsed : 0,
+    leftoverBytes: leftovers.reduce((s, x) => s + x.usedBytes, 0),
+    leftovers,
+    fsUsedBytes: mount?.usedBytes ?? null,
+    fsAvailBytes: mount?.availBytes ?? null,
+    fsTotalBytes: mount?.totalBytes ?? null,
+    fsUsePct: usePct,
     availBytes: mount?.availBytes ?? null,
+    totalBytes: mount?.totalBytes ?? null,
     usePct,
     tone: validatorDiskTone(usePct),
     instances,
     notes,
   };
+}
+
+export function isSafeValidatorLeftoverPath(dataDir: string, abs: string): boolean {
+  const root = resolve(validatorsRoot(dataDir));
+  const resolved = resolve(String(abs || ''));
+  if (resolved === root || !resolved.startsWith(`${root}/`)) return false;
+  const name = resolved.slice(root.length + 1);
+  if (!name || name.includes('/') || name.includes('..')) return false;
+  if (RESERVED_ROOT_NAMES.has(name)) return false;
+  if (listValidatorInstances(dataDir).some((i) => i.id === name)) return false;
+  return true;
+}
+
+export function removeValidatorLeftover(input: {
+  dataDir: string;
+  host: HostExecutor;
+  path: string;
+  confirm: string;
+  execute: boolean;
+}): ValidatorOpsResult {
+  const name = basename(String(input.path || ''));
+  if (!isSafeValidatorLeftoverPath(input.dataDir, input.path) || input.confirm !== name) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      notes: [tl('validators.errors.needConfirm')],
+    });
+  }
+  if (!input.execute || !input.host.executeEnabled() || !input.host.isRoot()) {
+    const reason =
+      !input.host.executeEnabled() ? 'no_execute' : !input.host.isRoot() ? 'no_root' : 'validation';
+    return blockedValidatorOp({
+      reason,
+      notes: [tl('validators.notes.dryDelete')],
+    });
+  }
+  const abs = resolve(input.path);
+  try {
+    rmSync(abs, { recursive: true, force: true });
+  } catch (e) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      notes: [e instanceof Error ? e.message : 'rm failed'],
+    });
+  }
+  return appliedValidatorOp({
+    written: [abs],
+    notes: [tl('validators.notes.leftoverRemoved', { path: abs })],
+  });
 }

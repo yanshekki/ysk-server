@@ -12,7 +12,8 @@
     "error": "Erreur",
     "unknown": "Non sondé",
     "fallback": "Inconnu",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} en ligne",
   "registeredOnly": "Enregistré uniquement",
@@ -137,5 +138,6 @@
   "historyTitleShort": "Ouvrir l'historique des commandes (lecture seule)",
   "expEdge": "Sur un bord :",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

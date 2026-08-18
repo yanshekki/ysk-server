@@ -15,7 +15,9 @@ import { systemApi } from '../../features/system';
 import {
   CLUSTER_ENGINE_ORDER,
   clusterServicePath,
+  clusterEngineFromServiceRow,
   pickClusterLandingPath,
+  serviceRowLooksInstalled,
   type ClusterEngine,
 } from './cluster-landing';
 
@@ -27,11 +29,12 @@ export function ClusterLandingPage() {
     let cancelled = false;
     void (async () => {
       try {
-        const [ov, vers] = await Promise.all([
+        const [ov, vers, matrix] = await Promise.all([
           dbClusterApi.overview().catch(() => ({ items: [] as Array<{ engine: string }> })),
           systemApi
             .softwareVersions({ ids: ['mysql', 'mariadb', 'postgres', 'redis'] })
             .catch(() => ({ items: [] as Array<{ id: string; installed: boolean }> })),
+          systemApi.servicesMatrix().catch(() => ({ items: [] as Array<{ id: string; installed?: boolean; active?: string }> })),
         ]);
         const installed: Partial<Record<ClusterEngine, boolean>> = {};
         for (const it of vers.items ?? []) {
@@ -43,6 +46,10 @@ export function ClusterLandingPage() {
           ) {
             installed[it.id] = Boolean(it.installed);
           }
+        }
+        for (const row of matrix.items ?? []) {
+          const engine = clusterEngineFromServiceRow(row);
+          if (engine && serviceRowLooksInstalled(row)) installed[engine] = true;
         }
         const path = pickClusterLandingPath({
           clusters: (ov.items ?? []).map((x) => ({ engine: String(x.engine) })),

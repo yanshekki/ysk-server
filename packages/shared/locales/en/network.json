@@ -8,6 +8,8 @@
     "up": "Up",
     "down": "Down",
     "unknown": "Unknown",
+    "loopback": "Always on",
+    "loopbackHint": "Loopback is always available and cannot be changed.",
     "other": "Other"
   },
   "statGateway": "Gateway",

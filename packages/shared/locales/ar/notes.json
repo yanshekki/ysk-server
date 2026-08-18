@@ -99,7 +99,8 @@
     "vsftpdStarted": "بدأ vsftpd",
     "openPortsStep": "منافذ جدار الحماية (يدوية)",
     "openPortsReminder": "افتح منافذ TCP على جدار الحماية المضيف ومجموعة الأمان السحابية: {{ports}}. تطبيق FTPS لا يفتح لك المنافذ.",
-    "openPortsPasvHint": "إذا كان تسجيل الدخول يعمل ولكن انتهت مهلة الدليل LIST، فسيتم حظر نطاق بيانات PASV — افتح الملف"
+    "openPortsPasvHint": "إذا كان تسجيل الدخول يعمل ولكن انتهت مهلة الدليل LIST، فسيتم حظر نطاق بيانات PASV — افتح الملف",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "العقدة الثنائية مفقودة للنشر المعزول: {{path}} — تثبيت سلسلة أدوات العقدة {{version}} ثم إعادة النشر. رفض كتابة وحدة من شأنها أن 203/EXEC.",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "اسم الخادم مطلوب",

@@ -8,6 +8,7 @@
     "status": {
       "running": "運行中",
       "activating": "啟動中",
+      "stuck": "啟動卡住",
       "connected": "上線",
       "registered": "僅登記",
       "stale": "逾時",
@@ -18,6 +19,7 @@
       "unknown": "未探測",
       "fallback": "未知"
     },
+    "journal": "journal",
     "liveN": "{{count}} 上線",
     "registeredOnly": "僅登記",
     "awaitProbe": "待探測",
@@ -531,6 +533,7 @@
     "statsTrackerLeftover": "Tracker 雜湊不在資料庫",
     "statsTrackerLeftoverHint": "本機 Tracker 有 announce、但不在 Torrent 資料庫列的雜湊。清單見 Tracker 分頁。",
     "leftoverHashesTitle": "Tracker 殘留雜湊",
+    "publicHostMissingLive": "Tracker 已在聽，但未設定公開 announce 主機。外網對等節點找不到此種子。",
     "leftoverHashesHint": "唯讀。這些 announce 不是資料庫或分享列。",
     "statsPeers": "同行",
     "statsAnnounces": "Announce",
@@ -742,7 +745,8 @@
     "statNodes": "節點",
     "hitNoStats": "尚無邊緣統計",
     "loopbackOriginBlocked": "不會把回環 origin {{url}} 寫到遠端邊緣。請先改成可達的 origin。",
-    "applyFailedHint": "套用失敗 — 見下方備註",
+    "applyFailedHint": "套用失敗",
+    "applyFailedNoNote": "沒有存下失敗原因。請再套用一次以記錄錯誤。",
     "applyStatus": {
       "draft": "草稿",
       "planned": "已計劃",
@@ -2366,6 +2370,7 @@
     "noHostJobs": "此範圍沒有 crontab 工作",
     "hostPartial": "無法完整讀取所有用戶 crontab（需要 root）",
     "pendingInstall": "待安裝到系統（{{count}}）",
+    "pendingStale": "已 {{days}} 日未寫入系統 crontab，不會執行。",
     "willNotRun": "未寫入系統 crontab — 不會執行。",
     "hourRange": "小時必須介乎 0–23。",
     "minuteRange": "分鐘必須介乎 0–59。",
@@ -3103,6 +3108,8 @@
     "healthHealPdns": "修復 PowerDNS 綁定",
     "healNeedInstall": "尚未安裝 PowerDNS — 請先到軟件分頁安裝",
     "applyNeedService": "DNS 服務未運行 — 請先啟動或安裝再寫入／套用",
+    "goStartService": "去啟動 DNS 服務",
+    "startBindHint": "若啟動後仍未監聽，多半是 53 埠被 systemd-resolved 佔用。請先按下方「修復綁定」再啟動。",
     "deleteZoneNeedName": "刪除此區域 — 需輸入區域名稱確認",
     "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
     "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
@@ -4591,6 +4598,21 @@
     "loginBanner": "登入橫幅",
     "sslDomain": "SSL 網域",
     "plaintextInsecure": "明文 FTP（未開 TLS）— 不安全。對外開放 21 埠前請先啟用 FTPS。",
+    "plaintextPublicLive": "vsftpd 正以公網位址監聽且未啟用 FTPS，帳號密碼會明文傳送。請啟用 FTPS、改為僅本機監聽，或輸入 PLAINTEXT 確認後維持此狀態。",
+    "bindAddress": "監聽範圍",
+    "bindAddressHint": "新安裝預設僅本機。對外監聽且未開 FTPS 需打字確認。",
+    "bindLocal": "僅本機",
+    "bindLocalHint": "127.0.0.1 — 本機測試可不開 TLS",
+    "bindPublic": "公開",
+    "bindPublicHint": "全部介面 — 請啟用 FTPS，或確認 PLAINTEXT",
+    "enableFtpsAndStart": "啟用 FTPS 並啟動",
+    "publicPlainNeedConfirm": "公開明文 FTP 需輸入 PLAINTEXT 確認",
+    "plainConfirmTitle": "未開 FTPS 就對外啟動 FTP？",
+    "plainConfirmDesc": "21 埠會在公網位址接受明文登入與傳輸。",
+    "plainConfirmC1": "網絡上可見用戶名與密碼。",
+    "plainConfirmC2": "PASV 會通告已設定的公網 IP。",
+    "plainConfirmC3": "不會代你開主機防火牆或雲安全組。",
+    "plainConfirmAction": "啟動明文 FTP",
     "pasvRange": "PASV 範圍",
     "forceTls": "強制 TLS",
     "allowWrite": "允許寫入",
@@ -4936,6 +4958,8 @@
     "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。",
     "resumeHint": "可恢復上次瀏覽（{{count}} 個分頁）",
     "resumeHintDetail": "可恢復上次瀏覽（{{count}} 個分頁）· {{url}} · {{when}}",
+    "resumeHintOwned": "可恢復 {{user}} 上次瀏覽（{{count}} 個分頁）· {{url}} · {{when}}",
+    "clearSessionData": "清除工作階段資料",
     "resume": "恢復",
     "resumeDismiss": "關閉",
     "resumeDone": "已恢復工作階段",
@@ -5364,6 +5388,8 @@
     "inventorying": "盤點中",
     "inventoried": "已盤點",
     "inventoriedWarn": "已盤點 · {{n}} 警告",
+    "inventoriedOrphans": "已盤點 · {{n}} 個孤立主目錄",
+    "inventoriedWarnAndOrphans": "已盤點 · {{w}} 則警告 · {{n}} 個孤立主目錄",
     "inventoryFailed": "盤點失敗",
     "pendingInventory": "待盤點",
     "projects": "專案",
@@ -5423,7 +5449,16 @@
     "afterRestart": "）後再按「重新整理」。",
     "inventoryWarnings": "盤點警告（{{count}}）",
     "orphanHomesHint": "孤立專案主目錄（store 無對應）。確認無用途後先刪。",
-    "orphanRemove": "刪除孤立主目錄",
+    "orphanHomesTitle": "孤立專案主目錄（{{count}}）",
+    "orphanHomesSummary": "磁碟上有 {{count}} 條路徑不在 store。不確定請先備份，確認無用後再刪。",
+    "orphanColHome": "主目錄",
+    "orphanColModified": "最後修改",
+    "orphanKpi": "孤立主目錄",
+    "sourceOs": "作業系統",
+    "sourceDataDir": "dataDir",
+    "sourceDbRedis": "資料庫 / Redis",
+    "sourceDbRedisValue": "{{db}} 個資料庫 · {{redis}} 個 Redis",
+    "orphanRemove": "刪除",
     "orphanRemoveTitle": "刪除此孤立專案主目錄？",
     "orphanRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是 store 內專案。需超級用戶與系統變更權限。",
     "orphanRemovePhrase": "請輸入 DELETE 確認。",
@@ -5560,6 +5595,8 @@
       "up": "已啟用",
       "down": "已停用",
       "unknown": "未知",
+      "loopback": "永久啟用",
+      "loopbackHint": "回環介面一律可用，不可變更。",
       "other": "其他"
     },
     "statGateway": "閘道",
@@ -5807,6 +5844,9 @@
     "home": "儀表板"
   },
   "notes": {
+    "agents": {
+      "sessionNotFound": "找不到 工作階段：{{sessionId}}"
+    },
     "notFound": "找不到",
     "needPath": "請指定路徑",
     "needName": "請填寫名稱",
@@ -5907,7 +5947,8 @@
       "vsftpdStarted": "vsftpd 已啟動",
       "openPortsStep": "防火牆埠（需手動）",
       "openPortsReminder": "請在主機防火牆同雲安全組放行 TCP：{{ports}}。套用 FTPS 不會代你開埠。",
-      "openPortsPasvHint": "若登入成功但列目錄 LIST 逾時，多半是 PASV 資料埠被擋——要開齊 PASV 範圍，不是僅開啟 21。"
+      "openPortsPasvHint": "若登入成功但列目錄 LIST 逾時，多半是 PASV 資料埠被擋——要開齊 PASV 範圍，不是僅開啟 21。",
+      "publicPlaintextBlocked": "拒絕在未啟用 FTPS 時對外啟動 FTP。請改為僅本機監聽、選憑證啟用 FTPS，或輸入 PLAINTEXT 確認後才公開明文服務。"
     },
     "deploy": {
       "nodeMissingIsolated": "隔離部署找不到 Node：{{path}} — 請先裝 Node {{version}} toolchain 再部署。拒絕寫入會 203/EXEC 的 unit。",
@@ -6020,9 +6061,6 @@
       "postqueueSetgidBroken": "Postfix 佇列工具失敗：main.cf 中 setgid_group 為空。應設為 postdrop（有 YSK_EXECUTE 時面板會嘗試自動修復）。",
       "postqueueMailDown": "Postfix 未運行（showq 不可用）。有 YSK_EXECUTE 時面板會嘗試啟動 — 請檢查軟件分頁或 systemctl status postfix。",
       "postqueueSpoolMissing": "Postfix 佇列目錄缺失（例如 hold/）。有 YSK_EXECUTE 時面板會嘗試建立 spool 並啟動 Postfix。"
-    },
-    "agents": {
-      "sessionNotFound": "找不到 工作階段：{{sessionId}}"
     },
     "software": {
       "startUnit": "啟動 {{u}}",
@@ -8785,6 +8823,8 @@
       "hostnameWouldAppend": "將會附加到 /etc/hosts：{{line}}",
       "hostnameAppended": "已附加到 /etc/hosts：{{line}}",
       "hostnameAppendFailed": "無法寫入 /etc/hosts：{{detail}}",
+      "hostnameAliasPresent": "主機名 {{hostname}} 已在 /etc/hosts 列為完整別名 — 未再附加。",
+      "hostnameStillUnresolvable": "已寫入 /etc/hosts，但 {{hostname}} 仍無法解析。請確認 nsswitch 的 hosts 包含 files。",
       "skipStartHostname": "未啟動 display — 請先修好主機名解析。",
       "novncAssetsOnly": "已找到 noVNC 網頁資源；仍缺 websockify 執行檔。",
       "viewerNeedExecute": "要在瀏覽器開啟本機 VNC 桌面，需要 root 並啟用 YSK_EXECUTE",
@@ -10253,7 +10293,11 @@
     "publicRootNote": "公開根目錄：{{path}}",
     "applyConfirmTitle": "套用公開檔案站點？",
     "applyConfirmDesc": "寫入 Nginx server_name {{name}} 並重載 Nginx。",
-    "serverNameMismatch": "現行設定檔為 {{live}}；表單為 {{draft}}。套用後會覆蓋。"
+    "serverNameMismatch": "現行設定檔為 {{live}}；表單為 {{draft}}。套用後會覆蓋。",
+    "liveName": "生效名稱",
+    "draftName": "草稿名稱",
+    "draftUnapplied": "此草稿尚未套用。Nginx 仍以生效名稱對外。",
+    "discardDraft": "捨棄草稿"
   },
   "rbac": {
     "permissions": "權限",
@@ -11261,6 +11305,8 @@
     "reauthPassword": "重新驗證密碼",
     "reauthPasswordHint": "開始／重設 雙重驗證 需要再輸入密碼（防 工作階段 被盜）",
     "reauthPasswordRequired": "請先輸入登入密碼",
+    "needCurrentPassword": "請先輸入目前密碼",
+    "passwordMin8": "新密碼至少 8 個字元",
     "totpSecretGenerated": "已產生密鑰 — 請掃 QR 或複製密鑰，再輸入 App 6 位碼確認",
     "reset2fa": "重新設定 雙重驗證",
     "start2fa": "開始設定 雙重驗證",
@@ -11736,6 +11782,7 @@
     "reloadedOk": "已重載 {{label}}",
     "stopNeedConfirm": "需確認",
     "stopNeedConfirmPhrase": "需輸入確認短語",
+    "stopNeedConfirmImpact": "停止 {{label}}？連到此服務的連線會中斷。",
     "stopConfirmTitle": "停止 {{label}}？",
     "stopConfirmDesc": "{{label}} 將停止接聽。需要時可在本頁再啟動。",
     "stopConfirmEdgeDesc": "停止 {{label}} 會令站點與反向代理離線，直至再次啟動。",
@@ -12329,7 +12376,7 @@
     "optional": "可選",
     "prettyPh": "友善顯示名稱",
     "timezone": "時區",
-    "timezoneHint": "從清單選擇時區（例如 Asia/Hong_Kong）",
+    "timezoneHint": "IANA 時區（例如 Asia/Hong_Kong）。此為主機鐘，cron 與 vsftpd 本地時間會跟隨。已存時間戳仍為 UTC。",
     "timezoneNow": "主機現在時間：{{time}}（{{tz}}）",
     "timezoneBrowserDiff": "此主機時區是 {{host}}；你的瀏覽器是 {{browser}}。這裡改的是主機時鐘，不是瀏覽器。",
     "timezoneSelect": "請選擇時區",
@@ -13258,6 +13305,7 @@
     "tab": {
       "nodes": "節點",
       "disk": "磁碟",
+      "stack": "軟件",
       "about": "說明"
     },
     "empty": {
@@ -13265,18 +13313,44 @@
       "desc": "用建立精靈幾個步驟即可建立測試網節點。"
     },
     "refresh": "重新整理",
+    "software": {
+      "engine": "Docker Engine",
+      "engineDesc": "驗證者節點以 Compose 專案運行。引擎未裝可在此安裝。映像清理請到 Docker 頁。",
+      "client": "客戶端",
+      "image": "映像",
+      "present": "本機",
+      "local": "已拉取",
+      "missing": "未拉取",
+      "size": "大小",
+      "usedBy": "使用中",
+      "unused": "無實例",
+      "pull": "拉取",
+      "pulling": "正在拉取 {{ref}}",
+      "empty": "沒有釘選客戶端映像",
+      "emptyDesc": "目錄不應為空。",
+      "daemonDown": "Docker Engine 未運行"
+    },
     "disk": {
       "title": "驗證者節點磁碟",
       "root": "資料目錄",
       "free": "可用",
-      "used": "已用",
+      "used": "驗證者目錄",
+      "fsUsed": "檔案系統已用",
+      "leftoverTitle": "殘留資料（{{count}}）",
+      "leftoverDesc": "驗證者根目錄下、不在 store 的資料夾。確認無用後再刪。",
+      "leftoverRemove": "刪除",
+      "leftoverRemoveTitle": "刪除此殘留驗證者資料？",
+      "leftoverRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是列表中的節點。",
       "none": "尚未有實例資料",
       "warn": "磁碟用量偏高（70% 或以上）",
       "danger": "磁碟用量危急（85% 或以上）",
       "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）",
       "autoClearRisk": "破壞性：會刪除最大的已停止實例，不會再詢問。預設關閉。觸發後請查審計／日誌。",
       "autoClearConfirmTitle": "啟用自動清空？",
-      "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。"
+      "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。",
+      "autoClearThreshold": "觸發條件：檔案系統用量達 85% 或以上。",
+      "autoClearCandidate": "目前候選：{{id}}",
+      "autoClearNone": "目前沒有已停止實例可作為候選。"
     },
     "chain": {
       "eth": "Ethereum",
@@ -13311,6 +13385,14 @@
       "validator-ready": "驗證者就緒",
       "rpc": "RPC"
     },
+    "profileHelp": {
+      "title": "設定檔說明",
+      "desc": "建立精靈第三步的四個選項，主要分別是磁碟預算與用途。各鏈建議容量會在精靈顯示；面板不會保管質押私鑰。",
+      "minimal": "佔用磁碟最少。適合測試網或先試安裝。不是完整歷史，也不適合作為正式驗證者。",
+      "pruned": "保留近期鏈狀態，刪去過舊區塊資料（Pruned）。磁碟多於精簡、少於完整節點。適合長期跟隨鏈頭。",
+      "validatorReady": "預留較大磁碟，供日後以驗證者身分出塊。金鑰須自行離線產生；離線或設定錯誤可能損失質押金。",
+      "rpc": "供本機或其他服務查詢鏈資料。RPC 預設只聽 127.0.0.1，不會公開到互聯網。"
+    },
     "col": {
       "id": "識別碼",
       "chain": "鏈",
@@ -13320,7 +13402,7 @@
       "disk": "磁碟"
     },
     "cli": {
-      "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+      "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--accept-low-disk] [--execute] [--json]"
     },
     "clients": {
       "el": "執行層客戶端",
@@ -13386,7 +13468,8 @@
       "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
       "nativePrune": "已執行客戶端原生清理指令",
       "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
-      "deleted": "已刪除節點"
+      "deleted": "已刪除節點",
+      "leftoverRemoved": "已刪除殘留 {{path}}"
     },
     "create": "建立節點",
     "wizard": {
@@ -13398,12 +13481,19 @@
       "stepSummary": "摘要",
       "needDocker": "未安裝 Docker Engine。請先安裝 — 此按鈕保持停用。",
       "diskNeed": "此設定檔約需 {{need}} · 可用 {{free}}",
+      "diskNeedNetwork": "此網絡預設精簡約需 {{need}} · 可用 {{free}}",
       "diskShort": "可用磁碟不足以建立此鏈／網絡／設定檔",
+      "diskShortDetail": "需要 {{need}} · 可用 {{free}} · 還差 {{short}}",
+      "needCustomPath": "請輸入絕對資料路徑",
+      "previewId": "節點識別碼",
+      "previewCompose": "Compose 專案",
+      "profileSeeAbout": "各設定檔含義見「說明」分頁。",
       "back": "上一步",
       "next": "下一步",
       "install": "安裝",
       "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
-      "mainnetAck": "我明白磁碟與罰沒風險，仍要建立主網節點。",
+      "mainnetAck": "確認建立主網節點。我已了解主網會佔用大量磁碟；若以驗證者身分出塊，離線或設定錯誤可能損失質押金。",
+      "lowDiskAcked": "可用磁碟低於建議值。你已確認仍要建立；空間不足時同步可能中斷。",
       "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
       "memory": "記憶體上限",
       "cpus": "CPU 上限",
@@ -13415,7 +13505,14 @@
       "installConfirmTitle": "安裝此節點？",
       "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}。約需 {{disk}} 磁碟。拉取映像可能需時頗長。",
       "installC1": "可能下載數 GiB 映像。",
-      "installC2": "可取消面板任務；已拉取的映像不會自動刪除。"
+      "installC2": "可取消面板任務；已拉取的映像不會自動刪除。",
+      "dockerAbout": "安裝與啟動節點需要 Docker Engine。",
+      "dockerAboutOk": "已安裝 Docker Engine。",
+      "dockerAboutMissing": "未安裝 Docker Engine。請到 Docker 頁安裝。",
+      "rewriteCompose": "重寫 compose",
+      "rewriteComposeTitle": "用目前 adapter 重寫 compose.yml？",
+      "rewriteComposeDesc": "會覆寫 {{id}} 的產生檔，只使用本產品為此鏈附帶的旗標。",
+      "chainMeta": "最少 {{disk}} · {{clients}} 個客戶端"
     },
     "actions": {
       "detail": "詳情",
@@ -13512,6 +13609,7 @@
     "state": {
       "unknown": "未知",
       "stopped": "已停止",
+      "starting": "啟動中",
       "running": "運行中",
       "syncing": "同步中",
       "error": "錯誤"
@@ -13692,6 +13790,7 @@
     "start": "啟動",
     "stop": "停止",
     "startAfterCreate": "建立後啟動",
+    "hostnameBrokenIdle": "此主機無法解析主機名 {{hostname}}。建立工作階段前請先寫入 /etc/hosts。",
     "hostnameBroken": "此主機無法解析自己的主機名（{{hostname}}）。工作階段會啟動失敗。",
     "hostnameFix": "把主機名寫入 /etc/hosts",
     "hostnameFixTitle": "附加此行到 /etc/hosts？",

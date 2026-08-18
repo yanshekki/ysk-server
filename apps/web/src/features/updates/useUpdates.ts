@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { updatesApi, type AdviceRow, type UpdateHubEntry } from './api';
+import { api } from '../../shared/services/api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
 import {
@@ -11,9 +12,11 @@ import {
   shouldToastUpdateError,
   waitForPanelAfterRestart,
 } from './self-apply';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 
 export function useUpdates() {
   const { t } = useTranslation();
+  const stream = useOpsStreamOptional();
   const [inventory, setInventory] = useState<AdviceRow[]>([]);
   const [entries, setEntries] = useState<UpdateHubEntry[]>([]);
   const [selfUpdate, setSelfUpdate] = useState<Record<string, unknown> | null>(null);
@@ -384,14 +387,34 @@ export function useUpdates() {
       const back = await waitForPanelAfterRestart({
         expectVersion,
         probe: async () => {
-          const self = await updatesApi.self();
-          return self as { currentVersion?: unknown; ok?: unknown };
+          // /health is auth-exempt — GET /updates/self during bounce can 401-logout.
+          const h = await api.health();
+          const ver = String(h.version ?? '').trim();
+          return { currentVersion: ver || undefined, ok: true };
         },
       });
       if (back) {
-        setSelfUpdate(back as Record<string, unknown>);
-        toast.ok(t('updates.panelRestarted', { version: String(back.currentVersion ?? '') }));
+        const ver = String(back.currentVersion ?? expectVersion ?? '').trim();
+        setSelfUpdate({
+          ok: true,
+          checked: true,
+          updateAvailable: false,
+          currentVersion: ver || '—',
+          latestVersion: expectVersion || ver,
+          notes: [],
+        });
+        toast.ok(t('updates.panelRestarted', { version: ver }));
         return back;
+      }
+      if (expectVersion) {
+        setSelfUpdate((prev) => ({
+          ...(prev ?? {}),
+          ok: true,
+          checked: true,
+          updateAvailable: false,
+          currentVersion: expectVersion,
+          latestVersion: expectVersion,
+        }));
       }
       toast.ok(t('updates.panelRestartWait'));
       return null;
@@ -406,15 +429,44 @@ export function useUpdates() {
     setError(null);
     setMsg(null);
     const expectVersion = String(selfUpdate?.latestVersion ?? '').trim() || undefined;
+    const job = stream?.begin({
+      kind: 'apply',
+      title: t('updates.applyPanelUpdate'),
+    });
     try {
-      const r = await updatesApi.selfApply();
+      const r = await updatesApi.selfApply({
+        signal: job?.signal,
+        onLog: (line) => {
+          if (job) stream?.appendLog(job.id, line);
+        },
+      });
+      if (r.applied || r.restarting) {
+        if (job) {
+          stream?.appendLog(job.id, {
+            stream: 'status',
+            line: t('updates.panelRestarting'),
+          });
+        }
+      }
+      if (job) {
+        stream?.finish(job.id, {
+          ok: r.ok !== false && !r.blockMessage,
+          error: r.ok === false ? r.blockMessage || r.message : undefined,
+        });
+      }
       const notes = sanitizeOperatorNotes(r.notes);
       const isProbe = (n: string) => /npm 頻道|頻道：|channel：|GitHub release/i.test(n);
       const isNoticeDump = (n: string) => ((n.match(/npm notice/gi) || []).length >= 2);
+      const isLeftover = (n: string) =>
+        /leftover|overlay does not|overlayDoesNotHeal|000-default|stale CLI|舊 CLI|殘留|vsftpd is failed|vsftpd 失敗/i.test(
+          n,
+        );
       const isFail = (n: string) =>
         /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|找不到|未包含|無法寫入|無法下載/i.test(
           n,
-        ) && !isNoticeDump(n);
+        ) &&
+        !isNoticeDump(n) &&
+        !isLeftover(n);
       const toastNote = (failed: boolean, fallback: string) => {
         const pick = (s?: string) => {
           const v = String(s || '').trim();
@@ -444,15 +496,13 @@ export function useUpdates() {
         setMsg(null);
         toast.ok(toastNote(false, t('updates.selfUpToDate')));
       }
-      try {
-        const self = await updatesApi.self();
-        setSelfUpdate(self);
-      } catch {
-        /* keep prior — restart poll may already have set it */
-      }
       return r;
     } catch (e) {
       if (isPanelRestartDisconnect(e)) {
+        if (job) {
+          stream?.appendLog(job.id, { stream: 'status', line: t('updates.panelRestarting') });
+          stream?.finish(job.id, { ok: true });
+        }
         await finishSelfAfterRestart(expectVersion);
         return { ok: true, applied: true, restarting: true, notes: [] };
       }
@@ -461,16 +511,17 @@ export function useUpdates() {
         (raw.match(/npm notice/gi) || []).length >= 2 || /Tarball Contents/i.test(raw)
           ? t('notes.auto.selfUpgradeHint')
           : raw;
+      if (job) stream?.finish(job.id, { ok: false, error: m });
       setError(null);
       if (shouldToastUpdateError(e)) {
         toast.error(m);
       }
-      throw e;
+      return { ok: false, applied: false, notes: [m] };
     } finally {
       applySelfLock.current = false;
       setBusy(false);
     }
-  }, [t, selfUpdate?.latestVersion, finishSelfAfterRestart]);
+  }, [t, selfUpdate?.latestVersion, finishSelfAfterRestart, stream]);
 
   useEffect(() => {
     void load(false);

@@ -4,6 +4,7 @@
   "status": {
     "running": "Running",
     "activating": "Starting",
+    "stuck": "Start stuck",
     "connected": "Online",
     "registered": "Registered only",
     "stale": "Stale",
@@ -14,6 +15,7 @@
     "unknown": "Not probed",
     "fallback": "Unknown"
   },
+  "journal": "journal",
   "liveN": "{{count}} online",
   "registeredOnly": "Registered only",
   "awaitProbe": "Awaiting probe",

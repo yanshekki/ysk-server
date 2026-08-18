@@ -37,11 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
-## What's new in 1.1.6
+## What's new in 1.1.7
 
-- **Backup recycle bin (7 days)** — delete moves the archive; restore or permanently delete from `/backups`.
-- **Redis** generates `requirepass` on install; empty-password hosts get an explicit generate control (probes never invent a password).
-- **VNC** probes hostname resolve and can append `/etc/hosts` with EXECUTE + root. E2E-1115 honesty: PowerDNS start re-probe, CDN last-apply error, `/cluster` lands on an installed engine, leftover public-files nginx can be removed.
+- **Validators** — honest disk (`du` of the validators root), starting vs error, Software tab for pinned images, Avalanche compose flags only.
+- **Clocks** follow the host timezone. **FTP** defaults to localhost until FTPS or a typed `PLAINTEXT` public start.
+- **Panel self-update** can stream overlay steps; leftover / channel-check notes are not apply errors. E2E-1116: migrate inventory, VNC hosts write, DNS start result, public-files live/draft.
 
 [Full changelog](./CHANGELOG.md)
 

@@ -209,6 +209,8 @@
   "healthHealPdns": "修復 PowerDNS 綁定",
   "healNeedInstall": "尚未安裝 PowerDNS — 請先到軟件分頁安裝",
   "applyNeedService": "DNS 服務未運行 — 請先啟動或安裝再寫入／套用",
+  "goStartService": "去啟動 DNS 服務",
+  "startBindHint": "若啟動後仍未監聽，多半是 53 埠被 systemd-resolved 佔用。請先按下方「修復綁定」再啟動。",
   "deleteZoneNeedName": "刪除此區域 — 需輸入區域名稱確認",
   "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
   "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",

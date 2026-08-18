@@ -1,7 +1,21 @@
 /**
  * Panel-wide timestamps: one 24-hour clock, YYYY-MM-DD HH:mm:ss.
  * Do not call Date#toLocaleString() in pages — it mixes US AM/PM and locales.
+ * When timeZone is omitted, use the host zone from System (not the browser).
  */
+import { getHostTimeZone } from './host-timezone';
+
+function resolveFormatTimeZone(
+  opts?: { timeZone?: string | null },
+): string | undefined {
+  if (opts && Object.prototype.hasOwnProperty.call(opts, 'timeZone')) {
+    const raw = opts.timeZone;
+    if (raw == null) return undefined;
+    const next = String(raw).trim();
+    return next || undefined;
+  }
+  return getHostTimeZone() || undefined;
+}
 
 export function formatTimeZoneOffset(
   date: Date,
@@ -49,6 +63,7 @@ export function formatDateTime(
   const d = parsed;
   if (Number.isNaN(d.getTime())) return String(iso);
   try {
+    const timeZone = resolveFormatTimeZone(opts);
     const fmt = new Intl.DateTimeFormat('en-CA', {
       year: 'numeric',
       month: '2-digit',
@@ -57,7 +72,7 @@ export function formatDateTime(
       minute: '2-digit',
       second: '2-digit',
       hour12: false,
-      ...(opts?.timeZone ? { timeZone: opts.timeZone } : {}),
+      ...(timeZone ? { timeZone } : {}),
     });
     const bag: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
     for (const p of fmt.formatToParts(d)) {
@@ -65,7 +80,7 @@ export function formatDateTime(
     }
     const hour = bag.hour === '24' ? '00' : (bag.hour ?? '00');
     const base = `${bag.year}-${bag.month}-${bag.day} ${hour}:${bag.minute}:${bag.second}`;
-    return opts?.withOffset ? `${base} ${formatTimeZoneOffset(d, opts.timeZone)}` : base;
+    return opts?.withOffset ? `${base} ${formatTimeZoneOffset(d, timeZone)}` : base;
   } catch {
     return d.toISOString().replace('T', ' ').slice(0, 19);
   }

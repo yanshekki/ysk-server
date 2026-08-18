@@ -136,6 +136,7 @@
   "noHostJobs": "此範圍沒有 crontab 工作",
   "hostPartial": "無法完整讀取所有用戶 crontab（需要 root）",
   "pendingInstall": "待安裝到系統（{{count}}）",
+  "pendingStale": "已 {{days}} 日未寫入系統 crontab，不會執行。",
   "willNotRun": "未寫入系統 crontab — 不會執行。",
   "hourRange": "小時必須介乎 0–23。",
   "minuteRange": "分鐘必須介乎 0–59。",

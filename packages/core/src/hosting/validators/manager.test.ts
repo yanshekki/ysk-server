@@ -155,6 +155,21 @@ describe('validator manager', () => {
     expect(r.blocked).toBe(true);
   });
 
+  it('allows mainnet below minimum when operator accepts low disk', async () => {
+    const dataDir = tmp();
+    const r = await createValidatorInstance({
+      dataDir,
+      host: mockHost({ execute: false, dfAvail: 10_000 }),
+      execute: false,
+      chain: 'eth',
+      network: 'mainnet',
+      profile: 'minimal',
+      acceptLowDisk: true,
+    });
+    expect(r.blocked).not.toBe(true);
+    expect(r.instanceId).toBe('eth-mainnet-1');
+  });
+
   it('start without execute is blocked; clear needs confirm', async () => {
     const dataDir = tmp();
     await createValidatorInstance({

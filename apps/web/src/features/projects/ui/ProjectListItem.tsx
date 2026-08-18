@@ -7,6 +7,7 @@ import { useNavBookmarks } from '../../../shared/hooks/useNavBookmarks';
 import { notifyOk, notifyWarn } from '../../../shared/lib/notify';
 import { formatDateTime } from '../../../shared/lib/datetime';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
+import { deriveProjectStatus } from '../model/status';
 
 /** List row only — delete is detail/advanced, not list (same as email domains). */
 export function ProjectListItem({ project }: { project: ProjectDto }) {
@@ -14,6 +15,7 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
   const { isProjectBookmarked, toggleProject } = useNavBookmarks();
   const [pinBusy, setPinBusy] = useState(false);
   const pinned = isProjectBookmarked(project.id);
+  const bucket = deriveProjectStatus(project).bucket;
 
   return (
     <div className="list-row">
@@ -65,6 +67,22 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
           {pinned ? '★' : '☆'}
         </Button>
         <ProjectStatusBadge project={project} />
+        {bucket === 'pending_os' ? (
+          <>
+            <Link
+              to={`/projects/${project.id}?tab=isolation`}
+              className="list-row__link"
+            >
+              {t('projects.next.pendingOsTitle')}
+            </Link>
+            <Link
+              to={`/projects/${project.id}?tab=advanced`}
+              className="list-row__link"
+            >
+              {t('common.delete')}
+            </Link>
+          </>
+        ) : null}
         <Link to={`/projects/${project.id}`} className="list-row__chevron" aria-hidden>
           ›
         </Link>

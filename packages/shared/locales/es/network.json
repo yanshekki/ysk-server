@@ -160,6 +160,8 @@
     "up": "Up",
     "down": "Down",
     "unknown": "Unknown",
-    "other": "Other"
+    "other": "Other",
+    "loopback": "Always on",
+    "loopbackHint": "Loopback is always available and cannot be changed."
   }
 }

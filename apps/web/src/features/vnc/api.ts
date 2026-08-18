@@ -86,6 +86,7 @@ export type VncOpsResult = {
   requiresRoot?: boolean;
   account?: VncAccountSummary;
   apply_status?: string;
+  resolves?: boolean;
 };
 
 export const vncApi = {

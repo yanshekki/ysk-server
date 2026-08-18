@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpdが開始されました",
     "openPortsStep": "ファイアウォール ポート (手動)",
     "openPortsReminder": "ホスト ファイアウォールとクラウド セキュリティ グループで TCP ポートを開きます: {{ports}}。 FTPS 適用ではポートが開かれません。",
-    "openPortsPasvHint": "ログインは機能するが、ディレクトリ LIST がタイムアウトした場合、PASV データ範囲はブロックされます - フルに開きます"
+    "openPortsPasvHint": "ログインは機能するが、ディレクトリ LIST がタイムアウトした場合、PASV データ範囲はブロックされます - フルに開きます",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "分離デプロイにノード バイナリがありません: {{path}} — ノード {{version}} ツールチェーンをインストールしてから再デプロイします。 203/EXEC となるユニットの作成を拒否します。",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "サーバー名は必須です",

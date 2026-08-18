@@ -19,7 +19,6 @@ services:
     image: ${img}
     restart: unless-stopped
     command:
-      - /avalanchego/build/avalanchego
       - --network-id=${netId}
       - --http-host=0.0.0.0
       - --http-port=9650

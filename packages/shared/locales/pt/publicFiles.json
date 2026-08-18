@@ -41,5 +41,9 @@
   "serverNameMismatch": "A conf. em direto usa {{live}}; o formulário tem {{draft}}. Aplique para substituir.",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

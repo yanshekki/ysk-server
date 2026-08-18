@@ -12,7 +12,8 @@
     "error": "エラー",
     "unknown": "プローブされていない",
     "fallback": "不明",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} オンライン",
   "registeredOnly": "登録済みのみ",
@@ -137,5 +138,6 @@
   "historyTitleShort": "コマンド履歴を開く (読み取り専用)",
   "expEdge": "端では：",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

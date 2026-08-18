@@ -29,6 +29,30 @@ export function pickClusterLandingPath(opts: {
   return null;
 }
 
+export function clusterEngineFromServiceRow(row: {
+  id?: string;
+  unit?: string;
+  label?: string;
+  installed?: boolean;
+  active?: string;
+}): ClusterEngine | null {
+  const blob = `${row.id ?? ''} ${row.unit ?? ''} ${row.label ?? ''}`.toLowerCase();
+  if (blob.includes('mariadb')) return 'mariadb';
+  if (blob.includes('mysql')) return 'mysql';
+  if (blob.includes('postgres') || blob.includes('postgresql')) return 'postgres';
+  if (blob.includes('redis')) return 'redis';
+  return null;
+}
+
+export function serviceRowLooksInstalled(row: {
+  installed?: boolean;
+  active?: string;
+}): boolean {
+  if (row.installed === true) return true;
+  const a = String(row.active ?? '');
+  return a === 'active' || a === 'running';
+}
+
 export function isStaleClusterPlan(
   c: { status: string; createdAt: string },
   now = Date.now(),

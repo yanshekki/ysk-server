@@ -12,7 +12,8 @@
     "error": "خطأ",
     "unknown": "لم يتم التحقيق فيها",
     "fallback": "مجهول",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} اونلاين",
   "registeredOnly": "مسجل فقط",
@@ -137,5 +138,6 @@
   "historyTitleShort": "فتح سجل الأوامر (للقراءة فقط)",
   "expEdge": "على حافة:",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

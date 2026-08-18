@@ -61,6 +61,8 @@
   "reauthPassword": "Re-enter password",
   "reauthPasswordHint": "Start/reset 2FA requires password again (stolen session protection)",
   "reauthPasswordRequired": "Enter your login password first",
+  "needCurrentPassword": "Enter the current password first",
+  "passwordMin8": "New password must be at least 8 characters",
   "totpSecretGenerated": "Secret ready — scan the QR or copy the key, then enter the app’s 6-digit code",
   "reset2fa": "Reset 2FA",
   "start2fa": "Set up 2FA",

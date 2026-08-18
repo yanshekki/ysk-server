@@ -41,5 +41,9 @@
   "serverNameMismatch": "실제 설정은 {{live}}이고 폼은 {{draft}}입니다. 적용하면 교체됩니다.",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpd iniciado",
     "openPortsStep": "Portas de firewall (manual)",
     "openPortsReminder": "Abra portas TCP no firewall do host e no grupo de segurança da nuvem: {{ports}}. A aplicação FTPS não abre portas para você.",
-    "openPortsPasvHint": "Se o login funcionar, mas o diretório LIST expirar, o intervalo de dados PASV será bloqueado - abra o arquivo completo"
+    "openPortsPasvHint": "Se o login funcionar, mas o diretório LIST expirar, o intervalo de dados PASV será bloqueado - abra o arquivo completo",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "Binário do nó ausente para implantação isolada: {{path}} — instale o conjunto de ferramentas do Node {{version}} e depois reimplante. Recusando-se a escrever uma unidade que seria 203/EXEC.",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "Nome do servidor obrigatório",

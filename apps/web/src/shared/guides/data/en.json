@@ -1671,9 +1671,10 @@
       "Open noVNC or give the user host:port for their own network"
     ],
     "notes": [
-      "Install and user provision need root + YSK_EXECUTE",
-      "Default RFB is localhost-only for safety",
-      "Prefer VPN when exposing remote desktops"
+      "Open in browser needs noVNC. Install it on the Install tab before opening remotes here.",
+      "Both client paths open VNC in the browser via the panel TCP proxy. They differ by target address.",
+      "User-reachable: public hostname (e.g. hermes.example.com:5901). Server proxy: LAN/DC address only this host can reach; TCP is probed from this server first.",
+      "Install and user provision need root + YSK_EXECUTE. Default RFB is localhost-only; prefer VPN when exposing desktops."
     ],
     "cliHints": [
       "vncserver -list",
@@ -1758,7 +1759,8 @@
     ],
     "workflow": [
       "Read the disk tab before creating a node",
-      "Prefer testnet + minimal on small disks",
+      "Prefer testnet + Minimal on small disks",
+      "Minimal / Pruned / Validator-ready / RPC are explained below",
       "Mutations need root and YSK_EXECUTE=1"
     ],
     "notes": [

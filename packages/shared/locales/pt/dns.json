@@ -232,5 +232,7 @@
   "installPort53BusyConsequence": "Repare a ligação ou pare o outro ouvinte antes de esperar respostas na 53.",
   "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
   "startProbeFailed": "Could not re-check DNS health after start",
-  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
+  "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
+  "goStartService": "Start DNS service",
+  "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again."
 }

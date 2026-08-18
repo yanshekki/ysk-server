@@ -200,11 +200,41 @@ export async function composePsRunning(input: {
   file: string;
   project: string;
 }): Promise<boolean> {
-  const argv = ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '-q'];
+  const info = await composePsInfo(input);
+  return info.running;
+}
+
+export async function composePsInfo(input: {
+  host: HostExecutor;
+  file: string;
+  project: string;
+}): Promise<{ running: boolean; restarting: boolean }> {
   try {
-    const r = await input.host.runCommand(argv, { timeoutMs: 15_000 });
-    return r.exitCode === 0 && r.stdout.trim().length > 0;
+    const fmt = await input.host.runCommand(
+      ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '--format', 'json'],
+      { timeoutMs: 15_000 },
+    );
+    if (fmt.exitCode === 0 && fmt.stdout.trim()) {
+      const blob = `[${fmt.stdout.trim().replace(/}\s*{/g, '},{')}]`;
+      let rows: Array<{ State?: string; state?: string }> = [];
+      try {
+        const parsed = JSON.parse(blob) as unknown;
+        rows = Array.isArray(parsed) ? parsed : [parsed as { State?: string }];
+      } catch {
+        rows = [];
+      }
+      const states = rows.map((r) => String(r.State ?? r.state ?? '').toLowerCase());
+      return {
+        running: states.some((s) => s === 'running' || s === 'restarting'),
+        restarting: states.some((s) => s.includes('restart')),
+      };
+    }
+    const q = await input.host.runCommand(
+      ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '-q'],
+      { timeoutMs: 15_000 },
+    );
+    return { running: q.exitCode === 0 && q.stdout.trim().length > 0, restarting: false };
   } catch {
-    return false;
+    return { running: false, restarting: false };
   }
 }

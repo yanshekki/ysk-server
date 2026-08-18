@@ -6,6 +6,8 @@ import {
   clearValidatorInstance,
   removeValidatorInstance,
   collectValidatorDisk,
+  regenerateValidatorCompose,
+  removeValidatorLeftover,
   createValidatorInstance,
   getValidatorInstance,
   listValidatorChains,
@@ -29,6 +31,8 @@ import {
   saveValidatorSettings,
   snapshotOffer,
   upgradeValidatorInstance,
+  collectValidatorSoftware,
+  pullPinnedValidatorImage,
 } from 'ysk-server-core';
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -60,7 +64,8 @@ export async function handleValidatorsRoutes(
     else if (
       method === 'DELETE' ||
       url.pathname.endsWith('/clear') ||
-      url.pathname.endsWith('/delete')
+      url.pathname.endsWith('/delete') ||
+      url.pathname.endsWith('/leftovers/remove')
     ) {
       requireCap(ctx, user, 'validators.wipe');
     } else requireCap(ctx, user, 'validators.manage');
@@ -116,6 +121,58 @@ export async function handleValidatorsRoutes(
       return true;
     }
 
+    if (method === 'GET' && url.pathname === `${BASE}/software`) {
+      const software = await collectValidatorSoftware({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+      });
+      sendJson(res, 200, { ok: true, ...software });
+      return true;
+    }
+
+    if (method === 'POST' && url.pathname === `${BASE}/software/pull`) {
+      const raw = await readBody(req);
+      const body = JSON.parse(raw || '{}') as Record<string, unknown>;
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await pullPinnedValidatorImage({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            execute: wantsExecute(ctx, body),
+            image: String(body.image ?? body.ref ?? ''),
+            tag: body.tag != null ? String(body.tag) : undefined,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'validators.software.pull',
+            detail: { image: body.image ?? body.ref, tag: body.tag, ok: result.ok },
+            ok: Boolean(result.ok),
+          });
+          return result;
+        },
+      });
+      return true;
+    }
+
+    if (method === 'POST' && url.pathname === `${BASE}/leftovers/remove`) {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const result = removeValidatorLeftover({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        path: String(body.path ?? ''),
+        confirm: String(body.confirm ?? ''),
+        execute: wantsExecute(ctx, body),
+      });
+      sendOpsResult(res, result);
+      return true;
+    }
+
     if (method === 'POST' && (url.pathname === BASE || url.pathname === `${BASE}/`)) {
       const raw = await readBody(req);
       const body = JSON.parse(raw || '{}') as Record<string, unknown>;
@@ -134,6 +191,7 @@ export async function handleValidatorsRoutes(
         memory: body.memory != null ? String(body.memory) : undefined,
         cpus: body.cpus != null ? String(body.cpus) : undefined,
         rpcPort: body.rpcPort != null ? Number(body.rpcPort) : undefined,
+        acceptLowDisk: body.acceptLowDisk === true,
       });
       ctx.audit.append({
         actor: user.username,
@@ -173,6 +231,17 @@ export async function handleValidatorsRoutes(
 
     if (id && isValidatorInstanceId(id) && action === 'compose' && method === 'GET') {
       sendJson(res, 200, readValidatorCompose(ctx.dataDir, id));
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'rewrite-compose' && method === 'POST') {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const result = regenerateValidatorCompose({
+        dataDir: ctx.dataDir,
+        id,
+        execute: wantsExecute(ctx, body),
+      });
+      sendOpsResult(res, result);
       return true;
     }
 

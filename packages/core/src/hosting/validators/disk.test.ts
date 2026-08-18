@@ -3,7 +3,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import { collectValidatorDisk, parseDfBytes, parseDuBytes, pickMountForPath } from './disk.js';
+import {
+  collectValidatorDisk,
+  isSafeValidatorLeftoverPath,
+  parseDfBytes,
+  parseDuBytes,
+  pickMountForPath,
+} from './disk.js';
 import { buildValidatorInstance, upsertValidatorInstance } from './store.js';
 
 function ok(stdout: string, argv: string[]): RunResult {
@@ -32,6 +38,34 @@ describe('validator disk helpers', () => {
   it('parses du -sb', () => {
     expect(parseDuBytes('12345\t/data')).toBe(12345);
     expect(parseDuBytes('bad')).toBe(0);
+  });
+});
+
+describe('validator leftover path', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
+  });
+
+  it('rejects instance ids and store files', () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-val-left-'));
+    dirs.push(dataDir);
+    const inst = buildValidatorInstance({
+      dataDir,
+      chain: 'eth',
+      network: 'hoodi',
+      profile: 'minimal',
+    });
+    upsertValidatorInstance(dataDir, inst);
+    expect(isSafeValidatorLeftoverPath(dataDir, join(dataDir, 'validators', inst.id))).toBe(
+      false,
+    );
+    expect(
+      isSafeValidatorLeftoverPath(dataDir, join(dataDir, 'validators', 'instances.json')),
+    ).toBe(false);
+    expect(isSafeValidatorLeftoverPath(dataDir, join(dataDir, 'validators', 'orphan-dir'))).toBe(
+      true,
+    );
   });
 });
 
@@ -75,8 +109,11 @@ describe('collectValidatorDisk', () => {
     const report = await collectValidatorDisk({ dataDir, host });
     expect(report.tone).toBe('warn');
     expect(report.usePct).toBe(80);
+    expect(report.fsUsedBytes).toBe(800);
+    expect(report.usedBytes).toBe(42);
     expect(report.instances).toEqual([
       { id: inst.id, dataPath: inst.dataPath, usedBytes: 42 },
     ]);
+    expect(report.leftovers.every((x) => x.name !== inst.id)).toBe(true);
   });
 });

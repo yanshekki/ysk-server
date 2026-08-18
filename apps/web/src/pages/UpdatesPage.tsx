@@ -698,7 +698,7 @@ export function UpdatesPage() {
                   },
                   {
                     label: t('updates.highRisk'),
-                    value: String(highRisk),
+                    value: !osvChecked ? t('updates.riskUnevaluated') : highRisk,
                   },
                 ]}
               />

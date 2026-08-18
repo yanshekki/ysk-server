@@ -41,5 +41,9 @@
   "serverNameMismatch": "लाइव कॉन्फ़ {{live}} है; फ़ॉर्म में {{draft}} है। बदलने के लिए लागू करें।",
   "executeFlag": "Execute",
   "asRoot": "Root",
-  "statusDraft": "Draft / not applied"
+  "statusDraft": "Draft / not applied",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

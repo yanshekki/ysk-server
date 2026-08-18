@@ -1673,9 +1673,10 @@
       "打开 noVNC，或把 host:port 交给用户自有网络连入"
     ],
     "notes": [
-      "安装与 user 创建需 root + YSK_EXECUTE",
-      "RFB 默认只监听 localhost 更安全",
-      "暴露远程桌面时建议配合 VPN"
+      "「在浏览器开启」需要 noVNC。若要在此开启远端，请先到「安装」分页安装。",
+      "两种路径均在浏览器内使用 VNC。区别在于目标地址语义与转发说明（皆经面板 TCP 代理）。",
+      "「经用户可达端点」：公网主机名（如 hermes.example.com:5901）。「经服务器代理」：仅本机服务器能连的内网／机房地址。开通前会从此服务器探测 TCP。",
+      "安装与创建用户需 root + YSK_EXECUTE。RFB 默认只监听 localhost；暴露远程桌面时建议配合 VPN。"
     ],
     "cliHints": [
       "vncserver -list",
@@ -1760,7 +1761,8 @@
     ],
     "workflow": [
       "创建前先看磁盘分页",
-      "小磁盘建议测试网 + 精简配置",
+      "小磁盘建议测试网 + 精简配置档",
+      "精简／Pruned／验证者就绪／RPC 的含义见本页下方",
       "变更主机须 root 及 YSK_EXECUTE=1"
     ],
     "notes": [

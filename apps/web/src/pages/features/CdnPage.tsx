@@ -1242,12 +1242,18 @@ export function CdnPage() {
                 {
                   key: 'status',
                   header: t('cdn.col.apply'),
-                  render: (s) => (
+                  render: (s) => {
+                    const failNote =
+                      s.lastApplyError ||
+                      (s.apply_status === 'failed' || s.apply_status === 'partial'
+                        ? t('cdn.applyFailedNoNote')
+                        : '');
+                    return (
                     <span className="u-flex u-flex-col u-gap-1">
                       <Badge
                         tone={statusTone(s.apply_status)}
                         title={
-                          s.lastApplyError ||
+                          failNote ||
                           (s.apply_status === 'failed'
                             ? t('cdn.applyFailedHint')
                             : t(`cdn.applyStatus.${s.apply_status}`))
@@ -1255,7 +1261,7 @@ export function CdnPage() {
                       >
                         {t(`cdn.applyStatus.${s.apply_status}`)}
                       </Badge>
-                      {s.lastApplyError ? (
+                      {failNote ? (
                         <span className="muted u-text-sm">
                           {s.lastApplyAt
                             ? `${formatDateTime(s.lastApplyAt, {
@@ -1263,11 +1269,12 @@ export function CdnPage() {
                                 ...hostTimeZoneOpts({ withOffset: true }),
                               })} · `
                             : ''}
-                          {s.lastApplyError}
+                          {failNote}
                         </span>
                       ) : null}
                     </span>
-                  ) },
+                    );
+                  } },
                 {
                   key: 'actions',
                   header: '',

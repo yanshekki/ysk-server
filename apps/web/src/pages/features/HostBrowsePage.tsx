@@ -45,6 +45,7 @@ import {
 import { clientToPage } from '../../features/host-browse/live-geometry';
 import { PcmPlayer } from '../../features/host-browse/pcm-player';
 import { notifyInfo, notifyOk } from '../../shared/lib/notify';
+import { useAuth } from '../../shared/hooks/useAuth';
 
 type StreamPreset = 'smooth' | 'balanced' | 'sharp';
 type ZoomMode = 'fit' | 'fill' | 'percent';
@@ -54,6 +55,7 @@ const TABS = ['browse', 'stack', 'settings', 'about'] as const;
 
 export function HostBrowsePage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [tab, setTab] = usePageTab(TABS, 'browse');
 
   const [mode, setMode] = useState<HostBrowseMode>('internet');
@@ -1230,7 +1232,8 @@ export function HostBrowsePage() {
               {resumeSnap && resumeSnap.tabs.length > 0 && !session ? (
                 <div className="hb-resume">
                   <Alert variant="info">
-                    {t('hostBrowse.resumeHintDetail', {
+                    {t('hostBrowse.resumeHintOwned', {
+                      user: user?.username || '—',
                       count: resumeSnap.tabs.length,
                       url: resumeSnap.tabs[0]?.url || '—',
                       when: resumeSnap.updatedAt
@@ -1251,6 +1254,15 @@ export function HostBrowsePage() {
                       disabled={busy}
                     >
                       {t('hostBrowse.resumeDismiss')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      title={t('hostBrowse.clearSessionData')}
+                      onClick={dismissResume}
+                      disabled={busy}
+                    >
+                      {t('hostBrowse.clearSessionData')}
                     </Button>
                   </div>
                 </div>

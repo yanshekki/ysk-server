@@ -60,6 +60,23 @@ export async function postSseJson(
     signal: opts?.signal,
   });
 
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    let j: unknown = null;
+    try {
+      j = await res.json();
+    } catch {
+      j = null;
+    }
+    if (!res.ok) {
+      const o = (j ?? {}) as { message?: string; notes?: string[] };
+      const message = o.message || o.notes?.[0] || `HTTP ${res.status}`;
+      opts?.onLog?.({ stream: 'stderr', line: message });
+      return { ops: { ok: false, notes: [message] }, raw: j };
+    }
+    return { ops: resultToOps(j), raw: j };
+  }
+
   if (!res.ok || !res.body) {
     let message = `HTTP ${res.status}`;
     try {

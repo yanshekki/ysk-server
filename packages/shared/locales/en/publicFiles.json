@@ -41,5 +41,9 @@
   "publicRootNote": "Public root: {{path}}",
   "applyConfirmTitle": "Apply public-files site?",
   "applyConfirmDesc": "Write Nginx server_name {{name}} and reload Nginx.",
-  "serverNameMismatch": "Live conf uses {{live}}; the form has {{draft}}. Apply to replace."
+  "serverNameMismatch": "Live conf uses {{live}}; the form has {{draft}}. Apply to replace.",
+  "liveName": "Live name",
+  "draftName": "Draft name",
+  "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+  "discardDraft": "Discard draft"
 }

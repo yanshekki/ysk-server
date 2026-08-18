@@ -21,7 +21,6 @@ import {
   getBearer,
   readBody,
   sendJson,
-  sendOpsResult,
 } from '../http/util.js';
 
 type InvRow = Record<string, unknown>;
@@ -325,8 +324,9 @@ export async function handleUpdatesInventoryRoutes(
           checked: status.checked,
         });
         persistUpdatesSummary(ctx);
-        // Flatten for panel: never pretend latest=current without a real channel check
-        sendOpsResult(res, {
+        // Status GET must stay 200 even when the npm channel check failed.
+        // sendOpsResult would 422 and the panel treats that as an apply error.
+        sendJson(res, 200, {
           currentVersion: status.currentVersion,
           latestVersion: status.latestVersion,
           updateAvailable: status.updateAvailable,

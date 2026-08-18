@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpd 已启动",
     "openPortsStep": "防火墙端口（需手动）",
     "openPortsReminder": "请在主机防火墙和云安全组放行 TCP：{{ports}}。套用 FTPS 不会代你开端口。",
-    "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。"
+    "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "隔离部署找不到 Node：{{path}} — 请先安装 Node {{version}} toolchain 再部署。拒绝写入会 203/EXEC 的 unit。",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "需要域名",

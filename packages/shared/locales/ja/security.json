@@ -449,5 +449,7 @@
   "policyNeedSelf2fa": "まずこのアカウントで 2FA を有効にしてから、TOTP コードで確認します",
   "revokeAllDevicesTitle": "記憶されているすべてのデバイスを取り消します - あなたと他の管理者は 2FA を再度確認する必要があります",
   "statSshValue": "{{keys}} keys · {{auth}} authorized",
-  "statSshHint": "Outbound identities / authorized login keys"
+  "statSshHint": "Outbound identities / authorized login keys",
+  "needCurrentPassword": "Enter the current password first",
+  "passwordMin8": "New password must be at least 8 characters"
 }

@@ -6,6 +6,7 @@ export type {
   ValidatorGetResponse,
   ValidatorInstanceDto,
   ValidatorOpsResponse,
+  ValidatorSoftwareReportDto,
   ValidatorStatusResponse,
   ValidatorsListResponse,
 } from './api';

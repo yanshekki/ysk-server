@@ -748,6 +748,14 @@ export function DnsPage() {
                       >
                         {t('dns.applyZone')}
                       </button>
+                      {health?.unitActive === false ? (
+                        <Link
+                          to="/dns?tab=tools"
+                          className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                        >
+                          {t('dns.goStartService')}
+                        </Link>
+                      ) : null}
                       <button
                         type="button"
                         className={buttonClassName({ variant: 'secondary', size: 'sm' })}
@@ -1599,7 +1607,10 @@ export function DnsPage() {
                         actions={['start', 'stop', 'restart', 'reload']}
                         size="sm"
                         className="u-mt-2"
-                        onDone={() => void refreshHealth()}
+                        showResult
+                        onDone={async () => {
+                          await refreshHealth();
+                        }}
                         verifyAfter={async (action) => {
                           if (action !== 'start' && action !== 'restart') return;
                           const h = await refreshHealth();
@@ -1609,7 +1620,10 @@ export function DnsPage() {
                           if (h.unitActive && (h.listenUdp53 || h.listenTcp53)) {
                             return { ok: true };
                           }
-                          const notes = (h.notes ?? []).slice(0, 4);
+                          const notes = [
+                            ...(h.notes ?? []).slice(0, 4),
+                            t('dns.startBindHint'),
+                          ];
                           return {
                             ok: false,
                             notes: notes.length ? notes : [t('dns.startNotListening')],

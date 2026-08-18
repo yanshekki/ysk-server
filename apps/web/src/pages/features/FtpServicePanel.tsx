@@ -11,12 +11,14 @@ import {
   Card,
   CardSection,
   CheckboxField,
+  ConfirmDialog,
   DescriptionList,
   Field,
   FormActions,
   FormLayout,
   OpsResultPanel,
   PresetChips,
+  SegRadio,
 } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -45,13 +47,18 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
   const [status, setStatus] = useState<FtpsStatus | null>(null);
   const [domains, setDomains] = useState<Array<{ value: string; label: string }>>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [plainConfirm, setPlainConfirm] = useState(false);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
     setLoadError(null);
     try {
       const [s, o] = await Promise.all([ftpApi.settings(), ftpApi.options()]);
-      setSettings({ ...EMPTY_FTPS_SETTINGS, ...s.settings });
+      const next = { ...EMPTY_FTPS_SETTINGS, ...s.settings };
+      if (!String(next.sslDomain || '').trim() && o.domains[0]) {
+        next.sslDomain = o.domains[0].value;
+      }
+      setSettings(next);
       setStatus(s.status);
       onStatusChange?.({ ...s.status, settings: s.settings });
       setDomains(o.domains);
@@ -69,12 +76,23 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
   }
 
   const openPorts = useMemo(() => ftpsOpenPortList(settings), [settings]);
-  const needPasvPublicIp = !String(settings.pasvAddress ?? '').trim();
+  const publicBind = (settings.bindAddress ?? 'localhost') === 'public';
+  const needPasvPublicIp = publicBind && !String(settings.pasvAddress ?? '').trim();
   const listenConflict = Boolean(status?.listenConflict);
   const sslReady = Boolean(String(settings.sslDomain || '').trim());
   const running = status?.active === 'active';
   const installed = Boolean(status?.installed);
   const failed = status?.active === 'failed';
+  const publicPlain = publicBind && !settings.sslEnable;
+  const startBlockedTitle = listenConflict
+    ? t('ftp.listenConflictNeedFix')
+    : failed
+      ? t('ftp.startBlockedFailed')
+      : publicPlain
+        ? t('ftp.publicPlainNeedConfirm')
+        : running
+          ? t('ftp.applyRestart')
+          : t('fail2ban.startService');
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -86,7 +104,7 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
     }, t('common.savedOk'));
   }
 
-  async function onInstallAndStart() {
+  async function onInstallAndStart(allowPlaintextPublic = false) {
     await run(async () => {
       try {
         const inst = await softwareApi.installFeature('ftp');
@@ -112,18 +130,51 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
           notes: [m],
         } satisfies OpsResultLike;
       }
-      const r = await ftpApi.apply({ settings, applySystem: true });
+      const r = await ftpApi.apply({
+        settings,
+        applySystem: true,
+        allowPlaintextPublic,
+      });
       await refresh();
       return r as unknown as OpsResultLike;
     }, t('ftp.ftpsReady'));
   }
 
-  async function onApplySettings() {
+  async function onApplySettings(allowPlaintextPublic = false) {
     await run(async () => {
-      const r = await ftpApi.apply({ settings, applySystem: true });
+      const r = await ftpApi.apply({
+        settings,
+        applySystem: true,
+        allowPlaintextPublic,
+      });
       await refresh();
       return r as unknown as OpsResultLike;
     }, t('ftp.settingsApplied'));
+  }
+
+  function requestStartOrApply() {
+    if (!running && publicPlain) {
+      setPlainConfirm(true);
+      return;
+    }
+    void onApplySettings(false);
+  }
+
+  async function onEnableFtpsAndStart() {
+    const domain = String(settings.sslDomain || domains[0]?.value || '').trim();
+    if (!domain) return;
+    const next = {
+      ...settings,
+      sslDomain: domain,
+      sslEnable: true,
+      forceSsl: true,
+    };
+    setSettings(next);
+    await run(async () => {
+      const r = await ftpApi.apply({ settings: next, applySystem: true });
+      await refresh();
+      return r as unknown as OpsResultLike;
+    }, t('ftp.ftpsReady'));
   }
 
   const ftpsBindings = useMemo(
@@ -185,6 +236,10 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 ),
               },
               {
+                label: t('ftp.bindAddress'),
+                value: publicBind ? t('ftp.bindPublic') : t('ftp.bindLocal'),
+              },
+              {
                 label: 'FTPS',
                 value: settings.sslEnable ? t('common.on') : t('common.off'),
               },
@@ -198,7 +253,9 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               },
             ]}
           />
-          {installed && running && !settings.sslEnable ? (
+          {installed && running && publicPlain ? (
+            <Alert variant="error">{t('ftp.plaintextPublicLive')}</Alert>
+          ) : installed && running && !settings.sslEnable ? (
             <Alert variant="warn">{t('ftp.plaintextInsecure')}</Alert>
           ) : null}
           <div className="ftps-overview-actions">
@@ -207,7 +264,10 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 variant="primary"
                 size="md"
                 loading={busy}
-                onClick={() => void onInstallAndStart()}
+                onClick={() => {
+                  if (publicPlain) setPlainConfirm(true);
+                  else void onInstallAndStart();
+                }}
               >
                 {t('ftp.installAndStart')}
               </Button>
@@ -217,20 +277,23 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                 size="md"
                 loading={busy}
                 disabled={!running && (listenConflict || failed)}
-                title={
-                  listenConflict
-                    ? t('ftp.listenConflictNeedFix')
-                    : failed
-                      ? t('ftp.startBlockedFailed')
-                      : running
-                        ? t('ftp.applyRestart')
-                        : t('fail2ban.startService')
-                }
-                onClick={() => void onApplySettings()}
+                title={startBlockedTitle}
+                onClick={() => requestStartOrApply()}
               >
                 {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
               </Button>
             )}
+            {sslReady ? (
+              <Button
+                variant="primary"
+                size="md"
+                loading={busy}
+                title={t('ftp.enableFtpsAndStart')}
+                onClick={() => void onEnableFtpsAndStart()}
+              >
+                {t('ftp.enableFtpsAndStart')}
+              </Button>
+            ) : null}
             <Button
               variant="secondary"
               size="md"
@@ -286,6 +349,23 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   onChange={(v) => patch('listenPort', Number(v) || 21)}
                   allowCustom
                   customPlaceholder={t('ftp.customPort')}
+                />
+              </Field>
+              <Field
+                label={t('ftp.bindAddress')}
+                htmlFor="ftp-bind"
+                flush
+                hint={t('ftp.bindAddressHint')}
+              >
+                <SegRadio
+                  name="ftp-bind"
+                  aria-label={t('ftp.bindAddress')}
+                  value={publicBind ? 'public' : 'localhost'}
+                  onChange={(v) => patch('bindAddress', v)}
+                  options={[
+                    { value: 'localhost', label: t('ftp.bindLocal'), hint: t('ftp.bindLocalHint') },
+                    { value: 'public', label: t('ftp.bindPublic'), hint: t('ftp.bindPublicHint') },
+                  ]}
                 />
               </Field>
               <Field
@@ -429,8 +509,8 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   size="md"
                   loading={busy}
                   disabled={needPasvPublicIp}
-                  title={needPasvPublicIp ? t('ftp.pasvIpRequired') : t('ftp.applyRestart')}
-                  onClick={() => void onApplySettings()}
+                  title={needPasvPublicIp ? t('ftp.pasvIpRequired') : startBlockedTitle}
+                  onClick={() => requestStartOrApply()}
                 >
                   {t('ftp.applyRestart')}
                 </Button>
@@ -515,7 +595,8 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  onClick={() => void onApplySettings()}
+                  title={startBlockedTitle}
+                  onClick={() => requestStartOrApply()}
                 >
                   {t('ftp.applyRestart')}
                 </Button>
@@ -529,8 +610,29 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
         title={t('systemd.opsResult')}
         result={result}
         message={msg}
-        onRetry={installed && !running ? () => void onApplySettings() : undefined}
+        onRetry={installed && !running ? () => requestStartOrApply() : undefined}
         busy={busy}
+      />
+
+      <ConfirmDialog
+        open={plainConfirm}
+        onClose={() => setPlainConfirm(false)}
+        title={t('ftp.plainConfirmTitle')}
+        description={t('ftp.plainConfirmDesc')}
+        consequences={[
+          t('ftp.plainConfirmC1'),
+          t('ftp.plainConfirmC2'),
+          t('ftp.plainConfirmC3'),
+        ]}
+        confirmText="PLAINTEXT"
+        confirmLabel={t('ftp.plainConfirmAction')}
+        severity="critical"
+        busy={busy}
+        onConfirm={() => {
+          setPlainConfirm(false);
+          if (!installed) void onInstallAndStart(true);
+          else void onApplySettings(true);
+        }}
       />
     </div>
   );

@@ -8,6 +8,8 @@
     "up": "已啟用",
     "down": "已停用",
     "unknown": "未知",
+    "loopback": "永久啟用",
+    "loopbackHint": "回環介面一律可用，不可變更。",
     "other": "其他"
   },
   "statGateway": "閘道",

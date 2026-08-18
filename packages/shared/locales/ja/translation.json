@@ -16,7 +16,8 @@
       "error": "エラー",
       "unknown": "プローブされていない",
       "fallback": "不明",
-      "activating": "Starting"
+      "activating": "Starting",
+      "stuck": "Start stuck"
     },
     "liveN": "{{count}} オンライン",
     "registeredOnly": "登録済みのみ",
@@ -141,7 +142,8 @@
     "historyTitleShort": "コマンド履歴を開く (読み取り専用)",
     "expEdge": "端では：",
     "noteAllowlist": "Agent tool calls must pass the allowlist.",
-    "noteRbacCap": "Agent role is capped at write-low."
+    "noteRbacCap": "Agent role is capped at write-low.",
+    "journal": "journal"
   },
   "ai": {
     "status": {
@@ -674,7 +676,8 @@
     "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
     "statsAnnouncesHint": "Announce requests seen by the tracker process",
     "leftoverHashesTitle": "Tracker leftover hashes",
-    "leftoverHashesHint": "Read-only. These announces are not library or share rows."
+    "leftoverHashesHint": "Read-only. These announces are not library or share rows.",
+    "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed."
   },
   "catalog": {
     "sw": {
@@ -911,7 +914,8 @@
     "hitMiss": "Hits {{hits}} / misses {{misses}}",
     "cacheBytes": "Cache ≈ {{n}} B",
     "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
-    "offlineHint": "Offline — probe failed. Remove the node if it is leftover."
+    "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
+    "applyFailedNoNote": "No stored reason. Re-apply to capture the error."
   },
   "cli": {
     "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
@@ -2395,7 +2399,8 @@
     "registeredJobsHint": "Jobs registered in the panel (including pending install)",
     "pendingInstallCount": "{{n}} pending install",
     "systemJobBadge": "No project · system user",
-    "willNotRun": "Not written to system crontab — will not run."
+    "willNotRun": "Not written to system crontab — will not run.",
+    "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run."
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -3126,7 +3131,9 @@
     "installPort53BusyConsequence": "53 番で応答を期待する前に、バインドを修復するか他の待受を止めてください。",
     "createZoneNeedValid": "Enter a valid zone name and IPv4 address",
     "startProbeFailed": "Could not re-check DNS health after start",
-    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53"
+    "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
+    "goStartService": "Start DNS service",
+    "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again."
   },
   "docker": {
     "title": "Docker",
@@ -4684,7 +4691,22 @@
     "pasvIpRequired": "適用前に PASV の公開 IP を設定してください（NAT／クラウド）。検出するか入力します。",
     "vsftpdFailedGeneric": "vsftpd failed. Open the Service tab for live settings and journal.",
     "stateFailed": "Failed to start",
-    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21."
+    "plaintextInsecure": "Cleartext FTP (no TLS) — insecure. Enable FTPS before exposing port 21.",
+    "plaintextPublicLive": "vsftpd is listening on a public address without FTPS. Credentials travel in the clear. Enable FTPS, bind to this host only, or confirm PLAINTEXT to keep this posture.",
+    "bindAddress": "Listen scope",
+    "bindAddressHint": "New installs bind to this host only. Public listen without FTPS needs a typed confirmation.",
+    "bindLocal": "This host only",
+    "bindLocalHint": "127.0.0.1 — fine without TLS for local tests",
+    "bindPublic": "Public",
+    "bindPublicHint": "All interfaces — enable FTPS or confirm PLAINTEXT",
+    "enableFtpsAndStart": "Enable FTPS and start",
+    "publicPlainNeedConfirm": "Public cleartext FTP needs a PLAINTEXT confirmation",
+    "plainConfirmTitle": "Start public FTP without FTPS?",
+    "plainConfirmDesc": "Port 21 will accept logins and data in the clear on the public address.",
+    "plainConfirmC1": "Usernames and passwords are visible on the network.",
+    "plainConfirmC2": "PASV will advertise the configured public IP.",
+    "plainConfirmC3": "Host firewall and cloud security group are not opened for you.",
+    "plainConfirmAction": "Start cleartext FTP"
   },
   "geo": {
     "continents": {
@@ -4983,7 +5005,9 @@
     "engineBrowserNeedChrome": "Real browser (Chrome not installed)",
     "egressHint": "The target site sees this server’s outbound address ({{host}}), not your laptop. Cookies stay in the server session jar.",
     "closeNoSession": "No session yet",
-    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}"
+    "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
+    "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
+    "clearSessionData": "Clear session data"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",
@@ -5444,7 +5468,18 @@
     "expandAllWarnings": "Show all {{n}} warnings",
     "collapseWarnings": "Show fewer",
     "inventoriedWarn": "Inventoried · {{n}} warnings",
-    "orphanMtime": "Last modified {{at}}"
+    "orphanMtime": "Last modified {{at}}",
+    "inventoriedOrphans": "Inventoried · {{n}} leftover homes",
+    "inventoriedWarnAndOrphans": "Inventoried · {{w}} warnings · {{n}} leftover",
+    "orphanHomesTitle": "Leftover project homes ({{count}})",
+    "orphanHomesSummary": "{{count}} path(s) on disk are not in the store. Back up first if unsure, then remove unused paths.",
+    "orphanColHome": "Home",
+    "orphanColModified": "Modified",
+    "orphanKpi": "Leftover",
+    "sourceOs": "OS",
+    "sourceDataDir": "dataDir",
+    "sourceDbRedis": "Databases / Redis",
+    "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis"
   },
   "multiCheck": {
     "customPlaceholder": "カスタムコード",
@@ -5712,7 +5747,9 @@
       "up": "Up",
       "down": "Down",
       "unknown": "Unknown",
-      "other": "Other"
+      "other": "Other",
+      "loopback": "Always on",
+      "loopbackHint": "Loopback is always available and cannot be changed."
     }
   },
   "nginx": {
@@ -5907,7 +5944,8 @@
       "vsftpdStarted": "vsftpdが開始されました",
       "openPortsStep": "ファイアウォール ポート (手動)",
       "openPortsReminder": "ホスト ファイアウォールとクラウド セキュリティ グループで TCP ポートを開きます: {{ports}}。 FTPS 適用ではポートが開かれません。",
-      "openPortsPasvHint": "ログインは機能するが、ディレクトリ LIST がタイムアウトした場合、PASV データ範囲はブロックされます - フルに開きます"
+      "openPortsPasvHint": "ログインは機能するが、ディレクトリ LIST がタイムアウトした場合、PASV データ範囲はブロックされます - フルに開きます",
+      "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
     },
     "deploy": {
       "nodeMissingIsolated": "分離デプロイにノード バイナリがありません: {{path}} — ノード {{version}} ツールチェーンをインストールしてから再デプロイします。 203/EXEC となるユニットの作成を拒否します。",
@@ -8841,7 +8879,9 @@
       "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
       "hostnameAppended": "Appended to /etc/hosts: {{line}}",
       "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-      "skipStartHostname": "Did not start the display — fix hostname resolution first."
+      "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+      "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+      "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
     },
     "apache": {
       "needServerName": "サーバー名は必須です",
@@ -10253,7 +10293,11 @@
     "serverNameMismatch": "稼働中の設定は {{live}}、フォームは {{draft}} です。適用すると置き換わります。",
     "executeFlag": "Execute",
     "asRoot": "Root",
-    "statusDraft": "Draft / not applied"
+    "statusDraft": "Draft / not applied",
+    "liveName": "Live name",
+    "draftName": "Draft name",
+    "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
+    "discardDraft": "Discard draft"
   },
   "rbac": {
     "permissions": "権限",
@@ -11649,7 +11693,9 @@
     "policyNeedSelf2fa": "まずこのアカウントで 2FA を有効にしてから、TOTP コードで確認します",
     "revokeAllDevicesTitle": "記憶されているすべてのデバイスを取り消します - あなたと他の管理者は 2FA を再度確認する必要があります",
     "statSshValue": "{{keys}} keys · {{auth}} authorized",
-    "statSshHint": "Outbound identities / authorized login keys"
+    "statSshHint": "Outbound identities / authorized login keys",
+    "needCurrentPassword": "Enter the current password first",
+    "passwordMin8": "New password must be at least 8 characters"
   },
   "serviceExposure": {
     "title": "ネットワークアクセス",
@@ -11793,7 +11839,8 @@
     "sshdBootOffWarn": "sshd is not enabled on boot. After reboot this host will have no SSH rescue path.",
     "restartConfirmTitle": "Restart {{label}}?",
     "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
-    "startVerifyFailed": "{{label}} start did not stay healthy."
+    "startVerifyFailed": "{{label}} start did not stay healthy.",
+    "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop."
   },
   "software": {
     "title": "ソフトウェア",
@@ -13258,7 +13305,8 @@
     "tab": {
       "nodes": "ノード",
       "disk": "ディスク",
-      "about": "説明"
+      "about": "説明",
+      "stack": "Software"
     },
     "empty": {
       "title": "バリデーターノードはまだありません",
@@ -13276,7 +13324,16 @@
       "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）",
       "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
       "autoClearConfirmTitle": "Enable auto-clear?",
-      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again."
+      "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
+      "fsUsed": "Filesystem used",
+      "leftoverTitle": "Leftover data ({{count}})",
+      "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
+      "leftoverRemove": "Remove",
+      "leftoverRemoveTitle": "Delete leftover validator data?",
+      "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
+      "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
+      "autoClearCandidate": "Current candidate: {{id}}",
+      "autoClearNone": "No stopped instance is a candidate right now."
     },
     "chain": {
       "eth": "Ethereum",
@@ -13386,7 +13443,8 @@
       "snapshotNear": "NEAR データを消去しました。compose は公式 genesis と epoch sync で再初期化します",
       "nativePrune": "クライアントネイティブのプルーニングを実行しました",
       "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
-      "deleted": "Node deleted"
+      "deleted": "Node deleted",
+      "leftoverRemoved": "Removed leftover {{path}}"
     },
     "create": "ノードを作成",
     "wizard": {
@@ -13415,7 +13473,21 @@
       "installConfirmTitle": "Install this node?",
       "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
       "installC1": "Several gigabytes of images may be downloaded.",
-      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically."
+      "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
+      "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
+      "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
+      "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
+      "needCustomPath": "Enter an absolute data path",
+      "previewId": "Node id",
+      "previewCompose": "Compose project",
+      "profileSeeAbout": "What each profile means is on the About tab.",
+      "dockerAbout": "Docker Engine is required to install and start nodes.",
+      "dockerAboutOk": "Docker Engine is installed.",
+      "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
+      "rewriteCompose": "Rewrite compose",
+      "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
+      "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
+      "chainMeta": "{{disk}} min · {{clients}} clients"
     },
     "actions": {
       "detail": "詳細",
@@ -13514,7 +13586,33 @@
       "stopped": "Stopped",
       "running": "Running",
       "syncing": "Syncing",
-      "error": "Error"
+      "error": "Error",
+      "starting": "Starting"
+    },
+    "profileHelp": {
+      "title": "Profiles",
+      "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
+      "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
+      "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
+      "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
+      "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet."
+    },
+    "software": {
+      "engine": "Docker Engine",
+      "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
+      "client": "Client",
+      "image": "Image",
+      "present": "Local",
+      "local": "Pulled",
+      "missing": "Not pulled",
+      "size": "Size",
+      "usedBy": "Used by",
+      "unused": "No instance",
+      "pull": "Pull",
+      "pulling": "Pull {{ref}}",
+      "empty": "No pinned client images",
+      "emptyDesc": "The catalog is empty. This should not happen.",
+      "daemonDown": "Docker Engine is not running"
     }
   },
   "vnc": {
@@ -13776,7 +13874,8 @@
     "hostnameFixTitle": "Append this line to /etc/hosts?",
     "hostnameFixDesc": "{{line}}",
     "hostnameFixDone": "Hostname /etc/hosts updated",
-    "startAfterCreateBlocked": "Disabled until the hostname resolves"
+    "startAfterCreateBlocked": "Disabled until the hostname resolves",
+    "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
   },
   "vpn": {
     "pageDesc": "VPNサーバーとクライアント",

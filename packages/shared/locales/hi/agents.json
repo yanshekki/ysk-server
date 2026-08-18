@@ -12,7 +12,8 @@
     "error": "गलती",
     "unknown": "जांच नहीं की गई",
     "fallback": "अज्ञात",
-    "activating": "Starting"
+    "activating": "Starting",
+    "stuck": "Start stuck"
   },
   "liveN": "{{count}} ऑनलाइन",
   "registeredOnly": "केवल पंजीकृत",
@@ -137,5 +138,6 @@
   "historyTitleShort": "कमांड इतिहास खोलें (केवल पढ़ने के लिए)",
   "expEdge": "एक किनारे पर:",
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
-  "noteRbacCap": "Agent role is capped at write-low."
+  "noteRbacCap": "Agent role is capped at write-low.",
+  "journal": "journal"
 }

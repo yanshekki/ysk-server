@@ -766,11 +766,15 @@ intervalMs: 5000`}
           ) : (
             <InfoCardGrid cols={3}>
               {runtimeList.map((rt) => {
+                const stuckActivating =
+                  rt.unitActive === 'activating' && rt.status === 'failed';
                 const honestStatus =
                   rt.pathExists === false ||
                   (!rt.pathExists && rt.status === 'stopped' && !rt.unitActive)
                     ? 'not_installed'
-                    : rt.status;
+                    : stuckActivating
+                      ? 'failed'
+                      : rt.status;
                 const pathLine = rt.installPath
                   ? `${rt.pathExists ? t('agents.pathExists') : t('agents.pathMissing')} · ${rt.installPath}`
                   : '—';
@@ -798,6 +802,14 @@ intervalMs: 5000`}
                     ]}
                     actions={
                       <ActionBar>
+                        {rt.unitActive === 'activating' || honestStatus === 'failed' ? (
+                          <Link
+                            to={`/logs?unit=${encodeURIComponent(rt.unitName ?? `ysk-agent-${rt.kind}.service`)}`}
+                            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                          >
+                            {t('agents.journal')}
+                          </Link>
+                        ) : null}
                         <Button
                           variant="secondary"
                           size="sm"

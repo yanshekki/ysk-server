@@ -345,6 +345,7 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
               size="md"
               loading={busy}
               disabled={!password}
+              title={!password ? t('security.reauthPasswordRequired') : t('security.start2fa')}
               onClick={beginEnroll}
             >
               {t('security.start2fa')}

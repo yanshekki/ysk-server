@@ -53,6 +53,7 @@
   "statsTrackerLeftover": "Tracker 雜湊不在資料庫",
   "statsTrackerLeftoverHint": "本機 Tracker 有 announce、但不在 Torrent 資料庫列的雜湊。清單見 Tracker 分頁。",
   "leftoverHashesTitle": "Tracker 殘留雜湊",
+  "publicHostMissingLive": "Tracker 已在聽，但未設定公開 announce 主機。外網對等節點找不到此種子。",
   "leftoverHashesHint": "唯讀。這些 announce 不是資料庫或分享列。",
   "statsPeers": "同行",
   "statsAnnounces": "Announce",

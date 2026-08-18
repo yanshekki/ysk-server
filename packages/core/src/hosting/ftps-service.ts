@@ -71,6 +71,11 @@ export interface FtpsSettings {
    */
   listenIpv6: boolean;
   listenPort: number;
+  /**
+   * New installs bind loopback. Missing stored field = public (do not
+   * silently shrink an existing public listener).
+   */
+  bindAddress?: 'localhost' | 'public';
   sslEnable: boolean;
   forceSsl: boolean;
   /** Domain used to locate cert under dataDir/certs or LE path */
@@ -92,6 +97,7 @@ export const DEFAULT_FTPS_SETTINGS: FtpsSettings = {
   listen: true,
   listenIpv6: false,
   listenPort: 21,
+  bindAddress: 'localhost',
   sslEnable: false,
   forceSsl: false,
   sslDomain: '',
@@ -272,12 +278,44 @@ export function createProjectFtpAccount(
     written: [homePath] };
 }
 
+export function normalizeFtpBindAddress(
+  raw: unknown,
+  present: boolean,
+): 'localhost' | 'public' {
+  const s = String(raw ?? '').trim().toLowerCase();
+  if (s === 'localhost' || s === '127.0.0.1' || s === '::1') return 'localhost';
+  if (s === 'public' || s === '0.0.0.0' || s === '*' || s === '::') return 'public';
+  return present ? 'localhost' : 'public';
+}
+
+export function ftpBindIsPublic(settings: Pick<FtpsSettings, 'bindAddress'>): boolean {
+  return normalizeFtpBindAddress(settings.bindAddress, settings.bindAddress != null) === 'public';
+}
+
+/** Public plaintext start needs an explicit allow flag (UI types PLAINTEXT). */
+export function assertFtpStartAllowed(input: {
+  settings: Pick<FtpsSettings, 'bindAddress' | 'sslEnable'>;
+  sslReady: boolean;
+  allowPlaintextPublic?: boolean;
+}): { ok: true } | { ok: false; blockMessage: string } {
+  const ftpsOn = Boolean(input.settings.sslEnable && input.sslReady);
+  if (ftpsOn || !ftpBindIsPublic(input.settings)) return { ok: true };
+  if (input.allowPlaintextPublic) return { ok: true };
+  return { ok: false, blockMessage: tl('notes.ftp.publicPlaintextBlocked') };
+}
+
 export function loadFtpsSettings(db: JsonStore): FtpsSettings {
   const raw = db.snapshot.settings?.[FTPS_SETTINGS_KEY];
   if (!raw) return { ...DEFAULT_FTPS_SETTINGS };
   try {
-    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    return { ...DEFAULT_FTPS_SETTINGS, ...(parsed as FtpsSettings) };
+    const parsed = (typeof raw === 'string' ? JSON.parse(raw) : raw) as FtpsSettings;
+    const present =
+      parsed != null && typeof parsed === 'object' && 'bindAddress' in parsed;
+    return {
+      ...DEFAULT_FTPS_SETTINGS,
+      ...parsed,
+      bindAddress: normalizeFtpBindAddress(parsed.bindAddress, present),
+    };
   } catch {
     return { ...DEFAULT_FTPS_SETTINGS };
   }
@@ -293,6 +331,7 @@ export function saveFtpsSettings(db: JsonStore, patch: Partial<FtpsSettings>): F
   next.sslDomain = String(next.sslDomain ?? '').trim().toLowerCase();
   next.guestUsername = String(next.guestUsername || 'ftp').replace(/[^a-z0-9_-]/gi, '') || 'ftp';
   next.banner = String(next.banner || 'YSK FTPS').slice(0, 120);
+  next.bindAddress = normalizeFtpBindAddress(next.bindAddress, true);
   db.snapshot.settings[FTPS_SETTINGS_KEY] = JSON.stringify(next);
   db.persist();
   return next;
@@ -370,6 +409,11 @@ export function buildVsftpdConf(input: {
     listenV4 ? 'listen=YES' : 'listen=NO',
     listenV6 ? 'listen_ipv6=YES' : 'listen_ipv6=NO',
     `listen_port=${s.listenPort}`,
+    ...(normalizeFtpBindAddress(s.bindAddress, s.bindAddress != null) === 'localhost'
+      ? listenV6
+        ? ['listen_address6=::1']
+        : ['listen_address=127.0.0.1']
+      : []),
     'anonymous_enable=NO',
     'local_enable=YES',
     s.writeEnable ? 'write_enable=YES' : 'write_enable=NO',
@@ -643,6 +687,8 @@ export async function applyFtpsService(input: {
   /** Install packages + copy to system + enable (default true for panel) */
   applySystem?: boolean;
   settingsPatch?: Partial<FtpsSettings>;
+  /** One-shot: allow public bind without FTPS (operator typed PLAINTEXT). */
+  allowPlaintextPublic?: boolean;
 }): Promise<
   ApplyResult & {
     requiresExecute: boolean;
@@ -719,6 +765,36 @@ export async function applyFtpsService(input: {
   }
 
   if (can) {
+    const startGate = assertFtpStartAllowed({
+      settings,
+      sslReady: Boolean(settings.sslEnable && certs.ok),
+      allowPlaintextPublic: input.allowPlaintextPublic === true,
+    });
+    if (!startGate.ok) {
+      notes.push(startGate.blockMessage);
+      steps.push({
+        name: tl('notes.ftp.startVsftpd'),
+        status: 'blocked',
+        detail: startGate.blockMessage,
+      });
+      return {
+        ok: false,
+        executed: false,
+        blocked: true,
+        blockReason: 'validation',
+        blockMessage: startGate.blockMessage,
+        written,
+        commands: [],
+        commandResults,
+        notes,
+        steps,
+        requiresExecute: false,
+        requiresRoot: false,
+        settings,
+        status: await probeFtpsStatus(input),
+      };
+    }
+
     // ensure guest user exists
     const gu = settings.guestUsername;
     const idr = await input.host.runCommand(

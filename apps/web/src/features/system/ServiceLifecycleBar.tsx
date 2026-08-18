@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, ConfirmDialog } from '../../shared/components/ui';
+import { Button, ConfirmDialog, OpsResultPanel } from '../../shared/components/ui';
 import type { ConfirmSeverity } from '../../shared/components/ui';
 import { systemApi } from './api';
 import { useFeatureAction } from './useFeatureAction';
@@ -33,6 +33,8 @@ export type ServiceLifecycleBarProps = {
   verifyAfter?: (
     action: ServiceLifecycleAction,
   ) => Promise<{ ok: boolean; notes?: string[] } | void>;
+  /** Show the last start/stop result under the toolbar (toasts still fire). */
+  showResult?: boolean;
 };
 
 const DEFAULT_ACTIONS: ServiceLifecycleAction[] = ['start', 'stop', 'restart'];
@@ -51,9 +53,10 @@ export function ServiceLifecycleBar({
   onAction,
   stopDetail,
   verifyAfter,
+  showResult = false,
 }: ServiceLifecycleBarProps) {
   const { t } = useTranslation();
-  const { busy, run } = useFeatureAction();
+  const { busy, run, result } = useFeatureAction();
   const [resolvedUnit, setResolvedUnit] = useState(unitProp?.trim() || '');
   const [pendingStop, setPendingStop] = useState(false);
   const [pendingRestart, setPendingRestart] = useState(false);
@@ -156,7 +159,7 @@ export function ServiceLifecycleBar({
             /* ignore */
           }
         }
-        await onDone?.();
+        await Promise.resolve(onDone?.());
         if (
           verifyAfter &&
           (action === 'start' || action === 'restart')
@@ -297,6 +300,9 @@ export function ServiceLifecycleBar({
         confirmLabel={t('services.action.restart')}
         busy={busy}
       />
+      {showResult && result ? (
+        <OpsResultPanel title={t('services.lifecycleTitle', { label })} result={result} />
+      ) : null}
     </div>
   );
 }

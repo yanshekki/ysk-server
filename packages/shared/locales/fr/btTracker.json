@@ -196,5 +196,6 @@
   "statsTrackerLeftoverHint": "Tracker announce hashes that are not library rows",
   "statsAnnouncesHint": "Announce requests seen by the tracker process",
   "leftoverHashesTitle": "Tracker leftover hashes",
-  "leftoverHashesHint": "Read-only. These announces are not library or share rows."
+  "leftoverHashesHint": "Read-only. These announces are not library or share rows.",
+  "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed."
 }

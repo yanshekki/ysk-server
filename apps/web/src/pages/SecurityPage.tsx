@@ -546,6 +546,15 @@ export function SecurityPage() {
                     size="md"
                     loading={pwBusy}
                     disabled={!curPw || newPw.length < 8 || newPw !== newPw2}
+                    title={
+                      !curPw
+                        ? t('security.needCurrentPassword')
+                        : newPw.length < 8
+                          ? t('security.passwordMin8')
+                          : newPw !== newPw2
+                            ? t('security.passwordMismatch')
+                            : t('security.changePassword')
+                    }
                     onClick={() => {
                       setPwBusy(true);
                       void api

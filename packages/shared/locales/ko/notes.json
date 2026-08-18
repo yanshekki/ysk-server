@@ -99,7 +99,8 @@
     "vsftpdStarted": "vsftpd가 시작되었습니다",
     "openPortsStep": "방화벽 포트(수동)",
     "openPortsReminder": "호스트 방화벽 및 클라우드 보안 그룹에서 TCP 포트 열기: {{ports}}. FTPS 적용은 포트를 열지 않습니다.",
-    "openPortsPasvHint": "로그인은 작동하지만 디렉터리 LIST 시간이 초과되면 PASV 데이터 범위가 차단됩니다. 전체 파일을 엽니다."
+    "openPortsPasvHint": "로그인은 작동하지만 디렉터리 LIST 시간이 초과되면 PASV 데이터 범위가 차단됩니다. 전체 파일을 엽니다.",
+    "publicPlaintextBlocked": "Refusing to start public FTP without FTPS. Bind to this host only, enable FTPS with a certificate, or confirm PLAINTEXT to expose cleartext on the public address."
   },
   "deploy": {
     "nodeMissingIsolated": "격리된 배포를 위한 노드 바이너리 누락: {{path}} — Node {{version}} 툴체인을 설치한 후 다시 배포합니다. 203/EXEC가 되는 유닛 작성을 거부합니다.",
@@ -3033,7 +3034,9 @@
     "hostnameWouldAppend": "Would append to /etc/hosts: {{line}}",
     "hostnameAppended": "Appended to /etc/hosts: {{line}}",
     "hostnameAppendFailed": "Could not write /etc/hosts: {{detail}}",
-    "skipStartHostname": "Did not start the display — fix hostname resolution first."
+    "skipStartHostname": "Did not start the display — fix hostname resolution first.",
+    "hostnameAliasPresent": "Hostname {{hostname}} is already an exact /etc/hosts alias — not appended again.",
+    "hostnameStillUnresolvable": "Wrote /etc/hosts but {{hostname}} still does not resolve. Confirm nsswitch hosts includes files."
   },
   "apache": {
     "needServerName": "서버 이름이 필요합니다",
