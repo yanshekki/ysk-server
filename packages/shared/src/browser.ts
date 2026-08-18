@@ -19,6 +19,7 @@ export * from './software.js';
 export * from './ssl.js';
 export * from './updates.js';
 export * from './validators.js';
+export * from './staking-playbook.js';
 export * from './ai.js';
 export * from './capabilities.js';
 export * from './route-capabilities.js';

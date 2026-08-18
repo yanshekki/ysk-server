@@ -30,11 +30,10 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
-## What's new in 1.1.11
+## What's new in 1.1.12
 
-- Validator staking playbooks on the About tab (official links only; no wallet connect).
-- Avalanche instance page can show NodeID and BLS credentials after RPC answers.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.11**.
+- Published panel includes staking playbooks (1.1.11 npm packed a stale UI after Vite failed).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.12**.
 
 ## What's new in 1.1.9
 
@@ -117,8 +116,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.11) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.11) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.12) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.12) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

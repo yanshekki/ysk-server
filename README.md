@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.12
+
+- **Embedded panel** — staking playbooks are in the published web UI (1.1.11 npm packed a stale build after Vite failed).
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.12** together.
+
 ## What's new in 1.1.11
 
 - **Validator staking playbooks** — About tab explains how each chain registers stake (official links only). The panel never holds keys.

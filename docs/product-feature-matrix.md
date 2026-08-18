@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-18 — **1.1.11** (npm latest after 1.1.10). Validator About tab staking playbooks (official links only; no wallet connect). Avalanche instance shows NodeID + BLS after RPC. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-18 — **1.1.12** (npm latest after 1.1.11). Validator About tab staking playbooks are in the published panel (1.1.11 Vite embed was stale). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 

@@ -44,7 +44,10 @@ log "build shared → core → server → web…"
 pnpm --filter ysk-server-shared build
 pnpm --filter ysk-server-core build
 pnpm --filter ysk-server build
-pnpm --filter ysk-server-web build || log "WARN: web build failed"
+if ! pnpm --filter ysk-server-web build; then
+  log "ERROR: web build failed — refusing to publish a stale embedded panel"
+  exit 1
+fi
 
 log "embed web UI…"
 mkdir -p apps/server/public/web

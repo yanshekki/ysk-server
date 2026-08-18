@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.1.12 — 2026-08-18
+
+### Fix
+- Export the staking playbook from the browser shared entry so the Vite panel build includes About-tab guides. 1.1.11 npm used a stale embedded UI after that build failed.
+- `publish-ysk-server-npm.sh` now exits if the web build fails, instead of packing the previous `apps/web/dist`.
+
+### Improve
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.12**.
+
 ## 1.1.11 — 2026-08-18
 
 ### Feature
