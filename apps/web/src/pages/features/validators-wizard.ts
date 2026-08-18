@@ -25,7 +25,6 @@ export function validatorWizardBlockReason(input: {
   customPath?: boolean;
   dataPath?: string;
 }): WizardBlockReason | null {
-  if (input.dockerInstalled !== true) return 'docker';
   if (!input.hasSpec) return 'spec';
   if (input.isMainnet && !input.mainnetAck) return 'mainnet';
   if (input.diskShort && !(input.isMainnet && input.mainnetAck)) return 'disk';

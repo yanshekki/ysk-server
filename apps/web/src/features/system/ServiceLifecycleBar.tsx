@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useTranslation } from 'react-i18next';
 import { Button, ConfirmDialog, OpsResultPanel } from '../../shared/components/ui';
 import type { ConfirmSeverity } from '../../shared/components/ui';
+import { ApiError } from '../../shared/services/api';
 import { systemApi } from './api';
 import { useFeatureAction } from './useFeatureAction';
 
@@ -32,7 +33,7 @@ export type ServiceLifecycleBarProps = {
   /** After start/restart, re-probe. Return ok:false to avoid a success toast. */
   verifyAfter?: (
     action: ServiceLifecycleAction,
-  ) => Promise<{ ok: boolean; notes?: string[] } | void>;
+  ) => Promise<{ ok: boolean; notes?: string[]; blockMessage?: string } | void>;
   /** Show the last start/stop result under the toolbar (toasts still fire). */
   showResult?: boolean;
   extraAfterResult?: ReactNode;
@@ -175,26 +176,39 @@ export function ServiceLifecycleBar({
     async (action: ServiceLifecycleAction) => {
       if (!canAct) return;
       await run(async () => {
-        if (onAction) {
-          const r = await onAction(action);
-          await onDone?.();
-          return r;
-        }
-        const r = await systemApi.serviceLifecycle({ unit, action });
-        if (matrixId) {
-          try {
-            const mx = await systemApi.servicesMatrix();
-            const row = (mx.items ?? []).find((x) => x.id === matrixId);
-            if (row?.enabled) setBootEnabled(row.enabled);
-          } catch {
-            /* ignore */
+        let r: unknown = { ok: false };
+        try {
+          if (onAction) {
+            r = await onAction(action);
+          } else {
+            r = await systemApi.serviceLifecycle({ unit, action });
+            if (matrixId) {
+              try {
+                const mx = await systemApi.servicesMatrix();
+                const row = (mx.items ?? []).find((x) => x.id === matrixId);
+                if (row?.enabled) setBootEnabled(row.enabled);
+              } catch {
+                /* ignore */
+              }
+            }
           }
+        } catch (e) {
+          r =
+            e instanceof ApiError && e.details && typeof e.details === 'object'
+              ? { ...(e.details as Record<string, unknown>), ok: false }
+              : {
+                  ok: false,
+                  notes: [
+                    e instanceof Error ? e.message : t('services.startVerifyFailed', { label }),
+                  ],
+                };
         }
-        await Promise.resolve(onDone?.());
-        if (
-          verifyAfter &&
-          (action === 'start' || action === 'restart')
-        ) {
+        try {
+          await Promise.resolve(onDone?.());
+        } catch {
+          /* refresh must not hide the lifecycle result */
+        }
+        if (verifyAfter && (action === 'start' || action === 'restart')) {
           const v = await verifyAfter(action);
           if (v && v.ok === false) {
             const notes = v.notes?.length
@@ -203,14 +217,14 @@ export function ServiceLifecycleBar({
             return {
               ok: false,
               notes,
-              blockMessage: notes[0],
+              blockMessage: v.blockMessage?.trim() || notes[0],
             };
           }
         }
         return r;
       }, okMessage(action));
     },
-    [canAct, onAction, onDone, okMessage, run, unit, verifyAfter, t, label],
+    [canAct, onAction, onDone, okMessage, run, unit, verifyAfter, t, label, matrixId],
   );
 
   if (!installed) return null;

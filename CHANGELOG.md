@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.10 — 2026-08-18
+
+### Fix
+- DNS start/restart still runs `verifyAfter` when lifecycle returns HTTP 422. The result card headline is the bind/journal line (`0.0.0.0:53` / in use), not only “failed”.
+- Validator wizard Install stays enabled after the mainnet ack (Docker probe unknown no longer locks the button). Clicking Install opens a ConfirmDialog; mainnet requires typing the node id.
+- Health badge on `/dns` tools shows “not running” instead of “—”.
+
+### Improve
+- E2E-1119: mainnet ack copy names disk and slashing in plain language. About tab compares Minimal / Pruned / Validator-ready / RPC. Wizard step 3 links to that table.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.10**.
+
 ## 1.1.9 — 2026-08-18
 
 ### Fix

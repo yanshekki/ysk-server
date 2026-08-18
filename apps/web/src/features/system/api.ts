@@ -440,9 +440,10 @@ export const systemApi = {
     unit: string;
     action: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
   }) =>
-    api.requestRaw('/api/v1/system/services/lifecycle', {
+    api.requestRawAllowStatus('/api/v1/system/services/lifecycle', {
       method: 'POST',
       body: JSON.stringify(body),
+      allowStatuses: [403, 422],
     }),
   protectionProbe: () =>
     api.requestRaw('/api/v1/protection/probe', { method: 'POST', body: '{}' }),

@@ -59,6 +59,14 @@ export function classifyOpsNote(text: string): OpsNoteKind {
   const raw = text.trim();
   if (!raw) return 'drop';
   if (isOperatorNoise(raw)) return 'drop';
+  // Bind / port-in-use diagnostics must stay on the result card (not collapsed).
+  if (
+    /Unable to bind|Address already in use|0\.0\.0\.0:53|:53\b|埠被佔用|端口被占用|無法綁定|无法绑定|pdnsBindConflict/i.test(
+      raw,
+    )
+  ) {
+    return 'primary';
+  }
   // Explicit technical diagnostics
   if (
     /systemd|unit|MainPID|is-active|203\/EXEC|pidfile|journalctl|conf\.d|已寫入系統服務|已写入系统服务|已複製\d+|已复制\d+|Managed configs|Include them|管理設定目錄|管理配置目录|ysk-web group|chown|擁有者|拥有者|隔離模式|隔离模式|以專案用戶|以项目用户|已送 SIGTERM|已套用面板|已套用.*調校|已套用.*调校|類型：|类型：|php-proxy|fpm/i.test(
@@ -121,6 +129,9 @@ export function humanizeOperatorNote(text: string): string | null {
     return tr('ops.blocked.panel');
   }
   if (/EADDRINUSE|address already in use|port.*in use/i.test(raw)) {
+    if (/bind|0\.0\.0\.0:53|:53\b|pdns|PowerDNS|埠被佔用|端口被占用/i.test(raw)) {
+      return raw.length > 200 ? raw.slice(0, 180).trim() + '…' : raw;
+    }
     return tr('notes.tpl.failedDetail', { detail: 'EADDRINUSE' });
   }
   if (/ENOENT|no such file/i.test(raw) && /dir|path|file/i.test(raw)) {

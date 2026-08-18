@@ -13521,7 +13521,8 @@
         "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
         "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
         "rpc": "Public RPC node — not a staking validator."
-      }
+      },
+      "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm."
     },
     "actions": {
       "detail": "Rincian",
@@ -13629,7 +13630,22 @@
       "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
       "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
       "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
-      "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet."
+      "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet.",
+      "colName": "Profile",
+      "colUse": "Use for",
+      "colDisk": "Disk",
+      "colStake": "Staking validator",
+      "useMinimal": "Testnet or a first install. Not a full history.",
+      "usePruned": "Follow the chain tip long-term. Keeps recent data only (Pruned).",
+      "useValidatorReady": "Sized so you can later attest or propose. Generate keys offline yourself.",
+      "useRpc": "Let this host or other services query the chain. Listens on 127.0.0.1 by default.",
+      "diskMinimal": "Smallest",
+      "diskPruned": "Medium (more than Minimal)",
+      "diskValidatorReady": "Largest of the four",
+      "diskRpc": "Depends on the chain",
+      "stakeNo": "Not suitable",
+      "stakeYes": "Yes — offline or misconfigured can lose stake",
+      "stakeRpc": "Not a validator"
     },
     "software": {
       "engine": "Docker Engine",

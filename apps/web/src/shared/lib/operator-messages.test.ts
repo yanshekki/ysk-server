@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  classifyOpsNote,
   humanizeOperatorMessage,
   humanizeOperatorNote,
   isOperatorNoise,
@@ -30,6 +31,19 @@ describe('isOperatorNoise', () => {
   });
 });
 
+describe('classifyOpsNote', () => {
+  it('keeps PowerDNS bind / journal lines as primary', () => {
+    expect(
+      classifyOpsNote(
+        'PowerDNS 無法綁定 0.0.0.0:53（埠被佔用），多與 systemd-resolved 衝突。',
+      ),
+    ).toBe('primary');
+    expect(
+      classifyOpsNote("Unable to bind UDP socket to '0.0.0.0:53': Address already in use"),
+    ).toBe('primary');
+  });
+});
+
 describe('presentOpsNotes', () => {
   it('keeps short human steps in summary and hides cargo shell', () => {
     const { summary, technical } = presentOpsNotes([
@@ -47,6 +61,15 @@ describe('presentOpsNotes', () => {
     expect(summary.every((s) => !/Managed configs live/i.test(s))).toBe(true);
     // technical may hold unit diagnostics if humanized
     expect(Array.isArray(technical)).toBe(true);
+  });
+
+  it('puts bind-conflict on the visible summary', () => {
+    const { summary } = presentOpsNotes([
+      '沒有運行中的 named／bind9／pdns 單元',
+      'PowerDNS 無法綁定 0.0.0.0:53（埠被佔用），多與 systemd-resolved 衝突。',
+      "Unable to bind UDP socket to '0.0.0.0:53': Address already in use",
+    ]);
+    expect(summary.some((s) => /0\.0\.0\.0:53|埠被佔用|Unable to bind/i.test(s))).toBe(true);
   });
 });
 
@@ -119,6 +142,15 @@ describe('humanizeOperatorNote', () => {
 
   it('passes through already-localized free text', () => {
     expect(humanizeOperatorNote('Certificate renewed')).toBe('Certificate renewed');
+  });
+
+  it('does not flatten bind-in-use journal to generic EADDRINUSE', () => {
+    const n = humanizeOperatorNote(
+      "Unable to bind UDP socket to '0.0.0.0:53': Address already in use",
+    );
+    expect(n).toMatch(/0\.0\.0\.0:53|Unable to bind/i);
+    expect(n).not.toBe('EADDRINUSE');
+    expect(n).not.toMatch(/^失敗$|^failed$/i);
   });
 });
 

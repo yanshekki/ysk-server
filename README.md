@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.10
+
+- **DNS start card** — a failed PowerDNS start shows the bind/journal reason on the result card, not only “failed”.
+- **Validators** — after the mainnet ack, Install is enabled and opens a confirm dialog. About tab compares the four profiles.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.10** together.
+
 ## What's new in 1.1.9
 
 - **Cluster overview** — `/cluster` stays on `/cluster` (planned/applied table + four engine links). No 302 to Redis.

@@ -37,6 +37,7 @@ import { emailApi } from '../../features/email/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
+import { pickDnsStartFailureNotes } from './dns-start-notes';
 import { toast } from '../../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
@@ -1522,7 +1523,8 @@ export function DnsPage() {
                 <CardSection title={t('dns.healthTitle')}>
                   <div className="u-flex u-flex-wrap u-gap-2 u-mb-3">
                     <Badge tone={toneBadge(health.states?.service)}>
-                      {t('dns.stateService')}: {health.unitActive ? health.unit : '—'}
+                      {t('dns.stateService')}:{' '}
+                      {health.unitActive ? health.unit : t('dns.healthServiceDown')}
                     </Badge>
                     <Badge tone={toneBadge(health.states?.listen)}>
                       {t('dns.stateListen')}:{' '}
@@ -1543,7 +1545,7 @@ export function DnsPage() {
                             : '—'}
                     </Badge>
                   </div>
-                  {health.notes.length ? (
+                  {health.notes?.length ? (
                     <ul className="notes-list u-mb-3">
                       {health.notes.slice(0, 3).map((n) => (
                         <li key={n} className="muted u-text-sm">
@@ -1628,13 +1630,13 @@ export function DnsPage() {
                           if (h.unitActive && (h.listenUdp53 || h.listenTcp53)) {
                             return { ok: true };
                           }
-                          const notes = [
-                            ...(h.notes ?? []).slice(0, 4),
-                            t('dns.startBindHint'),
-                          ];
                           return {
                             ok: false,
-                            notes: notes.length ? notes : [t('dns.startNotListening')],
+                            ...pickDnsStartFailureNotes(
+                              h.notes,
+                              t('dns.startBindHint'),
+                              t('dns.startNotListening'),
+                            ),
                           };
                         }}
                       />

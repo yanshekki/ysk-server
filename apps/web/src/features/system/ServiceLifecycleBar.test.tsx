@@ -53,6 +53,33 @@ describe('ServiceLifecycleBar', () => {
     expect(onDone).toHaveBeenCalled();
   });
 
+  it('runs verifyAfter after a failed start and shows the bind headline', async () => {
+    const user = userEvent.setup();
+    serviceLifecycle.mockResolvedValue({ ok: false, notes: ['start failed'] });
+    const verifyAfter = vi.fn(async () => ({
+      ok: false as const,
+      notes: ['PowerDNS cannot bind 0.0.0.0:53 (in use)'],
+      blockMessage: 'PowerDNS cannot bind 0.0.0.0:53 (in use)',
+    }));
+    wrap(
+      <ServiceLifecycleBar
+        unit="pdns"
+        label="PowerDNS"
+        installed
+        running={false}
+        actions={['start']}
+        showResult
+        verifyAfter={verifyAfter}
+      />,
+    );
+    const startBtns = screen.getAllByRole('button', { name: /start|啟動|启动/i });
+    await user.click(startBtns[0]!);
+    await waitFor(() => {
+      expect(verifyAfter).toHaveBeenCalledWith('start');
+    });
+    expect(await screen.findByText(/0\.0\.0\.0:53/)).toBeInTheDocument();
+  });
+
   it('hides when not installed', () => {
     wrap(
       <ServiceLifecycleBar unit="vsftpd" label="vsftpd" installed={false} running={false} />,

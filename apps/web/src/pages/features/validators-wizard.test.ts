@@ -14,6 +14,18 @@ describe('validatorWizardCanInstall', () => {
     ).toBe(true);
   });
 
+  it('enables install after mainnet ack even if Docker probe is unknown', () => {
+    expect(
+      validatorWizardCanInstall({
+        dockerInstalled: null,
+        hasSpec: true,
+        isMainnet: true,
+        mainnetAck: true,
+        diskShort: true,
+      }),
+    ).toBe(true);
+  });
+
   it('keeps install disabled on mainnet until ack', () => {
     expect(
       validatorWizardCanInstall({

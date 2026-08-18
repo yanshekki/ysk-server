@@ -178,7 +178,9 @@ export function ValidatorsPage() {
       setSummaries(map);
       setAutoClear(list.settings?.autoClear === true);
       setDockerInstalled(
-        dock?.status?.installed === true || (list.instances?.length ?? 0) > 0,
+        dock?.status?.installed === true ||
+          dock?.status?.daemonActive === true ||
+          (list.instances?.length ?? 0) > 0,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -816,6 +818,63 @@ export function ValidatorsPage() {
         {tab === 'about' ? (
           <div className="stack">
             <PageGuide guideId="validators" />
+            <DataTable
+              title={t('validators.profileHelp.title')}
+              description={t('validators.profileHelp.desc')}
+              rowKey={(row) => row.id}
+              rows={[
+                {
+                  id: 'minimal',
+                  name: t('validators.profile.minimal'),
+                  use: t('validators.profileHelp.useMinimal'),
+                  disk: t('validators.profileHelp.diskMinimal'),
+                  stake: t('validators.profileHelp.stakeNo'),
+                },
+                {
+                  id: 'pruned',
+                  name: t('validators.profile.pruned'),
+                  use: t('validators.profileHelp.usePruned'),
+                  disk: t('validators.profileHelp.diskPruned'),
+                  stake: t('validators.profileHelp.stakeNo'),
+                },
+                {
+                  id: 'validator-ready',
+                  name: t('validators.profile.validator-ready'),
+                  use: t('validators.profileHelp.useValidatorReady'),
+                  disk: t('validators.profileHelp.diskValidatorReady'),
+                  stake: t('validators.profileHelp.stakeYes'),
+                },
+                {
+                  id: 'rpc',
+                  name: t('validators.profile.rpc'),
+                  use: t('validators.profileHelp.useRpc'),
+                  disk: t('validators.profileHelp.diskRpc'),
+                  stake: t('validators.profileHelp.stakeRpc'),
+                },
+              ]}
+              columns={[
+                {
+                  key: 'name',
+                  header: t('validators.profileHelp.colName'),
+                  render: (row) => <strong>{row.name}</strong>,
+                },
+                {
+                  key: 'use',
+                  header: t('validators.profileHelp.colUse'),
+                  render: (row) => row.use,
+                },
+                {
+                  key: 'disk',
+                  header: t('validators.profileHelp.colDisk'),
+                  render: (row) => row.disk,
+                },
+                {
+                  key: 'stake',
+                  header: t('validators.profileHelp.colStake'),
+                  render: (row) => row.stake,
+                },
+              ]}
+            />
             <Card>
               <CardSection title="Docker">
                 <p>
@@ -832,34 +891,6 @@ export function ValidatorsPage() {
                     Docker
                   </Link>
                 </ActionBar>
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection
-                title={t('validators.profileHelp.title')}
-                description={t('validators.profileHelp.desc')}
-              >
-                <DescriptionList
-                  columns={1}
-                  items={[
-                    {
-                      label: t('validators.profile.minimal'),
-                      value: t('validators.profileHelp.minimal'),
-                    },
-                    {
-                      label: t('validators.profile.pruned'),
-                      value: t('validators.profileHelp.pruned'),
-                    },
-                    {
-                      label: t('validators.profile.validator-ready'),
-                      value: t('validators.profileHelp.validatorReady'),
-                    },
-                    {
-                      label: t('validators.profile.rpc'),
-                      value: t('validators.profileHelp.rpc'),
-                    },
-                  ]}
-                />
               </CardSection>
             </Card>
           </div>
@@ -912,6 +943,7 @@ export function ValidatorsPage() {
                 variant="primary"
                 disabled={busy || !canCreate}
                 title={installDisabledTitle}
+                data-confirm="dialog"
                 onClick={() => setPendingInstall(true)}
               >
                 {t('validators.wizard.install')}
@@ -1030,7 +1062,8 @@ export function ValidatorsPage() {
               }))}
             />
             <p className="muted u-text-sm">
-              {t(`validators.wizard.profileHint.${profile}`)}
+              {t(`validators.wizard.profileHint.${profile}`)}{' '}
+              <Link to="/validators?tab=about">{t('validators.wizard.profileSeeAbout')}</Link>
             </p>
             {needBytes != null ? (
               <Alert variant={diskShort ? 'error' : 'info'}>
@@ -1161,6 +1194,22 @@ export function ValidatorsPage() {
         ) : null}
         {step === 3 ? (
           <>
+            {dockerInstalled === false ? (
+              <Alert variant="warn">{t('validators.wizard.needDocker')}</Alert>
+            ) : null}
+            {netSpec?.kind === 'mainnet' ? (
+              <>
+                <Alert variant="warn">{t('validators.wizard.mainnetWarn')}</Alert>
+                <label className="u-flex u-gap-2 u-items-start">
+                  <input
+                    type="checkbox"
+                    checked={mainnetOk}
+                    onChange={(e) => setMainnetOk(e.target.checked)}
+                  />
+                  <span>{t('validators.wizard.mainnetAck')}</span>
+                </label>
+              </>
+            ) : null}
             <StructuredFacts
               items={[
                 {
@@ -1630,11 +1679,15 @@ export function ValidatorsPage() {
           disk: needBytes != null ? formatBytes(needBytes) : '—',
         })}
         confirmLabel={t('validators.wizard.install')}
-        severity="destructive"
+        confirmText={netSpec?.kind === 'mainnet' ? previewId : undefined}
+        severity={netSpec?.kind === 'mainnet' ? 'critical' : 'destructive'}
         busy={busy}
         consequences={[
           t('validators.wizard.installC1'),
           t('validators.wizard.installC2'),
+          ...(netSpec?.kind === 'mainnet' ? [t('validators.wizard.installC3')] : []),
+          ...(diskShort ? [t('validators.wizard.lowDiskAcked')] : []),
+          ...(dockerInstalled === false ? [t('validators.wizard.needDocker')] : []),
         ]}
         onConfirm={() => {
           setPendingInstall(false);

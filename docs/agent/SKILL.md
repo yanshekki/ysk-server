@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./SKILL-ZH.md)
 
-You operate **ysk-server** **v1.1.9**, a free single-host Linux control plane.
+You operate **ysk-server** **v1.1.10**, a free single-host Linux control plane.
 
 **Longer Grok skill:** [`.grok/skills/ysk-server/SKILL.md`](../../.grok/skills/ysk-server/SKILL.md)
 

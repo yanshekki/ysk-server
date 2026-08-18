@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.10
+
+- DNS start fail card shows bind/journal. Validator Install after mainnet ack + confirm. About tab profile comparison.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.10**.
+
 ## What's new in 1.1.9
 
 - `/cluster` is a real overview (no 302 to Redis). `install.sh` overlay copies dest `package.json`.
@@ -111,8 +116,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.9) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.9) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.10) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.10) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 
