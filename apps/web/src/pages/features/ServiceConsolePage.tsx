@@ -818,10 +818,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         <Alert variant="warn">
           <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
             <span>
-              {t('redis.noRequirepass', {
-                defaultValue:
-                  'Protected mode is on, but requirepass is empty or unread — no password.',
-              })}
+              {t('redis.insecureShort')} — {t('redis.noRequirepass')}
             </span>
             {requirepassCatId ? (
               <Button

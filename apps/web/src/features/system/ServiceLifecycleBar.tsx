@@ -2,7 +2,7 @@
  * Shared start / stop / restart / reload toolbar for host daemons.
  * Uses POST /api/v1/system/services/lifecycle unless onAction is provided.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ConfirmDialog, OpsResultPanel } from '../../shared/components/ui';
 import type { ConfirmSeverity } from '../../shared/components/ui';
@@ -35,6 +35,7 @@ export type ServiceLifecycleBarProps = {
   ) => Promise<{ ok: boolean; notes?: string[] } | void>;
   /** Show the last start/stop result under the toolbar (toasts still fire). */
   showResult?: boolean;
+  extraAfterResult?: ReactNode;
 };
 
 const DEFAULT_ACTIONS: ServiceLifecycleAction[] = ['start', 'stop', 'restart'];
@@ -54,6 +55,7 @@ export function ServiceLifecycleBar({
   stopDetail,
   verifyAfter,
   showResult = false,
+  extraAfterResult,
 }: ServiceLifecycleBarProps) {
   const { t } = useTranslation();
   const { busy, run, result } = useFeatureAction();
@@ -242,6 +244,7 @@ export function ServiceLifecycleBar({
           size={size}
           loading={busy}
           disabled={!canAct || running === false}
+          title={t('services.reloadTitle', { label })}
           onClick={() => void fire('reload')}
         >
           {t('services.action.reload')}
@@ -301,8 +304,13 @@ export function ServiceLifecycleBar({
         busy={busy}
       />
       {showResult && result ? (
-        <OpsResultPanel title={t('services.lifecycleTitle', { label })} result={result} />
+        <OpsResultPanel
+          title={t('services.lifecycleTitle', { label })}
+          result={result}
+          defaultShowTechnical={!result.ok}
+        />
       ) : null}
+      {extraAfterResult}
     </div>
   );
 }

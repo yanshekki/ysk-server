@@ -3,6 +3,7 @@ import type { HostExecutor, RunResult } from '../host/executor.js';
 import {
   classifyManagedNginxName,
   collectStaleCliNotes,
+  leftoverExecuteHints,
   leftoverHrefForId,
   leftoverKindFromNote,
   probeHostLeftovers,
@@ -105,6 +106,27 @@ describe('leftover-probe', () => {
     expect(leftoverHrefForId('apache-default')).toBe('/apache');
     expect(leftoverHrefForId('vsftpd-failed')).toBe('/ftp?tab=service');
     expect(splitLeftoverNotes('one · two · three')).toEqual(['one', 'two', 'three']);
+  });
+
+  it('execute hints mention vsftpd only when that finding exists', async () => {
+    const staleOnly = leftoverExecuteHints([
+      { id: 'stale-cli', ok: false, title: 'cli', detail: 'cli' },
+    ]);
+    expect(staleOnly.join(' ')).toMatch(/executeStaleCli|stale CLI|殘留 CLI/i);
+    expect(staleOnly.join(' ')).not.toMatch(/vsftpd|Dovecot|executeMissingTls/i);
+
+    const tls = leftoverExecuteHints([
+      { id: 'dovecot-ssl', ok: false, title: 'dove', detail: 'dove' },
+    ]);
+    expect(tls.join(' ')).toMatch(/executeMissingTls|vsftpd|Dovecot|TLS/i);
+
+    const apacheOnly = leftoverExecuteHints([
+      { id: 'apache-default', ok: false, title: 'apache', detail: 'apache' },
+    ]);
+    expect(apacheOnly.join(' ')).toMatch(/executeGeneric|--execute/i);
+    expect(apacheOnly.join(' ')).not.toMatch(/executeMissingTls|Dovecot can start/i);
+
+    expect(leftoverExecuteHints([])).toEqual([]);
   });
 
   it('is clean when leftover paths are absent', async () => {

@@ -63,6 +63,7 @@ export function NginxPage() {
   const [q, setQ] = useState('');
   const [source, setSource] = useState<'all' | 'project' | 'standalone'>('all');
   const [purgeBusy, setPurgeBusy] = useState(false);
+  const [pendingPurge, setPendingPurge] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [edit, setEdit] = useState<NginxSiteRow | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
@@ -315,17 +316,8 @@ export function NginxPage() {
             variant="secondary"
             size="sm"
             loading={purgeBusy}
-            onClick={() => {
-              setPurgeBusy(true);
-              void systemApi
-                .nginxPurgeCache()
-                .then((r) => {
-                  const notes = (r as { notes?: string[] }).notes;
-                  notifyOk(notes?.[0] ?? t('nginx.purgeOk'));
-                })
-                .catch((e: Error) => notifyWarn(e.message))
-                .finally(() => setPurgeBusy(false));
-            }}
+            title={t('nginx.purgeCacheTitle')}
+            onClick={() => setPendingPurge(true)}
           >
             {t('nginx.purgeCache')}
           </Button>
@@ -595,6 +587,28 @@ export function NginxPage() {
           cancelLabel={t('common.cancel')}
           danger
           busy={busy}
+        />
+
+        <ConfirmDialog
+          open={pendingPurge}
+          onClose={() => !purgeBusy && setPendingPurge(false)}
+          title={t('nginx.purgeCacheTitle')}
+          description={t('nginx.purgeCacheDesc')}
+          confirmLabel={t('nginx.purgeCache')}
+          cancelLabel={t('common.cancel')}
+          busy={purgeBusy}
+          onConfirm={() => {
+            setPendingPurge(false);
+            setPurgeBusy(true);
+            void systemApi
+              .nginxPurgeCache()
+              .then((r) => {
+                const notes = (r as { notes?: string[] }).notes;
+                notifyOk(notes?.[0] ?? t('nginx.purgeOk'));
+              })
+              .catch((e: Error) => notifyWarn(e.message))
+              .finally(() => setPurgeBusy(false));
+          }}
         />
 
         <Modal

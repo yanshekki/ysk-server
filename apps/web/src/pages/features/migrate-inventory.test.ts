@@ -4,6 +4,7 @@ import {
   isOrphanHomeWarning,
   otherInventoryWarnings,
   orphanHomeName,
+  projectHomeWarningId,
 } from './migrate-inventory';
 
 const orphans = [
@@ -41,6 +42,19 @@ describe('otherInventoryWarnings', () => {
         orphans,
       ),
     ).toEqual(['rsync missing from PATH']);
+  });
+});
+
+describe('projectHomeWarningId', () => {
+  it('extracts the project id from inventory wording', () => {
+    expect(
+      projectHomeWarningId(
+        'Project qa36tmp has no system user yet (home missing: /home/x). Finish isolation on the project page.',
+      ),
+    ).toBe('qa36tmp');
+    expect(projectHomeWarningId('專案 qa36tmp 尚未建立系統用戶（主目錄 /home/x 不存在）。')).toBe(
+      'qa36tmp',
+    );
   });
 });
 

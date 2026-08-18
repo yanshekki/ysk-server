@@ -220,6 +220,7 @@ describe('Services helpers', () => {
     expect(lifecycleDangerForUnit('ysk-server')).toBe('panel');
     expect(lifecycleDangerForUnit('nginx')).toBe('edge');
     expect(lifecycleDangerForUnit('apache2')).toBe('edge');
+    expect(lifecycleDangerForUnit('docker')).toBe('edge');
     expect(lifecycleDangerForUnit('redis')).toBe('normal');
     expect(
       sshdNeedsBootEnable({ unit: 'sshd', installed: true, enabled: 'disabled' }),

@@ -62,7 +62,8 @@
     "deployTitle": "পরবর্তী: স্থাপন",
     "deployBody": "হেডারে Deploy ব্যবহার করুন বা Git এর জন্য Deploy ট্যাব ব্যবহার করুন।",
     "nginxTitle": "পরবর্তী: Nginx প্রকাশ করুন",
-    "nginxBody": "Nginx (ঐচ্ছিক SSL) প্রকাশ করতে নেটওয়ার্ক ট্যাব খুলুন।"
+    "nginxBody": "Nginx (ঐচ্ছিক SSL) প্রকাশ করতে নেটওয়ার্ক ট্যাব খুলুন।",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "এখনও স্বাস্থ্য পরীক্ষা হয়নি",

@@ -15,6 +15,7 @@
     "unknown": "未探測",
     "fallback": "未知"
   },
+  "activatingStuckHint": "啟動超過 5 分鐘，已當失敗。請查 journal。",
   "journal": "journal",
   "liveN": "{{count}} 上線",
   "registeredOnly": "僅登記",

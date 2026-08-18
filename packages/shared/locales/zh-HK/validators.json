@@ -41,6 +41,7 @@
     "leftoverRemove": "刪除",
     "leftoverRemoveTitle": "刪除此殘留驗證者資料？",
     "leftoverRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是列表中的節點。",
+    "browseRoot": "在檔案瀏覽開啟",
     "none": "尚未有實例資料",
     "warn": "磁碟用量偏高（70% 或以上）",
     "danger": "磁碟用量危急（85% 或以上）",
@@ -181,7 +182,13 @@
     "stepSummary": "摘要",
     "needDocker": "未安裝 Docker Engine。請先安裝 — 此按鈕保持停用。",
     "diskNeed": "此設定檔約需 {{need}} · 可用 {{free}}",
-    "diskNeedNetwork": "此網絡預設精簡約需 {{need}} · 可用 {{free}}",
+    "diskNeedNetwork": "此網絡預設精簡（Minimal）約需 {{need}} · 可用 {{free}}",
+    "profileHint": {
+      "minimal": "最小同步——磁碟最輕，不適合質押。",
+      "pruned": "只保留近期歷史（Pruned）。比完整存檔小，仍可用作 RPC。",
+      "validator-ready": "按驗證者角色預留磁碟。比精簡佔用更多空間。",
+      "rpc": "公開 RPC 節點——不是質押驗證者。"
+    },
     "diskShort": "可用磁碟不足以建立此鏈／網絡／設定檔",
     "diskShortDetail": "需要 {{need}} · 可用 {{free}} · 還差 {{short}}",
     "needCustomPath": "請輸入絕對資料路徑",

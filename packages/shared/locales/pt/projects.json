@@ -62,7 +62,8 @@
     "deployTitle": "Próximo: Implantar",
     "deployBody": "Use Deploy no cabeçalho ou na guia Deploy do Git.",
     "nginxTitle": "Próximo: Publicar Nginx",
-    "nginxBody": "Abra a guia Rede para publicar o Nginx (SSL opcional)."
+    "nginxBody": "Abra a guia Rede para publicar o Nginx (SSL opcional).",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "Nenhum exame de saúde ainda",

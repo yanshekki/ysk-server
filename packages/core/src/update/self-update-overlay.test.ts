@@ -65,6 +65,7 @@ describe('self-update overlay', () => {
       });
       expect(r.applied).toBe(true);
       expect(readFileSync(join(dest, 'dist', 'version.js'), 'utf8')).toContain('0.2.0');
+      expect(JSON.parse(readFileSync(join(dest, 'package.json'), 'utf8')).version).toBe('0.2.0');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

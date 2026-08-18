@@ -62,7 +62,8 @@
     "deployTitle": "Berikutnya: Terapkan",
     "deployBody": "Gunakan Deploy di header, atau tab Deploy untuk Git.",
     "nginxTitle": "Berikutnya: Publikasikan Nginx",
-    "nginxBody": "Buka tab Jaringan untuk mempublikasikan Nginx (SSL opsional)."
+    "nginxBody": "Buka tab Jaringan untuk mempublikasikan Nginx (SSL opsional).",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "Belum ada pemeriksaan kesehatan",

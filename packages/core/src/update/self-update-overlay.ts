@@ -224,6 +224,10 @@ function copyOverlayTrees(pkgRoot: string, dest: string): void {
   }
   mkdirSync(join(dest, 'dist'), { recursive: true });
   cpSync(dist, join(dest, 'dist'), { recursive: true, dereference: true });
+  const pkgJson = join(pkgRoot, 'package.json');
+  if (existsSync(pkgJson)) {
+    cpSync(pkgJson, join(dest, 'package.json'));
+  }
   const pub = join(pkgRoot, 'public');
   if (existsSync(pub)) {
     mkdirSync(join(dest, 'public'), { recursive: true });

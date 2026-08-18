@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.8
+
+- **Honest overlay** — dest `package.json` matches the CLI version. Leftover notes no longer claim vsftpd/Dovecot cannot start when they are active.
+- **First paint** — backups, validators, and Docker do not flash empty/`0` before data arrives. Docker delete updates the list immediately.
+- **E2E-1117** — confirm titles, Nginx cache purge confirm, stuck agent runtimes, host-zone timestamps with `UTC±n`, validator wizard disk copy, `/cluster` engine switcher.
+
 ## What's new in 1.1.7
 
 - **Validators** — honest disk (`du` of the validators root), starting vs error, Software tab for pinned images, Avalanche compose flags only.

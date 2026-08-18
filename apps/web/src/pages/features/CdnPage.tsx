@@ -864,6 +864,19 @@ export function CdnPage() {
           { label: t('cdn.statOnline'), value: nodeList.loading ? '…' : online },
           { label: t('cdn.statSites'), value: siteList.loading ? '…' : sites.length },
           {
+            label: t('cdn.statApplyFailed'),
+            value: siteList.loading
+              ? '…'
+              : sites.filter(
+                  (s) => s.apply_status === 'failed' || s.apply_status === 'partial',
+                ).length,
+            tone: sites.some(
+              (s) => s.apply_status === 'failed' || s.apply_status === 'partial',
+            )
+              ? 'warn'
+              : undefined,
+          },
+          {
             label: t('cdn.statHit'),
             value:
               dashboard?.overallHitRatePct == null

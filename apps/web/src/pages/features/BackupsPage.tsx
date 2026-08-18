@@ -414,7 +414,7 @@ export function BackupsPage() {
             label: t('backups.remoteStep'),
             value: remote.enabled ? remote.kind : t('common.close'),
             tone: remote.enabled ? 'ok' : 'neutral' },
-          { label: t('backups.withBackups'), value: archiveProjectCount },
+          { label: t('backups.withBackups'), value: headerReady ? archiveProjectCount : '…' },
         ] }}
       actions={<>
           <Button
@@ -435,7 +435,7 @@ export function BackupsPage() {
       <div className="ops">
       <PageTabs
         tabs={[
-          { id: 'files', label: t('backups.backupFiles'), badge: items.length || undefined },
+          { id: 'files', label: t('backups.backupFiles'), badge: headerReady ? items.length || undefined : undefined },
           { id: 'trash', label: t('backups.tabTrash'), badge: trashItems.length || undefined },
           { id: 'ops', label: t('common.operation') },
           { id: 'remote', label: t('backups.remoteExclude') },
@@ -450,7 +450,11 @@ export function BackupsPage() {
             <section className="ops-panel">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">{t('backups.filesTitle', { count: items.length })}</h3>
+                  <h3 className="ops-panel__title">
+                    {headerReady
+                      ? t('backups.filesTitle', { count: items.length })
+                      : t('common.loading')}
+                  </h3>
                   <p className="ops-panel__sub">
                     {t('backups.filesSub')}
                   </p>
@@ -557,6 +561,7 @@ export function BackupsPage() {
                                       variant="danger"
                                       size="sm"
                                       loading={busy}
+                                      title={t('backups.deleteTitle')}
                                       onClick={bindSet(setDeleteTarget, b)}
                                     >
                                       {t('common.delete')}
@@ -571,6 +576,7 @@ export function BackupsPage() {
                               variant="danger"
                               size="sm"
                               loading={busy}
+                              title={t('backups.deleteTitle')}
                               onClick={bindSet(setDeleteTarget, b)}
                             >
                               {t('common.delete')}

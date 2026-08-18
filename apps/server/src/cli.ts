@@ -3608,13 +3608,14 @@ async function mainInner(
           return r.ok ? 0 : 1;
         }
         const r = await probeHostLeftovers({ host: ctx.host, currentVersion: VERSION });
+        const { leftoverExecuteHints } = await import('ysk-server-core');
         printJson({
           ok: r.ok,
           findings: r.findings,
           notes: [
             ...r.notes,
             tl('notes.leftover.overlayDoesNotHeal'),
-            'Pass --execute (root + YSK_EXECUTE=1) to remove stale CLI bins and disable missing-cert TLS so vsftpd/Dovecot can start.',
+            ...leftoverExecuteHints(r.findings),
           ],
         });
         return r.ok ? 0 : 1;

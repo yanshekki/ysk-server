@@ -535,7 +535,7 @@ export function FilesPage() {
   const [moveDest, setMoveDest] = useState('');
   const [delPaths, setDelPaths] = useState<string[] | null>(null);
   const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
-  const [purgeTrashId, setPurgeTrashId] = useState<string | null>(null);
+  const [purgeTrash, setPurgeTrash] = useState<{ trashId: string; name: string } | null>(null);
   const [preview, setPreview] = useState<{
     entry: FileEntry;
     kind: PreviewKind;
@@ -2023,7 +2023,7 @@ export function FilesPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
-                        onClick={() => setPurgeTrashId(entry.trashId)}
+                        onClick={() => setPurgeTrash({ trashId: entry.trashId, name: entry.name })}
                       >
                         {t('files.purgeForever')}
                       </Button>
@@ -3486,18 +3486,19 @@ export function FilesPage() {
       />
 
       <ConfirmDialog
-        open={Boolean(purgeTrashId)}
-        onClose={() => setPurgeTrashId(null)}
+        open={Boolean(purgeTrash)}
+        onClose={() => setPurgeTrash(null)}
         onConfirm={() =>
           void run(async () => {
-            if (purgeTrashId) await filesApi.purgeTrash(root, purgeTrashId);
-            setPurgeTrashId(null);
+            if (purgeTrash) await filesApi.purgeTrash(root, purgeTrash.trashId);
+            setPurgeTrash(null);
           }, t('files.purged'))
         }
         title={t('files.purgeForever')}
         description={t('files.purgeForeverDesc', {
           defaultValue: t('files.emptyTrashDesc', { defaultValue: t('files.trashDesc') }),
         })}
+        confirmText={purgeTrash?.name}
         confirmLabel={t('files.purgeForever')}
         cancelLabel={t('common.cancel')}
         danger

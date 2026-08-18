@@ -32,13 +32,14 @@ import {
   buttonClassName } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
 import { toast } from '../shared/stores/toast-store';
+import { formatDateTime } from '../shared/lib/datetime';
 import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindVoid } from './bind-handlers';
 
 export function statusTone(status?: string): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
   if (status === 'running' || status === 'connected') return 'ok';
   if (status === 'activating') return 'warn';
   if (status === 'not_installed' || status === 'registered' || status === 'stale') return 'warn';
-  if (status === 'failed' || status === 'error' || status === 'disconnected') return 'danger';
+  if (status === 'failed' || status === 'error' || status === 'disconnected' || status === 'stuck') return 'danger';
   if (status === 'unknown') return 'neutral';
   return 'info';
 }
@@ -100,6 +101,7 @@ export function statusLabel(status: string | undefined, tr: (k: string) => strin
   if (status === 'disconnected') return tr('agents.status.disconnected');
   if (status === 'not_installed') return tr('agents.status.not_installed');
   if (status === 'failed' || status === 'error') return tr('agents.status.failed');
+  if (status === 'stuck') return tr('agents.status.stuck');
   if (status === 'unknown') return tr('agents.status.unknown');
   return status ?? tr('agents.status.fallback');
 }
@@ -546,7 +548,7 @@ export function AgentsPage() {
                 nowrap: true,
                 className: 'muted',
                 render: (a) =>
-                  a.last_seen_at?.slice(0, 19).replace('T', ' ') ?? '—' },
+                  a.last_seen_at ? formatDateTime(a.last_seen_at) : '—' },
             ]}
             rows={agents}
             rowKey={(a) => a.id}
@@ -773,7 +775,7 @@ intervalMs: 5000`}
                   (!rt.pathExists && rt.status === 'stopped' && !rt.unitActive)
                     ? 'not_installed'
                     : stuckActivating
-                      ? 'failed'
+                      ? 'stuck'
                       : rt.status;
                 const pathLine = rt.installPath
                   ? `${rt.pathExists ? t('agents.pathExists') : t('agents.pathMissing')} · ${rt.installPath}`
@@ -797,7 +799,9 @@ intervalMs: 5000`}
                         mono: Boolean(rt.installPath) },
                       {
                         label: 'systemd',
-                        value: unitLine,
+                        value: stuckActivating
+                          ? `${unitLine} · ${t('agents.activatingStuckHint')}`
+                          : unitLine,
                         mono: Boolean(rt.unitName) },
                     ]}
                     actions={

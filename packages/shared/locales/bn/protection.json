@@ -406,5 +406,7 @@
   "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
   "freshnessMissing": "No database",
   "freshnessStale": "Stale",
-  "freshnessFresh": "Current"
+  "freshnessFresh": "Current",
+  "banConfirmMethod": "Method: {{method}}",
+  "banConfirmUntilUnban": "Stays banned until you unban it (or fail2ban expiry)."
 }

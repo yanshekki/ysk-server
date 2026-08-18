@@ -62,7 +62,8 @@
     "deployTitle": "Siguiente: Implementar",
     "deployBody": "Utilice Implementar en el encabezado o la pestaña Implementar para Git.",
     "nginxTitle": "Siguiente: Publicar Nginx",
-    "nginxBody": "Abra la pestaña Red para publicar Nginx (SSL opcional)."
+    "nginxBody": "Abra la pestaña Red para publicar Nginx (SSL opcional).",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "Aún no hay control de salud",

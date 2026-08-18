@@ -220,6 +220,7 @@ export function ValidatorsPage() {
     chainSpec?.minFreeBytes?.[network]?.[profile as 'minimal'] ??
     chainSpec?.minFreeBytes?.[network]?.minimal ??
     null;
+  const networkNeedBytes = chainSpec?.minFreeBytes?.[network]?.minimal ?? null;
   const diskShort =
     needBytes != null && disk?.availBytes != null && disk.availBytes < needBytes;
   const canCreate = validatorWizardCanInstall({
@@ -437,17 +438,19 @@ export function ValidatorsPage() {
       }
       status={{
         pill: { label: t('validators.beta'), tone: 'warn' },
-        items: [
-          {
-            label: t('validators.col.status'),
-            value: loading ? '…' : String(instances.length),
-          },
-          {
-            label: t('validators.disk.free'),
-            value: formatBytes(disk?.availBytes),
-            tone: diskTone,
-          },
-        ],
+        items: loading
+          ? []
+          : [
+              {
+                label: t('validators.col.status'),
+                value: String(instances.length),
+              },
+              {
+                label: t('validators.disk.free'),
+                value: formatBytes(disk?.availBytes),
+                tone: diskTone,
+              },
+            ],
       }}
     >
       <SoftwareInstallBanner
@@ -613,6 +616,16 @@ export function ValidatorsPage() {
                 },
               ]}
             />
+            {disk?.rootPath ? (
+              <p className="u-mt-3 u-mb-0">
+                <Link
+                  to={`/browse?path=${encodeURIComponent(disk.rootPath)}`}
+                  className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                >
+                  {t('validators.disk.browseRoot')}
+                </Link>
+              </p>
+            ) : null}
             {disk?.instances.length ? (
               <DataTable<ValidatorDiskInstance>
                 rowKey={(row) => row.id}
@@ -900,6 +913,9 @@ export function ValidatorsPage() {
         <div className="stack val-wizard">
         {step === 0 ? (
           <>
+            {loading && chains.length === 0 ? (
+              <LoadingBlock label={t('common.loading')} />
+            ) : null}
             <SegRadio
               name="chain"
               aria-label={t('validators.wizard.stepChain')}
@@ -909,21 +925,7 @@ export function ValidatorsPage() {
                 const c = chains.find((x) => x.id === v);
                 setNetwork(c?.networks.find((n) => n.recommended)?.id ?? c?.networks[0]?.id ?? '');
               }}
-              options={(chains.length
-                ? chains
-                : [
-                    { id: 'eth' },
-                    { id: 'avax' },
-                    { id: 'near' },
-                    { id: 'ada' },
-                    { id: 'btc' },
-                    { id: 'cosmos' },
-                    { id: 'sui' },
-                    { id: 'aptos' },
-                    { id: 'dot' },
-                    { id: 'sol' },
-                  ]
-              ).map((c) => {
+              options={(chains.length ? chains : []).map((c) => {
                 const spec = chains.find((x) => x.id === c.id);
                 let minNeed = Infinity;
                 for (const n of spec?.networks ?? []) {
@@ -962,18 +964,29 @@ export function ValidatorsPage() {
               }}
               options={(chainSpec?.networks ?? []).map((n) => {
                 const d = networkDisplay(n.id, t, chain);
+                const name = d.showName && d.name !== d.kindLabel ? d.name : n.id;
                 return {
                   value: n.id,
-                  label: d.showName ? `${d.name} · ${d.kindLabel}` : d.kindLabel,
+                  label: `${name} · ${d.kindLabel}`,
                 };
               })}
             />
-            {needBytes != null ? (
-              <Alert variant={diskShort ? 'error' : 'info'}>
-                {diskShort
-                  ? `${t('validators.wizard.diskShort')} ${diskShortTitle}`
+            {networkNeedBytes != null ? (
+              <Alert
+                variant={
+                  disk?.availBytes != null && disk.availBytes < networkNeedBytes
+                    ? 'error'
+                    : 'info'
+                }
+              >
+                {disk?.availBytes != null && disk.availBytes < networkNeedBytes
+                  ? `${t('validators.wizard.diskShort')} ${t('validators.wizard.diskShortDetail', {
+                      need: formatBytes(networkNeedBytes),
+                      free: formatBytes(disk.availBytes),
+                      short: formatBytes(Math.max(0, networkNeedBytes - disk.availBytes)),
+                    })}`
                   : t('validators.wizard.diskNeedNetwork', {
-                      need: formatBytes(needBytes),
+                      need: formatBytes(networkNeedBytes),
                       free: formatBytes(disk?.availBytes),
                     })}
               </Alert>
@@ -1003,9 +1016,12 @@ export function ValidatorsPage() {
               options={['minimal', 'pruned', 'validator-ready', 'rpc'].map((p) => ({
                 value: p,
                 label: profileLabel(p, t),
+                hint: t(`validators.wizard.profileHint.${p}`),
               }))}
             />
-            <p className="muted u-text-sm">{t('validators.wizard.profileSeeAbout')}</p>
+            <p className="muted u-text-sm">
+              {t(`validators.wizard.profileHint.${profile}`)}
+            </p>
             {needBytes != null ? (
               <Alert variant={diskShort ? 'error' : 'info'}>
                 {diskShort
@@ -1159,6 +1175,29 @@ export function ValidatorsPage() {
                 {
                   label: t('validators.col.profile'),
                   value: profileLabel(profile, t),
+                  hint: t(`validators.wizard.profileHint.${profile}`),
+                },
+                {
+                  label: t('validators.wizard.previewId'),
+                  value: previewId,
+                },
+                {
+                  label: t('validators.wizard.previewCompose'),
+                  value: previewComposeProject(previewId),
+                },
+                {
+                  label: t('validators.wizard.dataPath'),
+                  value: resolvedPath || '—',
+                },
+                {
+                  label: t('validators.disk.used'),
+                  value:
+                    needBytes != null
+                      ? t('validators.wizard.diskNeed', {
+                          need: formatBytes(needBytes),
+                          free: formatBytes(disk?.availBytes),
+                        })
+                      : '—',
                 },
               ]}
             />
@@ -1190,28 +1229,6 @@ export function ValidatorsPage() {
                 {
                   label: t('validators.wizard.rpcPort'),
                   value: rpcPort || t('validators.wizard.rpcDefault'),
-                },
-                {
-                  label: t('validators.wizard.previewId'),
-                  value: previewId,
-                },
-                {
-                  label: t('validators.wizard.previewCompose'),
-                  value: previewComposeProject(previewId),
-                },
-                {
-                  label: t('validators.wizard.dataPath'),
-                  value: resolvedPath || '—',
-                },
-                {
-                  label: t('validators.disk.used'),
-                  value:
-                    needBytes != null
-                      ? t('validators.wizard.diskNeed', {
-                          need: formatBytes(needBytes),
-                          free: formatBytes(disk?.availBytes),
-                        })
-                      : '—',
                 },
               ]}
             />

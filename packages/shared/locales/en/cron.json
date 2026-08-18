@@ -76,6 +76,7 @@
   "hostNoYsk": "not installed or no YSK entries",
   "pressInstall": "Registered jobs are not on the system crontab yet — click Install to system.",
   "jobsTab": "Jobs ({{count}})",
+  "jobsTabPending": "Jobs ({{count}}) · pending {{pending}}",
   "registeredJobs": "Registered jobs ({{count}})",
   "jobsSub": "Management entries · Install to system after changes",
   "addJob": "+ Add job",

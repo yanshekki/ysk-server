@@ -166,5 +166,6 @@
   "pendingInstallCount": "{{n}} pending install",
   "systemJobBadge": "No project · system user",
   "willNotRun": "Not written to system crontab — will not run.",
-  "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run."
+  "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run.",
+  "jobsTabPending": "Jobs ({{count}}) · pending {{pending}}"
 }

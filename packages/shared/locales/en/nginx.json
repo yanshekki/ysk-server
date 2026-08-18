@@ -5,6 +5,8 @@
   "purgeOk": "Purged",
   "projectSitesHint": "Project sites (managed conf) and standalone sites are listed separately. Edit project Nginx under Projects → Network.",
   "purgeCache": "Purge cache + reload",
+  "purgeCacheTitle": "Purge Nginx cache and reload?",
+  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up.",
   "notInstalled": "Nginx is not installed",
   "listTitle": "Sites ({{count}})",
   "listDesc": "After create, click Apply to sync to the system",

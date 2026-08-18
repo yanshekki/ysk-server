@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LocalHostExecutor } from '../host/executor.js';
-import { probeAgentRuntime, renderAgentSystemdUnit } from './probe.js';
+import { activatingLooksStuck, probeAgentRuntime, renderAgentSystemdUnit } from './probe.js';
 
 describe('agent probe', () => {
   it('probes catalog runtime without throw', async () => {
@@ -22,6 +22,24 @@ describe('agent probe', () => {
     expect(u).toContain('YSK_AGENT_KIND=hermes');
     expect(u).toMatch(/process\.exit\(1\)|refuse to run placeholder/);
     expect(u).not.toMatch(/setInterval/);
+  });
+
+  it('treats long activating or crash-loop as stuck', () => {
+    const now = Date.parse('2026-08-18T08:00:00.000Z');
+    expect(
+      activatingLooksStuck(
+        { ActiveEnterTimestampUSec: String((now - 6 * 60_000) * 1000) },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      activatingLooksStuck(
+        { ActiveEnterTimestampUSec: String((now - 30_000) * 1000) },
+        now,
+      ),
+    ).toBe(false);
+    expect(activatingLooksStuck({ NRestarts: '2' }, now)).toBe(true);
+    expect(activatingLooksStuck({ SubState: 'auto-restart' }, now)).toBe(true);
   });
 
   it('renders real ExecStart when binaryPath provided', () => {

@@ -5,6 +5,8 @@
   "purgeOk": "已 清除",
   "projectSitesHint": "專案站點（受管 conf）同獨立站點分開列出。改專案 Nginx 請到專案 → 網絡。",
   "purgeCache": "清除 Cache + 重新載入",
+  "purgeCacheTitle": "清除 Nginx cache 並重新載入？",
+  "purgeCacheDesc": "清除磁碟 cache 並重載 Nginx。線上站點不會中斷。",
   "notInstalled": "Nginx 尚未安裝",
   "listTitle": "站點（{{count}}）",
   "listDesc": "建立後請再按「套用」同步到系統",

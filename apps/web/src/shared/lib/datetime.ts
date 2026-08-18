@@ -80,7 +80,8 @@ export function formatDateTime(
     }
     const hour = bag.hour === '24' ? '00' : (bag.hour ?? '00');
     const base = `${bag.year}-${bag.month}-${bag.day} ${hour}:${bag.minute}:${bag.second}`;
-    return opts?.withOffset ? `${base} ${formatTimeZoneOffset(d, timeZone)}` : base;
+    const withOffset = opts?.withOffset !== false;
+    return withOffset ? `${base} ${formatTimeZoneOffset(d, timeZone)}` : base;
   } catch {
     return d.toISOString().replace('T', ' ').slice(0, 19);
   }

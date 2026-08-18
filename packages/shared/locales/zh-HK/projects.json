@@ -60,6 +60,7 @@
   },
   "next": {
     "pendingOsTitle": "系統用戶尚未建立",
+    "provisionOsAction": "建立系統用戶",
     "pendingOsBody": "此專案尚未建立獨立系統用戶。",
     "pendingOsActions": "可繼續部署；完整隔離需以系統管理員權限執行。",
     "deployTitle": "下一步：部署",

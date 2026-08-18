@@ -470,6 +470,7 @@ export function DockerPage() {
           label="Docker"
           installed={engineInstalled}
           running={status?.daemonActive === true}
+          danger="edge"
           onDone={() => void load()}
           stopDetail={t('docker.stopEngineDesc', { n: containers.length })}
         />
@@ -589,6 +590,9 @@ export function DockerPage() {
         ) : null}
 
         {tab === 'containers' ? (
+          !loaded ? (
+            <LoadingBlock label={t('common.loading')} />
+          ) : (
           <DataTable<DockerContainerRow>
             rowKey={(row) => row.id || row.name}
             toolbar={
@@ -696,6 +700,7 @@ export function DockerPage() {
               );
             }}
           />
+          )
         ) : null}
 
         {tab === 'images' ? (
@@ -1423,6 +1428,25 @@ export function DockerPage() {
           if (!p) return;
           setPendingDelete(null);
           if (p.kind === 'container') {
+            setContainers((prev) =>
+              prev.filter((c) => c.name !== p.token && c.id !== p.token && !c.id.startsWith(p.token)),
+            );
+            setStatus((s) =>
+              s
+                ? {
+                    ...s,
+                    counts: {
+                      ...s.counts,
+                      containers: Math.max(0, (s.counts.containers ?? 1) - 1),
+                      running: Math.max(
+                        0,
+                        (s.counts.running ?? 0) -
+                          (p.state === 'running' || p.state === 'restarting' ? 1 : 0),
+                      ),
+                    },
+                  }
+                : s,
+            );
             void run(() => dockerApi.containerAction(p.token, 'remove'));
           } else if (p.kind === 'image') {
             void run(() => dockerApi.removeImage(p.id));

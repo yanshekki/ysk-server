@@ -17,6 +17,13 @@ export function otherInventoryWarnings(
   return warnings.filter((w) => !isOrphanHomeWarning(w, orphanHomes));
 }
 
+export function projectHomeWarningId(note: string): string | null {
+  const m = String(note || '').match(
+    /專案\s+(\S+)\s+|Project\s+(\S+)\s+has no system user|project\s+(\S+)\s+home/i,
+  );
+  return m?.[1] || m?.[2] || m?.[3] || null;
+}
+
 export function orphanHomeName(path: string): string {
   const parts = String(path).split('/').filter(Boolean);
   return parts[parts.length - 1] || path;

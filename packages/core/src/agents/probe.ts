@@ -55,6 +55,59 @@ export async function resolveAgentBinary(
   return undefined;
 }
 
+const ACTIVATING_STUCK_MS = 5 * 60_000;
+
+function parseSystemctlShow(stdout: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const line of String(stdout || '').split('\n')) {
+    const i = line.indexOf('=');
+    if (i <= 0) continue;
+    out[line.slice(0, i)] = line.slice(i + 1).trim();
+  }
+  return out;
+}
+
+/** True when activating has lasted >5m, is crash-looping, or systemd already auto-restarts. */
+export function activatingLooksStuck(
+  show: Record<string, string>,
+  now = Date.now(),
+): boolean {
+  const sub = (show.SubState || '').toLowerCase();
+  if (sub === 'auto-restart' || sub === 'failed' || sub === 'dead') return true;
+  const restarts = Number(show.NRestarts || '0');
+  if (Number.isFinite(restarts) && restarts > 0) return true;
+  const usec = Number(show.ActiveEnterTimestampUSec || show.StateChangeTimestampUSec || '0');
+  if (Number.isFinite(usec) && usec > 1_000_000) {
+    // systemd *TimestampUSec is microseconds since the CLOCK_REALTIME epoch
+    if (now - usec / 1000 > ACTIVATING_STUCK_MS) return true;
+  }
+  return false;
+}
+
+async function isActivatingStuck(host: HostExecutor, unitName: string): Promise<boolean> {
+  try {
+    const r = await host.runCommand(
+      [
+        'systemctl',
+        'show',
+        unitName,
+        '-p',
+        'ActiveEnterTimestampUSec',
+        '-p',
+        'StateChangeTimestampUSec',
+        '-p',
+        'NRestarts',
+        '-p',
+        'SubState',
+      ],
+      { timeoutMs: 5_000 },
+    );
+    return activatingLooksStuck(parseSystemctlShow(r.stdout || r.stderr || ''));
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Probe a single runtime: install path, optional binary, systemd unit.
  */
@@ -90,18 +143,9 @@ export async function probeAgentRuntime(
     }
   } else if (unitActive === 'activating' || unitActive === 'reloading') {
     status = 'activating';
-    try {
-      const ts = await host.runCommand(
-        ['systemctl', 'show', unitName, '-p', 'ActiveEnterTimestamp', '--value'],
-        { timeoutMs: 5_000 },
-      );
-      const entered = Date.parse(String(ts.stdout || '').trim());
-      if (Number.isFinite(entered) && Date.now() - entered > 5 * 60_000) {
-        status = 'failed';
-        notes.push(tl('notes.agents.activatingStuck'));
-      }
-    } catch {
-      /* keep activating */
+    if (await isActivatingStuck(host, unitName)) {
+      status = 'failed';
+      notes.push(tl('notes.agents.activatingStuck'));
     }
   } else if (unitActive === 'failed') {
     status = 'failed';

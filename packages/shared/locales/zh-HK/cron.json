@@ -76,6 +76,7 @@
   "hostNoYsk": "尚未安裝或無 YSK 項目",
   "pressInstall": "有已登記但未寫入系統的工作 — 請按「安裝到系統」。",
   "jobsTab": "工作 ({{count}})",
+  "jobsTabPending": "工作 ({{count}}) · 待安裝 {{pending}}",
   "registeredJobs": "已登記工作 ({{count}})",
   "jobsSub": "管理檔項目 · 改動後需「安裝到系統」才生效",
   "addJob": "+ 新增工作",

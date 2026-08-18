@@ -1949,6 +1949,7 @@ export function ProtectionPage() {
                           size="sm"
                           loading={busy}
                           disabled={disabled}
+                          title={t('protection.banConfirmTitle', { ip: s.ip })}
                           onClick={() => setPendingBan({ ip: s.ip, reason: s.reasons[0] })}
                         >
                           {t('protection.ban')}
@@ -3133,8 +3134,12 @@ export function ProtectionPage() {
         })}
         confirmLabel={t('protection.ban')}
         cancelLabel={t('common.cancel')}
-        danger
+        severity="destructive"
         busy={busy}
+        consequences={[
+          t('protection.banConfirmMethod', { method: banMethod }),
+          t('protection.banConfirmUntilUnban'),
+        ]}
         onConfirm={() => {
           const next = pendingBan;
           setPendingBan(null);

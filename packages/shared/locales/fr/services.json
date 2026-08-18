@@ -98,5 +98,6 @@
   "restartConfirmTitle": "Restart {{label}}?",
   "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
   "startVerifyFailed": "{{label}} start did not stay healthy.",
-  "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop."
+  "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",
+  "reloadTitle": "Reload {{label}} configuration without a full restart"
 }

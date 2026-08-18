@@ -62,7 +62,8 @@
     "deployTitle": "다음: 배포",
     "deployBody": "헤더의 배포를 사용하거나 Git의 배포 탭을 사용하세요.",
     "nginxTitle": "다음: Nginx 게시",
-    "nginxBody": "네트워크 탭을 열어 Nginx(SSL 옵션)를 게시하세요."
+    "nginxBody": "네트워크 탭을 열어 Nginx(SSL 옵션)를 게시하세요.",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "아직 건강검진이 없습니다",

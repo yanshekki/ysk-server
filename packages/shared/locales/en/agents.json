@@ -15,6 +15,7 @@
     "unknown": "Not probed",
     "fallback": "Unknown"
   },
+  "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
   "journal": "journal",
   "liveN": "{{count}} online",
   "registeredOnly": "Registered only",

@@ -81,5 +81,7 @@
   "setCfRealIp": "Cloudflare 真实 IP",
   "setIndexes": "目录列表",
   "bodyInherit": "跟随全局",
-  "stopSites": "{{n}} site(s) will stop answering HTTP."
+  "stopSites": "{{n}} site(s) will stop answering HTTP.",
+  "purgeCacheTitle": "Purge Nginx cache and reload?",
+  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
 }

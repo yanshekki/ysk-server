@@ -81,5 +81,7 @@
   "setCfRealIp": "क्लाउडफ्लेयर रियल आईपी",
   "setIndexes": "निर्देशिका सूची",
   "bodyInherit": "वैश्विक",
-  "stopSites": "{{n}} site(s) will stop answering HTTP."
+  "stopSites": "{{n}} site(s) will stop answering HTTP.",
+  "purgeCacheTitle": "Purge Nginx cache and reload?",
+  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
 }

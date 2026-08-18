@@ -62,7 +62,8 @@
     "deployTitle": "التالي: النشر",
     "deployBody": "استخدم Deploy في الرأس، أو علامة التبويب Deploy لـ Git.",
     "nginxTitle": "التالي: نشر Nginx",
-    "nginxBody": "افتح علامة التبويب \"الشبكة\" لنشر Nginx (SSL اختياري)."
+    "nginxBody": "افتح علامة التبويب \"الشبكة\" لنشر Nginx (SSL اختياري).",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "لا يوجد فحص صحي حتى الآن",

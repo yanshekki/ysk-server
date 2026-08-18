@@ -33,7 +33,8 @@
     "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
     "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
     "autoClearCandidate": "Current candidate: {{id}}",
-    "autoClearNone": "No stopped instance is a candidate right now."
+    "autoClearNone": "No stopped instance is a candidate right now.",
+    "browseRoot": "Open in file browser"
   },
   "chain": {
     "eth": "Ethereum",
@@ -187,7 +188,13 @@
     "rewriteCompose": "Rewrite compose",
     "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
     "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-    "chainMeta": "{{disk}} min · {{clients}} clients"
+    "chainMeta": "{{disk}} min · {{clients}} clients",
+    "profileHint": {
+      "minimal": "Smallest sync — light disk, not for staking.",
+      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
+      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
+      "rpc": "Public RPC node — not a staking validator."
+    }
   },
   "actions": {
     "detail": "বিস্তারিত",

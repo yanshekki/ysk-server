@@ -38,6 +38,7 @@
   "needRunning": "{{label}} 未運行",
   "restartedOk": "已重啟 {{label}}",
   "reloadedOk": "已重載 {{label}}",
+  "reloadTitle": "重載 {{label}} 設定（不完全重啟）",
   "stopNeedConfirm": "需確認",
   "stopNeedConfirmPhrase": "需輸入確認短語",
   "stopNeedConfirmImpact": "停止 {{label}}？連到此服務的連線會中斷。",

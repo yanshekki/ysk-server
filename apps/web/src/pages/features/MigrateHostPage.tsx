@@ -35,6 +35,7 @@ import {
   inventoryPillKind,
   otherInventoryWarnings,
   orphanHomeName,
+  projectHomeWarningId,
 } from './migrate-inventory';
 
 const TABS = ['wizard', 'jobs', 'about'] as const;
@@ -350,11 +351,25 @@ export function MigrateHostPage() {
                           {(warnExpanded
                             ? otherWarnings
                             : otherWarnings.slice(0, 6)
-                          ).map((w) => (
+                          ).map((w) => {
+                            const pid = projectHomeWarningId(w);
+                            return (
                             <li key={w} className="u-break-all">
                               {w}
+                              {pid ? (
+                                <>
+                                  {' '}
+                                  <Link
+                                    to={`/projects/${encodeURIComponent(pid)}?tab=isolation`}
+                                    className={buttonClassName({ variant: 'link', size: 'sm' })}
+                                  >
+                                    {t('projects.next.provisionOsAction')}
+                                  </Link>
+                                </>
+                              ) : null}
                             </li>
-                          ))}
+                            );
+                          })}
                         </ul>
                         {otherWarnings.length > 6 ? (
                           <Button

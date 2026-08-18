@@ -535,9 +535,14 @@ export function CronPage() {
         tabs={[
           {
             id: 'jobs',
-            label: t('cron.jobsTab', {
-              count: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
-            }),
+            label: pendingManaged.length
+              ? t('cron.jobsTabPending', {
+                  count: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
+                  pending: pendingManaged.length,
+                })
+              : t('cron.jobsTab', {
+                  count: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
+                }),
           },
           { id: 'status', label: t('common.status') },
           { id: 'about', label: t('common.about') },
@@ -744,6 +749,7 @@ export function CronPage() {
                           variant="danger"
                           size="sm"
                           loading={busy}
+                          title={t('cron.deleteTitle')}
                           onClick={() =>
                             setDelCron({
                               id: job.id,

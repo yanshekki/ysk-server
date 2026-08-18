@@ -60,6 +60,7 @@
   },
   "next": {
     "pendingOsTitle": "System user not provisioned",
+    "provisionOsAction": "Create system user",
     "pendingOsBody": "This project has no isolated system user yet.",
     "pendingOsActions": "You can still deploy; full isolation needs admin privileges on the host.",
     "deployTitle": "Next: Deploy",

@@ -478,6 +478,36 @@ export function DnsPage() {
     }
   }, [selectedZone]);
 
+  const healPdns = useCallback(() => {
+    setPdnsHealBusy(true);
+    void api
+      .requestRawAllowStatus<{
+        ok?: boolean;
+        notes?: string[];
+        localAddress?: string;
+        blocked?: boolean;
+        blockMessage?: string;
+      }>('/api/v1/hosting/dns/powerdns/heal', {
+        method: 'POST',
+        body: '{}',
+        allowStatuses: [403, 422],
+      })
+      .then((r) => {
+        if (r.blocked) {
+          toast.warn(
+            r.blockMessage ?? r.notes?.[0] ?? t('dns.healthHealPdnsFailed'),
+          );
+        } else if (r.ok === false) {
+          toast.error(r.notes?.[0] ?? t('dns.healthHealPdnsFailed'));
+        } else {
+          toast.ok(t('dns.healthHealPdnsOk', { ip: r.localAddress ?? '—' }));
+        }
+        return refreshHealth();
+      })
+      .catch((e: Error) => toast.error(e.message))
+      .finally(() => setPdnsHealBusy(false));
+  }, [refreshHealth, t]);
+
   useEffect(() => {
     void refreshHealth();
   }, [refreshHealth]);
@@ -1536,43 +1566,7 @@ export function DnsPage() {
                       size="sm"
                       loading={pdnsHealBusy}
                       title={t('dns.healthHealPdns')}
-                      onClick={() => {
-                        setPdnsHealBusy(true);
-                        void api
-                          .requestRawAllowStatus<{
-                            ok?: boolean;
-                            notes?: string[];
-                            localAddress?: string;
-                            blocked?: boolean;
-                            blockMessage?: string;
-                          }>('/api/v1/hosting/dns/powerdns/heal', {
-                            method: 'POST',
-                            body: '{}',
-                            allowStatuses: [403, 422],
-                          })
-                          .then((r) => {
-                            if (r.blocked) {
-                              toast.warn(
-                                r.blockMessage ??
-                                  r.notes?.[0] ??
-                                  t('dns.healthHealPdnsFailed'),
-                              );
-                            } else if (r.ok === false) {
-                              toast.error(
-                                r.notes?.[0] ?? t('dns.healthHealPdnsFailed'),
-                              );
-                            } else {
-                              toast.ok(
-                                t('dns.healthHealPdnsOk', {
-                                  ip: r.localAddress ?? '—',
-                                }),
-                              );
-                            }
-                            return refreshHealth();
-                          })
-                          .catch((e: Error) => toast.error(e.message))
-                          .finally(() => setPdnsHealBusy(false));
-                      }}
+                      onClick={healPdns}
                     >
                       {t('dns.healthHealPdns')}
                     </Button>
@@ -1608,6 +1602,20 @@ export function DnsPage() {
                         size="sm"
                         className="u-mt-2"
                         showResult
+                        extraAfterResult={
+                          health && !health.unitActive ? (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="u-mt-2"
+                              loading={pdnsHealBusy}
+                              title={t('dns.healthHealPdns')}
+                              onClick={healPdns}
+                            >
+                              {t('dns.healthHealPdns')}
+                            </Button>
+                          ) : null
+                        }
                         onDone={async () => {
                           await refreshHealth();
                         }}

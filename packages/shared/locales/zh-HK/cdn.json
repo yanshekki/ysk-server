@@ -43,6 +43,7 @@
     "partial": "部分成功"
   },
   "statSites": "站點",
+  "statApplyFailed": "套用失敗",
   "pillNodesSites": "節點 {{n}} · 站點 {{s}}",
   "statOnline": "線上",
   "statOnlineOf": "線上 {{n}}/{{total}}",

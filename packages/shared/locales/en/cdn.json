@@ -43,6 +43,7 @@
     "partial": "Partial"
   },
   "statSites": "Sites",
+  "statApplyFailed": "Apply failed",
   "pillNodesSites": "{{n}} nodes · {{s}} sites",
   "statOnline": "Online",
   "statHit": "Hit rate",

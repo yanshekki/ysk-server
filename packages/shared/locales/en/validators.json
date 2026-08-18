@@ -41,6 +41,7 @@
     "leftoverRemove": "Remove",
     "leftoverRemoveTitle": "Delete leftover validator data?",
     "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
+    "browseRoot": "Open in file browser",
     "none": "No instance data yet",
     "warn": "Disk usage is high (70%+)",
     "danger": "Disk usage is critical (85%+)",
@@ -182,6 +183,12 @@
     "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
     "diskNeed": "This profile needs about {{need}} · free {{free}}",
     "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
+    "profileHint": {
+      "minimal": "Smallest sync — light disk, not for staking.",
+      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
+      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
+      "rpc": "Public RPC node — not a staking validator."
+    },
     "diskShort": "Not enough free disk for this chain / network / profile",
     "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
     "needCustomPath": "Enter an absolute data path",

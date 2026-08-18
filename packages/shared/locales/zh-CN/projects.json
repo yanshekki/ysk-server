@@ -62,7 +62,8 @@
     "deployTitle": "下一步：部署",
     "deployBody": "按上方「部署 PHP／部署」启动 runtime，或到「部署」分页用 Git。",
     "nginxTitle": "下一步：发布 Nginx",
-    "nginxBody": "到「网絡」分页或总览快捷操作发布 Nginx（可选 SSL）。"
+    "nginxBody": "到「网絡」分页或总览快捷操作发布 Nginx（可选 SSL）。",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "尚未执行健康检查",

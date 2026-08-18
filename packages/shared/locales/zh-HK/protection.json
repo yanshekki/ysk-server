@@ -246,6 +246,8 @@
   "unban": "解封",
   "ban": "封禁",
   "banConfirmTitle": "封禁 {{ip}}？",
+  "banConfirmMethod": "方法：{{method}}",
+  "banConfirmUntilUnban": "會一直維持，直至你解除封禁（或 fail2ban 到期）。",
   "banConfirmDesc": "此 IP 會在主機上被封鎖。請確認不是目前面板或工作階段來源。",
   "wlRemovedUndo": "已從白名單移除 {{ip}}。5 秒內可復原。",
   "undo": "復原",

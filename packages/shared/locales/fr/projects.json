@@ -62,7 +62,8 @@
     "deployTitle": "Suivant : Déployer",
     "deployBody": "Utilisez Déployer dans l'en-tête, ou l'onglet Déployer pour Git.",
     "nginxTitle": "Suivant : Publier Nginx",
-    "nginxBody": "Ouvrez l'onglet Réseau pour publier Nginx (SSL optionnel)."
+    "nginxBody": "Ouvrez l'onglet Réseau pour publier Nginx (SSL optionnel).",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "Pas encore de contrôle d'état",

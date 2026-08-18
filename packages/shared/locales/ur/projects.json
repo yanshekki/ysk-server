@@ -62,7 +62,8 @@
     "deployTitle": "اگلا: تعینات کریں۔",
     "deployBody": "ہیڈر میں تعیناتی کا استعمال کریں، یا گٹ کے لیے تعیناتی ٹیب۔",
     "nginxTitle": "اگلا: Nginx شائع کریں۔",
-    "nginxBody": "Nginx (اختیاری SSL) کو شائع کرنے کے لیے نیٹ ورک ٹیب کو کھولیں۔"
+    "nginxBody": "Nginx (اختیاری SSL) کو شائع کرنے کے لیے نیٹ ورک ٹیب کو کھولیں۔",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "ابھی تک صحت کی جانچ نہیں ہوئی ہے۔",

@@ -73,7 +73,7 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
               to={`/projects/${project.id}?tab=isolation`}
               className="list-row__link"
             >
-              {t('projects.next.pendingOsTitle')}
+              {t('projects.next.provisionOsAction')}
             </Link>
             <Link
               to={`/projects/${project.id}?tab=advanced`}

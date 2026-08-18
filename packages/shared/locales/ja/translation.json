@@ -143,7 +143,8 @@
     "expEdge": "端では：",
     "noteAllowlist": "Agent tool calls must pass the allowlist.",
     "noteRbacCap": "Agent role is capped at write-low.",
-    "journal": "journal"
+    "journal": "journal",
+    "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal."
   },
   "ai": {
     "status": {
@@ -915,7 +916,8 @@
     "cacheBytes": "Cache ≈ {{n}} B",
     "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
     "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
-    "applyFailedNoNote": "No stored reason. Re-apply to capture the error."
+    "applyFailedNoNote": "No stored reason. Re-apply to capture the error.",
+    "statApplyFailed": "Apply failed"
   },
   "cli": {
     "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
@@ -2400,7 +2402,8 @@
     "pendingInstallCount": "{{n}} pending install",
     "systemJobBadge": "No project · system user",
     "willNotRun": "Not written to system crontab — will not run.",
-    "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run."
+    "pendingStale": "Not written to system crontab for {{days}} day(s) — it will not run.",
+    "jobsTabPending": "Jobs ({{count}}) · pending {{pending}}"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -5835,7 +5838,9 @@
     "setCfRealIp": "CloudflareのリアルIP",
     "setIndexes": "ディレクトリリスト",
     "bodyInherit": "グローバル",
-    "stopSites": "{{n}} site(s) will stop answering HTTP."
+    "stopSites": "{{n}} site(s) will stop answering HTTP.",
+    "purgeCacheTitle": "Purge Nginx cache and reload?",
+    "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
   },
   "notFound": {
     "title": "ページが見つかりません",
@@ -8971,7 +8976,10 @@
       "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
       "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
       "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
-      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
+      "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}.",
+      "executeStaleCli": "Pass --execute (root + YSK_EXECUTE=1) to remove stale CLI bins.",
+      "executeMissingTls": "Pass --execute (root + YSK_EXECUTE=1) to disable missing-cert TLS so vsftpd/Dovecot can start.",
+      "executeGeneric": "Pass --execute (root + YSK_EXECUTE=1) to apply leftover cleanup for the findings above."
     },
     "git": {
       "missingBin": "git が PATH 上にありません",
@@ -9223,7 +9231,8 @@
       "deployTitle": "次へ：出撃",
       "deployBody": "ヘッダーの「デプロイ」を使用するか、Git の「デプロイ」タブを使用します。",
       "nginxTitle": "次へ: Nginx を公開する",
-      "nginxBody": "[ネットワーク] タブを開いて、Nginx (オプションの SSL) を公開します。"
+      "nginxBody": "[ネットワーク] タブを開いて、Nginx (オプションの SSL) を公開します。",
+      "provisionOsAction": "Create system user"
     },
     "healthDetail": {
       "none": "まだ健康診断は受けていない",
@@ -10248,7 +10257,9 @@
     "banSelectedConfirmDesc": "These addresses will be blocked on the host: {{ips}}",
     "freshnessMissing": "No database",
     "freshnessStale": "Stale",
-    "freshnessFresh": "Current"
+    "freshnessFresh": "Current",
+    "banConfirmMethod": "Method: {{method}}",
+    "banConfirmUntilUnban": "Stays banned until you unban it (or fail2ban expiry)."
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -11840,7 +11851,8 @@
     "restartConfirmTitle": "Restart {{label}}?",
     "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
     "startVerifyFailed": "{{label}} start did not stay healthy.",
-    "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop."
+    "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",
+    "reloadTitle": "Reload {{label}} configuration without a full restart"
   },
   "software": {
     "title": "ソフトウェア",
@@ -13333,7 +13345,8 @@
       "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
       "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
       "autoClearCandidate": "Current candidate: {{id}}",
-      "autoClearNone": "No stopped instance is a candidate right now."
+      "autoClearNone": "No stopped instance is a candidate right now.",
+      "browseRoot": "Open in file browser"
     },
     "chain": {
       "eth": "Ethereum",
@@ -13487,7 +13500,13 @@
       "rewriteCompose": "Rewrite compose",
       "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
       "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-      "chainMeta": "{{disk}} min · {{clients}} clients"
+      "chainMeta": "{{disk}} min · {{clients}} clients",
+      "profileHint": {
+        "minimal": "Smallest sync — light disk, not for staking.",
+        "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
+        "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
+        "rpc": "Public RPC node — not a staking validator."
+      }
     },
     "actions": {
       "detail": "詳細",

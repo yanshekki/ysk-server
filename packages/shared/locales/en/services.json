@@ -38,6 +38,7 @@
   "needRunning": "{{label}} is not running",
   "restartedOk": "{{label}} restarted",
   "reloadedOk": "{{label}} reloaded",
+  "reloadTitle": "Reload {{label}} configuration without a full restart",
   "stopNeedConfirm": "Needs confirmation",
   "stopNeedConfirmPhrase": "Needs confirmation phrase",
   "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",

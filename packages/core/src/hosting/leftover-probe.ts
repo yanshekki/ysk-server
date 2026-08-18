@@ -184,3 +184,16 @@ export async function probeHostLeftovers(input: {
   const notes = findings.filter((f) => !f.ok).map((f) => f.detail);
   return { ok: findings.every((f) => f.ok), findings, notes };
 }
+
+/** Execute CTA notes — only mention vsftpd/Dovecot when those findings exist. */
+export function leftoverExecuteHints(findings: LeftoverFinding[]): string[] {
+  const ids = new Set(findings.filter((f) => !f.ok).map((f) => f.id));
+  if (ids.size === 0) return [];
+  const out: string[] = [];
+  if (ids.has('stale-cli')) out.push(tl('notes.leftover.executeStaleCli'));
+  if (ids.has('vsftpd-failed') || ids.has('dovecot-ssl')) {
+    out.push(tl('notes.leftover.executeMissingTls'));
+  }
+  if (out.length === 0) out.push(tl('notes.leftover.executeGeneric'));
+  return out;
+}

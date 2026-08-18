@@ -50,7 +50,7 @@ export function lifecycleDangerForUnit(unit: string): 'normal' | 'edge' | 'sshd'
   const u = unit.trim().toLowerCase();
   if (u === 'sshd' || u === 'ssh' || u.startsWith('sshd@')) return 'sshd';
   if (u === 'ysk-server' || u.startsWith('ysk-server')) return 'panel';
-  if (u === 'nginx' || u === 'apache2' || u === 'httpd') return 'edge';
+  if (u === 'nginx' || u === 'apache2' || u === 'httpd' || u === 'docker') return 'edge';
   return 'normal';
 }
 

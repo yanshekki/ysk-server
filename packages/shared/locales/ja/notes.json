@@ -3126,7 +3126,10 @@
     "nginxNotLeftover": "Not a leftover public-files conf — refuse delete.",
     "nginxUnusedKeep": "000-default is unused, not leftover — not deleted.",
     "nginxSystemCopy": "System copy still present: {{path}}. Needs YSK_EXECUTE + root to remove.",
-    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}."
+    "nginxReloadFailed": "nginx -t or reload failed after removing {{path}}.",
+    "executeStaleCli": "Pass --execute (root + YSK_EXECUTE=1) to remove stale CLI bins.",
+    "executeMissingTls": "Pass --execute (root + YSK_EXECUTE=1) to disable missing-cert TLS so vsftpd/Dovecot can start.",
+    "executeGeneric": "Pass --execute (root + YSK_EXECUTE=1) to apply leftover cleanup for the findings above."
   },
   "git": {
     "missingBin": "git が PATH 上にありません",

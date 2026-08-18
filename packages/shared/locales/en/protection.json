@@ -250,6 +250,8 @@
   "unban": "Unban",
   "ban": "Ban",
   "banConfirmTitle": "Ban {{ip}}?",
+  "banConfirmMethod": "Method: {{method}}",
+  "banConfirmUntilUnban": "Stays banned until you unban it (or fail2ban expiry).",
   "banConfirmDesc": "This IP will be blocked on the host. Confirm it is not a current panel or session address.",
   "wlRemovedUndo": "Removed {{ip}} from the allow list. Undo within 5 seconds.",
   "undo": "Undo",

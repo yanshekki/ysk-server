@@ -647,6 +647,7 @@ export function EmailDomainPage() {
             variant="danger"
             size="sm"
             loading={deleteBusy}
+            title={t('email.deleteDialogTitle')}
             onClick={bindSet(setDeleteOpen, true)}
           >
             {t('email.deleteDomain')}

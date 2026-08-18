@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.1.8 — 2026-08-18
+
+### Fix
+- Overlay now copies dest `package.json` so the installed package version matches the CLI (`1.1.8`), not a leftover dest version.
+- Leftover-scan execute notes only mention vsftpd/Dovecot TLS when those findings exist. Active units are not told they “cannot start”.
+- Agent runtime “activating” uses `ActiveEnterTimestampUSec` / `NRestarts` / `SubState`. A 5-minute stall or crash-loop is **stuck**, not forever starting.
+- First paint: backups / validators / Docker no longer flash `0` / `—` / empty before the first load. Docker delete removes the row immediately.
+
+### Improve
+- E2E-1117: confirm titles, Nginx cache purge confirm, Docker engine stop as edge, files trash type-to-confirm name, PowerDNS fail card + heal, VNC idle hostname copy, cron tab pending count, CDN apply-failed KPI, `/cluster` engine switcher, project “Create system user”, migrate inventory links, validator wizard profile hints + default-Minimal disk copy, Modal focus trap + `#root` inert, timestamps default to host zone with `UTC±n`.
+- Product `ysk-server@1.1.8` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
+
 ## 1.1.7 — 2026-08-18
 
 ### Feature

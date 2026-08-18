@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.8 新內容
+
+- **誠實 overlay** — dest `package.json` 與 CLI 版本一致。leftover 句子不會說已在運行的 vsftpd／Dovecot 無法啟動。
+- **首屏** — 備份、驗證者、Docker 不再先閃空／0。刪容器即刻更新列表。
+- **E2E-1117** — 確認鍵 title、Nginx 清 cache 確認、卡住的 agent 運行時、時鐘帶 `UTC±n`、驗證者精靈磁碟文案、`/cluster` 引擎切換。
+
 ## 1.1.7 新內容
 
 - **驗證者** — 磁碟用量為驗證者目錄 `du`、啟動中與錯誤分開、軟件分頁拉取釘選映像、Avalanche compose 只傳旗標。

@@ -62,7 +62,8 @@
     "deployTitle": "次へ：出撃",
     "deployBody": "ヘッダーの「デプロイ」を使用するか、Git の「デプロイ」タブを使用します。",
     "nginxTitle": "次へ: Nginx を公開する",
-    "nginxBody": "[ネットワーク] タブを開いて、Nginx (オプションの SSL) を公開します。"
+    "nginxBody": "[ネットワーク] タブを開いて、Nginx (オプションの SSL) を公開します。",
+    "provisionOsAction": "Create system user"
   },
   "healthDetail": {
     "none": "まだ健康診断は受けていない",

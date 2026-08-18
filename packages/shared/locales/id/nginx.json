@@ -81,5 +81,7 @@
   "setCfRealIp": "IP Asli Cloudflare",
   "setIndexes": "Daftar direktori",
   "bodyInherit": "Global",
-  "stopSites": "{{n}} site(s) will stop answering HTTP."
+  "stopSites": "{{n}} site(s) will stop answering HTTP.",
+  "purgeCacheTitle": "Purge Nginx cache and reload?",
+  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
 }

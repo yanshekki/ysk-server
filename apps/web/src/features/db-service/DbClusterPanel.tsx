@@ -20,7 +20,8 @@ import { ActionBar,
   FormLayout,
   Modal,
   OpsResultPanel,
-  SegRadio } from '../../shared/components/ui';
+  SegRadio,
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from './api';
 import {
@@ -36,7 +37,11 @@ import { bindSet, bindInput, bindVoid, bindCall1, bindCall2 } from '../../pages/
 import { agentsApi, type FleetAgent } from '../agents/api';
 import { formatDateTime } from '../../shared/lib/datetime';
 import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
-import { isStaleClusterPlan } from '../../pages/features/cluster-landing';
+import {
+  CLUSTER_ENGINE_ORDER,
+  clusterServicePath,
+  isStaleClusterPlan,
+} from '../../pages/features/cluster-landing';
 
 export function statusTone(
   s: string,
@@ -383,7 +388,23 @@ export function DbClusterPanel({
   return (
     <div className="stack-gap">
       {fromClusterPath ? (
-        <Alert variant="info">{t('db.cluster.redirectedFromCluster')}</Alert>
+        <>
+          <Alert variant="info">{t('db.cluster.redirectedFromCluster')}</Alert>
+          <ActionBar className="u-mb-3">
+            {CLUSTER_ENGINE_ORDER.map((eng) => (
+              <Link
+                key={eng}
+                to={clusterServicePath(eng)}
+                className={buttonClassName({
+                  variant: eng === engine ? 'primary' : 'secondary',
+                  size: 'sm',
+                })}
+              >
+                {t('db.cluster.openEngine', { engine: eng })}
+              </Link>
+            ))}
+          </ActionBar>
+        </>
       ) : null}
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}

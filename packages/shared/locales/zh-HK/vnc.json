@@ -173,7 +173,7 @@
   "start": "啟動",
   "stop": "停止",
   "startAfterCreate": "建立後啟動",
-  "hostnameBrokenIdle": "此主機無法解析主機名 {{hostname}}。建立工作階段前請先寫入 /etc/hosts。",
+  "hostnameBrokenIdle": "尚無 VNC 工作階段。主機名 {{hostname}} 目前未能解析；若之後建立工作階段，可選擇寫入 /etc/hosts。",
   "hostnameBroken": "此主機無法解析自己的主機名（{{hostname}}）。工作階段會啟動失敗。",
   "hostnameFix": "把主機名寫入 /etc/hosts",
   "hostnameFixTitle": "附加此行到 /etc/hosts？",

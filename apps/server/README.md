@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.8
+
+- Overlay copies dest `package.json` so the installed version matches the CLI.
+- First paint: backups / validators / Docker do not flash empty before load. E2E-1117 UX polish.
+
 ## What's new in 1.1.7
 
 - Validators: honest disk usage, starting vs error, Software tab, Avalanche compose flags only.
