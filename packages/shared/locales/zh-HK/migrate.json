@@ -76,6 +76,8 @@
   "orphanHomesSummary": "磁碟上有 {{count}} 條路徑不在 store。不確定請先備份，確認無用後再刪。",
   "orphanColHome": "主目錄",
   "orphanColModified": "最後修改",
+  "orphanColEntries": "目錄項",
+  "orphanEntries": "目錄內有 {{n}} 個頂層項目",
   "orphanKpi": "孤立主目錄",
   "sourceOs": "作業系統",
   "sourceDataDir": "dataDir",

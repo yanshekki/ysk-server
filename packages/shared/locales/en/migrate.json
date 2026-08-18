@@ -76,6 +76,8 @@
   "orphanHomesSummary": "{{count}} path(s) on disk are not in the store. Back up first if unsure, then remove unused paths.",
   "orphanColHome": "Home",
   "orphanColModified": "Modified",
+  "orphanColEntries": "Entries",
+  "orphanEntries": "{{n}} top-level entries in the directory",
   "orphanKpi": "Leftover",
   "sourceOs": "OS",
   "sourceDataDir": "dataDir",

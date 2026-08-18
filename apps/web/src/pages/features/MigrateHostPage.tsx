@@ -142,7 +142,7 @@ export function MigrateHostPage() {
   const orphanHomeStats =
     (
       inventory?.manifest as
-        | { orphanHomeStats?: Record<string, { mtime?: string }> }
+        | { orphanHomeStats?: Record<string, { mtime?: string; entryCount?: number }> }
         | undefined
     )?.orphanHomeStats ?? {};
   const otherWarnings = otherInventoryWarnings(warnings, orphanHomes);
@@ -436,6 +436,16 @@ export function MigrateHostPage() {
                         ? formatDateTime(orphanHomeStats[p]!.mtime)
                         : '—',
                   },
+                  {
+                    key: 'entries',
+                    header: t('migrate.orphanColEntries'),
+                    nowrap: true,
+                    mobile: 'meta',
+                    render: (p) =>
+                      orphanHomeStats[p]?.entryCount != null
+                        ? String(orphanHomeStats[p]!.entryCount)
+                        : '—',
+                  },
                 ]}
                 rows={orphanHomes}
                 rowKey={(p) => p}
@@ -445,6 +455,7 @@ export function MigrateHostPage() {
                     size="sm"
                     title={t('migrate.orphanRemoveNeedConfirm')}
                     aria-label={`${t('migrate.orphanRemove')} ${p}`}
+                    data-confirm={p}
                     onClick={() => setOrphanTarget(p)}
                   >
                     {t('migrate.orphanRemove')}
@@ -812,9 +823,14 @@ export function MigrateHostPage() {
           orphanMtime
             ? t('migrate.orphanMtime', { at: formatDateTime(orphanMtime) })
             : '',
+          orphanTarget && orphanHomeStats[orphanTarget]?.entryCount != null
+            ? t('migrate.orphanEntries', {
+                n: orphanHomeStats[orphanTarget]!.entryCount,
+              })
+            : '',
           t('migrate.orphanBackupFirst'),
         ].filter(Boolean)}
-        confirmText={orphanTarget?.split('/').filter(Boolean).pop() || 'DELETE'}
+        confirmText={orphanTarget || 'DELETE'}
         severity="critical"
         confirmLabel={t('migrate.orphanRemove')}
         cancelLabel={t('common.cancel')}

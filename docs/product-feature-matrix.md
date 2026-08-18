@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-18 — **1.1.8** (npm latest after 1.1.7). E2E-1117: honest overlay package.json, leftover notes, first-paint, confirm titles, host-zone offset. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-18 — **1.1.9** (npm latest after 1.1.8). E2E-1118: confirm DOM markers, cluster overview, overlay dest package.json, sshd-off panel stop copy, UFW no lifecycle, leftover/orphan tables. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 

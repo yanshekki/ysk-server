@@ -140,5 +140,6 @@
   "noteAllowlist": "Agent tool calls must pass the allowlist.",
   "noteRbacCap": "Agent role is capped at write-low.",
   "journal": "journal",
-  "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal."
+  "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
+  "noOnlineAgents": "No agents online"
 }

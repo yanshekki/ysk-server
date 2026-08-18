@@ -620,6 +620,9 @@ overlay_npm_onto_running() {
   latest="$(node -p "require('$tmp/package/package.json').version" 2>/dev/null || true)"
   mkdir -p "$dest/dist"
   cp -a "$tmp/package/dist/." "$dest/dist/"
+  if [[ -f "$tmp/package/package.json" ]]; then
+    cp -a "$tmp/package/package.json" "$dest/package.json"
+  fi
   if [[ -d "$tmp/package/public" ]]; then
     mkdir -p "$dest/public"
     cp -a "$tmp/package/public/." "$dest/public/"

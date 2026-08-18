@@ -256,7 +256,15 @@
     "landingTitle": "Database cluster",
     "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
     "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
-    "openEngine": "Open {{engine}}"
+    "openEngine": "Open {{engine}}",
+    "overviewPill": "Clusters {{n}}",
+    "enginesInstalled": "Engines",
+    "plannedCount": "Planned",
+    "overviewList": "Clusters ({{count}})",
+    "overviewEmpty": "No cluster registrations yet.",
+    "engine": "Engine",
+    "kind": "Kind",
+    "members": "Members"
   },
   "console": {
     "dataBrowse": "Telusuri data",

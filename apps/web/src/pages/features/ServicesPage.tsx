@@ -65,6 +65,11 @@ export function sshdNeedsBootEnable(row: {
   return row.enabled !== 'enabled';
 }
 
+export function isUfwServiceRow(row: { id?: string; unit?: string; label?: string }): boolean {
+  const blob = `${row.id ?? ''} ${row.unit ?? ''} ${row.label ?? ''}`.toLowerCase();
+  return blob.includes('ufw');
+}
+
 export function isRedisServiceRow(row: { id?: string; unit?: string; label?: string }): boolean {
   const id = String(row.id ?? '').toLowerCase();
   const unit = String(row.unit ?? '').toLowerCase();
@@ -538,6 +543,12 @@ export function ServicesPage() {
                             ) : null
                           ) : (
                             <>
+                              {isUfwServiceRow(row) ? (
+                                <span className="muted u-text-sm" title={t('services.ufwNoLifecycle')}>
+                                  {t('services.ufwNoLifecycle')}
+                                </span>
+                              ) : (
+                              <>
                               <Button
                                 variant="primary"
                                 size="sm"
@@ -564,6 +575,7 @@ export function ServicesPage() {
                                 loading={busy}
                                 disabled={!canMutate || !row.installed}
                                 title={!row.installed ? t('common.notInstalled') : undefined}
+                                data-confirm="dialog"
                                 onClick={() =>
                                   setPendingLc({
                                     unit: row.unit,
@@ -599,6 +611,7 @@ export function ServicesPage() {
                                       ? t('services.stopNeedConfirmPhrase')
                                       : t('services.stopNeedConfirmImpact', { label: row.label })
                                 }
+                                data-confirm="dialog"
                                 onClick={() =>
                                   setPendingLc({
                                     unit: row.unit,
@@ -609,6 +622,8 @@ export function ServicesPage() {
                               >
                                 {t('services.action.stop')}
                               </Button>
+                              </>
+                              )}
                               {row.href ? (
                                 <Link
                                   to={row.href}

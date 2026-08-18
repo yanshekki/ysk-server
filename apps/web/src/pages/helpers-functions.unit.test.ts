@@ -25,6 +25,7 @@ import {
   lifecycleDangerForUnit,
   sshdNeedsBootEnable,
   isRedisServiceRow,
+  isUfwServiceRow,
   redisConsoleLooksInsecure,
 } from './features/ServicesPage';
 import { maskVpnPrivateKeys } from './features/VpnPage';
@@ -222,6 +223,8 @@ describe('Services helpers', () => {
     expect(lifecycleDangerForUnit('apache2')).toBe('edge');
     expect(lifecycleDangerForUnit('docker')).toBe('edge');
     expect(lifecycleDangerForUnit('redis')).toBe('normal');
+    expect(isUfwServiceRow({ id: 'ufw', unit: 'ufw.service', label: 'UFW' })).toBe(true);
+    expect(isUfwServiceRow({ id: 'nginx', unit: 'nginx.service', label: 'Nginx' })).toBe(false);
     expect(
       sshdNeedsBootEnable({ unit: 'sshd', installed: true, enabled: 'disabled' }),
     ).toBe(true);

@@ -63,6 +63,30 @@ export function ServiceLifecycleBar({
   const [pendingStop, setPendingStop] = useState(false);
   const [pendingRestart, setPendingRestart] = useState(false);
   const [bootEnabled, setBootEnabled] = useState<string | undefined>();
+  const [sshdBootOff, setSshdBootOff] = useState(false);
+
+  useEffect(() => {
+    if (danger !== 'panel') return;
+    let cancelled = false;
+    void systemApi
+      .servicesMatrix()
+      .then((r) => {
+        if (cancelled) return;
+        const row = (r.items ?? []).find((x) => {
+          const blob = `${x.id ?? ''} ${x.unit ?? ''}`.toLowerCase();
+          return blob.includes('sshd') || /(^|\s)ssh(\s|$)/.test(blob);
+        });
+        setSshdBootOff(
+          Boolean(row && row.installed !== false && String(row.enabled) !== 'enabled'),
+        );
+      })
+      .catch(() => {
+        /* keep false — do not invent sshd-off */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [danger]);
 
   useEffect(() => {
     if (unitProp?.trim()) {
@@ -112,10 +136,15 @@ export function ServiceLifecycleBar({
     if (danger === 'panel') {
       return {
         title: t('services.stopConfirmPanelTitle'),
-        description: t('services.stopConfirmPanelDesc'),
+        description: sshdBootOff
+          ? t('services.stopConfirmPanelSshdOffDesc')
+          : t('services.stopConfirmPanelDesc'),
         confirmText: t('services.stopConfirmPanelToken'),
         severity: 'critical' as ConfirmSeverity,
-        consequences: [t('services.stopConfirmPanelConsequence')],
+        consequences: [
+          t('services.stopConfirmPanelConsequence'),
+          ...(sshdBootOff ? [t('services.stopConfirmPanelSshdOffConsequence')] : []),
+        ],
       };
     }
     return {
@@ -129,7 +158,7 @@ export function ServiceLifecycleBar({
       consequences:
         danger === 'edge' ? [t('services.stopConfirmEdgeConsequence', { label })] : undefined,
     };
-  }, [danger, label, t]);
+  }, [danger, label, t, sshdBootOff]);
 
   const okMessage = useCallback(
     (action: ServiceLifecycleAction) => {
@@ -168,9 +197,13 @@ export function ServiceLifecycleBar({
         ) {
           const v = await verifyAfter(action);
           if (v && v.ok === false) {
+            const notes = v.notes?.length
+              ? v.notes
+              : [t('services.startVerifyFailed', { label })];
             return {
               ok: false,
-              notes: v.notes?.length ? v.notes : [t('services.startVerifyFailed', { label })],
+              notes,
+              blockMessage: notes[0],
             };
           }
         }
@@ -211,9 +244,14 @@ export function ServiceLifecycleBar({
             running === false
               ? t('services.needRunning', { label })
               : danger === 'panel'
-                ? t('services.stopConfirmPanelDesc')
-                : t('services.stopConfirmTitle', { label })
+                ? sshdBootOff
+                  ? t('services.stopConfirmPanelSshdOffDesc')
+                  : t('services.stopConfirmPanelDesc')
+                : stopDetail
+                  ? `${t('services.stopConfirmTitle', { label })} ${stopDetail}`
+                  : t('services.stopConfirmTitle', { label })
           }
+          data-confirm="dialog"
           onClick={() => setPendingStop(true)}
         >
           {t('services.action.stop')}
@@ -227,9 +265,12 @@ export function ServiceLifecycleBar({
           disabled={!canAct || running === false}
           title={
             danger === 'panel'
-              ? t('services.stopConfirmPanelDesc')
+              ? sshdBootOff
+                ? t('services.stopConfirmPanelSshdOffDesc')
+                : t('services.stopConfirmPanelDesc')
               : t('services.restartConfirmTitle', { label })
           }
+          data-confirm={danger === 'panel' || danger === 'edge' ? 'dialog' : undefined}
           onClick={() => {
             if (danger === 'panel' || danger === 'edge') setPendingRestart(true);
             else void fire('restart');

@@ -200,7 +200,7 @@ export async function buildHostManifest(input: {
 
   // Disk homes not in store
   const orphanHomes: string[] = [];
-  const orphanHomeStats: Record<string, { mtime: string }> = {};
+  const orphanHomeStats: Record<string, { mtime: string; entryCount?: number }> = {};
   for (const diskHome of globHomesOnDisk()) {
     const abs = resolve(diskHome);
     if (!homeSet.has(abs)) {
@@ -209,7 +209,13 @@ export async function buildHostManifest(input: {
       homeSet.add(abs);
       try {
         const st = statSync(abs);
-        orphanHomeStats[abs] = { mtime: st.mtime.toISOString() };
+        let entryCount: number | undefined;
+        try {
+          entryCount = readdirSync(abs).length;
+        } catch {
+          /* count optional */
+        }
+        orphanHomeStats[abs] = { mtime: st.mtime.toISOString(), entryCount };
       } catch {
         /* keep path-only */
       }

@@ -1970,7 +1970,12 @@ export function FilesPage() {
                         size="md"
                         loading={busy}
                         disabled={trash.length === 0}
-                        title={trash.length === 0 ? t('files.trashEmpty') : undefined}
+                        title={
+                          trash.length === 0
+                            ? t('files.trashEmpty')
+                            : t('files.emptyTrashTitle', { defaultValue: t('files.emptyTrash') })
+                        }
+                        data-confirm={trash.length === 0 ? undefined : String(trash.length)}
                         onClick={() => setEmptyTrashOpen(true)}
                       >
                         {t('files.emptyTrash')}
@@ -2023,6 +2028,8 @@ export function FilesPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
+                        title={t('files.purgeForever')}
+                        data-confirm={entry.name}
                         onClick={() => setPurgeTrash({ trashId: entry.trashId, name: entry.name })}
                       >
                         {t('files.purgeForever')}

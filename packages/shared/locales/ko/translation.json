@@ -144,7 +144,8 @@
     "noteAllowlist": "Agent tool calls must pass the allowlist.",
     "noteRbacCap": "Agent role is capped at write-low.",
     "journal": "journal",
-    "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal."
+    "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
+    "noOnlineAgents": "No agents online"
   },
   "ai": {
     "status": {
@@ -2799,7 +2800,15 @@
       "landingTitle": "Database cluster",
       "landingDesc": "No database engine is installed on this host. Open an engine page to install, then return here.",
       "landingNoneInstalled": "MySQL, MariaDB, PostgreSQL, and Redis are not installed. /cluster does not open a MySQL tab when MySQL is missing.",
-      "openEngine": "Open {{engine}}"
+      "openEngine": "Open {{engine}}",
+      "overviewPill": "Clusters {{n}}",
+      "enginesInstalled": "Engines",
+      "plannedCount": "Planned",
+      "overviewList": "Clusters ({{count}})",
+      "overviewEmpty": "No cluster registrations yet.",
+      "engine": "Engine",
+      "kind": "Kind",
+      "members": "Members"
     },
     "console": {
       "dataBrowse": "데이터 찾아보기",
@@ -5482,7 +5491,9 @@
     "sourceOs": "OS",
     "sourceDataDir": "dataDir",
     "sourceDbRedis": "Databases / Redis",
-    "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis"
+    "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis",
+    "orphanColEntries": "Entries",
+    "orphanEntries": "{{n}} top-level entries in the directory"
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -11852,7 +11863,10 @@
     "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
     "startVerifyFailed": "{{label}} start did not stay healthy.",
     "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",
-    "reloadTitle": "Reload {{label}} configuration without a full restart"
+    "reloadTitle": "Reload {{label}} configuration without a full restart",
+    "stopConfirmPanelSshdOffDesc": "The panel and API will go offline. sshd is not enabled on boot, so SSH may not be a rescue path after reboot.",
+    "stopConfirmPanelSshdOffConsequence": "sshd is not enabled on boot. After reboot you may have no SSH rescue path.",
+    "ufwNoLifecycle": "UFW is not started or stopped from this matrix."
   },
   "software": {
     "title": "소프트웨어",
@@ -13346,7 +13360,8 @@
       "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
       "autoClearCandidate": "Current candidate: {{id}}",
       "autoClearNone": "No stopped instance is a candidate right now.",
-      "browseRoot": "Open in file browser"
+      "browseRoot": "Open in file browser",
+      "leftoverEmpty": "No leftover instance directories"
     },
     "chain": {
       "eth": "Ethereum",

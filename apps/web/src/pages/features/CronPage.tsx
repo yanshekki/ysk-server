@@ -679,6 +679,8 @@ export function CronPage() {
                               variant="danger"
                               size="sm"
                               loading={busy}
+                              title={t('cron.deleteTitle')}
+                              data-confirm="dialog"
                               onClick={() =>
                                 setDelCron({
                                   id: managed.id,
@@ -750,6 +752,7 @@ export function CronPage() {
                           size="sm"
                           loading={busy}
                           title={t('cron.deleteTitle')}
+                          data-confirm="dialog"
                           onClick={() =>
                             setDelCron({
                               id: job.id,

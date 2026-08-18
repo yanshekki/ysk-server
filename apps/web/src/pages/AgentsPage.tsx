@@ -267,14 +267,8 @@ export function AgentsPage() {
   const liveAgents = agents.filter(
     (a) => fleetDisplayStatus(a.status, a.last_seen_at) === 'connected',
   ).length;
-  const worstStatus = worstFleetStatus(agents);
-  const worstTone = statusTone(worstStatus);
   const pillTone: 'ok' | 'warn' | 'danger' | 'neutral' =
-    liveAgents > 0 && worstStatus === 'connected'
-      ? 'ok'
-      : worstTone === 'info'
-        ? 'neutral'
-        : worstTone;
+    liveAgents > 0 ? 'ok' : agents.length ? 'warn' : 'neutral';
 
   const controlPlane = useMemo(() => {
     if (typeof window === 'undefined') return 'http://127.0.0.1:9287';
@@ -368,10 +362,10 @@ export function AgentsPage() {
       status={{
         pill: {
           label:
-            liveAgents > 0 && (worstStatus === 'connected' || worstStatus === 'running')
+            liveAgents > 0
               ? t('agents.liveN', { count: liveAgents })
               : agents.length
-                ? statusLabel(worstStatus, t)
+                ? t('agents.noOnlineAgents')
                 : t('agents.awaitProbe'),
           tone: pillTone,
         },

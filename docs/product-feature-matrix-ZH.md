@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-18 — 對齊 **1.1.8**（1.1.7 之後的 npm latest）。E2E-1117：overlay package.json 誠實、leftover 句子、首屏、確認 title、時鐘 UTC 後綴。標記對齊已交付程式（面板 + CLI + API），不是行銷。  
+**重計：** 2026-08-18 — 對齊 **1.1.9**（1.1.8 之後的 npm latest）。E2E-1118：確認 DOM 標記、叢集總覽、overlay dest package.json、sshd 未自啟停止文案、UFW 不啟停、leftover／孤立表。標記對齊已交付程式（面板 + CLI + API），不是行銷。   
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

@@ -116,7 +116,7 @@ export interface HostManifest {
   /** /home/ysk-server-<uuid> on disk with no store row */
   orphanHomes?: string[];
   /** Last-modified for orphan homes (directory inode; not recursive size). */
-  orphanHomeStats?: Record<string, { mtime?: string }>;
+  orphanHomeStats?: Record<string, { mtime?: string; entryCount?: number }>;
   /** Non-fatal issues operator must review */
   warnings: string[];
   /** Operator-chosen exclusion globs (not applied in inventory itself) */

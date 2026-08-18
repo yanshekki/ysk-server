@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.9
+
+- `/cluster` is a real overview (no 302 to Redis). `install.sh` overlay copies dest `package.json`.
+- E2E-1118: `data-confirm` on destructive triggers, sshd-off panel-stop copy, UFW no matrix lifecycle.
+
 ## What's new in 1.1.8
 
 - Overlay copies dest `package.json` so the installed version matches the CLI.

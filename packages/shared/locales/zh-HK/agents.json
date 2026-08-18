@@ -16,6 +16,7 @@
     "fallback": "未知"
   },
   "activatingStuckHint": "啟動超過 5 分鐘，已當失敗。請查 journal。",
+  "noOnlineAgents": "無上線代理",
   "journal": "journal",
   "liveN": "{{count}} 上線",
   "registeredOnly": "僅登記",

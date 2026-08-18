@@ -648,6 +648,7 @@ export function EmailDomainPage() {
             size="sm"
             loading={deleteBusy}
             title={t('email.deleteDialogTitle')}
+            data-confirm="dialog"
             onClick={bindSet(setDeleteOpen, true)}
           >
             {t('email.deleteDomain')}

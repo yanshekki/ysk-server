@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.9
+
+- **Cluster overview** — `/cluster` stays on `/cluster` (planned/applied table + four engine links). No 302 to Redis.
+- **Honest overlay** — `install.sh` copies dest `package.json` so official CLI upgrade matches the tarball version.
+- **E2E-1118** — `data-confirm` on destructive triggers, sshd-off panel-stop copy, UFW not start/stopped from the matrix, agents “no online” vs timeout, leftover/orphan tables.
+
 ## What's new in 1.1.8
 
 - **Honest overlay** — dest `package.json` matches the CLI version. Leftover notes no longer claim vsftpd/Dovecot cannot start when they are active.

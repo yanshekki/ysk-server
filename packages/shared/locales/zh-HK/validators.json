@@ -37,6 +37,7 @@
     "used": "驗證者目錄",
     "fsUsed": "檔案系統已用",
     "leftoverTitle": "殘留資料（{{count}}）",
+    "leftoverEmpty": "沒有孤立實例目錄",
     "leftoverDesc": "驗證者根目錄下、不在 store 的資料夾。確認無用後再刪。",
     "leftoverRemove": "刪除",
     "leftoverRemoveTitle": "刪除此殘留驗證者資料？",

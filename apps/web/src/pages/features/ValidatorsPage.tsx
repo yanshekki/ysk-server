@@ -580,6 +580,7 @@ export function ValidatorsPage() {
                 id="val-autoclear"
                 type="checkbox"
                 checked={autoClear}
+                data-confirm="AUTO-CLEAR"
                 onChange={(e) => {
                   const on = e.target.checked;
                   if (on) {
@@ -591,6 +592,13 @@ export function ValidatorsPage() {
                 }}
               />
             </Field>
+            <p className="muted u-text-sm u-mt-0">
+              {t('validators.disk.autoClearThreshold', { n: VALIDATOR_DISK_DANGER_PCT })}
+              {' · '}
+              {autoClearCandidate
+                ? t('validators.disk.autoClearCandidate', { id: autoClearCandidate.id })
+                : t('validators.disk.autoClearNone')}
+            </p>
             <DescriptionList
               columns={1}
               items={[
@@ -642,40 +650,42 @@ export function ValidatorsPage() {
             ) : (
               <EmptyState title={t('validators.disk.none')} />
             )}
-            {(disk?.leftovers?.length ?? 0) > 0 ? (
-              <DataTable<ValidatorDiskLeftover>
-                title={t('validators.disk.leftoverTitle', { count: disk!.leftovers.length })}
-                description={t('validators.disk.leftoverDesc')}
-                rowKey={(row) => row.path}
-                columns={[
-                  {
-                    key: 'name',
-                    header: t('validators.col.id'),
-                    render: (row) => (
-                      <div>
-                        <strong>{row.name}</strong>
-                        <code className="u-block u-text-sm u-break-all">{row.path}</code>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: 'disk',
-                    header: t('validators.col.disk'),
-                    render: (row) => formatBytes(row.usedBytes),
-                  },
-                ]}
-                rows={disk!.leftovers}
-                rowActions={(row) => (
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setLeftoverTarget(row)}
-                  >
-                    {t('validators.disk.leftoverRemove')}
-                  </Button>
-                )}
-              />
-            ) : null}
+            <DataTable<ValidatorDiskLeftover>
+              title={t('validators.disk.leftoverTitle', {
+                count: disk?.leftovers?.length ?? 0,
+              })}
+              description={t('validators.disk.leftoverDesc')}
+              rowKey={(row) => row.path}
+              columns={[
+                {
+                  key: 'name',
+                  header: t('validators.col.id'),
+                  render: (row) => (
+                    <div>
+                      <strong>{row.name}</strong>
+                      <code className="u-block u-text-sm u-break-all">{row.path}</code>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'disk',
+                  header: t('validators.col.disk'),
+                  render: (row) => formatBytes(row.usedBytes),
+                },
+              ]}
+              rows={disk?.leftovers ?? []}
+              empty={<EmptyState title={t('validators.disk.leftoverEmpty')} />}
+              rowActions={(row) => (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  data-confirm={row.name}
+                  onClick={() => setLeftoverTarget(row)}
+                >
+                  {t('validators.disk.leftoverRemove')}
+                </Button>
+              )}
+            />
           </>
         ) : null}
 

@@ -16,6 +16,7 @@
     "fallback": "Unknown"
   },
   "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
+  "noOnlineAgents": "No agents online",
   "journal": "journal",
   "liveN": "{{count}} online",
   "registeredOnly": "Registered only",

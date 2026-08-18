@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.9 新內容
+
+- **叢集總覽** — `/cluster` 留在 `/cluster`（已計劃／已套用表＋四個引擎入口）。不再 302 到 Redis。
+- **誠實 overlay** — `install.sh` 複製 dest `package.json`，官方 CLI 升級與 tarball 版本一致。
+- **E2E-1118** — 破壞性鍵加上 `data-confirm`、sshd 未自啟時停止控制面文案、矩陣不啟停 UFW、代理「無上線」與逾時分開、leftover／孤立表。
+
 ## 1.1.8 新內容
 
 - **誠實 overlay** — dest `package.json` 與 CLI 版本一致。leftover 句子不會說已在運行的 vsftpd／Dovecot 無法啟動。

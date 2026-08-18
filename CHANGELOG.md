@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 1.1.9 — 2026-08-18
+
+### Fix
+- Official `install.sh` overlay now copies dest `package.json` from the npm tarball (1.1.8 CLI overlay left dest at 1.0.30).
+- `/cluster` is a real cross-engine overview (planned/applied table + four engine links). It no longer 302s to Redis.
+- Agents KPI: zero live agents shows **no agents online**, not **timeout** from a stale fleet row.
+- Protection: actionable-IP header is secondary (not a danger button). Ban rows open ConfirmDialog and expose `data-confirm`.
+- Services matrix: UFW has no start/stop/restart (`ufwNoLifecycle`). Other stop/restart use ConfirmDialog + `data-confirm`.
+- Panel stop: when sshd is not enabled on boot, confirm copy states there may be no SSH rescue path. DNS start verify-after fail surfaces the journal on the result card, not only “failed”.
+
+### Improve
+- E2E-1118: `data-confirm` on files trash, email domain delete, cron pending delete, migrate orphan delete, protection ban, services/nginx/docker lifecycle. Validator leftover table always shown (empty copy). Auto-clear checkbox shows threshold + candidate and uses `data-confirm=AUTO-CLEAR`. Orphan homes list `entryCount`. Confirm titles include stop detail / full path.
+- Product `ysk-server@1.1.9` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
+
 ## 1.1.8 — 2026-08-18
 
 ### Fix

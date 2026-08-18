@@ -99,5 +99,8 @@
   "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
   "startVerifyFailed": "{{label}} start did not stay healthy.",
   "stopNeedConfirmImpact": "Stop {{label}}? Active connections to this service will drop.",
-  "reloadTitle": "Reload {{label}} configuration without a full restart"
+  "reloadTitle": "Reload {{label}} configuration without a full restart",
+  "stopConfirmPanelSshdOffDesc": "The panel and API will go offline. sshd is not enabled on boot, so SSH may not be a rescue path after reboot.",
+  "stopConfirmPanelSshdOffConsequence": "sshd is not enabled on boot. After reboot you may have no SSH rescue path.",
+  "ufwNoLifecycle": "UFW is not started or stopped from this matrix."
 }

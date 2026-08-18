@@ -102,5 +102,7 @@
   "sourceOs": "OS",
   "sourceDataDir": "dataDir",
   "sourceDbRedis": "Databases / Redis",
-  "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis"
+  "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis",
+  "orphanColEntries": "Entries",
+  "orphanEntries": "{{n}} top-level entries in the directory"
 }

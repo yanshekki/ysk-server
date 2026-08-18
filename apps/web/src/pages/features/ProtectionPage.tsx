@@ -941,7 +941,7 @@ export function ProtectionPage() {
             {t('common.reprobe')}
           </Button>
           {actionableSuspects.length > 0 ? (
-            <Button variant="danger" size="sm" onClick={goBans}>
+            <Button variant="secondary" size="sm" onClick={goBans}>
               {t('protection.suspectActionableCount', { count: actionableSuspects.length })}
             </Button>
           ) : null}
@@ -1950,6 +1950,7 @@ export function ProtectionPage() {
                           loading={busy}
                           disabled={disabled}
                           title={t('protection.banConfirmTitle', { ip: s.ip })}
+                          data-confirm="dialog"
                           onClick={() => setPendingBan({ ip: s.ip, reason: s.reasons[0] })}
                         >
                           {t('protection.ban')}

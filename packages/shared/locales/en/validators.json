@@ -37,6 +37,7 @@
     "used": "Validator data",
     "fsUsed": "Filesystem used",
     "leftoverTitle": "Leftover data ({{count}})",
+    "leftoverEmpty": "No leftover instance directories",
     "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
     "leftoverRemove": "Remove",
     "leftoverRemoveTitle": "Delete leftover validator data?",

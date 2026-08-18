@@ -34,7 +34,8 @@
     "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
-    "browseRoot": "Open in file browser"
+    "browseRoot": "Open in file browser",
+    "leftoverEmpty": "No leftover instance directories"
   },
   "chain": {
     "eth": "Ethereum",
