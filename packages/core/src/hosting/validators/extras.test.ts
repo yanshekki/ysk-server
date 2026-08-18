@@ -68,5 +68,19 @@ describe('validator extras', () => {
     const c = stakingChecklist('eth');
     expect(c.links.some((l) => l.href.includes('launchpad.ethereum.org'))).toBe(true);
     expect(c.items.length).toBeGreaterThan(0);
+    expect(c.links.every((l) => l.href.startsWith('https://'))).toBe(true);
+  });
+
+  it('treats Bitcoin as not-pos with official https docs', () => {
+    const c = stakingChecklist('btc');
+    expect(c.items.some((i) => /Bitcoin|not proof-of-stake|不是權益證明/i.test(i))).toBe(true);
+    expect(c.links.some((l) => l.href === 'https://bitcoin.org/en/full-node')).toBe(true);
+    expect(c.links.every((l) => l.href.startsWith('https://'))).toBe(true);
+  });
+
+  it('points Avalanche at Core and Builder Hub', () => {
+    const c = stakingChecklist('avax');
+    expect(c.links.some((l) => l.href === 'https://core.app')).toBe(true);
+    expect(c.links.some((l) => l.href.includes('build.avax.network'))).toBe(true);
   });
 });

@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-18 — 對齊 **1.1.10**（1.1.9 之後的 npm latest）。E2E-1119：DNS 啟動失敗卡帶綁定／journal、驗證者精靈同意後可安裝＋確認、說明分頁四設定檔對照。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。   
+**重計：** 2026-08-18 — 對齊 **1.1.11**（1.1.10 之後的 npm latest）。驗證者說明分頁質押步驟（只連官方網站，不接錢包）。Avalanche 實例在 RPC 回應後顯示 NodeID 與 BLS。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。   
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

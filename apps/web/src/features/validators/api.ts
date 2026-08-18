@@ -121,6 +121,9 @@ export const validatorsApi = {
       items: string[];
       links: Array<{ label: string; href: string }>;
       snapshot?: { kind: string; notes: string[] };
+      nodeId?: string | null;
+      blsPublicKey?: string | null;
+      blsProofOfPossession?: string | null;
     }>(`/api/v1/validators/${encodeURIComponent(id)}/checklist`),
   saveSettings: (autoClear: boolean) =>
     api.requestRaw<{ ok: boolean; settings: ValidatorSettingsDto }>('/api/v1/validators/settings', {

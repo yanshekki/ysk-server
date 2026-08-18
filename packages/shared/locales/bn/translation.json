@@ -13663,6 +13663,244 @@
       "empty": "No pinned client images",
       "emptyDesc": "The catalog is empty. This should not happen.",
       "daemonDown": "Docker Engine is not running"
+    },
+    "playbook": {
+      "overviewTitle": "How staking works on each chain",
+      "overviewDesc": "This panel runs the node. Your wallet and keys stay with you. Official links only — never share a seed phrase here.",
+      "colChain": "Chain",
+      "colModel": "How you register",
+      "colMin": "Typical minimum",
+      "colWallet": "Your wallet",
+      "colPanel": "What this panel does",
+      "yskDoes": "This panel does",
+      "youDo": "You do",
+      "steps": "Steps",
+      "never": "Do not",
+      "official": "Official links",
+      "seeAbout": "Full steps are on the About tab.",
+      "nodeIdReady": "NodeID (from this node)",
+      "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
+      "blsReady": "BLS public key",
+      "blsProof": "BLS proof of possession",
+      "blsPending": "BLS credentials appear after the node answers RPC.",
+      "notPosTitle": "Not proof-of-stake",
+      "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
+      "eth": {
+        "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
+        "min": "32 ETH + gas",
+        "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
+        "panel": "Runs the execution and consensus clients",
+        "yskDoes": [
+          "Install and start the execution and consensus clients.",
+          "Show disk, peers, and upgrade status."
+        ],
+        "youDo": [
+          "Create the keystore and withdrawal address yourself.",
+          "Deposit 32 ETH on the official launchpad.",
+          "Copy the keystore into this node’s data directory."
+        ],
+        "steps": [
+          "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
+          "On the official launchpad, deposit 32 ETH (keep extra for gas).",
+          "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
+          "Watch sync, disk, and upgrade badges on this page."
+        ],
+        "never": [
+          "Never give your seed phrase or withdrawal key to anyone, including this panel.",
+          "Never upload a signing keystore to a hosted cloud."
+        ]
+      },
+      "avax": {
+        "model": "Register the running NodeID and BLS proof on the P-Chain from Core or Ledger.",
+        "min": "2,000 AVAX + fee (1 AVAX on Fuji); at least 14 days",
+        "wallets": "Core, Ledger",
+        "panel": "Runs avalanchego and can show NodeID and BLS after RPC answers",
+        "yskDoes": [
+          "Run avalanchego and keep RPC on localhost.",
+          "Show NodeID and BLS credentials once the node answers RPC."
+        ],
+        "youDo": [
+          "Hold AVAX in Core or Ledger.",
+          "Add the validator from Core using this node’s NodeID and BLS proof."
+        ],
+        "steps": [
+          "Wait until this node is synced.",
+          "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
+          "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
+          "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
+        ],
+        "never": [
+          "Do not send AVAX to this panel.",
+          "Do not share your Core or Ledger recovery phrase."
+        ]
+      },
+      "ada": {
+        "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
+        "min": "Pledge is your choice (see official docs)",
+        "wallets": "Official stake-pool tooling (cold keys stay offline)",
+        "panel": "Runs cardano-node",
+        "yskDoes": [
+          "Run cardano-node and Mithril snapshot restore where offered."
+        ],
+        "youDo": [
+          "Generate pool keys offline.",
+          "Register the pool using official Cardano documentation."
+        ],
+        "steps": [
+          "Read the official operate-a-stake-pool guide.",
+          "Generate cold, KES, and VRF keys on an offline machine.",
+          "Register the pool on-chain from those keys.",
+          "Point the running cardano-node at your operational certificates."
+        ],
+        "never": [
+          "Do not treat this as a MetaMask one-click stake.",
+          "Do not store cold keys on the validator host."
+        ]
+      },
+      "near": {
+        "model": "Stake from your NEAR account into a staking pool contract.",
+        "min": "See official validator docs",
+        "wallets": "Official NEAR wallet / lockup",
+        "panel": "Runs neard",
+        "yskDoes": [
+          "Run neard and show disk / sync."
+        ],
+        "youDo": [
+          "Stake from your NEAR account to your pool using official docs."
+        ],
+        "steps": [
+          "Bring the node to sync.",
+          "Follow official NEAR validator documentation.",
+          "Stake from your own wallet or lockup into the pool."
+        ],
+        "never": [
+          "Do not paste a seed phrase into this panel."
+        ]
+      },
+      "cosmos": {
+        "model": "create-validator from your operator wallet. Consensus key stays on the node.",
+        "min": "See official Cosmos Hub docs",
+        "wallets": "Keplr or another Cosmos wallet you control",
+        "panel": "Runs gaiad",
+        "yskDoes": [
+          "Run gaiad."
+        ],
+        "youDo": [
+          "Keep the operator wallet yourself.",
+          "Broadcast create-validator from that wallet."
+        ],
+        "steps": [
+          "Sync gaiad.",
+          "Keep the consensus key on this host only.",
+          "From Keplr (or equivalent), submit create-validator.",
+          "Monitor the node so it does not miss too many blocks."
+        ],
+        "never": [
+          "Do not mix the operator wallet mnemonic with the consensus key.",
+          "Do not enter wallet mnemonics here."
+        ]
+      },
+      "sol": {
+        "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
+        "min": "See official operations docs (hardware and disk are heavy)",
+        "wallets": "Official Solana CLI / wallet you control",
+        "panel": "Runs Agave; mainnet needs multiple tebibytes",
+        "yskDoes": [
+          "Run the Agave client and warn about disk."
+        ],
+        "youDo": [
+          "Create vote and withdrawer keys with official Solana tools."
+        ],
+        "steps": [
+          "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
+          "Follow official Solana operations documentation.",
+          "Create the vote account and authorized withdrawer yourself.",
+          "Point the running validator at those keys on disk."
+        ],
+        "never": [
+          "Do not expect a browser wallet button in this panel."
+        ]
+      },
+      "dot": {
+        "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
+        "min": "See the official wiki",
+        "wallets": "Polkadot.js",
+        "panel": "Runs the Polkadot client",
+        "yskDoes": [
+          "Run polkadot and expose RPC on localhost."
+        ],
+        "youDo": [
+          "Rotate session keys on the node and set them from Polkadot.js."
+        ],
+        "steps": [
+          "Sync the node.",
+          "Generate session keys on this host.",
+          "In Polkadot.js, set those keys on your stash / controller.",
+          "Follow the official validate guide for bonding."
+        ],
+        "never": [
+          "Do not paste the stash mnemonic into this panel."
+        ]
+      },
+      "sui": {
+        "model": "Follow official Sui validator operator docs with your operator wallet.",
+        "min": "See official Sui docs",
+        "wallets": "Official Sui operator wallet",
+        "panel": "Runs sui-node",
+        "yskDoes": [
+          "Run the shipped sui-node image."
+        ],
+        "youDo": [
+          "Complete registration using official Sui validator docs."
+        ],
+        "steps": [
+          "Sync sui-node.",
+          "Open the official validator operator guide.",
+          "Use your own operator wallet — not this panel — to register."
+        ],
+        "never": [
+          "Do not send SUI to this panel."
+        ]
+      },
+      "aptos": {
+        "model": "Follow official Aptos staking / validator docs with your operator wallet.",
+        "min": "See official Aptos docs",
+        "wallets": "Official Aptos operator wallet",
+        "panel": "Runs the Aptos validator image",
+        "yskDoes": [
+          "Run the shipped Aptos image."
+        ],
+        "youDo": [
+          "Stake and operate from official Aptos documentation."
+        ],
+        "steps": [
+          "Sync the node.",
+          "Read official Aptos staking documentation.",
+          "Use your own operator wallet to register."
+        ],
+        "never": [
+          "Do not enter operator keys in this panel."
+        ]
+      },
+      "btc": {
+        "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
+        "min": "—",
+        "wallets": "Not applicable",
+        "panel": "Runs bitcoind",
+        "yskDoes": [
+          "Run a Bitcoin full or pruned node."
+        ],
+        "youDo": [
+          "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
+        ],
+        "steps": [
+          "Treat this instance as a Bitcoin node only.",
+          "There is no staking deposit and no validator keystore."
+        ],
+        "never": [
+          "Do not look for a staking wallet on this page."
+        ]
+      }
     }
   },
   "vnc": {

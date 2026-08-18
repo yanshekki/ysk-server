@@ -24,7 +24,7 @@ import {
   readValidatorCompose,
   switchValidatorNetwork,
   summarizeValidatorInstances,
-  stakingChecklist,
+  stakingChecklistForInstance,
   validatorContainerStats,
   writeValidatorCompose,
   loadValidatorSettings,
@@ -273,7 +273,11 @@ export async function handleValidatorsRoutes(
         sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
         return true;
       }
-      sendJson(res, 200, { ok: true, ...stakingChecklist(inst.chain), snapshot: snapshotOffer(inst.chain, inst.network) });
+      sendJson(res, 200, {
+        ok: true,
+        ...(await stakingChecklistForInstance(inst)),
+        snapshot: snapshotOffer(inst.chain, inst.network),
+      });
       return true;
     }
 

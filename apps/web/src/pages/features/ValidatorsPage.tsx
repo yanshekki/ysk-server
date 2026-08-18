@@ -45,6 +45,10 @@ import {
 } from 'ysk-server-shared';
 import { dockerApi } from '../../features/docker';
 import {
+  ValidatorPlaybookCard,
+  ValidatorStakingGuide,
+} from '../../features/validators/ValidatorStakingGuide';
+import {
   defaultDataPath,
   previewComposeProject,
   previewInstanceId,
@@ -138,6 +142,9 @@ export function ValidatorsPage() {
     items: string[];
     links: Array<{ label: string; href: string }>;
     snapshot?: { kind: string; notes: string[] };
+    nodeId?: string | null;
+    blsPublicKey?: string | null;
+    blsProofOfPossession?: string | null;
   } | null>(null);
   const [switchNet, setSwitchNet] = useState('');
   const [removeUnit, setRemoveUnit] = useState(false);
@@ -818,6 +825,7 @@ export function ValidatorsPage() {
         {tab === 'about' ? (
           <div className="stack">
             <PageGuide guideId="validators" />
+            <ValidatorStakingGuide />
             <DataTable
               title={t('validators.profileHelp.title')}
               description={t('validators.profileHelp.desc')}
@@ -1298,6 +1306,9 @@ export function ValidatorsPage() {
                   : t('validators.wizard.diskShort')}
               </Alert>
             ) : null}
+            {profile === 'validator-ready' || netSpec?.kind === 'mainnet' ? (
+              <ValidatorPlaybookCard chain={chain} compact />
+            ) : null}
           </>
         ) : null}
         </div>
@@ -1527,28 +1538,15 @@ export function ValidatorsPage() {
               </FormActions>
             </div>
 
-            {checklist ? (
-              <CardSection title={t('validators.stake.title')}>
-                <ul className="list-plain">
-                  {checklist.items.map((it) => (
-                    <li key={it}>{it}</li>
-                  ))}
-                </ul>
-                {checklist.links.length ? (
-                  <ul className="list-plain">
-                    {checklist.links.map((l) => (
-                      <li key={l.href}>
-                        <a href={l.href} target="_blank" rel="noreferrer">
-                          {l.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {checklist.snapshot?.notes?.length ? (
-                  <Alert variant="info">{checklist.snapshot.notes.join(' ')}</Alert>
-                ) : null}
-              </CardSection>
+            <ValidatorPlaybookCard
+              chain={detail.chain}
+              variant="instance"
+              nodeId={checklist?.nodeId}
+              blsPublicKey={checklist?.blsPublicKey}
+              blsProofOfPossession={checklist?.blsProofOfPossession}
+            />
+            {checklist?.snapshot?.notes?.length ? (
+              <Alert variant="info">{checklist.snapshot.notes.join(' ')}</Alert>
             ) : null}
 
             <CardSection title={t('validators.detail.compose')}>

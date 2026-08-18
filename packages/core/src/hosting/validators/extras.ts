@@ -5,12 +5,14 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } fr
 import { join } from 'node:path';
 import {
   isValidatorInstanceId,
+  stakingPlaybookMeta,
   tl,
   type ValidatorInstanceDto,
   type ValidatorSummaryDto,
 } from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { getValidatorNetwork } from './registry.js';
+import { probeAvaxStakingIdentity } from './adapters/avax.js';
 import {
   appliedValidatorOp,
   blockedValidatorOp,
@@ -399,40 +401,39 @@ export async function runValidatorAutoClear(input: {
   };
 }
 
+export async function stakingChecklistForInstance(inst: ValidatorInstanceDto): Promise<{
+  items: string[];
+  links: Array<{ label: string; href: string }>;
+  nodeId?: string | null;
+  blsPublicKey?: string | null;
+  blsProofOfPossession?: string | null;
+}> {
+  const base = stakingChecklist(inst.chain);
+  if (inst.chain !== 'avax') return base;
+  return { ...base, ...(await probeAvaxStakingIdentity(inst)) };
+}
+
 export function stakingChecklist(chain: string): { items: string[]; links: Array<{ label: string; href: string }> } {
-  if (chain === 'eth') {
-    return {
-      items: [
-        tl('validators.stake.offlineKeys'),
-        tl('validators.stake.deposit'),
-        tl('validators.stake.withdrawal'),
-        tl('validators.stake.monitor'),
-      ],
-      links: [
-        { label: 'Hoodi launchpad', href: 'https://hoodi.launchpad.ethereum.org' },
-        { label: 'Mainnet launchpad', href: 'https://launchpad.ethereum.org' },
-      ],
-    };
-  }
-  if (chain === 'ada') {
-    return {
-      items: [
-        tl('validators.stake.offlineKeys'),
-        tl('validators.stake.monitor'),
-      ],
-      links: [{ label: 'Cardano docs', href: 'https://docs.cardano.org' }],
-    };
-  }
-  if (chain === 'near') {
-    return {
-      items: [tl('validators.stake.offlineKeys'), tl('validators.stake.monitor')],
-      links: [{ label: 'NEAR validators', href: 'https://docs.near.org/protocol/network/validators' }],
-    };
-  }
+  const meta = stakingPlaybookMeta(chain);
+  const items =
+    chain === 'btc'
+      ? [tl('validators.playbook.notPosBody')]
+      : playbookLines(chain, 'steps');
   return {
-    items: [tl('validators.stake.offlineKeys'), tl('validators.stake.monitor')],
-    links: [],
+    items: items.length ? items : [tl('validators.stake.offlineKeys'), tl('validators.stake.monitor')],
+    links: [...(meta?.links ?? [])],
   };
+}
+
+function playbookLines(chain: string, field: 'steps' | 'yskDoes' | 'youDo' | 'never'): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < 12; i += 1) {
+    const key = `validators.playbook.${chain}.${field}.${i}`;
+    const line = tl(key);
+    if (line === key) break;
+    out.push(line);
+  }
+  return out;
 }
 
 export function dataDirHasChainData(dataPath: string): boolean {

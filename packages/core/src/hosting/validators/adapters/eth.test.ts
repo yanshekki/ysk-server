@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildEthComposeYaml, parseEthPeerCount, parseEthSyncing } from './eth.js';
-import { buildAvaxComposeYaml, parseAvaxHealth } from './avax.js';
+import { buildAvaxComposeYaml, parseAvaxHealth, probeAvaxStakingIdentity } from './avax.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 
 const ethSpec = {
@@ -93,6 +93,33 @@ describe('avax adapter', () => {
     expect(y).toContain('--state-sync-enabled=true');
     expect(y).toContain('127.0.0.1:9650:9650');
     expect(parseAvaxHealth({ healthy: true }).healthy).toBe(true);
+  });
+
+  it('reads NodeID and BLS proof from info.getNodeID', async () => {
+    const fetchFn = (async () =>
+      ({
+        json: async () => ({
+          result: {
+            nodeID: 'NodeID-abc',
+            nodePOP: { publicKey: '0xpub', proofOfPossession: '0xpop' },
+          },
+        }),
+      })) as unknown as typeof fetch;
+    const ident = await probeAvaxStakingIdentity(
+      {
+        ...ethSpec,
+        id: 'avax-fuji-1',
+        chain: 'avax',
+        network: 'fuji',
+        ports: { rpc: 9650, p2p: 9651 },
+      },
+      fetchFn,
+    );
+    expect(ident).toEqual({
+      nodeId: 'NodeID-abc',
+      blsPublicKey: '0xpub',
+      blsProofOfPossession: '0xpop',
+    });
   });
 });
 

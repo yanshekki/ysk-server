@@ -79,3 +79,61 @@ export async function probeAvaxStatus(
     };
   }
 }
+
+export type AvaxStakingIdentity = {
+  nodeId: string | null;
+  blsPublicKey: string | null;
+  blsProofOfPossession: string | null;
+};
+
+const emptyAvaxIdentity: AvaxStakingIdentity = {
+  nodeId: null,
+  blsPublicKey: null,
+  blsProofOfPossession: null,
+};
+
+function asTrimmed(v: unknown): string | null {
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
+}
+
+/** Best-effort NodeID + BLS PoP for P-Chain registration. Null until RPC answers. */
+export async function probeAvaxStakingIdentity(
+  spec: ValidatorInstanceDto,
+  fetchFn: typeof fetch = fetch,
+): Promise<AvaxStakingIdentity> {
+  const url = `http://127.0.0.1:${spec.ports.rpc ?? 9650}/ext/info`;
+  try {
+    const res = await fetchFn(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'info.getNodeID',
+        params: {},
+      }),
+    });
+    const body = (await res.json()) as {
+      result?: {
+        nodeID?: string;
+        nodeId?: string;
+        nodePOP?: { publicKey?: string; proofOfPossession?: string };
+      };
+    };
+    const pop = body.result?.nodePOP;
+    return {
+      nodeId: asTrimmed(body.result?.nodeID ?? body.result?.nodeId),
+      blsPublicKey: asTrimmed(pop?.publicKey),
+      blsProofOfPossession: asTrimmed(pop?.proofOfPossession),
+    };
+  } catch {
+    return emptyAvaxIdentity;
+  }
+}
+
+export async function probeAvaxNodeId(
+  spec: ValidatorInstanceDto,
+  fetchFn: typeof fetch = fetch,
+): Promise<string | null> {
+  return (await probeAvaxStakingIdentity(spec, fetchFn)).nodeId;
+}

@@ -296,6 +296,244 @@
     "withdrawal": "自行設定提取憑證。",
     "monitor": "在此頁留意磁碟、對等節點與升級徽章。"
   },
+  "playbook": {
+    "overviewTitle": "各鏈如何質押",
+    "overviewDesc": "本面板只負責運行節點。錢包與金鑰由你保管。以下只連官方網站。請勿在此輸入助記詞。",
+    "colChain": "鏈",
+    "colModel": "如何登記",
+    "colMin": "常見最低額",
+    "colWallet": "你使用的錢包",
+    "colPanel": "本面板負責",
+    "yskDoes": "本面板會做",
+    "youDo": "你要自己做",
+    "steps": "步驟",
+    "never": "請不要",
+    "official": "官方連結",
+    "seeAbout": "完整步驟見「說明」分頁。",
+    "nodeIdReady": "NodeID（來自此節點）",
+    "nodeIdPending": "節點完成同步並回應 RPC 後，才會顯示 NodeID。",
+    "blsReady": "BLS 公鑰",
+    "blsProof": "BLS 持有證明",
+    "blsPending": "節點回應 RPC 後，才會顯示 BLS 憑證。",
+    "notPosTitle": "不是權益證明",
+    "notPosBody": "此處的 Bitcoin 是完整或 Pruned 節點。本頁沒有質押錢包。",
+    "eth": {
+      "model": "在官方 launchpad 存入 32 ETH。簽署用 keystore 不是提取匙。",
+      "min": "32 ETH + 手續費",
+      "wallets": "MetaMask、Ledger、Trezor — 只在官方 launchpad 使用",
+      "panel": "運行執行層與共識層客戶端",
+      "yskDoes": [
+        "安裝並啟動執行層與共識層客戶端。",
+        "顯示磁碟、對等節點與升級狀態。"
+      ],
+      "youDo": [
+        "自行產生 keystore，提取地址填入你的 ETH 錢包。",
+        "在官方 launchpad 存入 32 ETH。",
+        "自行把 keystore 放入此節點的資料目錄。"
+      ],
+      "steps": [
+        "在離線環境用官方 launchpad 或 staking-deposit-cli 產生驗證者 keystore。提取地址填入你自己的 ETH 錢包。",
+        "在官方 launchpad 將 32 ETH 存入存款合約（另預留手續費）。",
+        "自行將 keystore 檔放入本節點資料目錄。面板不會代你上傳或保管。",
+        "在本頁留意同步、磁碟與升級徽章。"
+      ],
+      "never": [
+        "不要把助記詞或提取私鑰交給任何人，包括本面板。",
+        "不要把簽署 keystore 上傳到任何雲端託管。"
+      ]
+    },
+    "avax": {
+      "model": "在 Core 或 Ledger 用運行中的 NodeID 與 BLS 證明，於 P-Chain 登記驗證者。",
+      "min": "2,000 AVAX + 手續費（Fuji 為 1 AVAX）；最少 14 日",
+      "wallets": "Core、Ledger",
+      "panel": "運行 avalanchego；RPC 回應後可顯示 NodeID 與 BLS",
+      "yskDoes": [
+        "運行 avalanchego，RPC 只聽本機。",
+        "節點回應 RPC 後顯示 NodeID 與 BLS 憑證。"
+      ],
+      "youDo": [
+        "在 Core 或 Ledger 持有 AVAX。",
+        "在 Core 用此節點的 NodeID 與 BLS 證明新增驗證者。"
+      ],
+      "steps": [
+        "等待此節點完成同步。",
+        "複製實例頁顯示的 NodeID、BLS 公鑰與 BLS 持有證明。",
+        "在 Core web（Staking → Validate），或經 Core 使用 Ledger，於 P-Chain 登記。",
+        "主網至少需要 2,000 AVAX、最短 14 日，並預留手續費。"
+      ],
+      "never": [
+        "不要把 AVAX 轉入本面板。",
+        "不要分享 Core 或 Ledger 的復原短語。"
+      ]
+    },
+    "ada": {
+      "model": "以離線 cold／KES／VRF 金鑰經營 stake pool，不是瀏覽器錢包一鍵操作。",
+      "min": "質押金額由你決定（見官方文件）",
+      "wallets": "官方 stake pool 工具（cold 金鑰保持離線）",
+      "panel": "運行 cardano-node",
+      "yskDoes": [
+        "運行 cardano-node，並在支援時提供 Mithril 快照還原。"
+      ],
+      "youDo": [
+        "離線產生 pool 金鑰。",
+        "按官方 Cardano 文件登記 stake pool。"
+      ],
+      "steps": [
+        "閱讀官方 operate-a-stake-pool 指南。",
+        "在離線機器產生 cold、KES、VRF 金鑰。",
+        "用該等金鑰在鏈上登記 stake pool。",
+        "把運行中的 cardano-node 指向你的營運憑證。"
+      ],
+      "never": [
+        "不要當成 MetaMask 一鍵質押。",
+        "不要把 cold 金鑰放在驗證者主機上。"
+      ]
+    },
+    "near": {
+      "model": "用你的 NEAR 帳戶，將幣 stake 到 staking pool 合約。",
+      "min": "見官方驗證者文件",
+      "wallets": "官方 NEAR 錢包／lockup",
+      "panel": "運行 neard",
+      "yskDoes": [
+        "運行 neard，並顯示磁碟／同步。"
+      ],
+      "youDo": [
+        "按官方文件，從你的 NEAR 帳戶 stake 到你的 pool。"
+      ],
+      "steps": [
+        "先讓節點完成同步。",
+        "依官方 NEAR 驗證者文件操作。",
+        "用你自己的錢包或 lockup 將幣 stake 到 pool。"
+      ],
+      "never": [
+        "不要在本面板貼上助記詞。"
+      ]
+    },
+    "cosmos": {
+      "model": "用操作者錢包送出 create-validator。共識匙留在節點。",
+      "min": "見官方 Cosmos Hub 文件",
+      "wallets": "Keplr 或其他由你控制的 Cosmos 錢包",
+      "panel": "運行 gaiad",
+      "yskDoes": [
+        "運行 gaiad。"
+      ],
+      "youDo": [
+        "自行保管操作者錢包。",
+        "由該錢包廣播 create-validator。"
+      ],
+      "steps": [
+        "同步 gaiad。",
+        "共識匙只留在此主機。",
+        "用 Keplr（或同等錢包）送出 create-validator。",
+        "監察節點，避免長期缺席出塊。"
+      ],
+      "never": [
+        "不要把操作者錢包助記詞與共識匙混在一起。",
+        "不要在此輸入錢包助記詞。"
+      ]
+    },
+    "sol": {
+      "model": "vote account、identity 與 authorized withdrawer，用官方 Solana 工具建立。",
+      "min": "見官方維運文件（硬件與磁碟需求很高）",
+      "wallets": "你控制的官方 Solana CLI／錢包",
+      "panel": "運行 Agave；主網通常需要數 TiB 磁碟",
+      "yskDoes": [
+        "運行 Agave 客戶端，並警告磁碟需求。"
+      ],
+      "youDo": [
+        "用官方 Solana 工具建立 vote 與 withdrawer 金鑰。"
+      ],
+      "steps": [
+        "確認本機磁碟與 IOPS 足夠（主網通常 2 TiB 或以上）。",
+        "依官方 Solana 維運文件操作。",
+        "自行建立 vote account 與 authorized withdrawer。",
+        "把運行中的驗證者指向磁碟上的金鑰。"
+      ],
+      "never": [
+        "不要期望本面板提供瀏覽器錢包按鈕。"
+      ]
+    },
+    "dot": {
+      "model": "節點產生 session keys；用 Polkadot.js 綁到你的 stash。",
+      "min": "見官方 wiki",
+      "wallets": "Polkadot.js",
+      "panel": "運行 Polkadot 客戶端",
+      "yskDoes": [
+        "運行 polkadot，RPC 只聽本機。"
+      ],
+      "youDo": [
+        "在節點輪替 session keys，再用 Polkadot.js 設定。"
+      ],
+      "steps": [
+        "同步節點。",
+        "在此主機產生 session keys。",
+        "在 Polkadot.js 把該等金鑰設到 stash／controller。",
+        "按官方 validate 指南完成綁定。"
+      ],
+      "never": [
+        "不要在本面板貼上 stash 助記詞。"
+      ]
+    },
+    "sui": {
+      "model": "依官方 Sui 驗證者文件，用你的操作者錢包登記。",
+      "min": "見官方 Sui 文件",
+      "wallets": "官方 Sui 操作者錢包",
+      "panel": "運行 sui-node",
+      "yskDoes": [
+        "運行產品附帶的 sui-node 映像。"
+      ],
+      "youDo": [
+        "按官方 Sui 驗證者文件完成登記。"
+      ],
+      "steps": [
+        "同步 sui-node。",
+        "開啟官方驗證者操作指南。",
+        "用你自己的操作者錢包登記，不要用本面板。"
+      ],
+      "never": [
+        "不要把 SUI 轉入本面板。"
+      ]
+    },
+    "aptos": {
+      "model": "依官方 Aptos 質押／驗證者文件，用你的操作者錢包。",
+      "min": "見官方 Aptos 文件",
+      "wallets": "官方 Aptos 操作者錢包",
+      "panel": "運行 Aptos validator 映像",
+      "yskDoes": [
+        "運行產品附帶的 Aptos 映像。"
+      ],
+      "youDo": [
+        "按官方 Aptos 文件完成質押與操作。"
+      ],
+      "steps": [
+        "同步節點。",
+        "閱讀官方 Aptos 質押文件。",
+        "用你自己的操作者錢包登記。"
+      ],
+      "never": [
+        "不要在本面板輸入操作者金鑰。"
+      ]
+    },
+    "btc": {
+      "model": "不是權益證明。此處是 Bitcoin 完整或 Pruned 節點。",
+      "min": "—",
+      "wallets": "不適用",
+      "panel": "運行 bitcoind",
+      "yskDoes": [
+        "運行 Bitcoin 完整或 Pruned 節點。"
+      ],
+      "youDo": [
+        "錢包另外使用。挖礦與 Lightning 不在本功能範圍。"
+      ],
+      "steps": [
+        "把此實例視為 Bitcoin 節點即可。",
+        "沒有質押存款，也沒有驗證者 keystore。"
+      ],
+      "never": [
+        "不要在本頁尋找質押錢包。"
+      ]
+    }
+  },
   "alerts": {
     "diskTitle": "驗證者節點磁碟危急",
     "diskBody": "驗證者資料卷可用空間極低。",

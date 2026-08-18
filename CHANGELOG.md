@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.1.11 — 2026-08-18
+
+### Feature
+- Validators About tab is the staking playbook SSOT: overview table plus per-chain steps. Official HTTPS docs only. The panel never connects a wallet or stores keys.
+- Avalanche instance page shows NodeID and BLS proof of possession after RPC answers (needed for Core / P-Chain registration).
+- Wizard summary (validator-ready or mainnet) and instance detail link to `/validators?tab=about#stake-{chain}`.
+- Bitcoin is documented as not proof-of-stake.
+
+### Improve
+- Official links updated after docs moves (Avalanche Builder Hub, Cardano SPO, Anza Agave, Polkadot set-up-validator, Cosmos Hub validator-setup).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.11**.
+
 ## 1.1.10 — 2026-08-18
 
 ### Fix
