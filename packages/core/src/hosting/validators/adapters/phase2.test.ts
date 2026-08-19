@@ -1,18 +1,26 @@
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import {
+  btcCookiePaths,
   buildAptosComposeYaml,
   buildBtcComposeYaml,
   buildCosmosComposeYaml,
   buildDotComposeYaml,
   buildSolComposeYaml,
   buildSuiComposeYaml,
+  ensureSuiFullnodeFiles,
+  suiFullnodeYaml,
   parseAptosLedger,
+  parseBtcCookieFile,
   parseBtcInfo,
   parseCosmosStatus,
   parseDotSync,
   parseSolHealth,
   parseSuiHealth,
+  probeBtcStatus,
 } from './phase2.js';
 
 function spec(over: Partial<ValidatorInstanceDto> & Pick<ValidatorInstanceDto, 'id' | 'chain' | 'network'>): ValidatorInstanceDto {
@@ -42,17 +50,70 @@ describe('phase 2 compose + status parsers', () => {
     expect(parseBtcInfo({ result: { verificationprogress: 0.5, connections: 8, chain: 'test' } }).syncProgress).toBe(0.5);
   });
 
+  it('Bitcoin empty RPC body is unreachable, not a JSON syntax error', async () => {
+    const fetchFn = (async () => new Response('', { status: 200 })) as unknown as typeof fetch;
+    const r = await probeBtcStatus(
+      spec({ id: 'btc-testnet-2', chain: 'btc', network: 'testnet', ports: { rpc: 8334 } }),
+      fetchFn,
+    );
+    expect(r.lastError).toMatch(/rpc/i);
+    expect(r.lastError).not.toMatch(/JSON/i);
+  });
+
+  it('Bitcoin cookie file is used for RPC basic auth', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-btc-cookie-'));
+    mkdirSync(join(dir, 'testnet3'), { recursive: true });
+    writeFileSync(join(dir, 'testnet3', '.cookie'), '__cookie__:s3cret\n');
+    expect(btcCookiePaths(dir, 'testnet')[0]).toContain('testnet3/.cookie');
+    expect(parseBtcCookieFile('__cookie__:s3cret')).toEqual({ user: '__cookie__', pass: 's3cret' });
+    let auth = '';
+    const fetchFn = (async (_url: string, init?: RequestInit) => {
+      const h = init?.headers as Record<string, string> | undefined;
+      auth = String(h?.authorization ?? '');
+      return new Response(
+        JSON.stringify({ result: { verificationprogress: 0.2, connections: 1, chain: 'test' } }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }) as unknown as typeof fetch;
+    const r = await probeBtcStatus(
+      spec({
+        id: 'btc-testnet-2',
+        chain: 'btc',
+        network: 'testnet',
+        dataPath: dir,
+        ports: { rpc: 8334 },
+      }),
+      fetchFn,
+    );
+    rmSync(dir, { recursive: true, force: true });
+    expect(auth.startsWith('Basic ')).toBe(true);
+    expect(r.syncProgress).toBe(0.2);
+    expect(r.lastError).toBeNull();
+  });
+
   it('Cosmos gaiad init + rpc', () => {
     const y = buildCosmosComposeYaml(spec({ id: 'cosmos-testnet-1', chain: 'cosmos', network: 'testnet', ports: { rpc: 26657, p2p: 26656 } }));
     expect(y).toContain('gaiad');
+    expect(y).toContain('--minimum-gas-prices=0.005uatom');
     expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
     expect(parseCosmosStatus({ result: { sync_info: { catching_up: false }, node_info: { version: '23' } } }).syncProgress).toBe(1);
   });
 
   it('Sui / Aptos / Polkadot / Solana heavy', () => {
-    expect(buildSuiComposeYaml(spec({ id: 'sui-testnet-1', chain: 'sui', network: 'testnet', ports: { rpc: 9002 } }))).toContain('sui-node');
-    expect(buildAptosComposeYaml(spec({ id: 'aptos-testnet-1', chain: 'aptos', network: 'testnet', ports: { rpc: 8080, p2p: 6180 } }))).toContain('aptos-node');
+    const sui = buildSuiComposeYaml(spec({ id: 'sui-testnet-1', chain: 'sui', network: 'testnet', ports: { rpc: 9002 } }));
+    expect(sui).toContain('sui-node');
+    expect(sui).toContain('testnet-v1.78.0');
+    expect(sui).not.toContain('mainnet-v1.44.2');
+    expect(
+      buildSuiComposeYaml(spec({ id: 'sui-mainnet-1', chain: 'sui', network: 'mainnet', ports: { rpc: 9002 } })),
+    ).toContain('mainnet-v1.77.2');
+    const aptos = buildAptosComposeYaml(
+      spec({ id: 'aptos-testnet-1', chain: 'aptos', network: 'testnet', ports: { rpc: 18080, p2p: 6180 } }),
+    );
+    expect(aptos).toContain('aptos-node');
+    expect(aptos).toContain('127.0.0.1:18080:8080');
+    expect(aptos).not.toContain('127.0.0.1:8080:8080');
     expect(buildDotComposeYaml(spec({ id: 'dot-westend-1', chain: 'dot', network: 'westend', ports: { rpc: 9933, p2p: 30333 } }))).toContain('--chain=westend');
     const sol = buildSolComposeYaml(spec({ id: 'sol-mainnet-1', chain: 'sol', network: 'mainnet', ports: { rpc: 8899 } }));
     expect(sol).toContain('HEAVY');
@@ -61,5 +122,15 @@ describe('phase 2 compose + status parsers', () => {
     expect(parseAptosLedger({ chain_id: 1, ledger_version: '9' }).syncProgress).toBe(1);
     expect(parseDotSync({ result: { currentBlock: 5, highestBlock: 10, isSyncing: true } }).syncProgress).toBe(0.5);
     expect(parseSolHealth({ result: 'ok' }).syncProgress).toBe(1);
+  });
+
+  it('writes Sui fullnode.yaml and genesis from the official URL', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-sui-'));
+    const fetchFn = (async () => new Response(Buffer.from('genesis-blob-contents-ok'), { status: 200 })) as unknown as typeof fetch;
+    const r = await ensureSuiFullnodeFiles(dir, 'testnet', fetchFn);
+    expect(r.ok).toBe(true);
+    expect(readFileSync(join(dir, 'fullnode.yaml'), 'utf8')).toContain('genesis-file-location');
+    expect(suiFullnodeYaml('testnet')).toContain('testnet');
+    rmSync(dir, { recursive: true, force: true });
   });
 });

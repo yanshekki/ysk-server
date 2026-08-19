@@ -5,6 +5,7 @@ import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
+import { readRpcJson } from '../rpc-json.js';
 
 export function buildAvaxComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('avax')[0];
@@ -18,8 +19,8 @@ services:
   node:
     image: ${img}
     restart: unless-stopped
+    entrypoint: ["/avalanchego/build/avalanchego"]
     command:
-      - avalanchego
       - --network-id=${netId}
       - --http-host=0.0.0.0
       - --http-port=9650
@@ -64,7 +65,7 @@ export async function probeAvaxStatus(
   const url = `http://127.0.0.1:${spec.ports.rpc ?? 9650}/ext/health`;
   try {
     const res = await fetchFn(url);
-    const healthy = parseAvaxHealth(await res.json()).healthy;
+    const healthy = parseAvaxHealth(await readRpcJson(res)).healthy;
     return {
       syncProgress: healthy ? 1 : null,
       peers: null,
@@ -114,7 +115,7 @@ export async function probeAvaxStakingIdentity(
         params: {},
       }),
     });
-    const body = (await res.json()) as {
+    const body = (await readRpcJson(res)) as {
       result?: {
         nodeID?: string;
         nodeId?: string;

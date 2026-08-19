@@ -117,7 +117,11 @@
     "snapshotBlocked": "docker run snapshot diblokir oleh daftar izin",
     "snapshotFailed": "Unduhan atau ekstraksi snapshot gagal",
     "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
+    "noContainer": "No compose container exists for this instance.",
+    "restarting": "Container is restarting. Check logs on this page.",
+    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
+    "oom": "Out of memory. Set a memory limit or add RAM, then restart."
   },
   "notes": {
     "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
@@ -300,7 +304,10 @@
     "running": "Running",
     "syncing": "Syncing",
     "error": "Error",
-    "starting": "Starting"
+    "starting": "Starting",
+    "created": "Created (never started)",
+    "missing": "No container",
+    "rpc_wait": "Running — RPC not ready"
   },
   "profileHelp": {
     "title": "Profiles",

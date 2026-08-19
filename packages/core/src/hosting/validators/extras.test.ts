@@ -14,6 +14,7 @@ describe('validator extras', () => {
       cpus: '2.0',
     });
     expect(y).toContain('mem_limit: 4g');
+    expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('cpus: "2.0"');
   });
 

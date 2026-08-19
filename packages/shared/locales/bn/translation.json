@@ -13614,7 +13614,11 @@
       "snapshotBlocked": "স্ন্যাপশট docker run অনুমোদন তালিকায় আটকে গেছে",
       "snapshotFailed": "স্ন্যাপশট ডাউনলোড বা খোলা ব্যর্থ",
       "containerNotUp": "Compose started, but the container did not stay running",
-      "probeFailed": "The node is not answering RPC yet. Check logs on this page."
+      "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
+      "noContainer": "No compose container exists for this instance.",
+      "restarting": "Container is restarting. Check logs on this page.",
+      "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
+      "oom": "Out of memory. Set a memory limit or add RAM, then restart."
     },
     "notes": {
       "beta": "এই বৈশিষ্ট্য Beta। হোস্ট পরিবর্তনে root ও YSK_EXECUTE=1 লাগে।",
@@ -13797,7 +13801,10 @@
       "running": "Running",
       "syncing": "Syncing",
       "error": "Error",
-      "starting": "Starting"
+      "starting": "Starting",
+      "created": "Created (never started)",
+      "missing": "No container",
+      "rpc_wait": "Running — RPC not ready"
     },
     "profileHelp": {
       "title": "Profiles",

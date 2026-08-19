@@ -56,7 +56,7 @@ export function buildElService(spec: ValidatorInstanceDto, jwt: string): string 
       - --http.port
       - "8545"
       - --http.api
-      - eth,net,web3,engine
+      - eth,net,web3
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.port
@@ -116,7 +116,7 @@ ${netFlag.join('\n')}
       - --http.port
       - "8545"
       - --http.api
-      - eth,net,web3,engine
+      - eth,net,web3
       - --authrpc.addr
       - 0.0.0.0
       - --authrpc.port

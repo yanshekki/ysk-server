@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { composePsStatesFromStdout } from './compose-runner.js';
+import {
+  composePsInfoFromStates,
+  composePsInfoFromStdout,
+  composePsStatesFromStdout,
+  restartCountFromStatus,
+} from './compose-runner.js';
 
 describe('composePsStatesFromStdout', () => {
   it('parses a compose v2.29 JSON array without wrapping it again', () => {
@@ -24,5 +29,38 @@ describe('composePsStatesFromStdout', () => {
         JSON.stringify([{ State: 'running', Status: 'Exited (1) 1 second ago' }]),
       ),
     ).toEqual(['exited']);
+  });
+});
+
+describe('composePsInfoFromStates', () => {
+  it('treats Created-only as created, not running or stopped', () => {
+    expect(composePsInfoFromStates(['created'], true)).toEqual({
+      running: false,
+      restarting: false,
+      exited: false,
+      created: true,
+      missing: false,
+      restartCount: null,
+    });
+  });
+
+  it('treats no rows and no ids as missing', () => {
+    expect(composePsInfoFromStates([], false).missing).toBe(true);
+    expect(composePsInfoFromStates([], false).running).toBe(false);
+  });
+
+  it('treats restarting as restarting not running', () => {
+    const info = composePsInfoFromStates(['restarting'], true);
+    expect(info.restarting).toBe(true);
+    expect(info.running).toBe(false);
+  });
+
+  it('reads restart count from Status', () => {
+    expect(restartCountFromStatus('Restarting (1) 3 seconds ago')).toBe(1);
+    expect(
+      composePsInfoFromStdout(
+        JSON.stringify([{ State: 'restarting', Status: 'Restarting (2) 3 seconds ago' }]),
+      ),
+    ).toMatchObject({ restarting: true, running: false, restartCount: 2 });
   });
 });

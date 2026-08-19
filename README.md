@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.16
+
+- **Validators** — running + RPC miss is not Error; Created/missing are not Stopped. Avalanche uses the image binary path. Cosmos sets min gas prices. reth HTTP API no longer includes `engine`. Heavy chains default to 8g RAM. Sui testnet uses a real testnet tag. Aptos RPC avoids host 8080.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.16** together.
+
 ## What's new in 1.1.15
 
 - **Panel apply** — ConfirmDialog dest is the card’s latest version, not a stale copy of current.

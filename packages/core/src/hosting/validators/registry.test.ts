@@ -5,6 +5,8 @@ import {
   getValidatorNetwork,
   listValidatorChains,
   minFreeBytesFor,
+  suiNodeImagePins,
+  suiNodeTag,
   v1ValidatorClients,
 } from './registry.js';
 
@@ -65,5 +67,11 @@ describe('validator registry', () => {
     expect(getValidatorChain('sol')?.heavy).toBe(true);
     expect(defaultValidatorNetwork('btc')).toBe('testnet');
     expect(defaultValidatorNetwork('dot')).toBe('westend');
+  });
+
+  it('pins Sui testnet and mainnet to tags that exist', () => {
+    expect(suiNodeTag('testnet')).toBe('testnet-v1.78.0');
+    expect(suiNodeTag('mainnet')).toBe('mainnet-v1.77.2');
+    expect(suiNodeImagePins().some((r) => r.includes('mainnet-v1.44.2'))).toBe(false);
   });
 });

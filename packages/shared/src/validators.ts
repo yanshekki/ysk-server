@@ -23,13 +23,24 @@ export type ValidatorUpgradePolicy = 'manual' | 'notify' | 'auto-safe' | 'auto-a
 
 export type ValidatorDesiredState = 'stopped' | 'running';
 
-export type ValidatorRuntimeStatus =
-  | 'unknown'
-  | 'stopped'
-  | 'starting'
-  | 'running'
-  | 'syncing'
-  | 'error';
+export const VALIDATOR_RUNTIME_STATUSES = [
+  'unknown',
+  'stopped',
+  'created',
+  'missing',
+  'starting',
+  'rpc_wait',
+  'running',
+  'syncing',
+  'error',
+] as const;
+
+export type ValidatorRuntimeStatus = (typeof VALIDATOR_RUNTIME_STATUSES)[number];
+
+/** Container is up (or coming up). Do not treat as stopped for auto-clear. */
+export function isLiveValidatorStatus(code: string | undefined | null): boolean {
+  return code === 'running' || code === 'syncing' || code === 'starting' || code === 'rpc_wait';
+}
 
 export type ValidatorClientRole = 'el' | 'cl' | 'node';
 
@@ -141,6 +152,12 @@ export const DEFAULT_VALIDATOR_SETTINGS: ValidatorSettingsDto = { autoClear: fal
 
 export function isSafeValidatorLimitMemory(value: string): boolean {
   return /^\d+[mMgGkK]$/.test(String(value ?? '').trim());
+}
+
+/** Heavy chains OOM the host when the wizard leaves memory unlimited. */
+export function defaultValidatorMemoryLimit(chain: string): string | undefined {
+  if (chain === 'near' || chain === 'sui' || chain === 'aptos' || chain === 'sol') return '8g';
+  return undefined;
 }
 
 export function isSafeValidatorLimitCpus(value: string): boolean {

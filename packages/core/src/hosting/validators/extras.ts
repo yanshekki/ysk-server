@@ -4,6 +4,7 @@
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  defaultValidatorMemoryLimit,
   isValidatorInstanceId,
   stakingPlaybookMeta,
   tl,
@@ -259,7 +260,10 @@ export function regenerateValidatorCompose(input: {
       notes: [tl('validators.notes.dryCompose')],
     });
   }
-  writeComposeFile(path, plan.composeYaml, inst.id, inst.limits);
+  const limits = inst.limits?.memory
+    ? inst.limits
+    : { ...inst.limits, memory: defaultValidatorMemoryLimit(inst.chain) };
+  writeComposeFile(path, plan.composeYaml, inst.id, limits);
   return appliedValidatorOp({
     instanceId: inst.id,
     written: [path],

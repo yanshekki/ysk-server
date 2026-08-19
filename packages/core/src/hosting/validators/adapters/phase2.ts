@@ -2,10 +2,13 @@
  * Phase 2 chain adapters: Bitcoin, Cosmos Hub, Sui, Aptos, Polkadot, Solana.
  * RPC bound to localhost on the host. No keys written.
  */
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
-import { v1ValidatorClients } from '../registry.js';
+import { SUI_NODE_IMAGE, suiNodeTag, v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
+import { readRpcJson } from '../rpc-json.js';
 
 type Probe = Pick<ValidatorNodeStatus, 'syncProgress' | 'peers' | 'version' | 'lastError'>;
 
@@ -89,7 +92,7 @@ services:
         if [ ! -f /data/config/genesis.json ]; then
           gaiad init ysk --home /data --chain-id ${chainId}
         fi
-        gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656
+        gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --minimum-gas-prices=0.005uatom
     ports:
       - "127.0.0.1:${rpc}:26657"
       - "0.0.0.0:${p2p}:26656"
@@ -116,15 +119,61 @@ export function parseCosmosStatus(body: unknown): Probe {
   };
 }
 
+export function suiGenesisUrl(network: string): string {
+  const net = network === 'mainnet' ? 'mainnet' : 'testnet';
+  return `https://github.com/MystenLabs/sui-genesis/raw/main/${net}/genesis.blob`;
+}
+
+export function suiFullnodeYaml(network: string): string {
+  const net = network === 'mainnet' ? 'mainnet' : 'testnet';
+  return `# ysk-server generated Sui ${net} fullnode
+db-path: /data/suidb
+network-address: /ip4/0.0.0.0/tcp/8080/http
+metrics-address: 0.0.0.0:9184
+json-rpc-address: 0.0.0.0:9000
+enable-index-processing: false
+genesis:
+  genesis-file-location: /data/genesis.blob
+`;
+}
+
+export async function ensureSuiFullnodeFiles(
+  dataPath: string,
+  network: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const dir = String(dataPath ?? '').replace(/\/+$/, '');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'fullnode.yaml'), suiFullnodeYaml(network), 'utf8');
+  const genesisPath = join(dir, 'genesis.blob');
+  if (existsSync(genesisPath)) return { ok: true, notes: [] };
+  const url = suiGenesisUrl(network);
+  try {
+    const res = await fetchFn(url);
+    if (!res.ok) return { ok: false, notes: [`sui genesis http ${res.status} ${url}`] };
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length < 8) return { ok: false, notes: ['sui genesis blob too small'] };
+    writeFileSync(genesisPath, buf);
+    return { ok: true, notes: [] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : 'sui genesis fetch failed'] };
+  }
+}
+
 export function buildSuiComposeYaml(spec: ValidatorInstanceDto): string {
   const rpc = spec.ports.rpc ?? 9002;
   const net = spec.network === 'mainnet' ? 'mainnet' : 'testnet';
+  const tag = suiNodeTag(spec.network);
+  const image = spec.clients.node?.image || SUI_NODE_IMAGE;
   return `# ysk-server validators sui — generated
 services:
   node:
-    image: ${img(spec, 'mysten/sui-node', 'mainnet-v1.44.2')}
+    image: ${image}:${tag}
     restart: unless-stopped
-    command: ["sui-node", "--config-path", "/data/fullnode.yaml"]
+    command:
+      - sui-node
+      - --config-path
+      - /data/fullnode.yaml
     environment:
       SUI_NETWORK: ${net}
     ports:
@@ -145,8 +194,58 @@ export function parseSuiHealth(body: unknown): Probe {
   return { syncProgress: null, peers: null, version: null, lastError: 'unhealthy' };
 }
 
+export function aptosFullnodeYaml(): string {
+  return `# ysk-server generated Aptos public fullnode
+base:
+  role: "full_node"
+  data_dir: "/data"
+  waypoint:
+    from_file: "/data/waypoint.txt"
+execution:
+  genesis_file_location: "/data/genesis.blob"
+full_node_networks:
+  - discovery_method: "onchain"
+    listen_address: "/ip4/0.0.0.0/tcp/6180"
+api:
+  enabled: true
+  address: 0.0.0.0:8080
+`;
+}
+
+export function aptosNetworkFileUrl(network: string, file: 'genesis.blob' | 'waypoint.txt'): string {
+  const net = network === 'mainnet' ? 'mainnet' : 'testnet';
+  return `https://github.com/aptos-labs/aptos-networks/raw/main/${net}/${file}`;
+}
+
+export async function ensureAptosFullnodeFiles(
+  dataPath: string,
+  network: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const dir = String(dataPath ?? '').replace(/\/+$/, '');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'fullnode.yaml'), aptosFullnodeYaml(), 'utf8');
+  const notes: string[] = [];
+  for (const file of ['genesis.blob', 'waypoint.txt'] as const) {
+    const dest = join(dir, file);
+    if (existsSync(dest)) continue;
+    const url = aptosNetworkFileUrl(network, file);
+    try {
+      const res = await fetchFn(url);
+      if (!res.ok) {
+        notes.push(`aptos ${file} http ${res.status}`);
+        continue;
+      }
+      writeFileSync(dest, Buffer.from(await res.arrayBuffer()));
+    } catch (e) {
+      notes.push(e instanceof Error ? e.message : `aptos ${file} fetch failed`);
+    }
+  }
+  return { ok: notes.length === 0, notes };
+}
+
 export function buildAptosComposeYaml(spec: ValidatorInstanceDto): string {
-  const rpc = spec.ports.rpc ?? 8080;
+  const rpc = spec.ports.rpc ?? 18080;
   const p2p = spec.ports.p2p ?? 6180;
   const net = spec.network === 'mainnet' ? 'mainnet' : 'testnet';
   return `# ysk-server validators aptos — generated
@@ -154,7 +253,10 @@ services:
   node:
     image: ${img(spec, 'aptoslabs/validator', 'aptos-node-v1.27.2')}
     restart: unless-stopped
-    command: ["aptos-node", "-f", "/data/fullnode.yaml"]
+    command:
+      - aptos-node
+      - -f
+      - /data/fullnode.yaml
     environment:
       APTOS_NETWORK: ${net}
     ports:
@@ -265,31 +367,79 @@ export function parseSolHealth(body: unknown): Probe {
   return { syncProgress: null, peers: null, version: null, lastError: 'unhealthy' };
 }
 
+export function btcCookiePaths(dataPath: string, network: string): string[] {
+  const p = String(dataPath ?? '').replace(/\/+$/, '');
+  if (network === 'mainnet') return [join(p, '.cookie')];
+  return [join(p, 'testnet3', '.cookie'), join(p, 'signet', '.cookie'), join(p, '.cookie')];
+}
+
+export function parseBtcCookieFile(raw: string): { user: string; pass: string } | null {
+  const line = String(raw ?? '')
+    .trim()
+    .split('\n')
+    .map((l) => l.trim())
+    .find(Boolean);
+  if (!line) return null;
+  const i = line.indexOf(':');
+  if (i <= 0) return null;
+  const user = line.slice(0, i);
+  const pass = line.slice(i + 1);
+  if (!user || !pass) return null;
+  return { user, pass };
+}
+
+function readBtcCookie(dataPath: string, network: string): { user: string; pass: string } | null {
+  for (const f of btcCookiePaths(dataPath, network)) {
+    try {
+      if (!existsSync(f)) continue;
+      const parsed = parseBtcCookieFile(readFileSync(f, 'utf8'));
+      if (parsed) return parsed;
+    } catch {
+      /* unreadable cookie is RPC-not-ready, not a crash */
+    }
+  }
+  return null;
+}
+
 async function postRpc(
   url: string,
   method: string,
   fetchFn: typeof fetch,
+  auth?: { user: string; pass: string },
 ): Promise<unknown> {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (auth) {
+    headers.authorization = `Basic ${Buffer.from(`${auth.user}:${auth.pass}`).toString('base64')}`;
+  }
   const res = await fetchFn(url, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers,
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params: [] }),
   });
-  return res.json();
+  return readRpcJson(res);
 }
 
 export async function probeBtcStatus(spec: ValidatorInstanceDto, fetchFn: typeof fetch = fetch): Promise<Probe> {
   try {
-    return parseBtcInfo(await postRpc(`http://127.0.0.1:${spec.ports.rpc ?? 8332}`, 'getblockchaininfo', fetchFn));
+    const cookie = readBtcCookie(spec.dataPath, spec.network);
+    return parseBtcInfo(
+      await postRpc(
+        `http://127.0.0.1:${spec.ports.rpc ?? 8332}`,
+        'getblockchaininfo',
+        fetchFn,
+        cookie ?? undefined,
+      ),
+    );
   } catch (e) {
-    return { syncProgress: null, peers: null, version: null, lastError: e instanceof Error ? e.message : 'rpc' };
+    const msg = e instanceof Error ? e.message : 'rpc unreachable';
+    return { syncProgress: null, peers: null, version: null, lastError: msg };
   }
 }
 
 export async function probeCosmosStatus(spec: ValidatorInstanceDto, fetchFn: typeof fetch = fetch): Promise<Probe> {
   try {
     const res = await fetchFn(`http://127.0.0.1:${spec.ports.rpc ?? 26657}/status`);
-    return parseCosmosStatus(await res.json());
+    return parseCosmosStatus(await readRpcJson(res));
   } catch (e) {
     return { syncProgress: null, peers: null, version: null, lastError: e instanceof Error ? e.message : 'rpc' };
   }
@@ -305,8 +455,8 @@ export async function probeSuiStatus(spec: ValidatorInstanceDto, fetchFn: typeof
 
 export async function probeAptosStatus(spec: ValidatorInstanceDto, fetchFn: typeof fetch = fetch): Promise<Probe> {
   try {
-    const res = await fetchFn(`http://127.0.0.1:${spec.ports.rpc ?? 8080}/v1`);
-    return parseAptosLedger(await res.json());
+    const res = await fetchFn(`http://127.0.0.1:${spec.ports.rpc ?? 18080}/v1`);
+    return parseAptosLedger(await readRpcJson(res));
   } catch (e) {
     return { syncProgress: null, peers: null, version: null, lastError: e instanceof Error ? e.message : 'rpc' };
   }

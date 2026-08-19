@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 1.1.16 — 2026-08-19
+
+### Fix
+- Validators: a running node with RPC not ready is `rpc_wait`, not Error (`Unexpected end of JSON input`). Bitcoin cookie Basic auth. Created / missing containers are not labelled Stopped. Restarting shows last-error and restart count.
+- Avalanche: image entrypoint `/avalanchego/build/avalanchego` with flags only (PATH has no `avalanchego`).
+- Cosmos Hub: `gaiad start --minimum-gas-prices=0.005uatom` so init-then-start does not crash-loop.
+- Ethereum reth/geth: `--http.api eth,net,web3` (engine stays on authrpc + JWT).
+- NEAR / Sui / Aptos / Solana: default `mem_limit: 8g` when the wizard leaves memory unlimited. OOM/`Killed` shows “Out of memory”.
+- Sui testnet pulls `mysten/sui-node:testnet-v1.78.0` (not missing `mainnet-v1.44.2`). Writes `fullnode.yaml` + genesis.blob.
+- Aptos RPC host port defaults to 18080 and skips ports already listening (`ss -lnt`), so it does not collide with Apache on 8080.
+
+### Improve
+- Panel self-update dest regression: `latestVersion` is not copied from current (1.1.14 → 1.1.15).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.16**.
+
 ## 1.1.15 — 2026-08-19
 
 ### Fix

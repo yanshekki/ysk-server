@@ -207,7 +207,7 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
     ],
     profiles: ['minimal', 'pruned', 'validator-ready', 'rpc'],
     clients: [
-      { id: 'sui-node', role: 'node', image: 'mysten/sui-node', tag: 'mainnet-v1.44.2', v1: true },
+      { id: 'sui-node', role: 'node', image: 'mysten/sui-node', tag: 'testnet-v1.78.0', v1: true },
     ],
     minFreeBytes: {
       testnet: { minimal: 40 * GiB, pruned: 60 * GiB, 'validator-ready': 80 * GiB, rpc: 40 * GiB },
@@ -308,6 +308,17 @@ export function defaultValidatorNetwork(chainId: string): string | undefined {
 
 export function v1ValidatorClients(chainId: string) {
   return (getValidatorChain(chainId)?.clients ?? []).filter((c) => c.v1);
+}
+
+export const SUI_NODE_IMAGE = 'mysten/sui-node';
+
+/** Docker Hub tags that exist (2026-08). Testnet must not pull a mainnet pin. */
+export function suiNodeTag(network: string): string {
+  return network === 'mainnet' ? 'mainnet-v1.77.2' : 'testnet-v1.78.0';
+}
+
+export function suiNodeImagePins(): string[] {
+  return [`${SUI_NODE_IMAGE}:${suiNodeTag('testnet')}`, `${SUI_NODE_IMAGE}:${suiNodeTag('mainnet')}`];
 }
 
 export function resolveValidatorClients(

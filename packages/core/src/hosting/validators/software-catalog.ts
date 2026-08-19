@@ -10,7 +10,7 @@ import {
 import type { HostExecutor } from '../../host/executor.js';
 import { listDockerImages, probeDockerEngine } from '../docker/manager.js';
 import { dockerPull, type DockerCtx } from '../docker/manager.js';
-import { listValidatorChains } from './registry.js';
+import { listValidatorChains, suiNodeImagePins } from './registry.js';
 import { listValidatorInstances } from './store.js';
 
 export function validatorImageRef(image: string, tag: string): string {
@@ -34,6 +34,7 @@ export function pinnedValidatorImageRefs(): Set<string> {
       out.add(validatorImageRef(client.image, client.tag));
     }
   }
+  for (const ref of suiNodeImagePins()) out.add(ref);
   return out;
 }
 

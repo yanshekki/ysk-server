@@ -217,6 +217,7 @@ describe('ValidatorsPage', () => {
                 network: 'testnet',
                 profile: 'minimal',
                 desiredState: 'stopped',
+                lastStatus: { status: 'stopped', running: false, lastError: null },
                 ports: {},
               },
               {
@@ -225,6 +226,7 @@ describe('ValidatorsPage', () => {
                 network: 'hoodi',
                 profile: 'minimal',
                 desiredState: 'stopped',
+                lastStatus: { status: 'stopped', running: false, lastError: null },
                 ports: {},
               },
             ],

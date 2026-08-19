@@ -6,6 +6,7 @@ import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
+import { readRpcJson } from '../rpc-json.js';
 
 export function buildNearComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('near')[0];
@@ -79,7 +80,7 @@ export async function probeNearStatus(
   const url = `http://127.0.0.1:${spec.ports.rpc ?? 3030}/status`;
   try {
     const res = await fetchFn(url);
-    const parsed = parseNearStatus(await res.json());
+    const parsed = parseNearStatus(await readRpcJson(res));
     return { ...parsed, lastError: null };
   } catch (e) {
     return {

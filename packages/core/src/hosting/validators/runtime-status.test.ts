@@ -13,14 +13,38 @@ describe('deriveValidatorRuntimeStatus', () => {
         syncProgress: null,
         lastError: 'rpc unreachable',
       }),
-    ).toBe('starting');
+    ).toBe('rpc_wait');
+    expect(
+      deriveValidatorRuntimeStatus({
+        running: true,
+        syncProgress: null,
+        lastError: 'Unexpected end of JSON input',
+      }),
+    ).toBe('rpc_wait');
     expect(
       deriveValidatorRuntimeStatus({
         running: true,
         syncProgress: null,
         lastError: 'unhealthy',
       }),
-    ).toBe('starting');
+    ).toBe('rpc_wait');
+  });
+
+  it('does not call Created or missing containers stopped', () => {
+    expect(
+      deriveValidatorRuntimeStatus({
+        running: false,
+        created: true,
+        lastError: null,
+      }),
+    ).toBe('created');
+    expect(
+      deriveValidatorRuntimeStatus({
+        running: false,
+        missing: true,
+        lastError: null,
+      }),
+    ).toBe('missing');
   });
 
   it('uses syncing when progress is reported', () => {
@@ -64,6 +88,10 @@ describe('deriveValidatorRuntimeStatus', () => {
 });
 
 describe('pickValidatorContainerHint', () => {
+  it('prefers OOM over a later log line', () => {
+    expect(pickValidatorContainerHint(['Starting…', 'Killed', 'restarting'])).toMatch(/Killed/i);
+  });
+
   it('prefers a fatal compose line', () => {
     expect(
       pickValidatorContainerHint([
@@ -79,6 +107,8 @@ describe('isTransientValidatorProbeError', () => {
   it('matches bootstrap probe noise', () => {
     expect(isTransientValidatorProbeError('Failed to fetch')).toBe(true);
     expect(isTransientValidatorProbeError('ECONNREFUSED')).toBe(true);
+    expect(isTransientValidatorProbeError('Unexpected end of JSON input')).toBe(true);
+    expect(isTransientValidatorProbeError('rpc unauthorized')).toBe(true);
     expect(isTransientValidatorProbeError('disk full')).toBe(false);
   });
 });

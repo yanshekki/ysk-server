@@ -35,12 +35,15 @@ import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
+  defaultValidatorMemoryLimit,
+  isLiveValidatorStatus,
   isSafeValidatorDataPath,
   isValidatorUpgradePolicy,
   validatorChainLabel,
   validatorNetworkLabel,
   validatorNetworkLabelFor,
   VALIDATOR_DISK_DANGER_PCT,
+  VALIDATOR_RUNTIME_STATUSES,
   type ValidatorDiskLeftover,
 } from 'ysk-server-shared';
 import { dockerApi } from '../../features/docker';
@@ -76,11 +79,9 @@ function profileLabel(id: string, t: (k: string) => string): string {
   return out === key ? id : out;
 }
 
-const RUNTIME_STATES = ['unknown', 'stopped', 'starting', 'running', 'syncing', 'error'] as const;
-
 function runtimeStateLabel(code: string | undefined, t: (k: string) => string): string {
   if (!code) return '—';
-  return (RUNTIME_STATES as readonly string[]).includes(code)
+  return (VALIDATOR_RUNTIME_STATUSES as readonly string[]).includes(code)
     ? t(`validators.state.${code}`)
     : code;
 }
@@ -281,7 +282,7 @@ export function ValidatorsPage() {
   const autoClearCandidates = [...instances]
     .map((i) => {
       const st = summaries[i.id]?.status ?? i.desiredState;
-      const running = st === 'running' || st === 'syncing' || st === 'starting';
+      const running = isLiveValidatorStatus(st);
       return {
         id: i.id,
         usedBytes: summaries[i.id]?.diskUsedBytes ?? i.lastStatus?.diskUsedBytes ?? 0,
@@ -563,14 +564,17 @@ export function ValidatorsPage() {
                 header: t('validators.col.status'),
                 render: (row) => {
                   const s = summaries[row.id];
-                  const code = s?.status ?? row.lastStatus?.status ?? row.desiredState;
+                  const code = s?.status ?? row.lastStatus?.status ?? 'unknown';
                   const label = runtimeStateLabel(code, t);
+                  const err = s?.lastError ?? row.lastStatus?.lastError;
                   const tone =
                     code === 'error'
                       ? 'danger'
-                      : code === 'syncing' || code === 'starting'
+                      : code === 'syncing' ||
+                          code === 'starting' ||
+                          code === 'rpc_wait'
                         ? 'warn'
-                        : s?.running || code === 'running'
+                        : s?.running || isLiveValidatorStatus(code)
                           ? 'ok'
                           : 'neutral';
                   return (
@@ -580,6 +584,9 @@ export function ValidatorsPage() {
                         <span className="val-status__meta">
                           {Math.round(s.syncProgress * 100)}%
                         </span>
+                      ) : null}
+                      {err && (code === 'error' || code === 'rpc_wait') ? (
+                        <span className="val-status__meta muted u-text-sm">{err}</span>
                       ) : null}
                     </div>
                   );
@@ -1014,6 +1021,8 @@ export function ValidatorsPage() {
                 setChain(v);
                 const c = chains.find((x) => x.id === v);
                 setNetwork(c?.networks.find((n) => n.recommended)?.id ?? c?.networks[0]?.id ?? '');
+                const defMem = defaultValidatorMemoryLimit(v);
+                if (defMem && !memory) setMemory(defMem);
               }}
               options={(chains.length ? chains : []).map((c) => {
                 const spec = chains.find((x) => x.id === c.id);
@@ -1372,7 +1381,7 @@ export function ValidatorsPage() {
         footer={
           detail ? (
             <>
-              {status?.running || status?.status === 'running' ? (
+              {status?.running || isLiveValidatorStatus(status?.status) ? (
                 <Button onClick={() => void runAction(() => validatorsApi.stop(detail.id))}>
                   {t('validators.actions.stop')}
                 </Button>
@@ -1412,7 +1421,19 @@ export function ValidatorsPage() {
                   { label: t('validators.detail.version'), value: status?.version ?? '—' },
                 ]}
               />
-              {status?.lastError ? <Alert variant="error">{status.lastError}</Alert> : null}
+              {status?.lastError ? (
+                <Alert
+                  variant={
+                    status.status === 'rpc_wait' ||
+                    status.status === 'missing' ||
+                    status.status === 'created'
+                      ? 'warn'
+                      : 'error'
+                  }
+                >
+                  {status.lastError}
+                </Alert>
+              ) : null}
               {stats.length ? (
                 <DescriptionList
                   columns={1}

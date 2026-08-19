@@ -5,6 +5,7 @@ import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ChainAdapter, ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { buildClService, buildElService, jwtHost } from './eth-clients.js';
+import { readRpcJson } from '../rpc-json.js';
 
 export function ethJwtPath(spec: ValidatorInstanceDto): string {
   return jwtHost(spec);
@@ -95,9 +96,9 @@ export async function probeEthStatus(
         body: JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'web3_clientVersion', params: [] }),
       }),
     ]);
-    const sync = parseEthSyncing(await syncRes.json());
-    const peers = parseEthPeerCount(await peerRes.json());
-    const verBody = (await verRes.json()) as { result?: string };
+    const sync = parseEthSyncing(await readRpcJson(syncRes));
+    const peers = parseEthPeerCount(await readRpcJson(peerRes));
+    const verBody = (await readRpcJson(verRes)) as { result?: string };
     return {
       syncProgress: sync.syncing ? sync.progress : 1,
       peers,

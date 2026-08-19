@@ -130,7 +130,7 @@ export async function collectNotifications(input: {
       const ls = inst.lastStatus;
       if (!ls) continue;
       const at = Date.parse(ls.at);
-      if (ls.running && ls.lastError) {
+      if (ls.status === 'error' && ls.lastError) {
         push({
           id: `validators-error-${inst.id}`,
           level: 'warn',

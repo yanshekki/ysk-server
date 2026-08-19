@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.16
+
+- E2E-11115 leftover: validator RPC wait vs error, compose Created/missing, Avalanche entrypoint, Cosmos min-gas, reth `--http.api`, NEAR memory cap, Sui testnet tag, Aptos host port.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.16**.
+
 ## What's new in 1.1.15
 
 - E2E-11114 leftover: panel apply ConfirmDialog dest is latestVersion. Validator install no longer freezes the page; compose `ps` JSON array is parsed.
@@ -131,8 +136,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.15) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.15) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.16) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.16) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

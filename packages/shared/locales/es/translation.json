@@ -13614,7 +13614,11 @@
       "snapshotBlocked": "El docker run de instantánea fue bloqueado por la lista permitida",
       "snapshotFailed": "Falló la descarga o extracción de la instantánea",
       "containerNotUp": "Compose started, but the container did not stay running",
-      "probeFailed": "The node is not answering RPC yet. Check logs on this page."
+      "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
+      "noContainer": "No compose container exists for this instance.",
+      "restarting": "Container is restarting. Check logs on this page.",
+      "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
+      "oom": "Out of memory. Set a memory limit or add RAM, then restart."
     },
     "notes": {
       "beta": "Esta función es Beta. Los cambios de host necesitan root y YSK_EXECUTE=1.",
@@ -13797,7 +13801,10 @@
       "running": "Running",
       "syncing": "Syncing",
       "error": "Error",
-      "starting": "Starting"
+      "starting": "Starting",
+      "created": "Created (never started)",
+      "missing": "No container",
+      "rpc_wait": "Running — RPC not ready"
     },
     "profileHelp": {
       "title": "Profiles",

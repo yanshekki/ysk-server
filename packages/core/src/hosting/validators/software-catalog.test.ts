@@ -19,6 +19,9 @@ describe('validator software catalog', () => {
     const sample = [...refs][0];
     expect(sample).toBeTruthy();
     expect(isPinnedValidatorImage(sample!)).toBe(true);
+    expect(isPinnedValidatorImage('mysten/sui-node:testnet-v1.78.0')).toBe(true);
+    expect(isPinnedValidatorImage('mysten/sui-node:mainnet-v1.77.2')).toBe(true);
+    expect(isPinnedValidatorImage('mysten/sui-node:mainnet-v1.44.2')).toBe(false);
     expect(isPinnedValidatorImage('evil/image:latest')).toBe(false);
     expect(isPinnedValidatorImage('not-a-ref')).toBe(false);
     expect(parseValidatorImageRef('ghcr.io/foo/bar:v1')).toEqual({

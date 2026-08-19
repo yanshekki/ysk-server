@@ -140,7 +140,11 @@
     "snapshotBlocked": "快照的 docker run 被允许清单拒绝",
     "snapshotFailed": "快照下载或解压失败",
     "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
+    "noContainer": "No compose container exists for this instance.",
+    "restarting": "Container is restarting. Check logs on this page.",
+    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
+    "oom": "Out of memory. Set a memory limit or add RAM, then restart."
   },
   "notes": {
     "beta": "此功能属 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
@@ -323,7 +327,10 @@
     "starting": "启动中",
     "running": "运行中",
     "syncing": "同步中",
-    "error": "错误"
+    "error": "错误",
+    "created": "Created (never started)",
+    "missing": "No container",
+    "rpc_wait": "Running — RPC not ready"
   },
   "software": {
     "engine": "Docker Engine",

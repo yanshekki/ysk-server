@@ -411,6 +411,12 @@ describe('System / Updates / Files helpers', () => {
         { panelCurrent: '1.1.13', panelLatest: '1.1.13' },
       ),
     ).toEqual({ from: '1.1.13', to: '1.1.14' });
+    expect(
+      selfUpdateConfirmRange(
+        { currentVersion: '1.1.14', latestVersion: '1.1.15' },
+        { panelCurrent: '1.1.14', panelLatest: '1.1.14' },
+      ),
+    ).toEqual({ from: '1.1.14', to: '1.1.15' });
     expect(updRelTime(null, t)).toBe('—');
     expect(updRelTime('bad', t)).toBeTruthy();
     expect(updRelTime(new Date().toISOString(), t)).toMatch(/just|sec|ago|now|updates/i);

@@ -102,7 +102,10 @@ export function applyComposeLimits(
 ): string {
   if (!limits?.memory && !limits?.cpus) return yaml;
   const extra: string[] = [];
-  if (limits.memory && /^\d+[mMgGkK]$/.test(limits.memory)) extra.push(`    mem_limit: ${limits.memory}`);
+  if (limits.memory && /^\d+[mMgGkK]$/.test(limits.memory)) {
+    extra.push(`    mem_limit: ${limits.memory}`);
+    extra.push(`    pids_limit: 4096`);
+  }
   if (limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus)) extra.push(`    cpus: ${JSON.stringify(limits.cpus)}`);
   if (!extra.length) return yaml;
   return yaml.replace(/^([ \t]+restart:\s+unless-stopped)\s*$/gm, `$1\n${extra.join('\n')}`);
@@ -227,37 +230,118 @@ export function composePsStatesFromStdout(stdout: string): string[] {
     .filter(Boolean);
 }
 
+export type ComposePsInfo = {
+  running: boolean;
+  restarting: boolean;
+  exited: boolean;
+  created: boolean;
+  missing: boolean;
+  restartCount: number | null;
+};
+
+export function restartCountFromStatus(status: string): number | null {
+  const m = String(status ?? '').match(/restarting\s*\((\d+)\)/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function composePsInfoFromStates(
+  states: string[],
+  hasIds: boolean,
+  restartCount: number | null = null,
+): ComposePsInfo {
+  if (!states.length) {
+    if (!hasIds) {
+      return {
+        running: false,
+        restarting: false,
+        exited: false,
+        created: false,
+        missing: true,
+        restartCount: null,
+      };
+    }
+    return {
+      running: true,
+      restarting: false,
+      exited: false,
+      created: false,
+      missing: false,
+      restartCount: null,
+    };
+  }
+  const restarting = states.some((s) => s.includes('restart'));
+  if (states.every((s) => s === 'created')) {
+    return {
+      running: false,
+      restarting: false,
+      exited: false,
+      created: true,
+      missing: false,
+      restartCount: null,
+    };
+  }
+  const dead = states.filter((s) => s === 'exited' || s === 'dead');
+  const live = states.filter((s) => s === 'running' || s === 'starting');
+  return {
+    running: live.length > 0 && dead.length === 0 && !restarting,
+    restarting,
+    exited: dead.length > 0 && live.length === 0 && !restarting,
+    created: false,
+    missing: false,
+    restartCount: restarting ? restartCount : null,
+  };
+}
+
+export function composePsInfoFromStdout(stdout: string): ComposePsInfo | null {
+  const rows = parseJsonLines(stdout);
+  if (!rows.length) return null;
+  const states = rows
+    .map((o) =>
+      reconcileDockerState(
+        String(o.State ?? o.state ?? ''),
+        String(o.Status ?? o.status ?? ''),
+      ),
+    )
+    .filter(Boolean);
+  if (!states.length) return null;
+  let restartCount: number | null = null;
+  for (const o of rows) {
+    const n = restartCountFromStatus(String(o.Status ?? o.status ?? ''));
+    if (n != null) restartCount = Math.max(restartCount ?? 0, n);
+  }
+  return composePsInfoFromStates(states, true, restartCount);
+}
+
 export async function composePsInfo(input: {
   host: HostExecutor;
   file: string;
   project: string;
-}): Promise<{ running: boolean; restarting: boolean; exited: boolean }> {
+}): Promise<ComposePsInfo> {
   try {
     const fmt = await input.host.runCommand(
       ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '--format', 'json'],
       { timeoutMs: 15_000 },
     );
     if (fmt.exitCode === 0 && fmt.stdout.trim()) {
-      const states = composePsStatesFromStdout(fmt.stdout);
-      if (states.length) {
-        const dead = states.filter((s) => s === 'exited' || s === 'dead');
-        const live = states.filter(
-          (s) => s === 'running' || s === 'restarting' || s === 'starting' || s === 'created',
-        );
-        return {
-          running: live.length > 0 && dead.length === 0,
-          restarting: states.some((s) => s.includes('restart')),
-          exited: dead.length > 0,
-        };
-      }
+      const fromJson = composePsInfoFromStdout(fmt.stdout);
+      if (fromJson) return fromJson;
     }
     const q = await input.host.runCommand(
-      ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '-q'],
+      ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '-q', '-a'],
       { timeoutMs: 15_000 },
     );
     const ids = q.exitCode === 0 && q.stdout.trim().length > 0;
-    return { running: ids, restarting: false, exited: false };
+    return composePsInfoFromStates([], ids);
   } catch {
-    return { running: false, restarting: false, exited: false };
+    return {
+      running: false,
+      restarting: false,
+      exited: false,
+      created: false,
+      missing: true,
+      restartCount: null,
+    };
   }
 }

@@ -13637,6 +13637,10 @@
       "composeFailed": "docker compose 失敗",
       "containerNotUp": "Compose 已啟動，但容器未能保持運行",
       "probeFailed": "節點尚未回應 RPC。請在本頁查看日誌。",
+      "oom": "記憶體不足。請設定記憶體上限或增加 RAM，然後重新啟動。",
+      "noContainer": "此實例沒有 Compose 容器。",
+      "restarting": "容器正在重新啟動。請在本頁查看日誌。",
+      "restartingCount": "容器正在重新啟動（第 {{n}} 次）。請在本頁查看日誌。",
       "needConfirm": "清空須 confirm=實例識別碼 或 CLEAR",
       "mithrilAdaOnly": "Mithril 還原只適用於 Cardano",
       "needMithrilConfirm": "Mithril 需要 confirm=實例識別碼 或 MITHRIL",
@@ -14072,7 +14076,10 @@
     "state": {
       "unknown": "未知",
       "stopped": "已停止",
+      "created": "已建立未啟動",
+      "missing": "沒有容器",
       "starting": "啟動中",
+      "rpc_wait": "運行中／RPC 未就緒",
       "running": "運行中",
       "syncing": "同步中",
       "error": "錯誤"

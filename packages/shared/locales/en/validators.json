@@ -140,6 +140,10 @@
     "composeFailed": "docker compose failed",
     "containerNotUp": "Compose started, but the container did not stay running",
     "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
+    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
+    "noContainer": "No compose container exists for this instance.",
+    "restarting": "Container is restarting. Check logs on this page.",
+    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
     "needConfirm": "Clear requires confirm=instance id or CLEAR",
     "mithrilAdaOnly": "Mithril restore is only available for Cardano",
     "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
@@ -535,7 +539,10 @@
   "state": {
     "unknown": "Unknown",
     "stopped": "Stopped",
+    "created": "Created (never started)",
+    "missing": "No container",
     "starting": "Starting",
+    "rpc_wait": "Running — RPC not ready",
     "running": "Running",
     "syncing": "Syncing",
     "error": "Error"

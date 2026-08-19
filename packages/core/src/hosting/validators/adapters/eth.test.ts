@@ -30,6 +30,9 @@ describe('eth adapter', () => {
     expect(y).toContain('--chain');
     expect(y).toContain('hoodi');
     expect(y).toContain('127.0.0.1:8545:8545');
+    expect(y).toContain('--http.api');
+    expect(y).toContain('eth,net,web3');
+    expect(y).not.toContain('eth,net,web3,engine');
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(y).toContain('--disable-deposit-contract-sync');
@@ -88,8 +91,9 @@ describe('avax adapter', () => {
       ports: { rpc: 9650, p2p: 9651 },
     });
     expect(y).toContain('avalanchego');
-    expect(y).toMatch(/command:\n\s+- avalanchego\n/);
-    expect(y).not.toContain('/avalanchego/build/avalanchego');
+    expect(y).toContain('entrypoint: ["/avalanchego/build/avalanchego"]');
+    expect(y).not.toMatch(/command:\n\s+- avalanchego\n/);
+    expect(y).toContain('--network-id=fuji');
     expect(y).toContain('fuji');
     expect(y).toContain('--state-sync-enabled=true');
     expect(y).toContain('127.0.0.1:9650:9650');
@@ -98,14 +102,15 @@ describe('avax adapter', () => {
 
   it('reads NodeID and BLS proof from info.getNodeID', async () => {
     const fetchFn = (async () =>
-      ({
-        json: async () => ({
+      new Response(
+        JSON.stringify({
           result: {
             nodeID: 'NodeID-abc',
             nodePOP: { publicKey: '0xpub', proofOfPossession: '0xpop' },
           },
         }),
-      })) as unknown as typeof fetch;
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      )) as unknown as typeof fetch;
     const ident = await probeAvaxStakingIdentity(
       {
         ...ethSpec,

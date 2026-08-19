@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   defaultUpgradePolicyForNetworkKind,
+  defaultValidatorMemoryLimit,
+  isLiveValidatorStatus,
   isValidatorChainId,
   isValidatorInstanceId,
   isValidatorProfileId,
@@ -62,5 +64,22 @@ describe('validators DTO helpers', () => {
   it('defaults mainnet upgrades to manual', () => {
     expect(defaultUpgradePolicyForNetworkKind('mainnet')).toBe('manual');
     expect(defaultUpgradePolicyForNetworkKind('testnet')).toBe('notify');
+  });
+
+  it('defaults memory for heavy chains', () => {
+    expect(defaultValidatorMemoryLimit('near')).toBe('8g');
+    expect(defaultValidatorMemoryLimit('sui')).toBe('8g');
+    expect(defaultValidatorMemoryLimit('eth')).toBeUndefined();
+  });
+
+  it('does not treat rpc_wait as stopped for auto-clear', () => {
+    expect(isLiveValidatorStatus('rpc_wait')).toBe(true);
+    expect(isLiveValidatorStatus('syncing')).toBe(true);
+    expect(isLiveValidatorStatus('starting')).toBe(true);
+    expect(isLiveValidatorStatus('running')).toBe(true);
+    expect(isLiveValidatorStatus('created')).toBe(false);
+    expect(isLiveValidatorStatus('missing')).toBe(false);
+    expect(isLiveValidatorStatus('stopped')).toBe(false);
+    expect(isLiveValidatorStatus('error')).toBe(false);
   });
 });

@@ -5,6 +5,7 @@ import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import {
+  defaultValidatorMemoryLimit,
   isSafeValidatorDataPath,
   isSafeValidatorLimitCpus,
   isSafeValidatorLimitMemory,
@@ -44,6 +45,8 @@ import {
   getValidatorNetwork,
   minFreeBytesFor,
   resolveValidatorClients,
+  SUI_NODE_IMAGE,
+  suiNodeTag,
 } from './registry.js';
 import {
   buildValidatorInstance,
@@ -58,6 +61,8 @@ import { probeAvaxStatus } from './adapters/avax.js';
 import { probeNearStatus } from './adapters/near.js';
 import { probeAdaStatus } from './adapters/ada.js';
 import {
+  ensureAptosFullnodeFiles,
+  ensureSuiFullnodeFiles,
   probeAptosStatus,
   probeBtcStatus,
   probeCosmosStatus,
@@ -65,13 +70,13 @@ import {
   probeSolStatus,
   probeSuiStatus,
 } from './adapters/phase2.js';
-import { allocateValidatorPorts, usedValidatorPorts } from './ports.js';
+import { allocateValidatorPorts, parseSsListenPortSet, usedValidatorPorts } from './ports.js';
 import { syncServiceExposure } from '../service-exposure/sync.js';
 import type { ValidatorNodeStatus } from './adapters/base.js';
 import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
 import {
   deriveValidatorRuntimeStatus,
-  isTransientValidatorProbeError,
+  isValidatorOomHint,
   pickValidatorContainerHint,
 } from './runtime-status.js';
 import type { OpsLogFn } from '../ops-log.js';
@@ -149,20 +154,33 @@ export async function createValidatorInstance(
     el: input.el,
     cl: input.cl,
   });
-  const ports = allocateValidatorPorts(input.dataDir, chain);
+  if (chain === 'sui' && clients.node) {
+    clients.node = { ...clients.node, image: SUI_NODE_IMAGE, tag: suiNodeTag(input.network) };
+  }
+  const extraUsed = new Set<number>();
+  try {
+    const ss = await input.host.runCommand(['ss', '-lnt'], { timeoutMs: 3_000 });
+    if (ss.exitCode === 0) {
+      for (const p of parseSsListenPortSet(ss.stdout)) extraUsed.add(p);
+    }
+  } catch {
+    /* ss unavailable — still skip other validator ports */
+  }
+  const ports = allocateValidatorPorts(input.dataDir, chain, extraUsed);
   if (input.rpcPort != null && Number.isFinite(input.rpcPort)) {
     const n = Number(input.rpcPort);
     if (!Number.isInteger(n) || n <= 1024 || n > 65535) {
       return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
     }
-    if (usedValidatorPorts(input.dataDir).has(n)) {
+    if (usedValidatorPorts(input.dataDir).has(n) || extraUsed.has(n)) {
       return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.portInUse')] });
     }
     ports.rpc = n;
   }
+  const memory = input.memory || defaultValidatorMemoryLimit(chain);
   const limits =
-    input.memory || input.cpus
-      ? { memory: input.memory, cpus: input.cpus }
+    memory || input.cpus
+      ? { memory, cpus: input.cpus }
       : undefined;
   let inst: ValidatorInstanceDto;
   try {
@@ -194,6 +212,19 @@ export async function createValidatorInstance(
     }
   }
   const composePath = composeFilePath(dir);
+  if (inst.chain === 'sui') {
+    const sui = await ensureSuiFullnodeFiles(inst.dataPath, inst.network);
+    if (!sui.ok && input.execute) {
+      return failedValidatorOp({
+        instanceId: inst.id,
+        written: [inst.dataPath],
+        notes: [tl('validators.errors.composeFailed'), ...sui.notes],
+      });
+    }
+  }
+  if (inst.chain === 'aptos') {
+    await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
+  }
   writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
   upsertValidatorInstance(input.dataDir, inst);
   const written = [join(dir, '..', 'instances.json'), composePath, inst.dataPath];
@@ -232,10 +263,23 @@ export async function createValidatorInstance(
     signal: input.signal,
   });
   if (!up.ok) {
+    const detail = (up.stderr || up.stdout).trim().slice(0, 400);
+    upsertValidatorInstance(input.dataDir, {
+      ...inst,
+      lastStatus: {
+        at: new Date().toISOString(),
+        status: 'error',
+        running: false,
+        syncProgress: null,
+        peers: null,
+        diskUsedBytes: null,
+        lastError: detail || tl('validators.errors.composeFailed'),
+      },
+    });
     return failedValidatorOp({
       instanceId: inst.id,
       written,
-      notes: [tl('validators.errors.composeFailed'), up.stderr || up.stdout],
+      notes: [tl('validators.errors.composeFailed'), detail].filter(Boolean),
     });
   }
   const live = await verifyComposeStayedUp({
@@ -332,7 +376,12 @@ export async function startValidatorInstance(
       });
     }
     const plan = planInstallFor(inst);
-    writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
+    if (inst.chain === 'sui') await ensureSuiFullnodeFiles(inst.dataPath, inst.network);
+    if (inst.chain === 'aptos') await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
+    const limits = inst.limits?.memory
+      ? inst.limits
+      : { ...inst.limits, memory: defaultValidatorMemoryLimit(inst.chain) };
+    writeComposeFile(composePath, plan.composeYaml, inst.id, limits);
     prepareValidatorDataDir(inst.dataPath);
     const up = await composeUp({
       host: input.host,
@@ -538,15 +587,17 @@ export async function statusValidatorInstance(input: {
   const status = deriveValidatorRuntimeStatus({
     running,
     restarting: ps.restarting,
+    created: ps.created,
+    missing: ps.missing,
     syncProgress: extra.syncProgress,
     lastError: extra.lastError,
   });
   let lastError = extra.lastError;
-  if (
-    !running ||
-    ps.restarting ||
-    (lastError && isTransientValidatorProbeError(lastError))
-  ) {
+  if (status === 'rpc_wait') {
+    lastError = tl('validators.errors.probeFailed');
+  } else if (ps.missing) {
+    lastError = tl('validators.errors.noContainer');
+  } else if (!running || ps.restarting) {
     const logs = await composeLogs({
       host: input.host,
       file: composeFilePath(instanceDir(input.dataDir, inst.id)),
@@ -554,9 +605,13 @@ export async function statusValidatorInstance(input: {
       tail: 80,
     });
     const hint = pickValidatorContainerHint(logs.lines);
-    if (hint) lastError = hint;
-    else if (lastError && isTransientValidatorProbeError(lastError)) {
-      lastError = tl('validators.errors.probeFailed');
+    if (hint && isValidatorOomHint(hint)) lastError = tl('validators.errors.oom');
+    else if (hint) lastError = hint;
+    else if (ps.restarting) {
+      lastError =
+        ps.restartCount != null
+          ? tl('validators.errors.restartingCount', { n: ps.restartCount })
+          : tl('validators.errors.restarting');
     }
   }
   return {
