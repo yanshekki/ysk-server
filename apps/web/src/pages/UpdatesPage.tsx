@@ -871,6 +871,7 @@ export function UpdatesPage() {
                         <Button
                           size="sm"
                           disabled={busy}
+                          data-confirm={e.packageName || e.title || 'dialog'}
                           title={
                             isKernelPackage(e.packageName || e.title)
                               ? t('updates.kernelRebootHint')
@@ -982,6 +983,7 @@ export function UpdatesPage() {
                         busy || !canApply || selectedUpgradable.length === 0
                       }
                       loading={busy && batchProgress != null}
+                      data-confirm="dialog"
                       title={
                         !canApply
                           ? t('rbac.cap.updatesApply')
@@ -1194,6 +1196,7 @@ export function UpdatesPage() {
                                 ? t('updates.applyNeedConfirm')
                                 : t('updates.upgradeTo', { v: i.candidateVersion })
                         }
+                        data-confirm={i.packageName || 'dialog'}
                         onClick={() => {
                           if (!hasUpgrade || !canApply) return;
                           setHighRiskApply(i);
@@ -1526,28 +1529,33 @@ export function UpdatesPage() {
       <ConfirmDialog
         open={highRiskApply != null}
         onClose={bindSet(setHighRiskApply, null)}
+        dataConfirm={highRiskApply?.packageName || 'dialog'}
         title={
           highRiskApply
-            ? t('updates.applyHighRisk', { name: highRiskApply.packageName })
+            ? isHighRisk(highRiskApply)
+              ? t('updates.applyHighRisk', { name: highRiskApply.packageName })
+              : t('updates.applyPkgConfirm', { name: highRiskApply.packageName })
             : t('updates.highRiskUpdate')
         }
         description={
           highRiskApply
-            ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${
-                isKernelPackage(highRiskApply.packageName)
-                  ? t('updates.kernelRebootWarn') + ' '
-                  : ''
-              }${
-                highRiskApply.summary
-                  ? humanizeOperatorNote(highRiskApply.summary) ??
-                    highRiskApply.summary
-                  : adviceLabel(highRiskApply.advice, t)
-              }`
+            ? isHighRisk(highRiskApply)
+              ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${
+                  isKernelPackage(highRiskApply.packageName)
+                    ? t('updates.kernelRebootWarn') + ' '
+                    : ''
+                }${
+                  highRiskApply.summary
+                    ? humanizeOperatorNote(highRiskApply.summary) ??
+                      highRiskApply.summary
+                    : adviceLabel(highRiskApply.advice, t)
+                }`
+              : `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${t('updates.applyPkgDesc')}`
             : ''
         }
         confirmLabel={t('common.apply')}
         cancelLabel={t('common.cancel')}
-        danger
+        danger={highRiskApply != null && isHighRisk(highRiskApply)}
         onConfirm={() => {
           const row = highRiskApply;
           setHighRiskApply(null);
@@ -1560,6 +1568,7 @@ export function UpdatesPage() {
         onClose={() => {
           if (!busy) setBatchConfirmOpen(false);
         }}
+        dataConfirm="dialog"
         title={t('updates.batchConfirmTitle', { })}
         description={
           t('updates.batchConfirmBody', {

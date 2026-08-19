@@ -92,6 +92,19 @@ export function isNginxServerNameList(raw: string): boolean {
   return parts.length > 0 && parts.every(isNginxServerNameToken);
 }
 
+/**
+ * DB cluster member host: real IPv4/IPv6 or a hostname token.
+ * Dotted-quads must be valid IPv4 (so 999.999.999.999 is not treated as a name).
+ * Rejects documentation placeholders used in the wizard examples.
+ */
+export function isClusterMemberHost(raw: string): boolean {
+  const h = String(raw ?? '').trim();
+  if (!h || h.length > 253) return false;
+  if (h === 'example.com' || h.startsWith('203.0.113.')) return false;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return isIpv4(h);
+  return isIpAddress(h) || isNginxServerNameToken(h);
+}
+
 const DOCKER_CMD_TOKEN = /^[A-Za-z0-9._:/=+-]+$/;
 
 export function parseDockerArgvLine(raw: string): string[] | null {

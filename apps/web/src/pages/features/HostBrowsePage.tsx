@@ -564,6 +564,7 @@ export function HostBrowsePage() {
   }, [runNavigate, urlDraft]);
 
   const [pendingClearSession, setPendingClearSession] = useState(false);
+  const [pendingClearCookies, setPendingClearCookies] = useState(false);
 
   const dismissResume = useCallback(() => {
     setResumeSnap(null);
@@ -1202,7 +1203,8 @@ export function HostBrowsePage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => void onClearCookies()}
+                    data-confirm="dialog"
+                    onClick={() => setPendingClearCookies(true)}
                     disabled={!session || busy}
                     title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.clearCookies')}
                   >
@@ -1890,6 +1892,19 @@ export function HostBrowsePage() {
         onConfirm={() => {
           setPendingClearSession(false);
           dismissResume();
+        }}
+      />
+      <ConfirmDialog
+        open={pendingClearCookies}
+        onClose={() => setPendingClearCookies(false)}
+        title={t('hostBrowse.clearCookies')}
+        description={t('hostBrowse.clearCookiesConfirm')}
+        severity="destructive"
+        dataConfirm="dialog"
+        confirmLabel={t('hostBrowse.clearCookies')}
+        onConfirm={() => {
+          setPendingClearCookies(false);
+          void onClearCookies();
         }}
       />
     </FeaturePageLayout>

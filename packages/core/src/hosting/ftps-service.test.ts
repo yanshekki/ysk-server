@@ -220,6 +220,9 @@ describe('ftps-service pure helpers', () => {
     const homes = listFtpHomeOptions({ db, dataDir: dir, username: 'alice' });
     expect(homes.some((h) => h.value.includes('alice'))).toBe(true);
     expect(homes.some((h) => h.value.includes('homes'))).toBe(true);
+    const illegal = listFtpHomeOptions({ db, dataDir: dir, username: 'qa ftp!' });
+    expect(illegal.some((h) => /qa ftp|ftp!/.test(h.value))).toBe(false);
+    expect(illegal.some((h) => h.value.includes(`${join('homes', 'user')}`))).toBe(true);
     const domains = listFtpDomainOptions(db);
     expect(domains.map((d) => d.value)).toEqual(
       expect.arrayContaining(['mail.example.com', 'demo.example.com']),

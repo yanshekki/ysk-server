@@ -33,6 +33,7 @@ import {
 import { useFeatureAction } from '../system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
+import { isClusterMemberHost } from 'ysk-server-shared';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindInput, bindVoid, bindCall1, bindCall2 } from '../../pages/bind-handlers';
 import { agentsApi, type FleetAgent } from '../agents/api';
@@ -166,10 +167,15 @@ export function DbClusterPanel({
     const nextErr: { name?: string; local?: string; peer?: string } = {};
     if (!name.trim()) nextErr.name = t('common.pleaseFill');
     if (!localHost.trim()) nextErr.local = t('common.pleaseFill');
+    else if (!isClusterMemberHost(localHost)) nextErr.local = t('db.cluster.hostInvalid');
     if (!peerHost.trim()) nextErr.peer = t('common.pleaseFill');
+    else if (!isClusterMemberHost(peerHost)) nextErr.peer = t('db.cluster.hostInvalid');
     if (nextErr.name || nextErr.local || nextErr.peer) {
       setWizFieldErr(nextErr);
       if (nextErr.local || nextErr.peer) setError(t('db.cluster.needRealIps'));
+      return;
+    }
+    if (peer3Host.trim() && !isClusterMemberHost(peer3Host)) {
       return;
     }
     setWizFieldErr({});
@@ -799,6 +805,12 @@ export function DbClusterPanel({
               variant="primary"
               size="md"
               loading={busy}
+              disabled={
+                !name.trim() ||
+                !isClusterMemberHost(localHost) ||
+                !isClusterMemberHost(peerHost) ||
+                Boolean(peer3Host.trim() && !isClusterMemberHost(peer3Host))
+              }
             >
               {t('db.cluster.generatePlan')}
             </Button>
@@ -829,7 +841,11 @@ export function DbClusterPanel({
               htmlFor="dbc-local"
               flush
               required
-              error={wizFieldErr.local}
+              error={
+                localHost.trim() && !isClusterMemberHost(localHost)
+                  ? t('db.cluster.hostInvalid')
+                  : wizFieldErr.local
+              }
               hint={
                 isRepl
                   ? t('db.cluster.primaryIpHint')
@@ -853,7 +869,11 @@ export function DbClusterPanel({
               htmlFor="dbc-peer"
               flush
               required
-              error={wizFieldErr.peer}
+              error={
+                peerHost.trim() && !isClusterMemberHost(peerHost)
+                  ? t('db.cluster.hostInvalid')
+                  : wizFieldErr.peer
+              }
               hint={
                 isRepl
                   ? t('db.cluster.replicaHint')
@@ -877,6 +897,11 @@ export function DbClusterPanel({
               htmlFor="dbc-peer3"
               flush
               hint={t('db.cluster.thirdNodeHint')}
+              error={
+                peer3Host.trim() && !isClusterMemberHost(peer3Host)
+                  ? t('db.cluster.hostInvalid')
+                  : undefined
+              }
             >
               <input
                 id="dbc-peer3"

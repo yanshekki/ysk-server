@@ -1,4 +1,4 @@
-import { tl } from 'ysk-server-shared';
+import { isFtpUsername, tl } from 'ysk-server-shared';
 /**
  * Real FTPS (vsftpd) control plane: settings, conf generation, virtual users, status, apply.
  * Panel-only execution — never asks the user to run CLI.
@@ -1152,7 +1152,8 @@ export function listFtpHomeOptions(input: {
   username?: string;
 }): Array<{ value: string; label: string }> {
   const paths = ftpsPaths(input.dataDir);
-  const user = input.username?.trim() || 'user';
+  const rawUser = String(input.username ?? '').trim();
+  const user = isFtpUsername(rawUser) ? rawUser : 'user';
   const opts: Array<{ value: string; label: string }> = [
     {
       value: join(paths.homes, user),

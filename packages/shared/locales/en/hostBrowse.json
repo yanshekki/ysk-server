@@ -11,6 +11,7 @@
   "reload": "Reload",
   "stop": "Stop",
   "clearCookies": "Clear cookies",
+  "clearCookiesConfirm": "This clears cookies stored on the host for this browse session. Sites that were signed in will need to be signed in again.",
   "closeSession": "Close session",
   "copyUrl": "Copy URL",
   "newSession": "New session",

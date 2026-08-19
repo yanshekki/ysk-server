@@ -134,6 +134,20 @@ describe('plan-mariadb-galera pure', () => {
     expect(plan.steps.some((s) => s.id === 'bootstrap')).toBe(true);
   });
 
+  it('rejects garbage member hosts', () => {
+    const plan = planMariadbGalera(
+      galeraCluster({
+        members: [
+          member({ id: 'm1', host: 'not an ip!!', access: 'local' }),
+          member({ id: 'm2', host: '10.0.0.2', access: 'ssh' }),
+        ],
+      }),
+    );
+    expect(plan.ok).toBe(false);
+    expect(plan.steps).toHaveLength(0);
+    expect(plan.notes.some((n) => n.includes('not an ip!!'))).toBe(true);
+  });
+
   it('rejects wrong engine or kind', () => {
     const wrongEngine = planMariadbGalera(galeraCluster({ engine: 'mysql' }));
     expect(wrongEngine.ok).toBe(false);

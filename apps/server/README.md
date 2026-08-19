@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.14
+
+- E2E-11113 leftover: FTP live username validation (no silent home rewrite), Galera host validation, updates package Apply `data-confirm`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.14**.
+
 ## What's new in 1.1.13
 
 - E2E-11110: validator compose ENTRYPOINT, Docker port preflight, nginx 443 kept with certs, shared identifier rules, panel empty-search / KPI / named confirms.
@@ -121,8 +126,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.13) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.13) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.14) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.14) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

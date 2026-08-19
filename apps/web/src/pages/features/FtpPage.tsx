@@ -136,16 +136,21 @@ export function FtpPage() {
 
   useEffect(() => {
     if (!open) return;
-    void loadOptions(username).then((o) => {
+    const queryUser = !editId && isFtpUsername(username) ? username.trim() : undefined;
+    void loadOptions(queryUser).then((o) => {
       if (editId) return;
       const next = o.homes[0]?.value;
       if (!next) return;
+      if (!isFtpUsername(username)) {
+        setHomePath((prev) => prev || next);
+        return;
+      }
+      const user = username.trim();
       setHomePath((prev) => {
-        if (!prev || /\/user$/.test(prev) || (username.trim() && prev.endsWith(`/${username.trim()}`))) {
+        if (!prev || /\/user$/.test(prev) || prev.endsWith(`/${user}`)) {
           return next;
         }
-        if (username.trim()) return prev.replace(/\/([^/]+)$/, `/${username.trim()}`);
-        return prev || next;
+        return prev.replace(/\/([^/]+)$/, `/${user}`);
       });
     });
   }, [username, open, editId, loadOptions]);
@@ -157,7 +162,7 @@ export function FtpPage() {
       return;
     }
     const home =
-      !editId && username.trim()
+      !editId && isFtpUsername(username)
         ? homePath.replace(/\/([^/]+)$/, `/${username.trim()}`)
         : homePath;
     const body = buildFtpAccountBody({ username, password, homePath: home, domain });
@@ -614,6 +619,7 @@ export function FtpPage() {
               variant="primary"
               size="md"
               loading={crud.busy}
+              disabled={!editId && !isFtpUsername(username)}
             >
               {t('common.save')}
             </Button>
@@ -628,6 +634,11 @@ export function FtpPage() {
               flush
               required
               hint={t('ftp.usernameHintCreate')}
+              error={
+                !editId && username.trim() && !isFtpUsername(username)
+                  ? t('ftp.usernameHint')
+                  : undefined
+              }
             >
               <input
                 id="fu"

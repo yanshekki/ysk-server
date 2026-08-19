@@ -1,4 +1,4 @@
-import { isIpAddress, isIpv4, isNginxServerNameToken, tl } from 'ysk-server-shared';
+import { isClusterMemberHost, tl } from 'ysk-server-shared';
 /**
  * MariaDB Galera plan + conf render (pure; never mutates host).
  */
@@ -136,11 +136,7 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
     notes.push(tl('notes.auto.n0826'));
   }
 
-  const badHosts = c.members.filter((m) => {
-    const h = String(m.host ?? '').trim();
-    if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return !isIpv4(h);
-    return !(isIpAddress(h) || isNginxServerNameToken(h));
-  });
+  const badHosts = c.members.filter((m) => !isClusterMemberHost(String(m.host ?? '')));
   if (badHosts.length) {
     return {
       ok: false,

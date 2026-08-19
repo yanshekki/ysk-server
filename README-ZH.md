@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.14 新內容
+
+- **FTP／Galera** — 非法用戶名與無效 IP 有行內錯誤；儲存／產生計劃保持停用。家目錄不會用非法 FTP 名靜默改寫。
+- **更新** — 每個套件「套用」帶 `data-confirm`，確認框點名套件。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.14**。
+
 ## 1.1.13 新內容
 
 - **驗證者／Docker** — compose 指令對齊映像 ENTRYPOINT；Cardano 用 GHCR 11.0.1；執行映像會先探測被佔埠，不會把 bind 失敗殘留當已啟動。

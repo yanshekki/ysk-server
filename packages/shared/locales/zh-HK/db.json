@@ -173,6 +173,7 @@
     "createSentinel": "建立 哨兵",
     "createRedisReplica": "建立 Redis 主從",
     "needRealIps": "請填寫本機與 對等節點 真實 IP／主機名",
+    "hostInvalid": "請填寫有效的 IPv4、IPv6 或主機名。",
     "statusNote": "狀態：{{status}}（計劃成功 ≠ 叢集健康）",
     "artifactNote": "產物：{{dir}}",
     "planGenerated": "已產生計劃（預覽試行）",

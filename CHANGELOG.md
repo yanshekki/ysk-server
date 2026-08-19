@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.14 — 2026-08-19
+
+### Fix
+- FTP create: invalid username (`qa ftp!`) shows an inline Field error and disables Save. Home path no longer silently rewrites illegal characters.
+- Galera wizard: local/peer/third-node hosts validate live (IPv4/IPv6 or hostname). Generate plan stays disabled on garbage (`not an ip!!`). Cluster create/patch reject the same values.
+- Updates package row Apply exposes `data-confirm` on the trigger and names the package in ConfirmDialog (panel self-update already did). Batch “update selected” and overview apt Apply match.
+
+### Improve
+- Host browse “Clear cookies” opens ConfirmDialog (same density as close session).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.14**.
+
 ## 1.1.13 — 2026-08-19
 
 ### Fix

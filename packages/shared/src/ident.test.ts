@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   isCidr,
+  isClusterMemberHost,
   isFtpUsername,
   isIpAddress,
   isMailDomain,
@@ -37,6 +38,19 @@ describe('ident guards', () => {
     expect(isCidr('not-a-cidr/99')).toBe(false);
     expect(isCidr('')).toBe(false);
     expect(isCidr('999.999.999.999/24')).toBe(false);
+  });
+
+  it('validates cluster member hosts', () => {
+    expect(isClusterMemberHost('10.0.0.1')).toBe(true);
+    expect(isClusterMemberHost('127.0.0.1')).toBe(true);
+    expect(isClusterMemberHost('::1')).toBe(true);
+    expect(isClusterMemberHost('db.example.com')).toBe(true);
+    expect(isClusterMemberHost('localhost')).toBe(true);
+    expect(isClusterMemberHost('not an ip!!')).toBe(false);
+    expect(isClusterMemberHost('999.999.999.999')).toBe(false);
+    expect(isClusterMemberHost('example.com')).toBe(false);
+    expect(isClusterMemberHost('203.0.113.10')).toBe(false);
+    expect(isClusterMemberHost('')).toBe(false);
   });
 
   it('validates mailbox local-part and mail domains', () => {

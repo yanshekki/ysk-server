@@ -173,6 +173,7 @@
     "createSentinel": "Create Sentinel",
     "createRedisReplica": "Create Redis replica",
     "needRealIps": "Enter real local and peer IPs/hostnames",
+    "hostInvalid": "Enter a valid IPv4, IPv6, or hostname.",
     "statusNote": "Status: {{status}} (plan success ≠ cluster health)",
     "artifactNote": "Artifacts: {{dir}}",
     "planGenerated": "Plan generated (dry-run)",

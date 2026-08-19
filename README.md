@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.14
+
+- **FTP / Galera** — invalid usernames and garbage IPs get inline errors; Save / Generate plan stay disabled. Home path is not rewritten from an illegal FTP name.
+- **Updates** — each apt package Apply has `data-confirm` and names the package in the confirm dialog.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.14** together.
+
 ## What's new in 1.1.13
 
 - **Validators / Docker** — compose argv matches image ENTRYPOINT; Cardano uses GHCR 11.0.1; Docker run probes busy ports and does not toast a leftover as started.

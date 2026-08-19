@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import { ErrorCodes, YskError, isClusterMemberHost, tl } from 'ysk-server-shared';
 import type { JsonStore } from '../../db/store.js';
 import type {
   CreateDbClusterInput,
@@ -57,6 +57,12 @@ function assertHost(host: string): string {
   // No placeholder defaults — reject empty / whitespace only
   if (h === 'example.com' || h.startsWith('203.0.113.')) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1397'), {
+      httpStatus: 400,
+      details: { host },
+    });
+  }
+  if (!isClusterMemberHost(h)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1303'), {
       httpStatus: 400,
       details: { host },
     });

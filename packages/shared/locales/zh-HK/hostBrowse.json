@@ -11,6 +11,7 @@
   "reload": "重新整理",
   "stop": "停止",
   "clearCookies": "清除 Cookie",
+  "clearCookiesConfirm": "這會清除此代瀏覽工作階段在主機上的 Cookie。已登入的網站需要重新登入。",
   "closeSession": "關閉工作階段",
   "copyUrl": "複製網址",
   "newSession": "新工作階段",

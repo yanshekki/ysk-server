@@ -272,7 +272,8 @@
     "overviewEmpty": "No cluster registrations yet.",
     "engine": "Engine",
     "kind": "Kind",
-    "members": "Members"
+    "members": "Members",
+    "hostInvalid": "Enter a valid IPv4, IPv6, or hostname."
   },
   "console": {
     "dataBrowse": "资料浏览",

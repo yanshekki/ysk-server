@@ -2838,7 +2838,8 @@
       "overviewEmpty": "No cluster registrations yet.",
       "engine": "Engine",
       "kind": "Kind",
-      "members": "Members"
+      "members": "Members",
+      "hostInvalid": "Enter a valid IPv4, IPv6, or hostname."
     },
     "console": {
       "dataBrowse": "Parcourir les données",
@@ -5099,7 +5100,8 @@
     "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
     "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
     "clearSessionData": "Clear session data",
-    "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards."
+    "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards.",
+    "clearCookiesConfirm": "This clears cookies stored on the host for this browse session. Sites that were signed in will need to be signed in again."
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",

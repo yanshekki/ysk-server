@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-19 — **1.1.13** (E2E-11110: validator compose, Docker port preflight, nginx 443 keep, panel honesty). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-19 — **1.1.14** (E2E-11113 leftover: FTP live username, Galera host validation, updates package Apply confirm). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 

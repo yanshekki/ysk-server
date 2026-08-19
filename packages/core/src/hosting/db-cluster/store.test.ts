@@ -74,6 +74,14 @@ describe('db-cluster store', () => {
         members: [{ host: '127.0.0.1' }],
       }),
     ).toThrow(YskError);
+    expect(() =>
+      createDbCluster(db, {
+        name: 'bad-ip',
+        engine: 'mariadb',
+        kind: 'mariadb-galera',
+        members: [{ host: 'not an ip!!' }, { host: '10.0.0.2' }],
+      }),
+    ).toThrow(YskError);
     cleanup();
   });
 
