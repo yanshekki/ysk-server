@@ -142,7 +142,7 @@ export function FtpPage() {
       const next = o.homes[0]?.value;
       if (!next) return;
       if (!isFtpUsername(username)) {
-        setHomePath((prev) => prev || next);
+        setHomePath(next);
         return;
       }
       const user = username.trim();

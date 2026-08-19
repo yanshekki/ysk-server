@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -280,6 +281,40 @@ describe('UI primitives smoke', () => {
     );
     expect(screen.getByRole('textbox')).toHaveValue('x');
     expect(screen.getByText('Code', { selector: 'label' })).toBeInTheDocument();
+  });
+
+  it('wizard stays clickable after a stacked ConfirmDialog closes', async () => {
+    const user = userEvent.setup();
+    const onInstall = vi.fn();
+    function Pair() {
+      const [confirm, setConfirm] = useState(false);
+      return (
+        <>
+          <Modal open title="Wizard" onClose={() => undefined}>
+            <button type="button" onClick={() => setConfirm(true)}>
+              Open confirm
+            </button>
+            <button type="button" onClick={onInstall}>
+              Install
+            </button>
+          </Modal>
+          <ConfirmDialog
+            open={confirm}
+            title="Sure?"
+            description="Really"
+            onClose={() => setConfirm(false)}
+            onConfirm={() => setConfirm(false)}
+            confirmLabel="Do it"
+            cancelLabel="Cancel"
+          />
+        </>
+      );
+    }
+    render(<Pair />);
+    await user.click(screen.getByRole('button', { name: 'Open confirm' }));
+    await user.click(screen.getByRole('button', { name: 'Do it' }));
+    await user.click(screen.getByRole('button', { name: 'Install' }));
+    expect(onInstall).toHaveBeenCalled();
   });
 
   it('PageTabs / SegRadio / PresetChips / MultiCheckSelect', async () => {

@@ -7,6 +7,7 @@ import { dirname } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import { runOpts, type OpsLogFn } from '../ops-log.js';
+import { parseJsonLines, reconcileDockerState } from '../docker/parse.js';
 
 export function composeProjectName(id: string): string {
   return `yskval-${id}`.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 48);
@@ -214,37 +215,49 @@ export async function composePsRunning(input: {
   return info.running;
 }
 
+/** Compose `ps --format json` may be a JSON array (v2.29+) or NDJSON. */
+export function composePsStatesFromStdout(stdout: string): string[] {
+  return parseJsonLines(stdout)
+    .map((o) =>
+      reconcileDockerState(
+        String(o.State ?? o.state ?? ''),
+        String(o.Status ?? o.status ?? ''),
+      ),
+    )
+    .filter(Boolean);
+}
+
 export async function composePsInfo(input: {
   host: HostExecutor;
   file: string;
   project: string;
-}): Promise<{ running: boolean; restarting: boolean }> {
+}): Promise<{ running: boolean; restarting: boolean; exited: boolean }> {
   try {
     const fmt = await input.host.runCommand(
       ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '--format', 'json'],
       { timeoutMs: 15_000 },
     );
     if (fmt.exitCode === 0 && fmt.stdout.trim()) {
-      const blob = `[${fmt.stdout.trim().replace(/}\s*{/g, '},{')}]`;
-      let rows: Array<{ State?: string; state?: string }> = [];
-      try {
-        const parsed = JSON.parse(blob) as unknown;
-        rows = Array.isArray(parsed) ? parsed : [parsed as { State?: string }];
-      } catch {
-        rows = [];
+      const states = composePsStatesFromStdout(fmt.stdout);
+      if (states.length) {
+        const dead = states.filter((s) => s === 'exited' || s === 'dead');
+        const live = states.filter(
+          (s) => s === 'running' || s === 'restarting' || s === 'starting' || s === 'created',
+        );
+        return {
+          running: live.length > 0 && dead.length === 0,
+          restarting: states.some((s) => s.includes('restart')),
+          exited: dead.length > 0,
+        };
       }
-      const states = rows.map((r) => String(r.State ?? r.state ?? '').toLowerCase());
-      return {
-        running: states.some((s) => s === 'running' || s === 'restarting'),
-        restarting: states.some((s) => s.includes('restart')),
-      };
     }
     const q = await input.host.runCommand(
       ['docker', 'compose', '-f', input.file, '-p', input.project, 'ps', '-q'],
       { timeoutMs: 15_000 },
     );
-    return { running: q.exitCode === 0 && q.stdout.trim().length > 0, restarting: false };
+    const ids = q.exitCode === 0 && q.stdout.trim().length > 0;
+    return { running: ids, restarting: false, exited: false };
   } catch {
-    return { running: false, restarting: false };
+    return { running: false, restarting: false, exited: false };
   }
 }

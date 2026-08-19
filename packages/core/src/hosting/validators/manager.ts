@@ -285,11 +285,16 @@ async function verifyComposeStayedUp(input: {
   file: string;
   project: string;
 }): Promise<{ ok: boolean; hint: string | null }> {
-  await new Promise((r) => setTimeout(r, 2_000));
-  const ps = await composePsInfo(input);
-  if (ps.running && !ps.restarting) return { ok: true, hint: null };
+  const waits = [2_000, 3_000, 5_000];
+  for (const ms of waits) {
+    await new Promise((r) => setTimeout(r, ms));
+    const ps = await composePsInfo(input);
+    if (ps.running && !ps.restarting && !ps.exited) return { ok: true, hint: null };
+    if (ps.exited && !ps.running) break;
+  }
   const logs = await composeLogs({ ...input, tail: 80 });
-  return { ok: false, hint: pickValidatorContainerHint(logs.lines) };
+  const hint = pickValidatorContainerHint(logs.lines);
+  return { ok: false, hint };
 }
 
 async function withInstance(

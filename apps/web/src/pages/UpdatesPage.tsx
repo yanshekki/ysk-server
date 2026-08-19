@@ -118,6 +118,25 @@ export function isHighRisk(row: AdviceRow): boolean {
   );
 }
 
+/** Confirm title / danger styling — not mere requiresApproval (badge may be medium). */
+export function isDestructivePackageApply(row: AdviceRow): boolean {
+  return (
+    row.risk === 'high' ||
+    row.risk === 'critical' ||
+    isKernelPackage(row.packageName)
+  );
+}
+
+/** Panel self-update confirm dest — same fields as the status card. */
+export function selfUpdateConfirmRange(
+  self?: { currentVersion?: string; latestVersion?: string } | null,
+  fallback?: { panelCurrent?: string; panelLatest?: string } | null,
+): { from: string; to: string } {
+  const from = String(self?.currentVersion ?? fallback?.panelCurrent ?? '').trim();
+  const to = String(self?.latestVersion ?? fallback?.panelLatest ?? '').trim();
+  return { from, to };
+}
+
 /** Map API advice enum to locale (never show raw English "update"/"skip"). */
 export function adviceLabel(
   advice: string | undefined | null,
@@ -878,7 +897,7 @@ export function UpdatesPage() {
                               : t('updates.applyNeedConfirm')
                           }
                           variant={
-                            isHighRisk({
+                            isDestructivePackageApply({
                               packageName: e.packageName || e.title,
                               currentVersion: e.currentVersion || '',
                               candidateVersion: e.latestVersion,
@@ -1180,7 +1199,7 @@ export function UpdatesPage() {
                         variant={
                           !hasUpgrade
                             ? 'ghost'
-                            : isHighRisk(i)
+                            : isDestructivePackageApply(i)
                               ? 'danger'
                               : 'primary'
                         }
@@ -1192,7 +1211,7 @@ export function UpdatesPage() {
                             ? t('rbac.cap.updatesApply')
                             : !hasUpgrade
                               ? t('updates.sameVersion')
-                              : isHighRisk(i)
+                              : isDestructivePackageApply(i)
                                 ? t('updates.applyNeedConfirm')
                                 : t('updates.upgradeTo', { v: i.candidateVersion })
                         }
@@ -1515,8 +1534,7 @@ export function UpdatesPage() {
         dataConfirm="dialog"
         title={t('updates.applySelfConfirmTitle')}
         description={t('updates.applySelfConfirmDesc', {
-          from: selfUpdate?.current ?? summary?.panelCurrent ?? '',
-          to: selfUpdate?.latest ?? summary?.panelLatest ?? '',
+          ...selfUpdateConfirmRange(selfUpdate, summary),
         })}
         severity="destructive"
         confirmLabel={t('updates.applyPanelUpdate')}
@@ -1532,14 +1550,14 @@ export function UpdatesPage() {
         dataConfirm={highRiskApply?.packageName || 'dialog'}
         title={
           highRiskApply
-            ? isHighRisk(highRiskApply)
+            ? isDestructivePackageApply(highRiskApply)
               ? t('updates.applyHighRisk', { name: highRiskApply.packageName })
               : t('updates.applyPkgConfirm', { name: highRiskApply.packageName })
             : t('updates.highRiskUpdate')
         }
         description={
           highRiskApply
-            ? isHighRisk(highRiskApply)
+            ? isDestructivePackageApply(highRiskApply)
               ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${
                   isKernelPackage(highRiskApply.packageName)
                     ? t('updates.kernelRebootWarn') + ' '
@@ -1555,7 +1573,7 @@ export function UpdatesPage() {
         }
         confirmLabel={t('common.apply')}
         cancelLabel={t('common.cancel')}
-        danger={highRiskApply != null && isHighRisk(highRiskApply)}
+        danger={highRiskApply != null && isDestructivePackageApply(highRiskApply)}
         onConfirm={() => {
           const row = highRiskApply;
           setHighRiskApply(null);

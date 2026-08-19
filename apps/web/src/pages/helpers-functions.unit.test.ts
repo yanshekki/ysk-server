@@ -54,7 +54,14 @@ import {
 import { summarizeOpsNotes } from './features/ProtectionPage';
 import { localizeServiceActive } from './features/ServicesPage';
 import { bilingualGeoLabel } from '../features/defense/geo-options';
-import { riskTone, riskLabel, isHighRisk, relTime as updRelTime } from './UpdatesPage';
+import {
+  riskTone,
+  riskLabel,
+  isHighRisk,
+  isDestructivePackageApply,
+  selfUpdateConfirmRange,
+  relTime as updRelTime,
+} from './UpdatesPage';
 import { formatBytes as filesFormatBytes, iconFor, joinPath } from './FilesPage';
 import {
   enabledLabel as unitEnabledLabel,
@@ -388,6 +395,22 @@ describe('System / Updates / Files helpers', () => {
     expect(isHighRisk({ risk: 'high' } as never)).toBe(true);
     expect(isHighRisk({ risk: 'low', requiresApproval: true } as never)).toBe(true);
     expect(isHighRisk({ risk: 'low' } as never)).toBe(false);
+    expect(isDestructivePackageApply({ risk: 'high' } as never)).toBe(true);
+    expect(
+      isDestructivePackageApply({ risk: 'medium', requiresApproval: true } as never),
+    ).toBe(false);
+    expect(
+      isDestructivePackageApply({
+        risk: 'low',
+        packageName: 'linux-image-generic',
+      } as never),
+    ).toBe(true);
+    expect(
+      selfUpdateConfirmRange(
+        { currentVersion: '1.1.13', latestVersion: '1.1.14' },
+        { panelCurrent: '1.1.13', panelLatest: '1.1.13' },
+      ),
+    ).toEqual({ from: '1.1.13', to: '1.1.14' });
     expect(updRelTime(null, t)).toBe('—');
     expect(updRelTime('bad', t)).toBeTruthy();
     expect(updRelTime(new Date().toISOString(), t)).toMatch(/just|sec|ago|now|updates/i);

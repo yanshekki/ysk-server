@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.1.15 — 2026-08-19
+
+### Fix
+- Panel self-update ConfirmDialog dest uses `latestVersion` (same as the status card). 1.1.14 copied a stale current version (“1.1.13 → 1.1.13”) while overlay still pulled latest.
+- Validator wizard: after Install ConfirmDialog closes, the wizard stays clickable (stacked modal no longer leaves `pointer-events: none` + `#root` inert).
+- Validator install: parse `docker compose ps --format json` as an array or NDJSON. Compose up success is no longer reported as “containers did not stay running” on Compose 2.29+. Brief restarting is retried before fail.
+
+### Improve
+- FTP home preview snaps back to `…/homes/user` when the username is illegal, instead of keeping a truncated valid prefix (`qa` from `qa ftp!`).
+- Apt Apply confirm says “high-risk” only for high/critical/kernel packages. Medium + approval uses “Upgrade {{name}}?”.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.15**.
+
 ## 1.1.14 — 2026-08-19
 
 ### Fix

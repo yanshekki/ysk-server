@@ -4,8 +4,11 @@ import { createPortal } from 'react-dom';
 let openModalCount = 0;
 const stackListeners = new Set<() => void>();
 let nextModalDepth = 0;
+let modalSeq = 0;
+const liveDepths = new Set<number>();
 
 function notifyModalStack() {
+  nextModalDepth = liveDepths.size ? Math.max(...liveDepths) : 0;
   for (const fn of stackListeners) fn();
 }
 
@@ -71,8 +74,9 @@ export function Modal({
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     openModalCount += 1;
-    nextModalDepth += 1;
-    const myDepth = nextModalDepth;
+    modalSeq += 1;
+    const myDepth = modalSeq;
+    liveDepths.add(myDepth);
     setDepth(myDepth);
     setRootInert(true);
     notifyModalStack();
@@ -102,10 +106,13 @@ export function Modal({
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
+      liveDepths.delete(myDepth);
       openModalCount = Math.max(0, openModalCount - 1);
       if (openModalCount === 0) {
         setRootInert(false);
         nextModalDepth = 0;
+        modalSeq = 0;
+        liveDepths.clear();
       }
       notifyModalStack();
       const back = restoreFocusRef.current;
