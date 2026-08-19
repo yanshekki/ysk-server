@@ -3112,10 +3112,6 @@ export function resolveNodeBinary(
   }
 
   if (process.execPath && exists(process.execPath)) {
-    if (isProjectUserExecutablePath(process.execPath)) {
-      notes.push(tl('notes.deploy.usingPanelExec', { path: process.execPath }));
-      return { path: process.execPath, notes };
-    }
     if (!isolatedTarget) {
       // Dev / non-root panel: same-user pidfile can use nvm/hermes path
       notes.push(tl('notes.deploy.usingPanelDegraded', { path: process.execPath }));
