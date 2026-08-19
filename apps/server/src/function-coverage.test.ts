@@ -103,14 +103,14 @@ describe('function coverage — list query callbacks', () => {
       ts = await startTestServer();
 
       const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
-        name: 'FnCovProj',
+        name: 'fn-cov-proj',
         domain: 'fncov-proj.test',
         runtime: 'static',
       });
       expect(proj.status).toBe(201);
       // Second project so name/domain sort comparators run
       await apiJson(ts, 'POST', '/api/v1/projects', {
-        name: 'FnCovProjB',
+        name: 'fn-cov-proj-b',
         domain: 'fncov-proj-b.test',
         runtime: 'node',
       });

@@ -904,7 +904,7 @@ describe('files-controller deep coverage', () => {
 
       // project root after creating project
       const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
-        name: 'FilesProj',
+        name: 'files-proj',
         runtime: 'node',
         domain: 'files-proj.test',
       });

@@ -252,7 +252,7 @@ describe('backups routes (HTTP)', () => {
 
     // run-all with a project present
     const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
-      name: 'BakProj',
+      name: 'bak-proj',
       runtime: 'node',
       domain: 'bak-proj.test',
     });
@@ -329,7 +329,7 @@ describe('backups routes (HTTP)', () => {
 
     // create project so run-all has work
     const proj = await apiJson(ts, 'POST', '/api/v1/projects', {
-      name: 'BakRunAll',
+      name: 'bak-run-all',
       runtime: 'node',
       domain: 'bak-runall.test',
     });

@@ -1021,7 +1021,7 @@ describe('HTTP control plane', () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${loginBody.token}`,
       },
-      body: JSON.stringify({ name: 'ApiProj', runtime: 'node', domain: 'api.local' }),
+      body: JSON.stringify({ name: 'api-proj', runtime: 'node', domain: 'api.local' }),
     });
     expect(projRes.status).toBe(201);
     const projBody = (await projRes.json()) as { project: { homeDir: string } };

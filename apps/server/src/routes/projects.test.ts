@@ -59,6 +59,17 @@ describe('projects routes (HTTP)', () => {
     expect(items.some((p) => p.name === 'test-proj-http')).toBe(true);
   });
 
+  it('rejects invalid project names', async () => {
+    ts = await startTestServer();
+    for (const name of ['Bad Name!!', 'MiscProj', 'qa ftp!']) {
+      const res = await apiJson(ts, 'POST', '/api/v1/projects', {
+        name,
+        runtime: 'static',
+      });
+      expect(res.status).toBe(400);
+    }
+  });
+
   it('rejects unauthenticated create', async () => {
     ts = await startTestServer();
     const res = await apiJson(
@@ -290,7 +301,7 @@ describe('projects routes (HTTP)', () => {
   it('creates project with dns zone + mail domain extras', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'POST', '/api/v1/projects', {
-      name: 'ExtrasProj',
+      name: 'extras-proj',
       domain: 'extras-proj.test',
       runtime: 'node',
       createDnsZone: true,

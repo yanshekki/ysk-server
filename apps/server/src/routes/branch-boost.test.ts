@@ -823,12 +823,12 @@ describe('branch boost — controllers logs/network/metrics + misc routes', () =
 
     // projects list sort
     const pA = await apiJson(ts, 'POST', '/api/v1/projects', {
-      name: 'BranchProjA',
+      name: 'branch-proj-a',
       domain: 'branch-a.test',
       runtime: 'static',
     });
     const pB = await apiJson(ts, 'POST', '/api/v1/projects', {
-      name: 'BranchProjB',
+      name: 'branch-proj-b',
       domain: 'branch-b.test',
       runtime: 'node',
       serverIpv6: '2001:db8::b',

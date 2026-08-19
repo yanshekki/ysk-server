@@ -13,7 +13,7 @@ describe('misc routes (HTTP GET coverage)', () => {
     if (ts) await ts.close();
   });
 
-  async function createProject(name = 'MiscProj'): Promise<string> {
+  async function createProject(name = 'misc-proj'): Promise<string> {
     const res = await apiJson(ts, 'POST', '/api/v1/projects', {
       name,
       runtime: 'node',
@@ -78,7 +78,7 @@ describe('misc routes (HTTP GET coverage)', () => {
 
   it('project detail GET paths (status, logs, quota, usage, os-user, php-ini, deploy-history, web-stats)', async () => {
     ts = await startTestServer();
-    const id = await createProject('MiscGetProj');
+    const id = await createProject('misc-get-proj');
 
     const getOne = await apiJson(ts, 'GET', `/api/v1/projects/${id}`);
     expect(getOne.status).toBe(200);
@@ -231,7 +231,7 @@ describe('misc routes (POST honesty + more GET/POST)', () => {
     'project deploy / stop / publish-nginx / purge-cache / suspend honesty (no root)',
     async () => {
       ts = await startTestServer();
-      const id = await createProject('MiscDeploy');
+      const id = await createProject('misc-deploy');
 
       for (const [method, path, body] of [
         ['POST', `/api/v1/projects/${id}/deploy`, {}],
@@ -600,7 +600,7 @@ describe('misc routes deep coverage', () => {
     async () => {
       ts = await startTestServer();
       const created = await apiJson(ts, 'POST', '/api/v1/projects', {
-        name: 'MiscOsUser',
+        name: 'misc-os-user',
         runtime: 'node',
         domain: 'misc-osuser.test',
       });
@@ -880,7 +880,7 @@ describe('misc routes deep coverage', () => {
     'project mutations: wordpress, git-deploy, env, backup, logs, ftp, resources, quota, php-fpm, php-ini, runtime, deploy-php',
     async () => {
       ts = await startTestServer();
-      const pid = await createProject('MiscMutProj');
+      const pid = await createProject('misc-mut-proj');
 
       const wpSetup = await apiJson(ts, 'POST', `/api/v1/projects/${pid}/wordpress-download`, {
         setup: true,
