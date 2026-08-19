@@ -3,5 +3,7 @@
   "scrollRight": "ٹیبز کو دائیں طرف اسکرول کریں۔",
   "about": "کے بارے میں",
   "main": "اعمال",
-  "stack": "سافٹ ویئر"
+  "stack": "سافٹ ویئر",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

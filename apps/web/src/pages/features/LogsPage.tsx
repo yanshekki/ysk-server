@@ -909,9 +909,9 @@ export function LogsPage() {
           },
           {
             label: t('logs.projectLog'),
-            value:
-              overview?.projectLogs?.fileCount ??
-              projects.reduce((n, p) => n + (p.files?.length ?? 0), 0) },
+            value: projects.length
+              ? projects.reduce((n, p) => n + projectChipSourceCount(p), 0)
+              : overview?.projectLogs?.fileCount ?? 0 },
           {
             label: t('system.executeLabel'),
             value: overview?.executeEnabled ? t('common.on') : t('common.off'),
@@ -987,6 +987,7 @@ export function LogsPage() {
               })}
             >
               {p.name}
+              <span className="ops-chip__n">{projectChipSourceCount(p)}</span>
             </button>
           ))}
         </div>

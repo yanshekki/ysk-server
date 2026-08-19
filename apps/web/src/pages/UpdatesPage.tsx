@@ -245,6 +245,7 @@ export function UpdatesPage() {
     applyPackage,
     applyPackages } = useUpdates();
 
+  const [pendingSelf, setPendingSelf] = useState(false);
   const [tab, setTab] = usePageTab(UPD_TABS, 'overview');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
   const [summary, setSummary] = useState<{
@@ -390,7 +391,13 @@ export function UpdatesPage() {
       (i) => i.candidateVersion && i.candidateVersion !== i.currentVersion,
     ).length;
 
-  const filtered = inventory;
+  const filtered = useMemo(
+    () =>
+      inventory.filter(
+        (row) => matchesUpdateQuery(row, q) && matchesRiskFilter(row, riskFilter),
+      ),
+    [inventory, q, riskFilter],
+  );
   const activeFilterCount =
     (q.trim() ? 1 : 0) + (riskFilter !== 'all' ? 1 : 0);
 
@@ -795,7 +802,10 @@ export function UpdatesPage() {
                     <span>
                       {e.title}
                       {!e.installed ? (
-                        <Badge tone="neutral">{t('updates.notInstalled')}</Badge>
+                        <>
+                          {' · '}
+                          <Badge tone="neutral">{t('updates.notInstalled')}</Badge>
+                        </>
                       ) : null}
                     </span>
                   ),
@@ -900,7 +910,8 @@ export function UpdatesPage() {
                           size="sm"
                           variant="primary"
                           disabled={busy}
-                          onClick={bindVoid(applySelf)}
+                          data-confirm="dialog"
+                          onClick={() => setPendingSelf(true)}
                         >
                           {t('updates.applyPanelUpdate')}
                         </Button>
@@ -943,8 +954,9 @@ export function UpdatesPage() {
                 title={t('updates.inventoryTitle')}
                 description={t('updates.inventoryDesc', {
                   shown: filtered.length,
-                  total: filtered.length,
+                  total: statsSnap?.pkgs ?? inventory.length,
                   when: relTime(lastAt, t) })}
+                filterActive={activeFilterCount > 0}
                 toolbar={
                   <ActionBar align="end">
                     <Button
@@ -1282,7 +1294,8 @@ export function UpdatesPage() {
                               ? t('updates.applyPanelAlreadyLatest')
                               : t('updates.applyPanelUpdate')
                         }
-                        onClick={bindVoid(applySelf)}
+                        data-confirm="dialog"
+                        onClick={() => setPendingSelf(true)}
                       >
                         {t('updates.applyPanelUpdate')}
                       </Button>
@@ -1492,6 +1505,23 @@ export function UpdatesPage() {
           </div>
         ) : null}
       </PageTabs>
+
+      <ConfirmDialog
+        open={pendingSelf}
+        onClose={() => !busy && setPendingSelf(false)}
+        dataConfirm="dialog"
+        title={t('updates.applySelfConfirmTitle')}
+        description={t('updates.applySelfConfirmDesc', {
+          from: selfUpdate?.current ?? summary?.panelCurrent ?? '',
+          to: selfUpdate?.latest ?? summary?.panelLatest ?? '',
+        })}
+        severity="destructive"
+        confirmLabel={t('updates.applyPanelUpdate')}
+        onConfirm={() => {
+          setPendingSelf(false);
+          void applySelf();
+        }}
+      />
 
       <ConfirmDialog
         open={highRiskApply != null}

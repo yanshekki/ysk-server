@@ -176,30 +176,40 @@ export async function handleValidatorsRoutes(
     if (method === 'POST' && (url.pathname === BASE || url.pathname === `${BASE}/`)) {
       const raw = await readBody(req);
       const body = JSON.parse(raw || '{}') as Record<string, unknown>;
-      const result = await createValidatorInstance({
-        dataDir: ctx.dataDir,
-        host: ctx.host,
-        execute: wantsExecute(ctx, body),
-        chain: String(body.chain ?? ''),
-        network: String(body.network ?? ''),
-        profile: String(body.profile ?? 'minimal'),
-        slug: body.slug != null ? String(body.slug) : undefined,
-        el: body.el != null ? String(body.el) : undefined,
-        cl: body.cl != null ? String(body.cl) : undefined,
-        mithril: body.mithril === true,
-        dataPath: body.dataPath != null ? String(body.dataPath) : undefined,
-        memory: body.memory != null ? String(body.memory) : undefined,
-        cpus: body.cpus != null ? String(body.cpus) : undefined,
-        rpcPort: body.rpcPort != null ? Number(body.rpcPort) : undefined,
-        acceptLowDisk: body.acceptLowDisk === true,
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const result = await createValidatorInstance({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            execute: wantsExecute(ctx, body),
+            chain: String(body.chain ?? ''),
+            network: String(body.network ?? ''),
+            profile: String(body.profile ?? 'minimal'),
+            slug: body.slug != null ? String(body.slug) : undefined,
+            el: body.el != null ? String(body.el) : undefined,
+            cl: body.cl != null ? String(body.cl) : undefined,
+            mithril: body.mithril === true,
+            dataPath: body.dataPath != null ? String(body.dataPath) : undefined,
+            memory: body.memory != null ? String(body.memory) : undefined,
+            cpus: body.cpus != null ? String(body.cpus) : undefined,
+            rpcPort: body.rpcPort != null ? Number(body.rpcPort) : undefined,
+            acceptLowDisk: body.acceptLowDisk === true,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'validators.install',
+            detail: { id: result.instanceId, chain: body.chain, network: body.network },
+            ok: result.ok,
+          });
+          return result;
+        },
       });
-      ctx.audit.append({
-        actor: user.username,
-        action: 'validators.install',
-        detail: { id: result.instanceId, chain: body.chain, network: body.network },
-        ok: result.ok,
-      });
-      sendOpsResult(res, result);
       return true;
     }
 

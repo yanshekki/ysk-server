@@ -21,6 +21,7 @@
   "postgresService": "PostgreSQL service",
   "redis": "Redis",
   "redisService": "Redis service",
+  "cluster": "Clusters",
   "dns": "DNS",
   "ssl": "SSL certificates",
   "nginx": "Nginx",

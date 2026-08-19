@@ -122,7 +122,11 @@
     "mutateFailed": "فشل أمر Docker",
     "engineFailed": "تعذر التحكم بـ docker.service",
     "badExec": "exec مقتصر على الثنائيات والإعدادات المسبقة المسموحة (بدون صدفة ولا TTY)",
-    "uninstallBusy": "أوقف الحاويات التي تديرها اللوحة (بما فيها مكدسات المدقق) قبل إزالة Docker"
+    "uninstallBusy": "أوقف الحاويات التي تديرها اللوحة (بما فيها مكدسات المدقق) قبل إزالة Docker",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "dry-run فقط. مرّر --execute و YSK_EXECUTE=1 لتغيير المضيف.",
@@ -153,7 +157,8 @@
       "start": "بدأ docker.service",
       "stop": "توقف docker.service",
       "restart": "أُعيد تشغيل docker.service"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "Install Docker Engine first",
   "notInstalledValue": "Not installed",
@@ -225,7 +230,18 @@
     "customPortContainer": "منفذ الحاوية",
     "pctUsed": "مستخدم {{n}}%",
     "customPortHint": "1–65535. Example: 9090 → 80.",
-    "pickBridge": "Bridge network"
+    "pickBridge": "Bridge network",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "Delete {{id}}",
   "deleteDesc": "This cannot be undone.",

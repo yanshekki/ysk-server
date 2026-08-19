@@ -82,7 +82,12 @@ export function OpsResultPanel({
 
   const autoFacts: FactItem[] = [...facts];
   if (result?.processStatus) {
-    autoFacts.push({ label: t('opsResult.status'), value: result.processStatus });
+    const sk = `projects.status.${result.processStatus}`;
+    const statusLabel = t(sk);
+    autoFacts.push({
+      label: t('opsResult.status'),
+      value: statusLabel !== sk ? statusLabel : result.processStatus,
+    });
   }
   if (result?.port != null) {
     autoFacts.push({ label: t('opsResult.port'), value: String(result.port) });

@@ -59,6 +59,8 @@ describe('validator registry', () => {
     expect(clients.every((c) => c.image && c.tag)).toBe(true);
     expect(v1ValidatorClients('near').map((c) => c.id)).toEqual(['neard']);
     expect(v1ValidatorClients('ada').map((c) => c.id)).toEqual(['cardano-node']);
+    expect(v1ValidatorClients('ada')[0]?.image).toBe('ghcr.io/intersectmbo/cardano-node');
+    expect(v1ValidatorClients('ada')[0]?.tag).toBe('11.0.1');
     expect(v1ValidatorClients('btc').map((c) => c.id)).toEqual(['bitcoind']);
     expect(getValidatorChain('sol')?.heavy).toBe(true);
     expect(defaultValidatorNetwork('btc')).toBe('testnet');

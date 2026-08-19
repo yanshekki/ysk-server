@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T15:44:37.255Z",
+  "generatedAt": "2026-08-19T06:44:59.892Z",
   "cliCommandsCount": 56,
   "cliCommands": [
     "setup",
@@ -111,7 +111,7 @@
     "vnc",
     "vpn"
   ],
-  "navCount": 49,
+  "navCount": 50,
   "navMissing": [],
   "navPartial": [],
   "navPanelOnly": [

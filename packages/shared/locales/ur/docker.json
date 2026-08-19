@@ -122,7 +122,11 @@
     "mutateFailed": "Docker حکم ناکام",
     "engineFailed": "docker.service کنٹرول نہیں ہو سکا",
     "badExec": "exec صرف اجازت یافتہ بائنری اور پیشگی ترتیبات تک محدود ہے (کوئی شیل نہیں، کوئی TTY نہیں)",
-    "uninstallBusy": "Docker ہٹانے سے پہلے پینل کے زیر انتظام کنٹینر (ویلیڈیٹر ڈھیر سمیت) روکیں"
+    "uninstallBusy": "Docker ہٹانے سے پہلے پینل کے زیر انتظام کنٹینر (ویلیڈیٹر ڈھیر سمیت) روکیں",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "صرف dry-run۔ میزبان بدلنے کے لیے --execute اور YSK_EXECUTE=1 دیں۔",
@@ -153,7 +157,8 @@
       "start": "docker.service چلا",
       "stop": "docker.service رکا",
       "restart": "docker.service دوبارہ چلا"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "Install Docker Engine first",
   "notInstalledValue": "Not installed",
@@ -225,7 +230,18 @@
     "customPortContainer": "کنٹینر پورٹ",
     "pctUsed": "{{n}}% استعمال",
     "customPortHint": "1–65535. Example: 9090 → 80.",
-    "pickBridge": "Bridge network"
+    "pickBridge": "Bridge network",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "Delete {{id}}",
   "deleteDesc": "This cannot be undone.",

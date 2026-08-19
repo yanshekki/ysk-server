@@ -149,6 +149,7 @@ export async function buildHostManifest(input: {
     const home = str(p.home_dir) || join('/home', `ysk-server-${p.id}`);
     const homeExists = existsSync(home);
     homeSet.add(resolve(home));
+    homeSet.add(resolve(join('/home', `ysk-server-${p.id}`)));
 
     let uid: number | undefined;
     let gid: number | undefined;

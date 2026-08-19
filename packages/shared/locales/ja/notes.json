@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "redis-cli がインストールされていません",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "孤立した nginx のクリーンアップに失敗しました: {{detail}}",
     "settingsWritten": "Nginx グローバル スニペットが記述されました",
     "settingsNeedExecute": "適用にはYSK_EXECUTEが必要です",
-    "reloadFailed": "nginxのリロードに失敗しました"
+    "reloadFailed": "nginxのリロードに失敗しました",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "証明書を要求する"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "ホストの実行はオフです。パネルからデータベースを作成できません",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "dataDir に書き込まれたパスワード ファイル — apply (EXECUTE+root) を実行して、Dovecot がそれをロードします。",
     "postqueueSetgidBroken": "Postfix キュー ツールが失敗しました: main.cf 内の setgid_group が空です。 setgid_group=postdrop を設定します (YSK_EXECUTE がオンの場合、パネルは修正を試みます)。",
     "postqueueMailDown": "Postfix が実行されていません (showq は使用できません)。 YSK_EXECUTE がオンのときにパネルが起動しようとしました。[ソフトウェア] タブ/systemctl status postfix を確認してください。",
-    "postqueueSpoolMissing": "Postfix キュー ディレクトリがありません (例:hold/)。パネルは、YSK_EXECUTE がオンのときにスプール ツリーを作成し、Postfix を起動しようとしました。"
+    "postqueueSpoolMissing": "Postfix キュー ディレクトリがありません (例:hold/)。パネルは、YSK_EXECUTE がオンのときにスプール ツリーを作成し、Postfix を起動しようとしました。",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "セッションが見つかりません: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "稼働中の Nginx 設定: {{path}}",
     "publicRoot": "公開ルート: {{path}}",
     "confNameStale": "設定ファイル {{file}} が現在の server_name {{serverName}} と一致しません。公開ファイルを再適用して名前を書き換えてください。"
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

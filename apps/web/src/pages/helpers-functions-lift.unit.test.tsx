@@ -14,7 +14,8 @@ import {
   normalizeDurationPreset,
   clampMaxretry,
   isValidBanIp,
-  isValidIgnoreIp } from './features/Fail2banPage';
+  isValidIgnoreIp,
+  fail2banBanCensus } from './features/Fail2banPage';
 import {
   parsePorts,
   firewallActionTone,
@@ -22,7 +23,15 @@ import {
   parsePortInput,
   parsePortInputNumber,
   isValidDenyIp,
+  firewallActionLabel,
   mapFirewallRules } from './features/FirewallPage';
+import { mergeExposureList, catalogServiceIds } from './features/FirewallServicesPanel';
+import { cronLineCensus } from './features/CronPage';
+import {
+  protectionBanCensus,
+  protectionPresetConfirmName,
+  isValidBanIpQuery,
+} from './features/ProtectionPage';
 import {
   catLabel,
   levelTone,
@@ -95,6 +104,9 @@ describe('Fail2ban pure helpers', () => {
     expect(isValidBanIp('not-an-ip')).toBe(false);
     expect(isValidIgnoreIp('203.0.113.0/24')).toBe(true);
     expect(isValidIgnoreIp('999.999.999.999')).toBe(false);
+    expect(fail2banBanCensus({ banned: [{ ip: '1.1.1.1' }, { ip: '2.2.2.2' }] })).toBe(2);
+    expect(fail2banBanCensus({ jails: [{ currentlyBanned: 3 }, { currentlyBanned: 1 }] })).toBe(4);
+    expect(fail2banBanCensus(null)).toBe(0);
   });
 });
 
@@ -133,6 +145,21 @@ describe('Firewall pure helpers', () => {
     expect(isValidDenyIp('10.0.0.0/8')).toBe(true);
     expect(isValidDenyIp('')).toBe(false);
     expect(isValidDenyIp('no')).toBe(false);
+    expect(isValidDenyIp('999.999.999.999')).toBe(false);
+    expect(firewallActionLabel('ALLOW IN', t)).toBe('firewall.statAllow');
+    expect(firewallActionLabel('DENY', t)).toBe('firewall.statDeny');
+    expect(firewallActionLabel('REJECT IN', t)).toBe('common.blocked');
+    expect(catalogServiceIds()).toContain('nginx');
+    expect(mergeExposureList([]).some((r) => r.serviceId === 'nginx')).toBe(true);
+    expect(mergeExposureList([]).some((r) => r.serviceId === 'vsftpd')).toBe(true);
+    expect(cronLineCensus({ panelJobs: 1, hostOtherLines: 0 }).total).toBe(1);
+    expect(protectionBanCensus({ fail2banBanned: 3, defenseCount: 9 })).toBe(3);
+    expect(protectionPresetConfirmName('under_attack', t)).toBe(
+      'protection.levels.under_attack.label',
+    );
+    expect(protectionPresetConfirmName('emergency', t)).toBe('protection.emergency');
+    expect(isValidBanIpQuery('203.0.113.8')).toBe(true);
+    expect(isValidBanIpQuery('not-an-ip')).toBe(false);
   });
 
   it('mapFirewallRules from rules and numbered', () => {

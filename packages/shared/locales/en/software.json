@@ -84,6 +84,8 @@
     "latest": "Latest",
     "upToDate": "Up to date / repo latest",
     "refresh": "Recheck latest",
+    "refreshHasUpdate": "Newer version available",
+    "refreshLatest": "Already the latest recorded version",
     "pick": "Pick version",
     "noTarget": "No update target",
     "needRuntimePage": "Install this version on the runtime page",

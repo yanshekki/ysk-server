@@ -57,6 +57,14 @@
   "jobsTitle": "遷移工作（{{count}})",
   "jobsDesc": "狀態落在 dataDir/migrate/；密碼從不寫入入 job 檔。按右上角「重新整理」更新。",
   "phase": "階段",
+  "jobPhase": "工作 {{id}} · {{phase}}",
+  "phaseName": {
+    "failed": "失敗",
+    "done": "完成",
+    "running": "進行中",
+    "queued": "排隊中",
+    "cancelled": "已取消"
+  },
   "target": "目標",
   "updated": "更新",
   "notes": "備註",

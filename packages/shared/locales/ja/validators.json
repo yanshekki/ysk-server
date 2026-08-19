@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "先に Mithril スナップショットから復元（テストネット推奨）",
-    "action": "Mithril で復元"
+    "action": "Mithril で復元",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "バリデーターインスタンスが見つかりません",
@@ -113,7 +115,9 @@
     "snapshotLookup": "公式スナップショットポインタを解決できませんでした",
     "needSnapshotConfirm": "スナップショット復元には confirm=インスタンス ID または SNAPSHOT が必要です",
     "snapshotBlocked": "スナップショットの docker run は許可リストで拒否されました",
-    "snapshotFailed": "スナップショットのダウンロードまたは展開に失敗しました"
+    "snapshotFailed": "スナップショットのダウンロードまたは展開に失敗しました",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",

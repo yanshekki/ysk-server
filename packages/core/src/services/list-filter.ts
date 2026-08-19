@@ -118,6 +118,7 @@ export function applyListQuery<T>(
   const meta: ListMeta = {
     ...emptyListMeta(query, total),
     facets,
+    allTotal: all.length,
   };
 
   return { items, meta };

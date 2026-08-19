@@ -162,5 +162,7 @@
   "plainConfirmC1": "Usernames and passwords are visible on the network.",
   "plainConfirmC2": "PASV will advertise the configured public IP.",
   "plainConfirmC3": "Host firewall and cloud security group are not opened for you.",
-  "plainConfirmAction": "Start cleartext FTP"
+  "plainConfirmAction": "Start cleartext FTP",
+  "sftpKeyInvalid": "Need a username and a public key that starts with ssh-.",
+  "deleteAccountNamed": "Delete FTP account {{name}}?"
 }

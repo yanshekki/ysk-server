@@ -19,5 +19,9 @@
   "stepStoppedOld": "Processo anterior interrompido",
   "stepTuningApplied": "Ajuste de tempo de execução aplicado",
   "stepUnitWritten": "Unidade de serviço escrita",
-  "stepSystemdStartFailed": "Falha na inicialização do Systemd - usando fallback de processo"
+  "stepSystemdStartFailed": "Falha na inicialização do Systemd - usando fallback de processo",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

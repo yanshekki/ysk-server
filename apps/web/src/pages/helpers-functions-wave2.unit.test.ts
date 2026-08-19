@@ -30,6 +30,8 @@ import {
   isZoneTemplateId,
   mapRecordsForValidate,
   formatDnsValidateMessage,
+  missingMailDomains,
+  notesSayDigMissing,
 } from './features/DnsPage';
 import {
   isJournalSource,
@@ -70,6 +72,7 @@ import {
   countDraftDomains,
   domainNameFromCreate,
   domainIdFromCreate,
+  validateEmailDomainCreate,
 } from './EmailPage';
 
 const t = (k: string) => k;
@@ -266,6 +269,23 @@ describe('DnsPage wave2 helpers', () => {
     expect(formatDnsValidateMessage({ ok: false }, 'fallback')).toBe(
       'fallback',
     );
+  });
+
+  it('missingMailDomains uses all zones not the filtered list', () => {
+    const mail = [{ domain: 'mail.example.com' }, { domain: 'other.test' }];
+    const all = [{ zone: 'mail.example.com' }];
+    const filtered = [{ zone: 'other.zone' }];
+    expect(missingMailDomains(mail, all).map((d) => d.domain)).toEqual(['other.test']);
+    expect(missingMailDomains(mail, filtered).map((d) => d.domain)).toEqual([
+      'mail.example.com',
+      'other.test',
+    ]);
+  });
+
+  it('notesSayDigMissing does not treat NXDOMAIN as missing dig', () => {
+    expect(notesSayDigMissing(['dig 未安裝'])).toBe(true);
+    expect(notesSayDigMissing(['dig is not installed'])).toBe(true);
+    expect(notesSayDigMissing(['dig status: NXDOMAIN'])).toBe(false);
   });
 });
 
@@ -553,6 +573,22 @@ describe('EmailPage wave2 helpers', () => {
       countDraftDomains(items, { status: { draft: 2, written: 1 } }),
     ).toBe(3);
     expect(countDraftDomains([], { status: {} })).toBe(0);
+  });
+
+  it('validateEmailDomainCreate', () => {
+    expect(validateEmailDomainCreate('', '', '', t)).toMatchObject({
+      domain: 'email.domainRequired',
+      serverIp: 'email.serverIpRequired',
+    });
+    expect(
+      validateEmailDomainCreate('not a domain', '1.2.3.4', '', t).domain,
+    ).toBe('email.domainInvalid');
+    expect(
+      validateEmailDomainCreate('example.com', 'bad', '', t).serverIp,
+    ).toBe('email.serverIpInvalid');
+    expect(
+      validateEmailDomainCreate('example.com', '203.0.113.10', '', t),
+    ).toEqual({});
   });
 
   it('create response mappers', () => {

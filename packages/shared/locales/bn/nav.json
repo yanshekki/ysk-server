@@ -80,5 +80,6 @@
   "noAccessDesc": "আপনার ভূমিকায় এই পৃষ্ঠা নেই। প্রয়োজন হলে অ্যাডমিনকে জানান।",
   "backToDashboard": "ড্যাশবোর্ডে ফিরুন",
   "validators": "ভ্যালিডেটর (Beta)",
-  "docker": "ডকার"
+  "docker": "ডকার",
+  "cluster": "Clusters"
 }

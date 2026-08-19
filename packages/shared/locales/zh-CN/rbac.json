@@ -107,7 +107,7 @@
   "unsavedHint": "此角色有未储存变更",
   "nothingToSave": "没有要储存的变更",
   "saveRole": "储存「{{role}}」政策",
-  "discardTitle": "放弃未储存政策？",
-  "discardDesc": "转到另一个角色会丢弃未储存的权限变更。",
+  "discardTitle": "舍弃变更？",
+  "discardDesc": "未保存的权限变更将会舍弃。",
   "roleUnavailable": "Not available for this role"
 }

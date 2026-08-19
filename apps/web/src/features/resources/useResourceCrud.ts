@@ -16,6 +16,8 @@ export function useResourceCrud(
   const { t } = useTranslation();
   const [items, setItems] = useState<ResourceRow[]>([]);
   const [meta, setMeta] = useState<ListMeta | null>(null);
+  const [allTotal, setAllTotal] = useState<number | null>(null);
+  const [allItems, setAllItems] = useState<ResourceRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [listLoading, setListLoading] = useState(true);
@@ -41,7 +43,17 @@ export function useResourceCrud(
       const r = await resourcesApi.list(collection, params);
       if (id !== seq.current) return r.items;
       setItems(r.items ?? []);
-      setMeta((r as { meta?: ListMeta }).meta ?? null);
+      const nextMeta = (r as { meta?: ListMeta }).meta ?? null;
+      setMeta(nextMeta);
+      const payloadAll =
+        typeof (r as { allTotal?: unknown }).allTotal === 'number'
+          ? (r as { allTotal: number }).allTotal
+          : typeof (nextMeta as { allTotal?: unknown } | null)?.allTotal === 'number'
+            ? (nextMeta as { allTotal: number }).allTotal
+            : null;
+      if (payloadAll != null) setAllTotal(payloadAll);
+      else if (!debouncedQ) setAllTotal(nextMeta?.total ?? r.items?.length ?? 0);
+      if (!debouncedQ) setAllItems(r.items ?? []);
       return r.items;
     } finally {
       if (id === seq.current) setListLoading(false);
@@ -58,6 +70,14 @@ export function useResourceCrud(
       setError(null);
       try {
         const r = await resourcesApi.create(collection, body);
+        if (r.item) {
+          setAllItems((prev) => {
+            if (prev.some((x) => x.id === r.item.id)) {
+              return prev.map((x) => (x.id === r.item.id ? r.item : x));
+            }
+            return [...prev, r.item];
+          });
+        }
         await refresh();
         const ok = t('resources.created');
         setMsg(null);
@@ -81,6 +101,9 @@ export function useResourceCrud(
       setError(null);
       try {
         const r = await resourcesApi.update(collection, id, body);
+        if (r.item) {
+          setAllItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...r.item } : x)));
+        }
         await refresh();
         const ok = t('resources.updated');
         setMsg(null);
@@ -104,6 +127,7 @@ export function useResourceCrud(
       setError(null);
       try {
         await resourcesApi.remove(collection, id);
+        setAllItems((prev) => prev.filter((x) => x.id !== id));
         await refresh();
         const ok = t('resources.deleted');
         setMsg(null);
@@ -166,8 +190,10 @@ export function useResourceCrud(
 
   return {
     items,
+    allItems,
     meta,
     total,
+    allTotal: allTotal ?? total,
     error,
     setError,
     busy,

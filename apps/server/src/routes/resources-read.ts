@@ -19,10 +19,7 @@ export function sqlEngineMatchesRow(rowEngine: unknown, requested: string): bool
   const have = String(rowEngine ?? '').trim().toLowerCase();
   if (!want) return true;
   if (!have) return true;
-  if (have === want) return true;
-  return (
-    (want === 'mariadb' && have === 'mysql') || (want === 'mysql' && have === 'mariadb')
-  );
+  return have === want;
 }
 
 export async function handleResourcesReadRoutes(
@@ -64,7 +61,8 @@ export async function handleResourcesReadRoutes(
     });
     sendJson(res, 200, {
       items: filtered.map((r) => redactResourceSecrets(key, r as Record<string, unknown>)),
-      meta,
+      meta: { ...meta, allTotal: items.length },
+      allTotal: items.length,
     });
     return true;
   }

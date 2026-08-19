@@ -35,6 +35,7 @@
   "noData": "没有数据",
   "input": "输入",
   "pleaseEnter": "请输入 {{value}}",
+  "pleaseFill": "请填写",
   "required": "必填",
   "about": "说明",
   "operation": "操作",

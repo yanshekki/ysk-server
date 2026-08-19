@@ -122,7 +122,11 @@
     "mutateFailed": "Docker 명령이 실패했습니다",
     "engineFailed": "docker.service를 제어할 수 없습니다",
     "badExec": "exec는 허용 목록의 바이너리와 프리셋만 가능합니다(셸 불가, TTY 불가)",
-    "uninstallBusy": "Docker를 제거하기 전에 패널이 관리하는 컨테이너(검증자 스택 포함)를 중지하십시오"
+    "uninstallBusy": "Docker를 제거하기 전에 패널이 관리하는 컨테이너(검증자 스택 포함)를 중지하십시오",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "시험 실행입니다. 호스트를 바꾸려면 --execute와 YSK_EXECUTE=1을 사용하세요.",
@@ -153,7 +157,8 @@
       "start": "docker.service를 시작했습니다",
       "stop": "docker.service를 중지했습니다",
       "restart": "docker.service를 다시 시작했습니다"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "Install Docker Engine first",
   "notInstalledValue": "Not installed",
@@ -225,7 +230,18 @@
     "customPortContainer": "컨테이너 포트",
     "pctUsed": "{{n}}% 사용",
     "customPortHint": "1–65535. Example: 9090 → 80.",
-    "pickBridge": "Bridge network"
+    "pickBridge": "Bridge network",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "Delete {{id}}",
   "deleteDesc": "This cannot be undone.",

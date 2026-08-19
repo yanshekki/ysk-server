@@ -40,7 +40,6 @@ services:
     image: ${img(spec, 'lncm/bitcoind', 'v28.0')}
     restart: unless-stopped
     command:
-      - bitcoind
       - -datadir=/data
       - -server=1
       - -prune=${prune}
@@ -83,6 +82,10 @@ services:
     command:
       - |
         set -e
+        if [ ! -w /data ]; then
+          echo "data dir not writable: /data" >&2
+          exit 1
+        fi
         if [ ! -f /data/config/genesis.json ]; then
           gaiad init ysk --home /data --chain-id ${chainId}
         fi
@@ -186,7 +189,6 @@ services:
     image: ${img(spec, 'parity/polkadot', 'v1.16.1')}
     restart: unless-stopped
     command:
-      - polkadot
       - --base-path=/data
       - --chain=${chain}
       - --rpc-external

@@ -43,6 +43,14 @@
     "partial": "部分成功"
   },
   "statSites": "站點",
+  "statSitesCount": "站點 {{n}}",
+  "cacheMethod": {
+    "none": "無法估計",
+    "access_log": "存取日誌",
+    "cache_dir": "快取目錄",
+    "log_format": "需設定日誌格式"
+  },
+  "geoMapLabel": "地區對照（JSON）",
   "statApplyFailed": "套用失敗",
   "pillNodesSites": "節點 {{n}} · 站點 {{s}}",
   "statOnline": "線上",

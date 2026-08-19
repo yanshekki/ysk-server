@@ -257,6 +257,7 @@
   "hostnameFixTitle": "Append this line to /etc/hosts?",
   "hostnameFixDesc": "{{line}}",
   "hostnameFixDone": "Hostname /etc/hosts updated",
-  "startAfterCreateBlocked": "Disabled until the hostname resolves",
+  "startAfterCreateBlocked": "主机名可解析后才可启用",
+  "startHostnameBlocked": "主机名可解析后才可启动。请先使用「把主机名写入 /etc/hosts」。",
   "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
 }

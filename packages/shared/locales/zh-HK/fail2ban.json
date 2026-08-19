@@ -25,7 +25,7 @@
   "banipOk": "已 banip",
   "manualBanHint": "臨時封鎖，過 bantime 會自動解；永久拒請用 UFW。白名單見「白名單」分頁。",
   "currentBans": "目前封鎖",
-  "bannedTableTitle": "Banned IPs（真實 fail2ban-客戶端）",
+  "bannedTableTitle": "封鎖中的 IP（即時 fail2ban-client）",
   "bannedTableDesc": "需能讀取 客戶端；unban 需 系統變更權限",
   "unbanOk": "已 unban",
   "unban": "解封",

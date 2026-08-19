@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "استعادة من لقطة Mithril أولًا (موصى به في شبكة الاختبار)",
-    "action": "استعادة بـ Mithril"
+    "action": "استعادة بـ Mithril",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "مثيل المدقق غير موجود",
@@ -113,7 +115,9 @@
     "snapshotLookup": "تعذر حل مؤشر اللقطة الرسمي",
     "needSnapshotConfirm": "استعادة اللقطة تتطلب confirm=معرّف المثيل أو SNAPSHOT",
     "snapshotBlocked": "حُظر docker run الخاص باللقطة بواسطة قائمة السماح",
-    "snapshotFailed": "فشل تنزيل اللقطة أو استخراجها"
+    "snapshotFailed": "فشل تنزيل اللقطة أو استخراجها",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "هذه الميزة Beta. تغييرات المضيف تحتاج root و YSK_EXECUTE=1.",

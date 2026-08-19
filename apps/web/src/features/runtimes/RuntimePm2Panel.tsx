@@ -103,11 +103,16 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
     const pm2 = s.pm2;
     setTickLog((prev) =>
       [
-        `${s.at} · projects=${s.projects.length} pm2=${pm2.apps.length} run=${pm2.running}`,
+        t('runtime.pm2Tick', {
+          at: s.at,
+          projects: s.projects.length,
+          pm2: pm2.apps.length,
+          run: pm2.running,
+        }),
         ...prev,
       ].slice(0, 40),
     );
-  }, []);
+  }, [t]);
 
   const refreshStartup = useCallback(async () => {
     try {
@@ -389,10 +394,18 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                 {
                   key: 'active',
                   header: t('runtime.pm2.col.status'),
-                  render: (r) => <Badge tone={statusTone(r.active)}>{r.active}</Badge> },
+                  render: (r) => {
+                    const key = `services.active.${r.active}`;
+                    const label = t(key);
+                    return (
+                      <Badge tone={statusTone(r.active)}>
+                        {label === key ? r.active : label}
+                      </Badge>
+                    );
+                  } },
                 {
                   key: 'pid',
-                  header: 'PID',
+                  header: t('runtime.pm2.col.pid'),
                   render: (r) => (r.mainPid ? String(r.mainPid) : '—') },
                 {
                   key: 'port',

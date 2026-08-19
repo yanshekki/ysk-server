@@ -388,7 +388,7 @@ export function ServicesPage() {
 
           <PageTabs
             tabs={[
-              { id: 'matrix', label: t('services.matrixTab', { count: serviceRows.length }) },
+              { id: 'matrix', label: t('services.matrixTab', { count: items.length }) },
               { id: 'stack', label: t('services.stackTab') },
               { id: 'about', label: t('common.about') },
             ]}
@@ -442,7 +442,11 @@ export function ServicesPage() {
                             className={`ops-chip${catFilter === c ? ' ops-chip--active' : ''}`}
                             onClick={bindSet(setCatFilter, c)}
                           >
-                            {c}
+                            {(() => {
+                              const key = `services.cat.${c}`;
+                              const label = t(key);
+                              return label === key ? c : label;
+                            })()}
                             <span className="ops-chip__n">{n}</span>
                           </button>
                         );
@@ -494,7 +498,13 @@ export function ServicesPage() {
                             <Badge tone={toneFor(row.active, row.installed)}>
                               {row.activeLabel}
                             </Badge>
-                            <span className="ops-svc__cat">{row.category}</span>
+                            <span className="ops-svc__cat">
+                              {(() => {
+                                const key = `services.cat.${row.category}`;
+                                const label = t(key);
+                                return label === key ? row.category : label;
+                              })()}
+                            </span>
                           </div>
                           <div className="ops-svc__meta">
                             <code>{row.unit}</code>

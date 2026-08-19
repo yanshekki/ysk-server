@@ -38,6 +38,7 @@ export function Form({
     <form
       id={id}
       className={['form', className].filter(Boolean).join(' ')}
+      noValidate
       onSubmit={onSubmit}
       {...rest}
     >

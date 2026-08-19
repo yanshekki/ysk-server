@@ -255,12 +255,12 @@
     "applyBootstrapDesc": "會安裝 Galera drop-in 並 初始化（galera_new_cluster）。僅第一個節點用一次。",
     "applyJoinDesc": "會安裝 Galera drop-in 並 系統控制 重新啟動 mariadb。需 系統變更權限已開啟 與管理員權限。首節點請改用「初始化」。",
     "confirmApply": "確認套用",
-    "deleteClusterTitle": "刪除叢集登記？",
+    "deleteClusterTitle": "刪除叢集登記「{{name}}」（{{engine}}）？",
     "remoteInstallTitle": "遠端安裝 對等節點？",
     "pushTitle": "推送 到 對等節點？",
     "fleetSyncTitle": "機群 同步？",
     "confirmOp": "確認操作",
-    "deleteClusterDesc": "系統設定檔不會自動清除（第一版）。",
+    "deleteClusterDesc": "將刪除 {{engine}} 叢集「{{name}}」的登記。系統設定檔不會自動清除（第一版）。",
     "remoteInstallDesc": "在對等節點安裝設定檔並重新啟動服務。需要系統變更權限及遠端登入金鑰。",
     "pushDesc": "將檔案複製到對等節點暫存目錄？需要系統變更權限及金鑰。成功並不代表對等節點已重新啟動。",
     "fleetSyncDesc": "同步 叢集 快照到 機群 邊緣，再可 套用。",
@@ -355,5 +355,12 @@
   "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。",
   "adoptHostDb": "登記到控制面（不建立）：{{name}}",
   "adoptHostDbTitle": "只在控制面登記名稱，不改主機資料",
-  "cleanupExpiredTempUsersTitle": "清除已過期的面板臨時用戶"
+  "cleanupExpiredTempUsersTitle": "清除已過期的面板臨時用戶",
+  "invalidSqlIdent": "請用小寫識別名稱：以英文字母開頭，其後可為字母、數字或底線。",
+  "remoteHostRequired": "請填寫遠端主機。",
+  "remoteTestUnsaved": "請先儲存此主機，再按「測試連線」。或填好主機後儲存。",
+  "serverNotInstalled": "伺服器未安裝",
+  "dumpNeedEngine": "請先安裝資料庫引擎，才可匯出資料庫。",
+  "unboundDatabase": "資料庫登記已移除",
+  "userGoneRefresh": "該用戶已不存在，已重新整理列表。"
 }

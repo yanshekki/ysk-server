@@ -234,5 +234,7 @@
   "startProbeFailed": "Could not re-check DNS health after start",
   "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
   "goStartService": "Start DNS service",
-  "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again."
+  "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again.",
+  "digNotInstalled": "dig is not installed",
+  "digNotInstalledHint": "This tab needs the dig binary (bind9-dnsutils). That is not NXDOMAIN. Install bind9-dnsutils from the host package manager; this page does not auto-install it."
 }

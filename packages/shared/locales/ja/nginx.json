@@ -83,5 +83,10 @@
   "bodyInherit": "グローバル",
   "stopSites": "{{n}} site(s) will stop answering HTTP.",
   "purgeCacheTitle": "Purge Nginx cache and reload?",
-  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
+  "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up.",
+  "deleteTitleNamed": "Delete site {{name}}?",
+  "deleteDescNamed": "Remove {{name}} from the panel. Applied sites will also drop their managed nginx conf.",
+  "invalidServerName": "Enter a valid hostname (e.g. app.example.com).",
+  "needUpstream": "Upstream is required for reverse proxy sites.",
+  "needRoot": "Document root is required for static and PHP sites."
 }

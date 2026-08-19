@@ -831,14 +831,17 @@ export function ReadinessPage() {
                             {t('readiness.all')}
                           </button>
                           {categories.map((c) => {
-                            const count = items.filter(
-                              (i) => i.category === c,
+                            const scoped = items.filter((i) => {
+                              if (i.category !== c) return false;
+                              if (filter === 'all') return true;
+                              if (filter === 'blockers') return isCriticalMissing(i);
+                              return i.level === filter;
+                            });
+                            const count = scoped.length;
+                            const bad = scoped.filter(
+                              (i) => i.level === 'missing' || i.level === 'degraded',
                             ).length;
-                            const bad = items.filter(
-                              (i) =>
-                                i.category === c &&
-                                (i.level === 'missing' || i.level === 'degraded'),
-                            ).length;
+                            if (filter !== 'all' && count === 0) return null;
                             return (
                               <button
                                 key={c}

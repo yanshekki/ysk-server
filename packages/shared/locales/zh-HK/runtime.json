@@ -75,6 +75,10 @@
   "globalPhpIniDesc": "每一列一個設定值（表單）。寫入管理檔後可「套用到系統」或於專案部署注入 程序池",
   "managePath": "管理檔路徑",
   "loading": "載入中",
+  "probing": "探測中",
+  "noBinaryPath": "沒有二進位路徑",
+  "hostDefaultError": "主機預設不可用",
+  "pm2Tick": "{{at}} · 專案 {{projects}} · PM2 {{pm2}} · 運行 {{run}}",
   "cannotLoadSettings": "無法載入設定表",
   "reloadFailed": "重新載入失敗",
   "sensitive": "敏感設定，請小心",
@@ -92,6 +96,7 @@
   "demoVhost": "系統工具：示範 vhost / Pool",
   "demoVhostDesc": "進階／除錯用；日常開站請到 專案 → 部署",
   "domain": "網域",
+  "domainRequired": "套用 vhost 前請填寫有效網域。",
   "vhostServerName": "虛擬主機 server_name",
   "poolName": "Pool 名稱",
   "poolNameHint": "手填識別名（示範）；專案路徑會用 ysks_* 用戶",
@@ -450,7 +455,8 @@
       "interpreter": "解譯器",
       "user": "用戶",
       "unit": "單元",
-      "runtime": "執行環境"
+      "runtime": "執行環境",
+      "pid": "PID"
     },
     "projectsTitle": "YSK 專案進程",
     "projectsDesc": "面板專案對應的 systemd unit（預設部署路徑，不是 PM2）。",

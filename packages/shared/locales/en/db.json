@@ -255,12 +255,12 @@
     "applyBootstrapDesc": "Installs Galera drop-in and bootstrap (galera_new_cluster)",
     "applyJoinDesc": "Installs Galera drop-in and systemctl restart mariadb",
     "confirmApply": "Confirm apply",
-    "deleteClusterTitle": "Delete cluster registration?",
+    "deleteClusterTitle": "Delete cluster registration {{name}} ({{engine}})?",
     "remoteInstallTitle": "Remote-install peer?",
     "pushTitle": "Push to peer?",
     "fleetSyncTitle": "Fleet sync?",
     "confirmOp": "Confirm",
-    "deleteClusterDesc": "System conf is not auto-cleared (v1).",
+    "deleteClusterDesc": "Delete the {{engine}} cluster registration “{{name}}”. System conf is not auto-cleared (v1).",
     "remoteInstallDesc": "Install conf + restart on peer. Needs YSK_EXECUTE + SSH.",
     "pushDesc": "scp files to peer /tmp?",
     "fleetSyncDesc": "Sync cluster snapshot to fleet edge, then apply.",
@@ -356,5 +356,12 @@
   "serviceDownBody": "Service is unhealthy",
   "adoptHostDb": "Register in panel (no create): {{name}}",
   "adoptHostDbTitle": "Registers the name in the control plane only — does not change host data",
-  "cleanupExpiredTempUsersTitle": "Drops panel-issued temporary users that have expired"
+  "cleanupExpiredTempUsersTitle": "Drops panel-issued temporary users that have expired",
+  "invalidSqlIdent": "Use a lowercase identifier: start with a letter, then letters, digits, or underscore.",
+  "remoteHostRequired": "Enter a remote host.",
+  "remoteTestUnsaved": "Save this host first, then Test connection. Or fill host and save.",
+  "serverNotInstalled": "This engine is not installed on the server.",
+  "dumpNeedEngine": "Install the engine before exporting a database.",
+  "unboundDatabase": "Database registration removed",
+  "userGoneRefresh": "That user is gone. The list was refreshed."
 }

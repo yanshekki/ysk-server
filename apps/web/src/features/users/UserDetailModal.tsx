@@ -237,7 +237,7 @@ export function UserDetailModal({
                           onChange={bindCall1(onRoleChange, r)}
                         />
                         <span className="role-card__title">
-                          {t(`users.roleName.${r}`, { defaultValue: r })}
+                          {t(`users.roleName.${r}`)}
                         </span>
                         <span className="role-card__desc">{t(`users.roleDesc.${r}`)}</span>
                       </label>
@@ -299,7 +299,7 @@ export function UserDetailModal({
                       </select>
                     </Field>
                     <Field
-                      label={t('common.language', { defaultValue: 'Locale' })}
+                      label={t('common.language')}
                       htmlFor="ud-locale"
                       flush
                     >

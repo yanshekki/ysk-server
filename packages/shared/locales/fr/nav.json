@@ -80,5 +80,6 @@
   "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
   "backToDashboard": "Retour au tableau de bord",
   "validators": "Validateurs (Beta)",
-  "docker": "Docker"
+  "docker": "Docker",
+  "cluster": "Clusters"
 }

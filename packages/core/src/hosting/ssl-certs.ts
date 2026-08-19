@@ -220,6 +220,34 @@ export function findCertForDomain(
   return row as unknown as StoredCertificate | undefined;
 }
 
+/** Prefer stored row, then dataDir/certs, then Let's Encrypt live files. */
+export function resolveSiteTlsFiles(opts: {
+  db: { snapshot: { certificates?: Array<Record<string, unknown>> } };
+  dataDir: string;
+  serverName: string;
+}): { ssl: boolean; sslCertificate?: string; sslCertificateKey?: string } {
+  const primary = String(opts.serverName ?? '')
+    .trim()
+    .split(/\s+/)[0]
+    ?.toLowerCase()
+    .replace(/\.$/, '') ?? '';
+  if (!primary || primary === '_' || primary === 'localhost') return { ssl: false };
+  const row = findCertForDomain(opts.db as YskDatabase, primary);
+  const candidates: Array<{ cert: string; key: string }> = [];
+  if (row?.fullchain_path && row?.privkey_path) {
+    candidates.push({ cert: row.fullchain_path, key: row.privkey_path });
+  }
+  const managed = resolveManagedCertPaths(opts.dataDir, primary);
+  if (managed.exists) candidates.push({ cert: managed.fullchain, key: managed.privkey });
+  const leCert = `/etc/letsencrypt/live/${primary}/fullchain.pem`;
+  const leKey = `/etc/letsencrypt/live/${primary}/privkey.pem`;
+  if (existsSync(leCert) && existsSync(leKey)) candidates.push({ cert: leCert, key: leKey });
+  const hit = candidates.find((c) => existsSync(c.cert) && existsSync(c.key)) ?? candidates[0];
+  if (!hit) return { ssl: false };
+  if (!existsSync(hit.cert) || !existsSync(hit.key)) return { ssl: false };
+  return { ssl: true, sslCertificate: hit.cert, sslCertificateKey: hit.key };
+}
+
 export function resolveManagedCertPaths(
   dataDir: string,
   domain: string,

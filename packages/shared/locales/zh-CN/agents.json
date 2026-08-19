@@ -15,6 +15,12 @@
     "activating": "Starting",
     "stuck": "Start stuck"
   },
+  "cmdStatus": {
+    "queued": "已排队",
+    "acked": "已确认",
+    "done": "已完成",
+    "error": "错误"
+  },
   "liveN": "{{count}} 在线",
   "registeredOnly": "仅登记",
   "awaitProbe": "待探测",
@@ -57,6 +63,7 @@
   "finishedAt": "完成 {{at}}",
   "colCommand": "指令",
   "colResult": "结果摘要",
+  "colExit": "退出码",
   "hasResult": "有结果",
   "emptyCmds": "尚未有指令",
   "emptyCmdsDesc": "按「下指令」排队；边缘 agent 未在线时会一直 queued",
@@ -72,6 +79,7 @@
   "pathExists": "已存在",
   "pathMissing": "尚未安装",
   "unitUnknown": "{{unit}} · 未知",
+  "unitFallback": "服务单元",
   "path": "路径",
   "probe": "探测",
   "install": "安装",
@@ -141,5 +149,7 @@
   "noteRbacCap": "Agent role is capped at write-low.",
   "journal": "journal",
   "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
-  "noOnlineAgents": "No agents online"
+  "noOnlineAgents": "No agents online",
+  "writeUnit": "Write unit",
+  "writeUnitConfirm": "Write the systemd unit for {{kind}} under /etc/systemd. The service is not started or enabled."
 }

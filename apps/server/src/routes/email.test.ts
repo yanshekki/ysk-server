@@ -45,7 +45,8 @@ describe('email routes (HTTP)', () => {
 
     const list = await apiJson(ts, 'GET', '/api/v1/email/domains');
     expect(list.status).toBe(200);
-    const items = (list.body as { items: Array<{ domain?: string; id?: string }> }).items;
+    const items = (list.body as { items: Array<{ domain?: string; id?: string }>; allTotal?: number }).items;
+    expect((list.body as { allTotal?: number }).allTotal).toBeGreaterThanOrEqual(items.length);
     expect(items.some((d) => d.domain === 'mail-http-test.local')).toBe(true);
     const id = items.find((d) => d.domain === 'mail-http-test.local')?.id;
     expect(id).toBeTruthy();

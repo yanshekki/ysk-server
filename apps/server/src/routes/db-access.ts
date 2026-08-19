@@ -2,6 +2,7 @@
  * DB access — adminer, temp-users, remote-hosts.
  * Extracted from db.ts (Wave M1). Behaviour preserved.
  */
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import {
@@ -153,12 +154,17 @@ export async function handleDbAccessRoutes(
           username?: string;
           password?: string;
         };
+        const host = String(data.host ?? '').trim();
+        if (!host) {
+          sendJson(res, 400, { ok: false, message: tl('notes.needHost') });
+          return true;
+        }
         const { upsertRemoteDbHost } = await import('ysk-server-core');
         const row = upsertRemoteDbHost(ctx.db, {
           id: data.id,
           engine: data.engine ?? 'mysql',
-          label: data.label ?? data.host ?? '',
-          host: data.host ?? '',
+          label: data.label ?? host,
+          host,
           port: data.port,
           username: data.username,
           password: data.password,

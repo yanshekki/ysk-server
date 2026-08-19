@@ -5,6 +5,9 @@ import {
   detectClientEngine,
   defaultPortForEngine,
   hostFromEndpoint,
+  isVpnPeerName,
+  parseListenPortInput,
+  previewVpnPeerName,
   syncEndpointPort,
 } from './endpoint-sync';
 
@@ -50,5 +53,21 @@ describe('vpn endpoint-sync', () => {
   it('detects conf engine', () => {
     expect(detectClientEngine('[Interface]\nPrivateKey = x')).toBe('wireguard');
     expect(detectClientEngine('client\nremote 1.2.3.4 1194')).toBe('openvpn');
+    expect(detectClientEngine('not a vpn file')).toBeUndefined();
+  });
+
+  it('rejects peer names with space / or !', () => {
+    expect(isVpnPeerName('office-laptop')).toBe(true);
+    expect(isVpnPeerName('qa vpn/tmp!')).toBe(false);
+    expect(isVpnPeerName('qa-vpn-tmp')).toBe(true);
+    expect(previewVpnPeerName('qa vpn/tmp!')).toBe('qa-vpn-tmp');
+  });
+
+  it('does not clamp out-of-range listen ports', () => {
+    expect(parseListenPortInput('51820')).toBe(51820);
+    expect(parseListenPortInput('99999')).toBeNull();
+    expect(parseListenPortInput('0')).toBeNull();
+    expect(parseListenPortInput('65535')).toBe(65535);
+    expect(parseListenPortInput('65536')).toBeNull();
   });
 });

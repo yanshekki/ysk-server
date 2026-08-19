@@ -3,5 +3,7 @@
   "scrollRight": "قم بتمرير علامات التبويب إلى اليمين",
   "about": "عن",
   "main": "الإجراءات",
-  "stack": "برمجة"
+  "stack": "برمجة",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

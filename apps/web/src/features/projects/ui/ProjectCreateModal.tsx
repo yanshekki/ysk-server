@@ -19,6 +19,7 @@ import {
   runtimeVersionChoices } from '../model/deploy-prefs';
 import { systemApi } from '../../system';
 import { hostSatisfiesTarget } from '../../runtimes/install-state';
+import { isProjectName } from 'ysk-server-shared';
 
 function createRuntimeHostKey(runtime: string): string {
   if (runtime === 'node') return 'hostNode';
@@ -269,6 +270,7 @@ export function ProjectCreateModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!isProjectName(name)) return;
     if (/[\\/]/.test(name)) return;
     const domainAliases = aliases
       .split(/[\n,]+/)
@@ -373,7 +375,7 @@ export function ProjectCreateModal({
             size="md"
             form="project-create-form"
             loading={busy}
-            disabled={!name.trim() || /[\\/]/.test(name)}
+            disabled={!isProjectName(name)}
           >
             {t('projects.create')}
           </Button>
@@ -383,6 +385,7 @@ export function ProjectCreateModal({
       <form
         id="project-create-form"
         className="project-create-form"
+        noValidate
         onSubmit={(e) => void handleSubmit(e)}
       >
         {/* ① 基本：單欄，避免 SegRadio 把兩欄撐歪 */}
@@ -392,15 +395,21 @@ export function ProjectCreateModal({
             htmlFor="pname"
             required
             flush
-            error={/[\\/]/.test(name) ? t('projects.noPathSepHint') : undefined}
+            error={
+              name.trim() && !isProjectName(name)
+                ? t('projects.nameInvalid')
+                : /[\\/]/.test(name)
+                  ? t('projects.noPathSepHint')
+                  : undefined
+            }
           >
             <input
               id="pname"
               value={name}
               onChange={bindInput(setName)}
-              required
               autoFocus
               placeholder="my-app"
+              spellCheck={false}
             />
           </Field>
           <Field

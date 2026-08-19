@@ -136,5 +136,6 @@
   "cannotImpersonateSelf": "이미 이 계정으로 로그인되어 있습니다.",
   "singleAdminNo2fa": "이 호스트에는 관리자가 한 명 있고 2FA가 꺼져 있습니다. 2FA를 활성화하고 백업 관리자를 추가하세요.",
   "enableAdmin2fa": "Enable admin 2FA",
-  "addBackupAdmin": "Add a backup admin"
+  "addBackupAdmin": "Add a backup admin",
+  "noPackagesHint": "Create a plan from the toolbar, then bind it to users."
 }

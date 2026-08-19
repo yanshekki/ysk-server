@@ -1547,12 +1547,21 @@ export function MetricsPage() {
                         header: t('metrics.ratio'),
                         render: (r) => {
                           if (r.usedRatio == null) {
+                            const total = projectUsage?.totalUsedBytes ?? 0;
+                            if (total > 0 && Number.isFinite(r.usedBytes)) {
+                              const pct = Math.round((r.usedBytes / total) * 100);
+                              return (
+                                <span title={t('metrics.shareNoQuotaHint')}>
+                                  {t('metrics.shareOfMeasured', { pct })}
+                                </span>
+                              );
+                            }
                             return (
                               <span
                                 className="muted"
                                 title={t('metrics.shareNoQuotaHint')}
                               >
-                                —
+                                {t('metrics.noData')}
                                 {' '}
                                 <Link
                                   to={`/projects/${encodeURIComponent(r.projectId)}?tab=isolation`}

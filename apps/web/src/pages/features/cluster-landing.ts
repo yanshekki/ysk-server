@@ -2,6 +2,25 @@
 
 export type ClusterEngine = 'mysql' | 'mariadb' | 'postgres' | 'redis';
 
+export function clusterStatusTone(
+  s: string,
+): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
+  if (s === 'healthy') return 'ok';
+  if (s === 'planned' || s === 'draft' || s === 'partial') return 'warn';
+  if (s === 'failed' || s === 'degraded') return 'danger';
+  return 'neutral';
+}
+
+export function clusterStatusLabel(
+  status: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const key = `db.cluster.status.${status}`;
+  const loc = t(key, { defaultValue: '' });
+  if (loc && loc !== key) return loc;
+  return t(`applyStatus.${status}`, { defaultValue: status });
+}
+
 export const CLUSTER_ENGINE_ORDER: readonly ClusterEngine[] = [
   'mariadb',
   'postgres',

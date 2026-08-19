@@ -22,5 +22,20 @@
   "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
   "executeRoot": "System changes {{execute}} · administrator {{root}}",
   "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles"
+  "manifestHint": "Last chosen software plan and bundles",
+  "bundle": {
+    "control-plane": "Control plane",
+    "web": "Web hosting",
+    "database": "Databases",
+    "email": "Mail stack",
+    "dns": "DNS",
+    "ftp": "FTP / FTPS",
+    "defense": "Host defense",
+    "runtimes": "Language runtimes"
+  },
+  "planTitle": {
+    "minimal": "Control plane only",
+    "recommended": "Recommended hosting",
+    "full": "All software"
+  }
 }

@@ -3,5 +3,7 @@
   "scrollRight": "Gulir tab ke kanan",
   "about": "Tentang",
   "main": "Tindakan",
-  "stack": "Perangkat lunak"
+  "stack": "Perangkat lunak",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

@@ -22,5 +22,20 @@
   "uninstallNow": "Uninstall now",
   "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
   "uninstallConfirmTitle": "Remove selected bundles?",
-  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
+  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm.",
+  "bundle": {
+    "control-plane": "Control plane",
+    "web": "Web hosting",
+    "database": "Databases",
+    "email": "Mail stack",
+    "dns": "DNS",
+    "ftp": "FTP / FTPS",
+    "defense": "Host defense",
+    "runtimes": "Language runtimes"
+  },
+  "planTitle": {
+    "minimal": "Control plane only",
+    "recommended": "Recommended hosting",
+    "full": "All software"
+  }
 }

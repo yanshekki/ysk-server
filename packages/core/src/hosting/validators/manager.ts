@@ -34,9 +34,11 @@ import {
   composePsInfo,
   composePsRunning,
   composeUp,
+  prepareValidatorDataDir,
   probeDockerCompose,
   writeComposeFile,
 } from './compose-runner.js';
+
 import {
   getValidatorChain,
   getValidatorNetwork,
@@ -67,7 +69,11 @@ import { allocateValidatorPorts, usedValidatorPorts } from './ports.js';
 import { syncServiceExposure } from '../service-exposure/sync.js';
 import type { ValidatorNodeStatus } from './adapters/base.js';
 import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
-import { deriveValidatorRuntimeStatus } from './runtime-status.js';
+import {
+  deriveValidatorRuntimeStatus,
+  isTransientValidatorProbeError,
+  pickValidatorContainerHint,
+} from './runtime-status.js';
 import type { OpsLogFn } from '../ops-log.js';
 
 export type ValidatorMutateOpts = {
@@ -177,7 +183,7 @@ export async function createValidatorInstance(
 
   const dir = instanceDir(input.dataDir, inst.id);
   mkdirSync(dir, { recursive: true });
-  mkdirSync(inst.dataPath, { recursive: true });
+  prepareValidatorDataDir(inst.dataPath);
   const plan = planInstallFor(inst);
   if (plan.jwtPath) {
     writeFileSync(plan.jwtPath, randomBytes(32).toString('hex') + '\n', { mode: 0o600 });
@@ -222,12 +228,26 @@ export async function createValidatorInstance(
     file: composePath,
     project: composeProjectName(inst.id),
     execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
   });
   if (!up.ok) {
     return failedValidatorOp({
       instanceId: inst.id,
       written,
       notes: [tl('validators.errors.composeFailed'), up.stderr || up.stdout],
+    });
+  }
+  const live = await verifyComposeStayedUp({
+    host: input.host,
+    file: composePath,
+    project: composeProjectName(inst.id),
+  });
+  if (!live.ok) {
+    return failedValidatorOp({
+      instanceId: inst.id,
+      written,
+      notes: [tl('validators.errors.containerNotUp'), live.hint ?? ''].filter(Boolean),
     });
   }
   upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'running' });
@@ -241,14 +261,35 @@ export async function createValidatorInstance(
       execute: true,
       id: inst.id,
       confirm: inst.id,
+      onLog: input.onLog,
+      signal: input.signal,
     });
     notes.push(...(m.notes ?? []));
+    if (!m.ok || m.apply_status === 'failed' || m.blocked) {
+      return failedValidatorOp({
+        instanceId: inst.id,
+        written,
+        notes,
+      });
+    }
   }
   return appliedValidatorOp({
     instanceId: inst.id,
     written,
     notes,
   });
+}
+
+async function verifyComposeStayedUp(input: {
+  host: HostExecutor;
+  file: string;
+  project: string;
+}): Promise<{ ok: boolean; hint: string | null }> {
+  await new Promise((r) => setTimeout(r, 2_000));
+  const ps = await composePsInfo(input);
+  if (ps.running && !ps.restarting) return { ok: true, hint: null };
+  const logs = await composeLogs({ ...input, tail: 80 });
+  return { ok: false, hint: pickValidatorContainerHint(logs.lines) };
 }
 
 async function withInstance(
@@ -287,6 +328,7 @@ export async function startValidatorInstance(
     }
     const plan = planInstallFor(inst);
     writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
+    prepareValidatorDataDir(inst.dataPath);
     const up = await composeUp({
       host: input.host,
       file: composePath,
@@ -299,6 +341,17 @@ export async function startValidatorInstance(
       return failedValidatorOp({
         instanceId: inst.id,
         notes: [tl('validators.errors.composeFailed'), up.stderr || up.stdout],
+      });
+    }
+    const live = await verifyComposeStayedUp({
+      host: input.host,
+      file: composePath,
+      project: composeProjectName(inst.id),
+    });
+    if (!live.ok) {
+      return failedValidatorOp({
+        instanceId: inst.id,
+        notes: [tl('validators.errors.containerNotUp'), live.hint ?? ''].filter(Boolean),
       });
     }
     upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'running' });
@@ -483,6 +536,24 @@ export async function statusValidatorInstance(input: {
     syncProgress: extra.syncProgress,
     lastError: extra.lastError,
   });
+  let lastError = extra.lastError;
+  if (
+    !running ||
+    ps.restarting ||
+    (lastError && isTransientValidatorProbeError(lastError))
+  ) {
+    const logs = await composeLogs({
+      host: input.host,
+      file: composeFilePath(instanceDir(input.dataDir, inst.id)),
+      project: composeProjectName(inst.id),
+      tail: 80,
+    });
+    const hint = pickValidatorContainerHint(logs.lines);
+    if (hint) lastError = hint;
+    else if (lastError && isTransientValidatorProbeError(lastError)) {
+      lastError = tl('validators.errors.probeFailed');
+    }
+  }
   return {
     status,
     running,
@@ -493,6 +564,7 @@ export async function statusValidatorInstance(input: {
     // Remote GitHub tags must not paint a brand-new node as "upgrade".
     upgrade: detectUpgradeForInstance(inst),
     ...extra,
+    lastError,
   };
 }
 

@@ -3,11 +3,11 @@
  * Panel register ≠ online; commands queue until edge agent pulls.
  * History shows CLI exit codes + pretty JSON when edge acks { cli: [...] }.
  */
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAgents } from '../features/agents';
-import type { FleetAgent, FleetCommand } from '../features/agents/api';
+import type { FleetAgent, FleetCommand, RuntimeProbe } from '../features/agents/api';
 import {
   WithPageGuide,
   ActionBar,
@@ -24,8 +24,8 @@ import {
   InfoCard,
   InfoCardGrid,
   Field,
+  Form,
   FormHint,
-  FormLayout,
   Modal,
   SegRadio,
   ServerListFilters,
@@ -85,11 +85,45 @@ export function fleetDisplayStatus(
   now = Date.now(),
 ): string {
   const s = status ?? '';
-  if (s === 'stale' && lastSeenAt) {
+  // Registered-only never mixes with stale / offline (no heartbeat yet).
+  if (s === 'registered') return 'registered';
+  if ((s === 'connected' || s === 'stale') && lastSeenAt) {
     const t = Date.parse(lastSeenAt);
-    if (Number.isFinite(t) && now - t > 5 * 60_000) return 'disconnected';
+    if (Number.isFinite(t)) {
+      const age = now - t;
+      if (age > 5 * 60_000) return 'disconnected';
+      if (s === 'connected' && age > 60_000) return 'stale';
+    }
   }
   return s;
+}
+
+export function runtimeHonestStatus(rt: {
+  status?: string;
+  pathExists?: boolean;
+  unitActive?: string;
+}): string {
+  const stuckActivating = rt.unitActive === 'activating' && rt.status === 'failed';
+  if (
+    rt.pathExists === false ||
+    (!rt.pathExists && rt.status === 'stopped' && !rt.unitActive)
+  ) {
+    return 'not_installed';
+  }
+  if (stuckActivating) return 'stuck';
+  return rt.status ?? 'unknown';
+}
+
+export function runtimeJournalTo(rt: Pick<RuntimeProbe, 'kind' | 'unitName'>): string {
+  return `/logs?unit=${encodeURIComponent(rt.unitName ?? `ysk-agent-${rt.kind}.service`)}`;
+}
+
+export function cmdStatusLabel(status: string, tr: (k: string) => string): string {
+  if (status === 'done') return tr('agents.cmdStatus.done');
+  if (status === 'queued') return tr('agents.cmdStatus.queued');
+  if (status === 'acked') return tr('agents.cmdStatus.acked');
+  if (status === 'error') return tr('agents.cmdStatus.error');
+  return status;
 }
 
 export function statusLabel(status: string | undefined, tr: (k: string) => string): string {
@@ -223,9 +257,10 @@ export function AgentsPage() {
     await Promise.all([refresh(), fleetList.refresh()]);
   };
 
-  const [agentId, setAgentId] = useState('edge-1');
+  const [agentId, setAgentId] = useState('');
   const [agentGroup, setAgentGroup] = useState('default');
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [pendingUnit, setPendingUnit] = useState<string | null>(null);
 
   const [cmdAgent, setCmdAgent] = useState<FleetAgent | null>(null);
   /** Prefer CLI payloads — edge agent runs ysk-server with these argv */
@@ -245,6 +280,9 @@ export function AgentsPage() {
   const [histBusy, setHistBusy] = useState(false);
   const [resultCmd, setResultCmd] = useState<FleetCommand | null>(null);
   const [delAgent, setDelAgent] = useState<FleetAgent | null>(null);
+  const [cmdFieldError, setCmdFieldError] = useState<string | null>(null);
+  const [registerFieldError, setRegisterFieldError] = useState<string | null>(null);
+  const histRef = useRef<HTMLDivElement>(null);
 
   function buildCliPayload(cli: string[]): { cli: string[] } {
     const argv = cli.map(String);
@@ -262,8 +300,20 @@ export function AgentsPage() {
   }
 
   const runtimeList = runtimes;
-  const running = runtimeList.filter((r) => r.status === 'running').length;
-  const unitActive = runtimeList.filter((r) => r.unitActive === 'active').length;
+  const honestRuntimes = runtimeList.map((rt) => ({
+    rt,
+    honest: runtimeHonestStatus(rt),
+  }));
+  const running = honestRuntimes.filter((x) => x.honest === 'running').length;
+  const failedRuntime = honestRuntimes.find(
+    (x) => x.honest === 'failed' || x.honest === 'stuck' || x.honest === 'error',
+  )?.rt;
+  const statusChip = fleetList.filters.status ?? '';
+  const visibleAgents = useMemo(() => {
+    if (!statusChip) return agents;
+    const want = statusChip === 'offline' ? 'disconnected' : statusChip;
+    return agents.filter((a) => fleetDisplayStatus(a.status, a.last_seen_at) === want);
+  }, [agents, statusChip]);
   const liveAgents = agents.filter(
     (a) => fleetDisplayStatus(a.status, a.last_seen_at) === 'connected',
   ).length;
@@ -277,18 +327,24 @@ export function AgentsPage() {
   }, []);
 
   function openRegister() {
-    setAgentId('edge-1');
+    setAgentId('');
     setAgentGroup('default');
+    setRegisterFieldError(null);
     setRegisterOpen(true);
   }
 
   async function onRegister(e: FormEvent) {
     e.preventDefault();
     const id = agentId.trim();
-    if (!id) return;
+    if (!id) {
+      setRegisterFieldError(t('common.pleaseFill'));
+      return;
+    }
+    setRegisterFieldError(null);
     try {
       await register(id, agentGroup.trim() || 'default');
       setRegisterOpen(false);
+      await refreshAll();
     } catch {
       /* hook */
     }
@@ -303,6 +359,11 @@ export function AgentsPage() {
     }
   }
 
+  useEffect(() => {
+    if (!histAgent) return;
+    histRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [histAgent]);
+
   // Auto-refresh command history while open (edge may ack shortly after queue)
   useEffect(() => {
     if (!histAgent) return;
@@ -315,6 +376,11 @@ export function AgentsPage() {
   async function onSendCommand(e: FormEvent) {
     e.preventDefault();
     if (!cmdAgent) return;
+    if (cmdPreset === 'custom' && !cmdCustom.trim()) {
+      setCmdFieldError(t('common.pleaseFill'));
+      return;
+    }
+    setCmdFieldError(null);
     let payload: unknown;
     switch (cmdPreset) {
       case 'cli-readiness':
@@ -358,7 +424,7 @@ export function AgentsPage() {
 
   return (
     <FeaturePageLayout
-      title={t('nav.agents', { defaultValue: 'AI Agent' })}
+      title={t('nav.agents')}
       status={{
         pill: {
           label:
@@ -373,8 +439,12 @@ export function AgentsPage() {
           { label: t('agents.runtimes'), value: runtimeList.length },
           {
             label: t('agents.running'),
-            value: running,
-            tone: running > 0 ? 'ok' : 'neutral' },
+            value: failedRuntime ? (
+              <Link to={runtimeJournalTo(failedRuntime)}>{running}</Link>
+            ) : (
+              running
+            ),
+            tone: running > 0 ? 'ok' : failedRuntime ? 'danger' : 'neutral' },
           {
             label: t('agents.liveAgents'),
             value: liveAgents,
@@ -449,7 +519,7 @@ export function AgentsPage() {
 
       <Card>
         <CardSection
-          title={t('agents.fleetTitle', { count: agents.length })}
+          title={t('agents.fleetTitle', { count: fleetList.allTotal })}
           description={t('agents.fleetDesc')}
         >
           <DataTable
@@ -473,7 +543,7 @@ export function AgentsPage() {
                 chipGroups={[
                   {
                     key: 'status',
-                    allLabel: t('common.all', { defaultValue: 'All' }),
+                    allLabel: t('common.all'),
                     value: fleetList.filters.status ?? '',
                     onChange: (v) => fleetList.setFilter('status', v),
                     chips: [
@@ -485,17 +555,20 @@ export function AgentsPage() {
                 ]}
               />
             }
+            className="data-table--wide"
             columns={[
               {
                 key: 'id',
                 header: t('agents.colId'),
+                nowrap: true,
                 render: (a) => <code className="inline">{a.agent_id}</code> },
               {
                 key: 'session',
                 header: t('agents.colSession'),
+                nowrap: true,
                 render: (a) => (
                   <span className="u-flex u-items-center u-gap-2">
-                    <code className="inline u-truncate" title={a.id}>
+                    <code className="inline" title={a.id}>
                       {a.id}
                     </code>
                     <Button
@@ -520,7 +593,10 @@ export function AgentsPage() {
                 nowrap: true,
                 render: (a) => {
                   const shown = fleetDisplayStatus(a.status, a.last_seen_at);
-                  const age = staleAgeLabel(a.last_seen_at);
+                  const age =
+                    shown === 'stale' || shown === 'disconnected'
+                      ? staleAgeLabel(a.last_seen_at)
+                      : null;
                   return (
                     <span title={age ? t('agents.staleFor', { age }) : undefined}>
                       <Badge tone={statusTone(shown)}>
@@ -535,6 +611,7 @@ export function AgentsPage() {
               {
                 key: 'group',
                 header: t('agents.colGroup'),
+                nowrap: true,
                 render: (a) => a.group ?? '—' },
               {
                 key: 'last_seen',
@@ -544,8 +621,10 @@ export function AgentsPage() {
                 render: (a) =>
                   a.last_seen_at ? formatDateTime(a.last_seen_at) : '—' },
             ]}
-            rows={agents}
+            rows={visibleAgents}
             rowKey={(a) => a.id}
+            filterActive={Boolean(fleetList.q.trim()) || Boolean(statusChip)}
+            empty={<EmptyState title={t('agents.emptyAgents')} description={t('agents.emptyAgentsDesc')} />}
             rowActions={(a) => (
               <ActionBar align="end">
                 <Button
@@ -554,6 +633,7 @@ export function AgentsPage() {
                   title={t('agents.commandTitle')}
                   onClick={() => {
                     setCmdPreset('ping');
+                    setCmdFieldError(null);
                     setCmdAgent(a);
                   }}
                 >
@@ -575,23 +655,19 @@ export function AgentsPage() {
                   variant="danger"
                   size="sm"
                   title={t('agents.deleteTitlePlain')}
+                  data-confirm={a.agent_id}
                   onClick={bindSet(setDelAgent, a)}
                 >
                   {t('common.delete')}
                 </Button>
               </ActionBar>
             )}
-            empty={
-              <EmptyState
-                title={t('agents.emptyAgents')}
-                description={t('agents.emptyAgentsDesc')}
-              />
-            }
           />
         </CardSection>
       </Card>
 
       {histAgent ? (
+        <div ref={histRef} id="agent-cmd-history">
         <Card>
           <CardSection
             title={t('agents.historyTitle', { id: histAgent.agent_id })}
@@ -613,6 +689,7 @@ export function AgentsPage() {
                     size="sm"
                     onClick={() => {
                       setCmdPreset('cli-readiness');
+                      setCmdFieldError(null);
                       setCmdAgent(histAgent);
                     }}
                   >
@@ -648,11 +725,11 @@ export function AgentsPage() {
                   header: t('agents.colStatus'),
                   nowrap: true,
                   render: (c) => (
-                    <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
+                    <Badge tone={cmdStatusTone(c.status)}>{cmdStatusLabel(c.status, t)}</Badge>
                   ) },
                 {
                   key: 'exit',
-                  header: 'exit',
+                  header: t('agents.colExit'),
                   nowrap: true,
                   render: (c) => {
                     const code = exitCodeOf(c);
@@ -695,7 +772,7 @@ export function AgentsPage() {
                     if (c.result == null) return '—';
                     if (ack?.error) return String(ack.error);
                     if (flags.length) return flags.join(' · ');
-                    if (code === 0) return 'ok';
+                    if (code === 0) return t('common.ok');
                     if (code != null) return exitHint(code);
                     return t('agents.hasResult');
                   } },
@@ -724,6 +801,7 @@ export function AgentsPage() {
             />
           </CardSection>
         </Card>
+        </div>
       ) : null}
 
       <Card>
@@ -749,6 +827,7 @@ intervalMs: 5000`}
         </CardSection>
       </Card>
 
+      <div id="agents-runtime">
       <Card>
         <CardSection
           title={t('agents.runtimeTitle')}
@@ -762,30 +841,30 @@ intervalMs: 5000`}
           ) : (
             <InfoCardGrid cols={3}>
               {runtimeList.map((rt) => {
-                const stuckActivating =
-                  rt.unitActive === 'activating' && rt.status === 'failed';
-                const honestStatus =
-                  rt.pathExists === false ||
-                  (!rt.pathExists && rt.status === 'stopped' && !rt.unitActive)
-                    ? 'not_installed'
-                    : stuckActivating
-                      ? 'stuck'
-                      : rt.status;
+                const honestStatus = runtimeHonestStatus(rt);
+                const stuckActivating = honestStatus === 'stuck';
                 const pathLine = rt.installPath
                   ? `${rt.pathExists ? t('agents.pathExists') : t('agents.pathMissing')} · ${rt.installPath}`
                   : '—';
                 const unitLine = rt.unitActive
-                  ? `${rt.unitName ?? 'unit'} · ${rt.unitActive}`
+                  ? `${rt.unitName ?? t('agents.unitFallback')} · ${rt.unitActive}`
                   : rt.unitName
                     ? t('agents.unitUnknown', { unit: rt.unitName })
                     : '—';
+                const journalTo = runtimeJournalTo(rt);
+                const showJournal =
+                  honestStatus === 'failed' ||
+                  honestStatus === 'stuck' ||
+                  honestStatus === 'error' ||
+                  rt.unitActive === 'activating';
                 return (
                   <InfoCard
                     key={rt.kind}
                     title={rt.name ?? rt.kind}
                     badge={{
                       label: statusLabel(honestStatus, t),
-                      tone: statusTone(honestStatus) }}
+                      tone: statusTone(honestStatus),
+                      to: showJournal ? journalTo : undefined }}
                     facts={[
                       {
                         label: t('agents.path'),
@@ -800,9 +879,9 @@ intervalMs: 5000`}
                     ]}
                     actions={
                       <ActionBar>
-                        {rt.unitActive === 'activating' || honestStatus === 'failed' ? (
+                        {showJournal ? (
                           <Link
-                            to={`/logs?unit=${encodeURIComponent(rt.unitName ?? `ysk-agent-${rt.kind}.service`)}`}
+                            to={journalTo}
                             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
                           >
                             {t('agents.journal')}
@@ -822,9 +901,10 @@ intervalMs: 5000`}
                           variant="secondary"
                           size="sm"
                           loading={busy}
-                          onClick={bindCall1(writeUnit, rt.kind)}
+                          data-confirm="dialog"
+                          onClick={() => setPendingUnit(rt.kind)}
                         >
-                          unit
+                          {t('agents.writeUnit')}
                         </Button>
                         <Button
                           variant="primary"
@@ -845,6 +925,7 @@ intervalMs: 5000`}
           )}
         </CardSection>
       </Card>
+      </div>
 
       {detailNotes.length > 0 || detailFacts.length > 0 ? (
         <Card>
@@ -889,19 +970,22 @@ intervalMs: 5000`}
           </>
         }
       >
-        <form id="agent-register" onSubmit={(e) => void onRegister(e)}>
-          <FormLayout columns={1}>
+        <Form id="agent-register" columns={1} onSubmit={(e) => void onRegister(e)}>
             <Field
               label={t('agents.agentId')}
               htmlFor="aid"
               flush
               required
               hint={t('agents.agentIdHint')}
+              error={registerFieldError ?? undefined}
             >
               <input
                 id="aid"
                 value={agentId}
-                onChange={bindInput(setAgentId)}
+                onChange={(e) => {
+                  setRegisterFieldError(null);
+                  bindInput(setAgentId)(e);
+                }}
                 placeholder="edge-1"
                 spellCheck={false}
                 autoComplete="off"
@@ -917,11 +1001,10 @@ intervalMs: 5000`}
                 spellCheck={false}
               />
             </Field>
-          </FormLayout>
           <FormHint>
             {t('agents.registerNote')}
           </FormHint>
-        </form>
+        </Form>
       </Modal>
 
       <Modal
@@ -946,14 +1029,16 @@ intervalMs: 5000`}
           </>
         }
       >
-        <form id="agent-cmd" onSubmit={(e) => void onSendCommand(e)}>
-          <FormLayout columns={1}>
+        <Form id="agent-cmd" columns={1} onSubmit={(e) => void onSendCommand(e)}>
             <Field label={t('agents.cmdPreset')} htmlFor="cmd-preset" flush>
               <SegRadio
                 name="cmd-preset"
                 aria-label={t('agents.cmdTypeAria')}
                 value={cmdPreset}
-                onChange={(v) => setCmdPreset(v as CmdPreset)}
+                onChange={(v) => {
+                  setCmdFieldError(null);
+                  setCmdPreset(v as CmdPreset);
+                }}
                 options={[
                   { value: 'cli-readiness', label: 'readiness' },
                   { value: 'cli-host', label: 'host' },
@@ -973,22 +1058,24 @@ intervalMs: 5000`}
                 flush
                 required
                 hint={t('agents.cliArgsHint')}
+                error={cmdFieldError ?? undefined}
               >
                 <input
                   id="cmd-custom"
                   value={cmdCustom}
-                  onChange={bindInput(setCmdCustom)}
+                  onChange={(e) => {
+                    setCmdFieldError(null);
+                    bindInput(setCmdCustom)(e);
+                  }}
                   spellCheck={false}
                   autoComplete="off"
-                  required
                 />
               </Field>
             ) : null}
-          </FormLayout>
           <FormHint>
             {t('agents.cmdNote')}
           </FormHint>
-        </form>
+        </Form>
       </Modal>
 
       <Modal
@@ -1011,10 +1098,12 @@ intervalMs: 5000`}
         {resultCmd ? (
           <div className="stack-gap">
             <ActionBar>
-              <Badge tone={cmdStatusTone(resultCmd.status)}>{resultCmd.status}</Badge>
+              <Badge tone={cmdStatusTone(resultCmd.status)}>
+                {cmdStatusLabel(resultCmd.status, t)}
+              </Badge>
               {exitCodeOf(resultCmd) != null ? (
                 <Badge tone={exitTone(exitCodeOf(resultCmd))}>
-                  exit {exitCodeOf(resultCmd)} · {exitHint(exitCodeOf(resultCmd))}
+                  {t('agents.colExit')} {exitCodeOf(resultCmd)} · {exitHint(exitCodeOf(resultCmd))}
                 </Badge>
               ) : null}
               {asCliAck(resultCmd.result)?.dryRun ? (
@@ -1070,7 +1159,20 @@ intervalMs: 5000`}
         onConfirm={() => {
           const a = delAgent;
           setDelAgent(null);
-          if (a) void removeAgent(a.id);
+          if (a) void removeAgent(a.id).then(() => fleetList.refresh());
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(pendingUnit)}
+        onClose={() => setPendingUnit(null)}
+        title={t('agents.writeUnit')}
+        description={t('agents.writeUnitConfirm', { kind: pendingUnit ?? '' })}
+        severity="destructive"
+        confirmLabel={t('agents.writeUnit')}
+        onConfirm={() => {
+          const kind = pendingUnit;
+          setPendingUnit(null);
+          if (kind) void writeUnit(kind);
         }}
       />
     

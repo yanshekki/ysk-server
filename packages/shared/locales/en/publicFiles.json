@@ -17,8 +17,11 @@
     "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
   },
   "quotaMiB": "Quota (MiB)",
-  "quotaHint": "Optional; caps public directory size",
+  "quotaHint": "Optional; caps public directory size. Unlimited disables the MiB field.",
   "unlimited": "Unlimited",
+  "quotaInvalid": "Enter a whole number of MiB, or choose Unlimited.",
+  "serverNameRequired": "Enter a server name.",
+  "serverNameInvalid": "Use a hostname, wildcard, or IP — no spaces or punctuation.",
   "applyHint": "Apply only writes config;",
   "appliedOk": "Public files site applied",
   "applyReload": "Apply and reload Nginx",

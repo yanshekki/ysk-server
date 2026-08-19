@@ -392,7 +392,13 @@ describe('hosting residual thin — dns-lookup dig path', () => {
       name: 'example.com',
       type: 'A',
       host: mockHost({
-        onRun: () => ({ exitCode: 0, stdout: '93.184.216.34\n' }),
+        onRun: (argv: string[]) => {
+          const blob = argv.join(' ');
+          if (blob.includes('command -v')) {
+            return { exitCode: 0, stdout: '/usr/bin/dig\n' };
+          }
+          return { exitCode: 0, stdout: '93.184.216.34\n' };
+        },
       }),
     });
     expect(dig.method).toBe('dig');
@@ -402,11 +408,17 @@ describe('hosting residual thin — dns-lookup dig path', () => {
       name: 'example.com',
       type: 'TXT',
       host: mockHost({
-        onRun: () => ({ exitCode: 0, stdout: '\n' }),
+        onRun: (argv: string[]) => {
+          const blob = argv.join(' ');
+          if (blob.includes('command -v')) {
+            return { exitCode: 0, stdout: '/usr/bin/dig\n' };
+          }
+          return { exitCode: 0, stdout: '\n' };
+        },
       }),
     });
-    // may dig with empty answers or fall through
-    expect(['dig', 'node-dns']).toContain(emptyDig.method);
+    expect(emptyDig.method).toBe('dig');
+    expect(emptyDig.notes.join(' ')).not.toMatch(/NXDOMAIN/i);
 
     const noDig = await lookupDns({
       name: 'localhost',
@@ -415,7 +427,9 @@ describe('hosting residual thin — dns-lookup dig path', () => {
         onRun: () => ({ exitCode: 0, stdout: 'YSK_NO_DIG\n' }),
       }),
     });
-    expect(noDig.method === 'node-dns' || noDig.method === 'dig').toBe(true);
+    expect(noDig.method).toBe('none');
+    expect(noDig.notes.join(' ')).not.toMatch(/NXDOMAIN/i);
+    expect(noDig.notes.join(' ')).toMatch(/dig|未安裝|not installed/i);
 
     // force node-dns error
     const bad = await lookupDns({ name: 'this.domain.should.not.resolve.invalid', type: 'MX' });

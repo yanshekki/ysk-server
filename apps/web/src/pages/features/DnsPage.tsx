@@ -104,6 +104,22 @@ export function mapRecordsForValidate(
 }
 
 /** Build human message from DNS validate API issues/notes. */
+export function missingMailDomains<T extends { domain: string }>(
+  mailDomains: T[],
+  allZones: Array<Record<string, unknown>>,
+): T[] {
+  const have = new Set(
+    allZones.map((z) => String(z.zone ?? '').trim().toLowerCase()).filter(Boolean),
+  );
+  return mailDomains.filter((d) => d.domain && !have.has(d.domain.trim().toLowerCase()));
+}
+
+export function notesSayDigMissing(notes: string[] | undefined): boolean {
+  return (notes ?? []).some((n) =>
+    /YSK_NO_DIG|dig not installed|dig is not installed|dig 未安裝/i.test(n),
+  );
+}
+
 export function formatDnsValidateMessage(
   check: {
     ok: boolean;
@@ -178,6 +194,7 @@ export function DnsPage() {
   const [lookupName, setLookupName] = useState('');
   const [lookupType, setLookupType] = useState('A');
   const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupNameError, setLookupNameError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<{
     ok: boolean;
     answers: string[];
@@ -201,12 +218,10 @@ export function DnsPage() {
       .catch(() => setMailDomains([]));
   }, []);
 
-  const missingMailZones = useMemo(() => {
-    const have = new Set(
-      zones.items.map((z) => String(z.zone ?? '').trim().toLowerCase()).filter(Boolean),
-    );
-    return mailDomains.filter((d) => d.domain && !have.has(d.domain.trim().toLowerCase()));
-  }, [mailDomains, zones.items]);
+  const missingMailZones = useMemo(
+    () => missingMailDomains(mailDomains, zones.allItems),
+    [mailDomains, zones.allItems],
+  );
 
   // Keep selected zone row in sync after apply/refresh
   const selectedLive = useMemo(() => {
@@ -216,14 +231,14 @@ export function DnsPage() {
 
   const dnsTabs = useMemo(() => {
     const tabs: Array<{ id: string; label: string; badge?: number | string }> = [
-      { id: 'zones', label: t('dns.tabs.zones'), badge: zones.items.length || undefined },
+      { id: 'zones', label: t('dns.tabs.zones'), badge: zones.allTotal || undefined },
     ];
     if (selectedLive) {
       tabs.push(
         {
           id: 'records',
           label: t('dns.tabs.records'),
-          badge: records.items.length || undefined,
+          badge: records.allTotal || undefined,
         },
         { id: 'cluster', label: t('dns.tabs.cluster'), badge: peers.length || undefined },
         { id: 'dnssec', label: t('dns.tabs.dnssec') },
@@ -235,7 +250,7 @@ export function DnsPage() {
       { id: 'about', label: t('dns.tabs.about') },
     );
     return tabs;
-  }, [t, zones.items.length, selectedLive, records.items.length, peers.length]);
+  }, [t, zones.allTotal, selectedLive, records.allTotal, peers.length]);
 
   // Prefill SOA fields when selection changes
   useEffect(() => {
@@ -428,6 +443,11 @@ export function DnsPage() {
 
   async function onLookup(e: FormEvent) {
     e.preventDefault();
+    if (!lookupName.trim()) {
+      setLookupNameError(t('common.pleaseFill'));
+      return;
+    }
+    setLookupNameError(null);
     setLookupBusy(true);
     setLookupResult(null);
     try {
@@ -536,8 +556,8 @@ export function DnsPage() {
             ? health.ok
               ? t('dns.healthPillOk')
               : t('dns.healthPillBad')
-            : t('dns.zonesTitle', { count: zones.items.length }),
-          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn',
+            : t('dns.zonesTitle', { count: zones.allTotal }),
+          tone: health ? (health.ok ? 'ok' : 'danger') : zones.allTotal ? 'ok' : 'warn',
         },
         items: [
           {
@@ -564,7 +584,7 @@ export function DnsPage() {
           },
           {
             label: t('dns.tabs.zones'),
-            value: zones.items.length,
+            value: zones.allTotal,
           },
           ...(selectedLive
             ? [
@@ -717,7 +737,7 @@ export function DnsPage() {
             ) : null}
             <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-                  title={t('dns.zonesTitle', { count: zones.total })}
+                  title={t('dns.zonesTitle', { count: zones.allTotal })}
                   toolbar={
                     <ActionBar>
                       <Button variant="primary" size="sm" onClick={bindSet(setZoneOpen, true)}>
@@ -731,7 +751,7 @@ export function DnsPage() {
                       setQ={zones.setQ}
                       searching={zones.searching}
                       loading={zones.listLoading}
-                      total={zones.total}
+                      total={zones.allTotal}
                       shown={zones.items.length}
                       activeFilterCount={zones.activeFilterCount}
                       clear={zones.clearSearch}
@@ -761,6 +781,7 @@ export function DnsPage() {
                       render: (r) => <ResourceStatusBadge status={String(r.apply_status)} /> },
                   ]}
                   rows={zones.items}
+                  filterActive={zones.activeFilterCount > 0}
                   empty={
                     <EmptyState title={t('dns.emptyZonesTitle')} />
                   }
@@ -799,6 +820,7 @@ export function DnsPage() {
                         className={buttonClassName({ variant: 'danger', size: 'sm' })}
                         disabled={zones.busy}
                         title={t('dns.deleteZoneNeedName')}
+                        data-confirm={String(r.zone || r.name || r.id)}
                         onClick={() =>
                           setDelZone({
                             id: r.id,
@@ -1109,7 +1131,7 @@ export function DnsPage() {
                         setQ={records.setQ}
                         searching={records.searching}
                         loading={records.listLoading}
-                        total={records.total}
+                        total={records.allTotal}
                         shown={records.items.length}
                         activeFilterCount={records.activeFilterCount}
                         clear={records.clearSearch}
@@ -1161,6 +1183,7 @@ export function DnsPage() {
                       ]}
                       rows={records.items}
                       rowKey={(r) => String((r as { id?: string }).id ?? '')}
+                      filterActive={records.activeFilterCount > 0}
                       empty={<EmptyState title={t('dns.emptyRecords')} />}
                       rowActions={(r) => (
                         <div className="dns-zone__row-actions">
@@ -1536,13 +1559,15 @@ export function DnsPage() {
                     </Badge>
                     <Badge tone={toneBadge(health.states?.answering)}>
                       {t('dns.stateAnswering')}:{' '}
-                      {health.answeringLocalA === true
-                        ? `A ${health.digAAnswers?.[0] ?? 'OK'}`
-                        : health.answeringLocal === true
-                          ? 'OK'
-                          : health.answeringLocal === false
-                            ? t('dns.healthAnsweringNo')
-                            : '—'}
+                      {notesSayDigMissing(health.digNotes ?? health.notes)
+                        ? t('dns.digNotInstalled')
+                        : health.answeringLocalA === true
+                          ? `A ${health.digAAnswers?.[0] ?? 'OK'}`
+                          : health.answeringLocal === true
+                            ? 'OK'
+                            : health.answeringLocal === false
+                              ? t('dns.healthAnsweringNo')
+                              : '—'}
                     </Badge>
                   </div>
                   {health.notes?.length ? (
@@ -1659,27 +1684,33 @@ export function DnsPage() {
               </Card>
             )}
 
+            {notesSayDigMissing(health?.notes ?? health?.digNotes) ? (
+              <Alert variant="warn">{t('dns.digNotInstalledHint')}</Alert>
+            ) : null}
             <Card>
               <CardSection title={t('dns.lookupTitle')}>
-                <form onSubmit={bindFormSubmit(onLookup)}>
+                <form noValidate onSubmit={bindFormSubmit(onLookup)}>
                   <FormLayout columns={2}>
                     <Field
                       label={t('dns.lookupName')}
                       htmlFor="lookup-name"
                       flush
                       required
+                      error={lookupNameError ?? undefined}
                     >
                       <input
                         id="lookup-name"
                         value={lookupName}
-                        onChange={bindInput(setLookupName)}
+                        onChange={(e) => {
+                          setLookupName(e.target.value);
+                          if (lookupNameError) setLookupNameError(null);
+                        }}
                         placeholder={
                           selectedLive
                             ? String(selectedLive.zone ?? 'example.com')
                             : 'example.com'
                         }
                         spellCheck={false}
-                        required
                       />
                     </Field>
                     <Field label={t('dns.colType')} htmlFor="lookup-type" flush>
@@ -1738,7 +1769,9 @@ export function DnsPage() {
               <Card>
                 <CardSection
                   title={
-                    lookupResult.ok
+                    notesSayDigMissing(lookupResult.notes)
+                      ? t('dns.digNotInstalled')
+                      : lookupResult.ok
                       ? t('dns.lookupResults', { count: lookupResult.answers.length })
                       : t('dns.lookupNoAnswerFail')
                   }
@@ -1764,7 +1797,18 @@ export function DnsPage() {
                       ))}
                     </ul>
                   ) : (
-                    <EmptyState title={t('dns.noAnswers')} description={t('dns.noAnswersDesc')} />
+                    <EmptyState
+                      title={
+                        notesSayDigMissing(lookupResult.notes)
+                          ? t('dns.digNotInstalled')
+                          : t('dns.noAnswers')
+                      }
+                      description={
+                        notesSayDigMissing(lookupResult.notes)
+                          ? t('dns.digNotInstalledHint')
+                          : t('dns.noAnswersDesc')
+                      }
+                    />
                   )}
                   {lookupResult.notes.length ? (
                     <ul className="list-plain u-mt-2">
@@ -1783,6 +1827,9 @@ export function DnsPage() {
       
         {tab === 'stack' ? (
           <div className="tab-panel stack">
+            {notesSayDigMissing(health?.notes) ? (
+              <Alert variant="warn">{t('dns.digNotInstalledHint')}</Alert>
+            ) : null}
             <SoftwareInstallBanner
               feature="dns"
               title={t('dns.notInstalled')}
@@ -2122,6 +2169,7 @@ export function DnsPage() {
         }}
         title={t('dns.deleteZoneTitle')}
         description={t('dns.deleteZoneDesc')}
+        dataConfirm={delZone?.name}
         confirmText={delZone?.name}
         severity="destructive"
         confirmLabel={t('common.delete')}

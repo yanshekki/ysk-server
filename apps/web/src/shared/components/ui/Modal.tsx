@@ -1,7 +1,13 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 let openModalCount = 0;
+const stackListeners = new Set<() => void>();
+let nextModalDepth = 0;
+
+function notifyModalStack() {
+  for (const fn of stackListeners) fn();
+}
 
 function setRootInert(on: boolean) {
   if (typeof document === 'undefined') return;
@@ -29,6 +35,8 @@ export interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   /** Extra class on the panel (e.g. feature-specific layouts) */
   className?: string;
+  /** Named target for confirm honesty / tests */
+  dataConfirm?: string;
 }
 
 /**
@@ -43,13 +51,16 @@ export function Modal({
   children,
   footer,
   size = 'md',
-  className }: ModalProps) {
+  className,
+  dataConfirm }: ModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const wasOpen = useRef(false);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const [depth, setDepth] = useState(0);
+  const [front, setFront] = useState(true);
 
   // Body scroll lock + Escape + inert background + Tab trap
   useEffect(() => {
@@ -60,10 +71,15 @@ export function Modal({
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     openModalCount += 1;
+    nextModalDepth += 1;
+    const myDepth = nextModalDepth;
+    setDepth(myDepth);
     setRootInert(true);
+    notifyModalStack();
 
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
+        if (myDepth !== nextModalDepth) return;
         onCloseRef.current();
         return;
       }
@@ -87,12 +103,26 @@ export function Modal({
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
       openModalCount = Math.max(0, openModalCount - 1);
-      if (openModalCount === 0) setRootInert(false);
+      if (openModalCount === 0) {
+        setRootInert(false);
+        nextModalDepth = 0;
+      }
+      notifyModalStack();
       const back = restoreFocusRef.current;
       restoreFocusRef.current = null;
       if (back && document.contains(back)) back.focus();
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const sync = () => setFront(depth > 0 && depth === nextModalDepth);
+    sync();
+    stackListeners.add(sync);
+    return () => {
+      stackListeners.delete(sync);
+    };
+  }, [open, depth]);
 
   // Focus first focusable field only when transitioning closed → open
   useEffect(() => {
@@ -130,9 +160,12 @@ export function Modal({
 
   const tree = (
     <div
-      className="modal-backdrop"
+      className={['modal-backdrop', front ? 'modal-backdrop--front' : 'modal-backdrop--back'].join(
+        ' ',
+      )}
       role="presentation"
       onMouseDown={(e) => {
+        if (!front) return;
         if (e.target === e.currentTarget) onCloseRef.current();
       }}
     >
@@ -142,6 +175,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        data-confirm={dataConfirm}
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

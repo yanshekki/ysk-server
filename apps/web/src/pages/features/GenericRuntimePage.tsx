@@ -159,8 +159,24 @@ export function isRustupDefaultMissingText(text: string | null | undefined): boo
   return (
     /no default toolchain/i.test(s) ||
     /rustup could not choose a version/i.test(s) ||
-    /no default is configured/i.test(s)
+    /no default is configured/i.test(s) ||
+    /wasn't specified|was not specified/i.test(s) ||
+    /error: rustup/i.test(s)
   );
+}
+
+export function looksLikeBinaryPath(text: string | null | undefined): boolean {
+  const s = String(text ?? '').trim();
+  return Boolean(s) && (s.startsWith('/') || /^[A-Za-z]:[\\/]/.test(s));
+}
+
+export function looksLikeVersionBanner(text: string | null | undefined): boolean {
+  const s = String(text ?? '').trim();
+  if (!s || looksLikeBinaryPath(s)) return false;
+  if (/^(info:|error:|rustc |cargo |go version|openjdk|kotlin |php |python )/i.test(s)) {
+    return true;
+  }
+  return /^v?\d+\.\d+/.test(s) && !s.includes('/');
 }
 
 export function runtimePinOnHost(
@@ -190,6 +206,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [tab, setTab] = usePageTab(tabs, 'overview');
   const [version, setVersion] = useState(meta.defaultVersion);
   const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
+  const [probeReady, setProbeReady] = useState(false);
   const [catalog, setCatalog] = useState<TuningGroup[]>([]);
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const [extraEnv, setExtraEnv] = useState('');
@@ -231,14 +248,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           candidates,
           source: h.source,
           notes: h.notes });
-        // No URL pin: always prefer discovered latest over offline META default
-        // (do not use `prev || latest` — defaultVersion is truthy and would lock forever)
-        const urlPin = searchParams.get('version');
-        if (!urlPin && h.latestVersion) {
-          setVersion(h.latestVersion);
-        } else if (!urlPin && candidates[0]?.version) {
-          setVersion(candidates[0].version);
-        }
+        /* Do not pick the newest candidate before host probe finishes. */
       })
       .catch(() => {
         if (!cancelled) setVersionStatus(null);
@@ -255,7 +265,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       const pd = r.panelDefaults as Record<string, string> | undefined;
       if (pd && pd[kind]) setPanelDefault(String(pd[kind]));
     } catch {
-      /* optional */
+      setProbe({});
+    } finally {
+      setProbeReady(true);
     }
   }, [kind]);
 
@@ -277,6 +289,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     // Offline placeholder only until discovery returns; discovery overwrites with latest
     setVersion(meta.defaultVersion);
     setVersionStatus(null);
+    setProbe(null);
+    setProbeReady(false);
     setTuningLoaded(false);
     void refresh();
   }, [kind, meta.defaultVersion, refresh]);
@@ -375,7 +389,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ? String(versionStatus.currentVersion).replace(/^v/i, '')
       : '';
   const recordedButProbeEmpty =
-    Boolean(recordedPin) && probeData.available.length === 0;
+    probeReady && Boolean(recordedPin) && probeData.available.length === 0;
 
   const rustupDefaultMissing =
     kind === 'rust' &&
@@ -388,15 +402,30 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           (Array.isArray(i.notes) &&
             i.notes.some((n) => isRustupDefaultMissingText(String(n)))),
       ));
-  const hostDisplay = rustupDefaultMissing
-    ? t('runtime.rustupDefaultMissingShort')
-    : probeData.host;
+  const hostDisplay = !probeReady
+    ? t('runtime.probing')
+    : rustupDefaultMissing || looksLikeVersionBanner(probeData.hostRaw)
+      ? rustupDefaultMissing
+        ? t('runtime.rustupDefaultMissingShort')
+        : looksLikeVersionBanner(probeData.hostRaw) && !looksLikeBinaryPath(probeData.hostRaw)
+          ? probeData.available[0] || t('runtime.hostDefaultError')
+          : probeData.host
+      : probeData.host;
+  const binaryPathDisplay = (() => {
+    if (!probeReady) return t('runtime.probing');
+    const fromItem = probeData.items.find(
+      (i) => i.available && looksLikeBinaryPath(String(i.resolvedPath ?? '')),
+    );
+    if (fromItem?.resolvedPath) return String(fromItem.resolvedPath);
+    if (looksLikeBinaryPath(probeData.hostRaw)) return probeData.hostRaw;
+    return t('runtime.noBinaryPath');
+  })();
   const targetOnHost = runtimePinOnHost(
     version,
     probeData.available,
     rustupDefaultMissing ? '' : probeData.hostRaw,
   );
-  const showTargetMissing = Boolean(probe) && Boolean(version) && !targetOnHost;
+  const showTargetMissing = probeReady && Boolean(version) && !targetOnHost;
 
   const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
   const [uninstallConfirmOpen, setUninstallConfirmOpen] = useState(false);
@@ -532,6 +561,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       title={meta.title}
       status={{
         pill: (() => {
+          if (!probeReady) {
+            return { label: t('runtime.probing'), tone: 'neutral' as const };
+          }
           if (probeData.available.length) {
             return {
               label: t('runtime.availableCount', { n: probeData.available.length }),
@@ -553,11 +585,11 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             : []),
           {
             label: t('runtime.installedLabel'),
-            value: probe
-              ? probeData.available.length
+            value: !probeReady
+              ? t('runtime.probing')
+              : probeData.available.length
                 ? probeData.available[0]
-                : t('runtime.notDetected')
-              : '—',
+                : t('runtime.notDetected'),
             hint: t('runtime.installedHint'),
           },
           {
@@ -571,10 +603,16 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             hint: t('runtime.panelDefaultHint'),
           },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
-          { label: t('common.host'), value: hostDisplay || '—' },
+          {
+            label: t('common.host'),
+            value: hostDisplay || '—',
+            tone: rustupDefaultMissing ? ('danger' as const) : undefined,
+          },
           {
             label: t('runtime.binaryPath'),
-            value: nodePathSafety?.path || probeData.hostRaw || '—',
+            value: nodePathSafety?.path && looksLikeBinaryPath(nodePathSafety.path)
+              ? nodePathSafety.path
+              : binaryPathDisplay,
           },
         ] }}
       actions={<>
@@ -673,7 +711,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             variant="secondary"
             size="sm"
             className="u-ml-2"
-            onClick={() => setTab('software')}
+            loading={busy}
+            onClick={() => {
+              const target =
+                probeData.available.find((v) => v === 'stable') ||
+                probeData.available[0] ||
+                'stable';
+              setVersion(target);
+              setDefaultConfirmOpen(true);
+            }}
           >
             {t('runtime.rustupSetDefaultHint')}
           </Button>
@@ -698,7 +744,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       >
         {tab === 'processes' && (kind === 'node' || kind === 'bun') ? (
           <div className="tab-panel">
-            <RuntimePm2Panel runtimes={kind === 'bun' ? 'bun' : 'node,bun'} />
+            <RuntimePm2Panel runtimes="node,bun" />
           </div>
         ) : null}
         {tab === 'overview' ? (
@@ -708,7 +754,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 <DescriptionList
                   columns={2}
                   items={[
-                    { label: t('runtime.hostDefault'), value: hostDisplay },
+                    {
+                      label: t('runtime.hostDefault'),
+                      value: rustupDefaultMissing ? (
+                        <Badge tone="danger">{hostDisplay}</Badge>
+                      ) : (
+                        hostDisplay
+                      ),
+                    },
                     {
                       label: t('runtime.panelSupport'),
                       value: probeData.supported.join(', ') || '—',

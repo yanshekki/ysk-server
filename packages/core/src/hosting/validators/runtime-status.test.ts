@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   deriveValidatorRuntimeStatus,
   isTransientValidatorProbeError,
+  pickValidatorContainerHint,
 } from './runtime-status.js';
 
 describe('deriveValidatorRuntimeStatus', () => {
@@ -59,6 +60,18 @@ describe('deriveValidatorRuntimeStatus', () => {
         lastError: 'rpc unreachable',
       }),
     ).toBe('stopped');
+  });
+});
+
+describe('pickValidatorContainerHint', () => {
+  it('prefers a fatal compose line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        "Error: Command line contains unexpected token 'bitcoind'",
+        'restarting',
+      ]),
+    ).toMatch(/unexpected token/);
   });
 });
 

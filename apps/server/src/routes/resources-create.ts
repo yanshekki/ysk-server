@@ -16,6 +16,7 @@ import {
   normalizeFtpPasswordFields,
   redactResourceSecrets,
 } from './resources-shared.js';
+import { isFtpUsername, isNginxServerNameList, isSqlIdent } from 'ysk-server-shared';
 
 export async function handleResourcesCreateRoutes(
   ctx: AppContext,
@@ -87,7 +88,7 @@ export async function handleResourcesCreateRoutes(
     // MySQL DB: optional create linked user
     if (key === 'mysql_databases') {
       const name = String(data.name ?? '').trim();
-      if (!name) {
+      if (!name || !isSqlIdent(name)) {
         sendJson(res, 400, { ok: false, message: tl('notes.needName') });
         return true;
       }
@@ -99,6 +100,11 @@ export async function handleResourcesCreateRoutes(
         engine: eng,
         apply_status: 'draft' });
       if (data.createUser && data.username && data.password) {
+        const uname = String(data.username).trim();
+        if (!isSqlIdent(uname)) {
+          sendJson(res, 400, { ok: false, message: tl('notes.needName') });
+          return true;
+        }
         createResource(ctx.db, 'mysql_users', {
           username: data.username,
           host: data.host ?? 'localhost',
@@ -138,6 +144,36 @@ export async function handleResourcesCreateRoutes(
       return true;
     }
 
+    if (key === 'nginx_sites') {
+      const serverName = String(data.serverName ?? data.server_name ?? '').trim();
+      if (!isNginxServerNameList(serverName)) {
+        sendJson(res, 400, { ok: false, message: tl('notes.auto.n1388') });
+        return true;
+      }
+      const kind = String(data.kind ?? 'proxy');
+      if (kind === 'proxy' && !String(data.upstream ?? '').trim()) {
+        sendJson(res, 400, { ok: false, message: tl('notes.auto.n1388') });
+        return true;
+      }
+      if ((kind === 'static' || kind === 'php') && !String(data.root ?? '').trim()) {
+        sendJson(res, 400, { ok: false, message: tl('notes.auto.n1388') });
+        return true;
+      }
+    }
+    if (key === 'mysql_users') {
+      const username = String(data.username ?? '').trim();
+      if (!username || !isSqlIdent(username)) {
+        sendJson(res, 400, { ok: false, message: tl('notes.needName') });
+        return true;
+      }
+    }
+    if (key === 'ftp_accounts') {
+      const user = String(data.username ?? data.user ?? '').trim();
+      if (!isFtpUsername(user)) {
+        sendJson(res, 400, { ok: false, message: tl('notes.needName') });
+        return true;
+      }
+    }
     let createData =
       key === 'ftp_accounts'
         ? normalizeFtpPasswordFields({ ...data, apply_status: data.apply_status ?? 'draft' })

@@ -258,5 +258,6 @@
   "hostnameFixDesc": "{{line}}",
   "hostnameFixDone": "Hostname /etc/hosts updated",
   "startAfterCreateBlocked": "Disabled until the hostname resolves",
-  "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
+  "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session.",
+  "startHostnameBlocked": "Cannot start until this host can resolve its hostname. Use “Write hostname to /etc/hosts”."
 }

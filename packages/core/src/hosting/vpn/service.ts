@@ -743,20 +743,18 @@ export class VpnService {
     }
     const state = this.loadWgServer();
     if (!state) return { ok: false, notes: [tl('notes.vpn.serverMissing')] };
-    const before = state.peers.length;
+    const peer = state.peers.find((p) => p.id === peerId);
+    if (!peer) return { ok: false, notes: [tl('notes.vpn.peerNotFound')] };
     state.peers = state.peers.filter((p) => p.id !== peerId);
-    if (state.peers.length === before) {
-      return { ok: false, notes: [tl('notes.vpn.peerNotFound')] };
-    }
     this.saveWgServer(state);
     if (this.host.executeEnabled() && this.host.isRoot()) {
       const sync = await this.syncWireGuardPeers();
       return {
         ok: sync.ok,
-        notes: [tl('notes.vpn.peerRemoved'), ...sync.notes],
+        notes: [tl('notes.vpn.peerRemoved', { name: peer.name }), ...sync.notes],
       };
     }
-    return { ok: true, notes: [tl('notes.vpn.peerRemoved')] };
+    return { ok: true, notes: [tl('notes.vpn.peerRemoved', { name: peer.name })] };
   }
 
   private async guessEndpoint(port: number): Promise<string> {

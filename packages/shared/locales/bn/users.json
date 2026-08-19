@@ -136,5 +136,6 @@
   "cannotImpersonateSelf": "আপনি ইতিমধ্যে এই অ্যাকাউন্ট হিসাবে সাইন ইন করেছেন",
   "singleAdminNo2fa": "এই হোস্টের একজন একক প্রশাসক আছে এবং 2FA বন্ধ আছে — 2FA সক্ষম করুন এবং একজন ব্যাকআপ অ্যাডমিন যোগ করুন।",
   "enableAdmin2fa": "Enable admin 2FA",
-  "addBackupAdmin": "Add a backup admin"
+  "addBackupAdmin": "Add a backup admin",
+  "noPackagesHint": "Create a plan from the toolbar, then bind it to users."
 }

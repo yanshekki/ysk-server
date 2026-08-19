@@ -18,6 +18,7 @@ import {
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { useServerList } from '../shared/hooks/useServerList';
 import { toast } from '../shared/stores/toast-store';
+import { notifyOk } from '../shared/lib/notify';
 import {
   PageGuide,
   ActionBar,
@@ -25,6 +26,7 @@ import {
   Badge,
   Button,
   DataTable,
+  EmptyState,
   FeaturePageLayout,
   Field,
   Form,
@@ -191,17 +193,18 @@ export function UsersPage() {
     setErrorRaw(null);
   }, []);
   const setMsg = useCallback((text: string | null) => {
-    if (text) toast.ok(text);
+    if (text) notifyOk(text);
   }, []);
   const [busy, setBusy] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'operator' | 'viewer' | 'admin'>('operator');
+  const [role, setRole] = useState<SystemRole>('operator');
   const [userPkgId, setUserPkgId] = useState('');
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [pkgFormOpen, setPkgFormOpen] = useState(false);
   const [editingPkg, setEditingPkg] = useState<Pkg | null>(null);
-  const [pkgName, setPkgName] = useState('default');
+  const [pkgName, setPkgName] = useState('');
+  const [pkgNameError, setPkgNameError] = useState<string | null>(null);
   const [pkgProjects, setPkgProjects] = useState('10');
   const [pkgMail, setPkgMail] = useState('10');
   const [pkgDb, setPkgDb] = useState('5');
@@ -289,7 +292,7 @@ export function UsersPage() {
       usersList.setFilters({});
       return;
     }
-    if (id === 'admin' || id === 'operator' || id === 'viewer') {
+    if (id === 'admin' || id === 'operator' || id === 'viewer' || id === 'agent') {
       usersList.setFilters({ role: id });
       return;
     }
@@ -338,6 +341,30 @@ export function UsersPage() {
     return draftMax !== base.maxLevel || !sameCapSet(draftCaps, base.capabilities);
   }, [policies, policyRole, draftMax, draftCaps]);
 
+  useEffect(() => {
+    if (!draftDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [draftDirty]);
+
+  function requestTab(next: typeof tab) {
+    if (tab === 'permissions' && next !== 'permissions' && draftDirty) {
+      setPending({ kind: 'discardPolicy', next: () => setTab(next) });
+      return;
+    }
+    setTab(next);
+  }
+
+  function roleLabel(r: string): string {
+    const key = `users.roleName.${r}`;
+    const label = t(key);
+    return label === key ? r : label;
+  }
+
   function requestPolicyRole(next: SystemRole) {
     if (next === policyRole) return;
     if (draftDirty) {
@@ -364,7 +391,8 @@ export function UsersPage() {
 
   function openCreatePkg() {
     setEditingPkg(null);
-    setPkgName('default');
+    setPkgName('');
+    setPkgNameError(null);
     setPkgProjects('10');
     setPkgMail('10');
     setPkgDb('5');
@@ -380,6 +408,7 @@ export function UsersPage() {
 
   function openEditPkg(p: Pkg) {
     setEditingPkg(p);
+    setPkgNameError(null);
     setPkgName(p.name);
     setPkgProjects(String(p.max_projects));
     setPkgMail(String(p.max_mailboxes));
@@ -418,7 +447,7 @@ export function UsersPage() {
             packageId: userPkgId || undefined,
             locale: createLocale || undefined }) });
         setCreateUserOpen(false);
-        setMsg(t('users.createdUser', { name: username }));
+        notifyOk(t('users.createdUser', { name: username }));
         await refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : t('common.createFailed'));
@@ -435,6 +464,11 @@ export function UsersPage() {
 
   async function onSavePkg(e: FormEvent) {
     e.preventDefault();
+    if (!pkgName.trim()) {
+      setPkgNameError(t('common.pleaseFill'));
+      return;
+    }
+    setPkgNameError(null);
     const mail = Number(pkgMail);
     const db = Number(pkgDb);
     const disk = Number(pkgDisk);
@@ -531,7 +565,7 @@ export function UsersPage() {
         setDetailUser(null);
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('common.saveFailed', { defaultValue: 'Save failed' }));
+        setError(err instanceof Error ? err.message : t('common.saveFailed'));
       } finally {
         setBusy(false);
       }
@@ -572,7 +606,7 @@ export function UsersPage() {
       setMsg(t('rbac.saved', { role: policyRole }));
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.saveFailed', { defaultValue: 'Save failed' }));
+      setError(err instanceof Error ? err.message : t('common.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -580,7 +614,8 @@ export function UsersPage() {
 
   const facets = usersList.meta?.facets;
   const usersReady = !usersList.loading;
-  const userTotal = usersList.meta?.total ?? users.length;
+  const userTotal = usersList.allTotal;
+  const userShown = users.length;
   const admins = facets?.role?.admin ?? users.filter((u) => u.roles.includes('admin')).length;
   const suspended =
     facets?.status?.suspended ?? users.filter((u) => u.suspended).length;
@@ -618,6 +653,10 @@ export function UsersPage() {
       label: t('users.filterViewer'),
       count: facets?.role?.viewer },
     {
+      id: 'agent',
+      label: t('users.roleName.agent'),
+      count: facets?.role?.agent },
+    {
       id: 'suspended',
       label: t('users.filterSuspended'),
       count: facets?.status?.suspended,
@@ -647,7 +686,7 @@ export function UsersPage() {
           : undefined,
         items: [
           { label: t('users.users'), value: countOrDash(userTotal) },
-          { label: 'Admin', value: countOrDash(admins) },
+          { label: t('users.roleName.admin'), value: countOrDash(admins) },
           {
             label: t('users.suspended'),
             value: countOrDash(suspended),
@@ -695,12 +734,12 @@ export function UsersPage() {
             { id: 'about', label: t('common.about') },
           ]}
           active={tab}
-          onChange={setTab}
+          onChange={requestTab}
           variant="scroll"
         >
           {tab === 'users' ? (
             <DataTable
-              title={t('users.userList', { count: userTotal })}
+              title={t('users.userList', { count: userShown })}
               description={t('users.userListDesc')}
               toolbar={
                 <ActionBar>
@@ -718,13 +757,13 @@ export function UsersPage() {
                   searching={usersList.searching}
                   loading={usersList.loading}
                   total={userTotal}
-                  shown={users.length}
+                  shown={userShown}
                   activeFilterCount={usersList.activeFilterCount}
                   onClear={usersList.clear}
                   chipGroups={[
                     {
                       key: 'userFilter',
-                      ariaLabel: t('common.filter', { defaultValue: 'Filter' }),
+                      ariaLabel: t('users.searchUsersAria'),
                       chips: userFilterChips
                         .filter((c) => c.id !== 'all')
                         .map((c) => ({
@@ -752,7 +791,7 @@ export function UsersPage() {
                     <span className="badge-row">
                       {u.roles.map((r) => (
                         <Badge key={r} tone={r === 'admin' ? 'warn' : 'neutral'}>
-                          {r}
+                          {roleLabel(r)}
                         </Badge>
                       ))}
                       {u.totpEnabled ? <Badge tone="ok">2FA</Badge> : null}
@@ -788,6 +827,7 @@ export function UsersPage() {
               ]}
               rows={users}
               rowKey={(u) => u.id}
+              filterActive={usersList.activeFilterCount > 0}
               empty={
                 usersList.activeFilterCount > 0 ? (
                   <p className="muted u-text-sm">
@@ -953,7 +993,12 @@ export function UsersPage() {
                     </Button>
                   </ActionBar>
                 )}
-                empty={<p className="muted u-text-sm">{t('users.noPackages')}</p>}
+                empty={
+                  <EmptyState
+                    title={t('users.noPackages')}
+                    description={t('users.noPackagesHint')}
+                  />
+                }
               />
             </div>
           ) : null}
@@ -1072,9 +1117,10 @@ export function UsersPage() {
               value={role}
               onChange={(v) => setRole(v as typeof role)}
               options={[
-                { value: 'operator', label: 'operator' },
-                { value: 'viewer', label: 'viewer' },
-                { value: 'admin', label: 'admin' },
+                { value: 'operator', label: t('users.roleName.operator') },
+                { value: 'viewer', label: t('users.roleName.viewer') },
+                { value: 'admin', label: t('users.roleName.admin') },
+                { value: 'agent', label: t('users.roleName.agent') },
               ]}
             />
           </Field>
@@ -1088,7 +1134,7 @@ export function UsersPage() {
               ))}
             </select>
           </Field>
-          <Field label={t('common.language', { defaultValue: 'Locale' })} htmlFor="u-locale" flush>
+          <Field label={t('common.language')} htmlFor="u-locale" flush>
             <select
               id="u-locale"
               value={createLocale}
@@ -1135,11 +1181,21 @@ export function UsersPage() {
         }
       >
         <Form id="pkg-form" columns={1} onSubmit={(e) => void onSavePkg(e)}>
-          <Field label={t('common.name')} htmlFor="p-name" flush required>
+          <Field
+            label={t('common.name')}
+            htmlFor="p-name"
+            flush
+            required
+            error={pkgNameError ?? undefined}
+          >
             <input
               id="p-name"
               value={pkgName}
-              onChange={bindInput(setPkgName)}
+              onChange={(e) => {
+                setPkgNameError(null);
+                bindInput(setPkgName)(e);
+              }}
+              placeholder="default"
               required
             />
           </Field>

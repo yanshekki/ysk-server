@@ -18,6 +18,8 @@ import {
   CLUSTER_ENGINE_ORDER,
   clusterServicePath,
   clusterEngineFromServiceRow,
+  clusterStatusLabel,
+  clusterStatusTone,
   serviceRowLooksInstalled,
   type ClusterEngine,
 } from './cluster-landing';
@@ -142,8 +144,8 @@ export function ClusterLandingPage() {
               key: 'status',
               header: t('common.status'),
               render: (r) => (
-                <Badge tone={r.status === 'healthy' || r.status === 'applied' ? 'ok' : 'warn'}>
-                  {r.status}
+                <Badge tone={clusterStatusTone(r.status)}>
+                  {clusterStatusLabel(r.status, t)}
                 </Badge>
               ),
             },

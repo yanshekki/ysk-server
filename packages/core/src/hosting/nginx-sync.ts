@@ -334,6 +334,25 @@ export async function syncNginxConfigs(opts: {
     for (const f of files) {
       const src = join(sourceDir, f);
       const dest = join(targetDir, `ysk-${f}`);
+      let srcBody = '';
+      try {
+        srcBody = readFileSync(src, 'utf8');
+      } catch {
+        srcBody = '';
+      }
+      if (existsSync(dest) && srcBody) {
+        try {
+          const destBody = readFileSync(dest, 'utf8');
+          const destHasSsl = /ssl_certificate\s+\S+/.test(destBody) || /listen\s+[^;]*443/.test(destBody);
+          const srcHas443 = /listen\s+[^;]*443/.test(srcBody);
+          if (destHasSsl && !srcHas443) {
+            notes.push(tl('notes.nginx.keptLiveSsl', { path: dest }));
+            continue;
+          }
+        } catch {
+          /* copy anyway */
+        }
+      }
       copyFileSync(src, dest);
       copied.push(dest);
     }

@@ -164,5 +164,9 @@
   "skippedListHint": "以下專案被略過：",
   "skippedPendingOs": "已略過 — 待建立系統用戶（主目錄不存在）",
   "goLogs": "開啟日誌",
-  "goAbout": "備份說明"
+  "goAbout": "備份說明",
+  "previewListingTitle": "封存內容",
+  "restoreNamedDesc": "將 {{name}} 還原到專案 {{project}}。",
+  "overwriteNamedDesc": "用快照 {{snapshot}} 覆寫專案 {{project}} 的檔案。",
+  "resticSafeNamed": "將專案 {{project}} 的快照 {{snapshot}} 還原到安全目錄。"
 }

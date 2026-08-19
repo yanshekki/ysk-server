@@ -678,5 +678,8 @@
   "gitBehindShort": "↓{{count}}",
   "gitAheadShort": "↑{{count}}",
   "gitDirtyShort": "Dirty · {{count}}",
-  "gitFilesLink": "Files"
+  "gitFilesLink": "Files",
+  "nameInvalid": "Use a lowercase name: start with a letter, then letters, digits, or hyphen (max 31).",
+  "deployVersionMissing": "Node {{version}} is not installed on this host. Pick an installed version, or install this version first.",
+  "deployUsedBinary": "Deploy used {{path}}"
 }

@@ -129,5 +129,6 @@
   "more": "अधिक",
   "redirectedTo": "{{to}} खोला गया (पहले {{from}})",
   "unavailable": "Not available right now",
-  "ok": "OK"
+  "ok": "OK",
+  "pleaseFill": "Please fill in this field"
 }

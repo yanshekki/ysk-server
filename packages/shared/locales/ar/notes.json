@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "لم يتم تثبيت redis-cli",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "فشل تنظيف nginx اليتيم: {{detail}}",
     "settingsWritten": "Nginx مقتطف عالمي مكتوب",
     "settingsNeedExecute": "تطبيق يحتاج YSK_EXECUTE",
-    "reloadFailed": "فشلت إعادة تحميل nginx"
+    "reloadFailed": "فشلت إعادة تحميل nginx",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "طلب شهادة"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "تنفيذ المضيف متوقف؛ لا يمكن إنشاء قاعدة بيانات من اللوحة",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "ملف Passwd مكتوب ضمن dataDir - قم بتشغيل التطبيق (EXECUTE+root) حتى يقوم Dovecot بتحميله",
     "postqueueSetgidBroken": "فشلت أدوات قائمة انتظار Postfix: setgid_group فارغ في main.cf. قم بتعيين setgid_group=postdrop (تحاول اللوحة الإصلاح عند تشغيل YSK_EXECUTE).",
     "postqueueMailDown": "Postfix لا يعمل (showq غير متوفر). حاولت اللوحة تشغيلها عند تشغيل YSK_EXECUTE - تحقق من علامة التبويب \"البرنامج\" / postfix لحالة systemctl.",
-    "postqueueSpoolMissing": "أدلة قائمة انتظار Postfix مفقودة (على سبيل المثال، Hold/). حاولت اللوحة إنشاء شجرة التخزين المؤقت وبدء تشغيل Postfix عند تشغيل YSK_EXECUTE."
+    "postqueueSpoolMissing": "أدلة قائمة انتظار Postfix مفقودة (على سبيل المثال، Hold/). حاولت اللوحة إنشاء شجرة التخزين المؤقت وبدء تشغيل Postfix عند تشغيل YSK_EXECUTE.",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "لم يتم العثور على الجلسة: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "إعداد Nginx الفعّال: {{path}}",
     "publicRoot": "الجذر العام: {{path}}",
     "confNameStale": "الملف {{file}} لا يطابق server_name الحالي {{serverName}}. أعد تطبيق الملفات العامة لإعادة التسمية."
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

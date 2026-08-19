@@ -31,6 +31,7 @@ import {
   ServerListFilters,
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
+import { isCidr, isIpAddress } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -339,7 +340,29 @@ export function scoreTone(score: number): 'warn' | 'info' | 'ok' {
 
 /** Deep-link ban IP query is a plausible IPv4/IPv6 literal. */
 export function isValidBanIpQuery(ip: string | null | undefined): boolean {
-  return Boolean(ip && /^[\d.a-fA-F:]+$/.test(ip));
+  return Boolean(ip && isIpAddress(ip));
+}
+
+/** Confirm-dialog label for a defense preset (受攻擊 vs 緊急). */
+export function protectionPresetConfirmName(
+  id: string,
+  t: (key: string) => string,
+  fallback?: string,
+): string {
+  if (id === 'under_attack') return t('protection.levels.under_attack.label');
+  if (id === 'emergency') return t('protection.emergency');
+  if (id === 'hardened') return t('protection.presetsWhen.hardened');
+  if (id === 'daily') return t('protection.presetsWhen.daily');
+  return fallback || id;
+}
+
+/** Ban KPI: fail2ban banned-list length, else defense unique-IP count. */
+export function protectionBanCensus(opts: {
+  fail2banBanned?: number;
+  defenseCount?: number;
+}): number {
+  if (typeof opts.fail2banBanned === 'number') return opts.fail2banBanned;
+  return opts.defenseCount ?? 0;
 }
 
 /** Whether `t` is a known Protection tab id. */
@@ -504,7 +527,10 @@ type BanRow = { ip: string; source: string; jail?: string; reason?: string };
 export function ProtectionPage() {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = usePageTab(TABS, 'command');
+  const [tab, setTab, unknownTab] = usePageTab(TABS, 'command', {
+    aliases: { access: 'geo' },
+  });
+  const panel = unknownTab ? null : tab;
   const [status, setStatus] = useState<DefenseStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -514,7 +540,7 @@ export function ProtectionPage() {
   const banList = useServerList<BanRow>({
     path: '/api/v1/defense/bans',
     debounceMs: 300,
-    enabled: tab === 'bans' || tab === 'command' });
+    enabled: tab === 'bans' || tab === 'command' || tab === 'intel' });
   const [suspects, setSuspects] = useState<SuspectIp[]>([]);
   const [suspectNotes, setSuspectNotes] = useState<string[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -556,6 +582,7 @@ export function ProtectionPage() {
     installed?: boolean;
     jails?: number;
     banned?: number;
+    ignoreIps?: string[];
   } | null>(null);
   const [timeline, setTimeline] = useState<
     Array<{ at: string; kind: string; title: string; detail?: string }>
@@ -578,7 +605,18 @@ export function ProtectionPage() {
     lookup?: Record<string, unknown>;
     access?: { blocked: boolean; reason?: string; matched: string[] };
   } | null>(null);
-  const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const { busy, error, result, msg, run: runRaw, setMsg, setError } = useFeatureAction();
+  const [resultTab, setResultTab] = useState<string | null>(null);
+  const run: typeof runRaw = useCallback(
+    (fn, okMessage) => {
+      setResultTab(tab);
+      return runRaw(fn, okMessage);
+    },
+    [runRaw, tab],
+  );
+  useEffect(() => {
+    setResultTab((prev) => (prev == null || prev === tab ? prev : null));
+  }, [tab]);
   const [hostIps, setHostIps] = useState<string[]>([]);
   const [loginIps, setLoginIps] = useState<string[]>([]);
   const [hideZeroScore, setHideZeroScore] = useState(true);
@@ -709,12 +747,14 @@ export function ProtectionPage() {
           installed: boolean;
           jails: unknown[];
           banned: unknown[];
+          ignoreIps?: string[];
         }>('/api/v1/system/fail2ban/status');
         setStackF2b({
           activeLabel: f2b.activeLabel,
           installed: f2b.installed,
           jails: f2b.jails?.length,
-          banned: f2b.banned?.length });
+          banned: f2b.banned?.length,
+          ignoreIps: Array.isArray(f2b.ignoreIps) ? f2b.ignoreIps : [] });
       } catch {
         setStackF2b(null);
       }
@@ -880,6 +920,18 @@ export function ProtectionPage() {
   const score = status?.score ?? 0;
 
   const recommendedPreset = recommendedPresetForThreat(threat);
+  const banCensus = protectionBanCensus({
+    fail2banBanned: stackF2b?.banned,
+    defenseCount: status?.bans?.count ?? banList.allTotal,
+  });
+  const ignoreipList = stackF2b?.ignoreIps ?? [];
+  const bannedIpSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const b of status?.bans.items ?? []) s.add(b.ip);
+    for (const b of banList.items) s.add(b.ip);
+    for (const x of suspects) if (x.alreadyBanned) s.add(x.ip);
+    return s;
+  }, [status?.bans.items, banList.items, suspects]);
 
   return (
     <FeaturePageLayout
@@ -912,10 +964,8 @@ export function ProtectionPage() {
                 },
                 {
                   label: t('protection.statActiveBans'),
-                  value: banList.meta?.total ?? banList.items.length ?? status.bans?.count ?? 0,
-                  tone: banCountTone(
-                    banList.meta?.total ?? banList.items.length ?? status.bans?.count ?? 0,
-                  ),
+                  value: banCensus,
+                  tone: banCountTone(banCensus),
                 },
                 {
                   label: t('protection.statPreset'),
@@ -979,7 +1029,7 @@ export function ProtectionPage() {
           {
             id: 'bans',
             label: t('protection.tabs.bans'),
-            badge: status?.bans.count || undefined,
+            badge: banCensus || undefined,
             badgeTitle: t('protection.badgeBanCount'),
           },
           {
@@ -1005,11 +1055,19 @@ export function ProtectionPage() {
           },
           { id: 'about', label: t('protection.tabs.about') },
         ]}
-        active={tab}
+        active={unknownTab ? '' : tab}
         onChange={setTab}
         variant="scroll"
       >
-        {tab === 'command' ? (
+        {unknownTab ? (
+          <div className="tab-panel">
+            <EmptyState
+              title={t('tabs.unknown')}
+              description={t('tabs.unknownHint', { tab: unknownTab })}
+            />
+          </div>
+        ) : null}
+        {panel === 'command' ? (
           <div className="tab-panel def-panel">
             <div className="def-section-head">
               <h3 className="def-section-head__title">{t('protection.sectionPreset')}</h3>
@@ -1062,6 +1120,7 @@ export function ProtectionPage() {
                         variant={p.danger ? 'danger' : active ? 'secondary' : 'primary'}
                         size="sm"
                         loading={busy}
+                        data-confirm={p.label || p.id}
                         onClick={bindPreset(applyPreset, p.id, p.danger, false)}
                       >
                         {active ? t('protection.reapply') : t('common.apply')}
@@ -1098,7 +1157,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
 
-        {tab === 'automation' ? (
+        {panel === 'automation' ? (
           <div className="tab-panel def-panel">
             <section className="def-autoban">
               <div className="def-autoban__left">
@@ -1684,7 +1743,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
 
-        {tab === 'stack' ? (
+        {panel === 'stack' ? (
           <div className="tab-panel def-panel stack">
             <SoftwareVersionBar softwareId="ufw" />
             <SoftwareVersionBar softwareId="fail2ban" />
@@ -1693,7 +1752,9 @@ export function ProtectionPage() {
                 <div className="def-section-head">
                   <h3 className="def-section-head__title">{t('protection.fwUfwTitle')}</h3>
                   <Badge tone={stackFw?.installed ? 'ok' : 'warn'}>
-                    {stackFw?.activeLabel ?? '—'}
+                    {stackFw?.installed === false
+                      ? t('firewall.notInstalled')
+                      : formatSignalValue(stackFw?.activeLabel, t)}
                   </Badge>
                 </div>
                 <p className="def-kpi-body">
@@ -1714,13 +1775,18 @@ export function ProtectionPage() {
                 <div className="def-section-head">
                   <h3 className="def-section-head__title">fail2ban</h3>
                   <Badge tone={stackF2b?.installed ? 'ok' : 'warn'}>
-                    {stackF2b?.activeLabel ?? '—'}
+                    {stackF2b?.installed === false
+                      ? t('fail2ban.notInstalled')
+                      : formatSignalValue(stackF2b?.activeLabel, t)}
                   </Badge>
                 </div>
                 <p className="def-kpi-body">
                   {t('protection.f2bStats', {
                     jails: stackF2b?.jails ?? 0,
-                    banned: stackF2b?.banned ?? 0 })}
+                    banned: banCensus })}
+                  {ignoreipList.length
+                    ? ` · ${t('fail2ban.statWhitelist')} ${ignoreipList.length}`
+                    : ` · ${t('fail2ban.statWhitelist')} 0`}
                 </p>
                 <FormActions>
                   <Link
@@ -1735,7 +1801,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
 
-        {tab === 'bans' ? (
+        {panel === 'bans' ? (
           <div className="tab-panel def-panel">
             {/* Auto-ban control strip */}
             <section className="def-autoban">
@@ -1950,7 +2016,7 @@ export function ProtectionPage() {
                           loading={busy}
                           disabled={disabled}
                           title={t('protection.banConfirmTitle', { ip: s.ip })}
-                          data-confirm="dialog"
+                          data-confirm={s.ip}
                           onClick={() => setPendingBan({ ip: s.ip, reason: s.reasons[0] })}
                         >
                           {t('protection.ban')}
@@ -1989,7 +2055,7 @@ export function ProtectionPage() {
 
             <DataTable
               title={t('protection.activeBansTitle', {
-                count: banList.meta?.total ?? status?.bans.count ?? banList.items.length })}
+                count: banCensus })}
               description={t('protection.activeBansDesc')}
               toolbar={
                 <ActionBar>
@@ -2012,7 +2078,7 @@ export function ProtectionPage() {
                         await refresh();
                         await banList.refresh();
                         return r;
-                      }, t('protection.stackApplyDone', { defaultValue: 'Defense stack apply requested' }))
+                      }, t('protection.stackApplyDone'))
                     }
                   >
                     {t('protection.stackApply')}
@@ -2025,14 +2091,14 @@ export function ProtectionPage() {
                   setQ={banList.setQ}
                   searching={banList.searching}
                   loading={banList.loading}
-                  total={banList.meta?.total ?? banList.items.length}
+                  total={banList.allTotal}
                   shown={banList.items.length}
                   activeFilterCount={banList.activeFilterCount}
                   clear={banList.clear}
                   chipGroups={[
                     {
                       key: 'source',
-                      allLabel: t('common.all', { defaultValue: 'All' }),
+                      allLabel: t('common.all'),
                       value: banList.filters.source ?? '',
                       onChange: (v) => banList.setFilter('source', v),
                       chips: [
@@ -2058,6 +2124,7 @@ export function ProtectionPage() {
               ]}
               rows={banList.items.length ? banList.items : status?.bans.items ?? []}
               rowKey={(b) => `${b.source}-${b.jail}-${b.ip}`}
+              filterActive={banList.activeFilterCount > 0}
               rowActions={(b) => (
                 <ActionBar align="end">
                   <Button
@@ -2092,12 +2159,12 @@ export function ProtectionPage() {
                 <div>
                   <h3 className="def-section-head__title">
                     {t('protection.autoBanWhitelistTitle')}{' '}
-                    <Badge tone="neutral">{ab?.whitelist?.length ?? 0}</Badge>
+                    <Badge tone="neutral">{ignoreipList.length}</Badge>
                   </h3>
                   <p className="def-section-head__desc">
                     {t('protection.autoBanWhitelistDesc')}{' '}
                     {t('protection.whitelistSyncHint', {
-                      n: ab?.whitelist?.length ?? 0,
+                      n: ignoreipList.length,
                       sync: automation?.autoBan.syncFail2banIgnoreip
                         ? t('protection.whitelistSyncOn')
                         : t('protection.whitelistSyncOff'),
@@ -2121,7 +2188,7 @@ export function ProtectionPage() {
                 </ActionBar>
               </div>
               <div className="def-wl">
-                {(ab?.whitelist ?? []).slice(0, 12).map((w) => (
+                {ignoreipList.slice(0, 12).map((w) => (
                   <span key={w} className="def-wl__chip">
                     <code>{w}</code>
                     <button
@@ -2148,7 +2215,7 @@ export function ProtectionPage() {
                     </button>
                   </span>
                 ))}
-                {!ab?.whitelist?.length ? (
+                {!ignoreipList.length ? (
                   <span className="muted u-text-sm">{t('protection.notSetSuggestAdmin')}</span>
                 ) : null}
                 {wlUndo ? (
@@ -2176,9 +2243,9 @@ export function ProtectionPage() {
                     </Button>
                   </ActionBar>
                 ) : null}
-                {(ab?.whitelist?.length ?? 0) > 12 ? (
+                {ignoreipList.length > 12 ? (
                   <span className="muted u-text-sm">
-                    {t('protection.moreItems', { n: (ab?.whitelist?.length ?? 0) - 12 })}
+                    {t('protection.moreItems', { n: ignoreipList.length - 12 })}
                   </span>
                 ) : null}
               </div>
@@ -2189,12 +2256,18 @@ export function ProtectionPage() {
                     onChange={bindInput(setWlInput)}
                     placeholder={t('protection.ipOrCidr')}
                     spellCheck={false}
+                    autoComplete="off"
                   />
                   <Button
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    disabled={!wlInput.trim()}
+                    disabled={!(isIpAddress(wlInput) || isCidr(wlInput))}
+                    title={
+                      wlInput.trim() && !(isIpAddress(wlInput) || isCidr(wlInput))
+                        ? t('fail2ban.invalidIp')
+                        : undefined
+                    }
                     onClick={bindDefenseWhitelistAction(
                       run,
                       api.requestRaw,
@@ -2221,13 +2294,24 @@ export function ProtectionPage() {
               </div>
               {showManual ? (
                 <FormLayout columns={2}>
-                  <Field label="IP" htmlFor="def-ip" flush required>
+                  <Field
+                    label="IP"
+                    htmlFor="def-ip"
+                    flush
+                    required
+                    error={
+                      banIp.trim() && !isIpAddress(banIp)
+                        ? t('fail2ban.invalidIp')
+                        : undefined
+                    }
+                  >
                     <input
                       id="def-ip"
                       value={banIp}
                       onChange={bindInput(setBanIp)}
                       placeholder={t('protection.banIpPlaceholder')}
                       spellCheck={false}
+                      autoComplete="off"
                     />
                   </Field>
                   <Field label={t('protection.reason')} htmlFor="def-reason" flush>
@@ -2243,10 +2327,16 @@ export function ProtectionPage() {
                       variant="danger"
                       size="md"
                       loading={busy}
-                      disabled={!banIp.trim()}
+                      disabled={!isIpAddress(banIp)}
+                      title={
+                        banIp.trim() && !isIpAddress(banIp)
+                          ? t('fail2ban.invalidIp')
+                          : undefined
+                      }
+                      data-confirm={banIp.trim() || 'ip'}
                       onClick={() => {
                         const ip = banIp.trim();
-                        if (!ip) return;
+                        if (!isIpAddress(ip)) return;
                         setPendingBan({ ip, reason: banReason });
                       }}
                     >
@@ -2262,7 +2352,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
 
-        {tab === 'intel' ? (
+        {panel === 'intel' ? (
           <div className="tab-panel def-panel">
             <div className="def-split def-split--intel">
               <section className="def-panel-card">
@@ -2339,6 +2429,7 @@ export function ProtectionPage() {
                   rowKey={(row) => row.ip}
                   rowActions={(row) => {
                     const selfKind = classifySelfIp(row.ip, selfIpOpts);
+                    const already = bannedIpSet.has(row.ip);
                     return (
                     <ActionBar align="end">
                       {selfKind ? (
@@ -2350,11 +2441,15 @@ export function ProtectionPage() {
                               : t('protection.selfIp')}
                         </Badge>
                       ) : null}
-                      {selfKind ? null : (
+                      {already ? (
+                        <Badge tone="ok">{t('protection.alreadyBanned')}</Badge>
+                      ) : null}
+                      {selfKind || already ? null : (
                       <Button
                         variant="danger"
                         size="sm"
                         loading={busy}
+                        data-confirm={row.ip}
                         onClick={() =>
                           setPendingBan({ ip: row.ip, reason: `top-ip score=${row.score}` })
                         }
@@ -2433,7 +2528,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
 
-        {tab === 'geo' ? (
+        {panel === 'geo' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -3048,7 +3143,7 @@ export function ProtectionPage() {
           </div>
         ) : null}
       
-        {tab === 'about' ? <PageGuide guideId="protection" /> : null}
+        {panel === 'about' ? <PageGuide guideId="protection" /> : null}
       </PageTabs>
 
       <Modal
@@ -3088,7 +3183,7 @@ export function ProtectionPage() {
           busy={busy}
         />
       </Modal>
-      {!previewOpen ? (
+      {!previewOpen && result && resultTab === tab ? (
         <OpsResultPanel
           title={t('opsResult.title')}
           result={
@@ -3109,10 +3204,25 @@ export function ProtectionPage() {
       <ConfirmDialog
         open={presetConfirmId != null}
         onClose={bindCloseIfIdle(busy, () => setPresetConfirmId(null))}
-        title={t('protection.applyStricterTitle')}
+        title={t('protection.applyStricterTitle', {
+          name: protectionPresetConfirmName(
+            presetConfirmId ?? '',
+            t,
+            status?.presets.find((p) => p.id === presetConfirmId)?.label,
+          ),
+        })}
         description={t('protection.applyStricterDesc')}
+        dataConfirm={protectionPresetConfirmName(
+          presetConfirmId ?? '',
+          t,
+          status?.presets.find((p) => p.id === presetConfirmId)?.label,
+        )}
+        consequences={
+          status?.presets.find((p) => p.id === presetConfirmId)?.bullets ?? []
+        }
         confirmLabel={t('common.apply')}
         cancelLabel={t('common.cancel')}
+        severity="destructive"
         danger
         busy={busy}
         onConfirm={() => {
@@ -3126,6 +3236,7 @@ export function ProtectionPage() {
         open={pendingBan != null}
         onClose={bindCloseIfIdle(busy, () => setPendingBan(null))}
         title={t('protection.banConfirmTitle', { ip: pendingBan?.ip ?? '' })}
+        dataConfirm={pendingBan?.ip}
         description={t('protection.banConfirmDesc', {
           ip: pendingBan?.ip ?? '',
           self:
@@ -3156,6 +3267,7 @@ export function ProtectionPage() {
           count: selectedIps.length,
           ips: selectedIps.slice(0, 8).join(', '),
         })}
+        dataConfirm={String(selectedIps.length)}
         confirmLabel={t('protection.banSelected')}
         cancelLabel={t('common.cancel')}
         danger

@@ -102,5 +102,22 @@
   "reloadTitle": "Reload {{label}} configuration without a full restart",
   "stopConfirmPanelSshdOffDesc": "The panel and API will go offline. sshd is not enabled on boot, so SSH may not be a rescue path after reboot.",
   "stopConfirmPanelSshdOffConsequence": "sshd is not enabled on boot. After reboot you may have no SSH rescue path.",
-  "ufwNoLifecycle": "UFW is not started or stopped from this matrix."
+  "ufwNoLifecycle": "UFW is not started or stopped from this matrix.",
+  "restartConfirmConsequence": "{{label}} will briefly interrupt connections, then keep serving HTTP/HTTPS.",
+  "reloadConfirmTitle": "Reload {{label}}?",
+  "reloadConfirmDesc": "Reload {{label}} configuration. Existing sessions should stay up.",
+  "enableConfirmTitle": "Enable {{label}} at boot?",
+  "enableConfirmDesc": "Enable {{label}} so it starts on boot.",
+  "cat": {
+    "web": "Web",
+    "db": "Databases",
+    "mail": "Mail",
+    "dns": "DNS",
+    "ftp": "FTP",
+    "cache": "Cache",
+    "panel": "Panel",
+    "ssh": "SSH",
+    "other": "Other",
+    "runtime": "Runtimes"
+  }
 }

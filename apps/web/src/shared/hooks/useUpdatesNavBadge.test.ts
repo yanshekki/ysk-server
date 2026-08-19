@@ -17,6 +17,7 @@ describe('useUpdatesNavBadge', () => {
       stale: false,
       panelUpdateAvailable: true,
       panelLatest: '1.1.6',
+      panelCurrent: '1.1.5',
     });
   });
 
@@ -31,6 +32,21 @@ describe('useUpdatesNavBadge', () => {
       expect(result.current.stale).toBe(false);
       expect(result.current.panelUpdateAvailable).toBe(true);
       expect(result.current.panelLatest).toBe('1.1.6');
+    });
+  });
+
+  it('hides the same-version panel banner', async () => {
+    vi.mocked(updatesApi.summary).mockResolvedValue({
+      badgeCount: 1,
+      stale: false,
+      panelUpdateAvailable: true,
+      panelLatest: '1.1.12',
+      panelCurrent: '1.1.12',
+    });
+    const { result } = renderHook(() => useUpdatesNavBadge());
+    await waitFor(() => {
+      expect(result.current.panelUpdateAvailable).toBe(false);
+      expect(result.current.count).toBe(0);
     });
   });
 });

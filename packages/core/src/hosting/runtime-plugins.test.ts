@@ -52,6 +52,16 @@ describe('runtime-plugins', () => {
     }
   });
 
+  it('python pip uninstall tries pipx, apt, then pip and records skip', () => {
+    const { lines, ids } = buildRuntimePluginUninstallScriptLines('python', ['virtualenv']);
+    expect(ids).toEqual(['virtualenv']);
+    const body = lines.join('\n');
+    expect(body).toMatch(/pipx uninstall/);
+    expect(body).toMatch(/apt-get remove/);
+    expect(body).toMatch(/python3 -m pip uninstall/);
+    expect(body).toMatch(/YSK_PLUGIN_SKIP:virtualenv/);
+  });
+
   it('builds uninstall lines for npm-global and skips empty', () => {
     const empty = buildRuntimePluginUninstallScriptLines('node', []);
     expect(empty.ids).toEqual([]);

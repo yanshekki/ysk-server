@@ -126,7 +126,7 @@ export function ValidatorsPage() {
   const [mainnetOk, setMainnetOk] = useState(false);
   const [el, setEl] = useState('reth');
   const [cl, setCl] = useState('lighthouse');
-  const [mithril, setMithril] = useState(true);
+  const [mithril, setMithril] = useState(false);
   const [memory, setMemory] = useState('');
   const [cpus, setCpus] = useState('');
   const [dataPath, setDataPath] = useState('');
@@ -278,12 +278,23 @@ export function ValidatorsPage() {
             : undefined;
   const canAdvanceFromDisk =
     !diskShort || (netSpec?.kind === 'mainnet' && mainnetOk);
-  const autoClearCandidate = [...instances]
-    .filter((i) => (summaries[i.id]?.status ?? i.desiredState) === 'stopped')
-    .sort(
-      (a, b) =>
-        (summaries[b.id]?.diskUsedBytes ?? 0) - (summaries[a.id]?.diskUsedBytes ?? 0),
-    )[0];
+  const autoClearCandidates = [...instances]
+    .map((i) => {
+      const st = summaries[i.id]?.status ?? i.desiredState;
+      const running = st === 'running' || st === 'syncing' || st === 'starting';
+      return {
+        id: i.id,
+        usedBytes: summaries[i.id]?.diskUsedBytes ?? i.lastStatus?.diskUsedBytes ?? 0,
+        running,
+      };
+    })
+    .filter((i) => !i.running)
+    .sort((a, b) => {
+      const aEmpty = a.usedBytes <= 0 ? 1 : 0;
+      const bEmpty = b.usedBytes <= 0 ? 1 : 0;
+      if (aEmpty !== bEmpty) return aEmpty - bEmpty;
+      return b.usedBytes - a.usedBytes;
+    });
 
   const openWizard = () => {
     setWizard(true);
@@ -294,7 +305,7 @@ export function ValidatorsPage() {
     setMainnetOk(false);
     setEl('reth');
     setCl('lighthouse');
-    setMithril(true);
+    setMithril(false);
     setMemory('');
     setCpus('');
     setDataPath('');
@@ -305,25 +316,49 @@ export function ValidatorsPage() {
 
   const create = async (execute: boolean) => {
     setBusy(true);
+    const job = stream?.begin({
+      kind: 'install',
+      title: t('validators.wizard.install'),
+    });
     try {
-      const r = await validatorsApi.create({
-        chain,
-        network,
-        profile,
-        el: chain === 'eth' ? el : undefined,
-        cl: chain === 'eth' ? cl : undefined,
-        mithril: chain === 'ada' ? mithril : undefined,
-        memory: memory.trim() || undefined,
-        cpus: cpus.trim() || undefined,
-        dataPath: customPath ? dataPath.trim() || undefined : undefined,
-        rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
-        acceptLowDisk: netSpec?.kind === 'mainnet' && mainnetOk,
-        execute,
-      });
-      setOps(toOps(r));
+      const streamed = await validatorsApi.create(
+        {
+          chain,
+          network,
+          profile,
+          el: chain === 'eth' ? el : undefined,
+          cl: chain === 'eth' ? cl : undefined,
+          mithril: chain === 'ada' ? mithril : undefined,
+          memory: memory.trim() || undefined,
+          cpus: cpus.trim() || undefined,
+          dataPath: customPath ? dataPath.trim() || undefined : undefined,
+          rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
+          acceptLowDisk: netSpec?.kind === 'mainnet' && mainnetOk,
+          execute,
+        },
+        {
+          onLog: (line) => {
+            if (job) stream?.appendLog(job.id, line);
+          },
+          signal: job?.signal,
+        },
+      );
+      const raw = (streamed.raw ?? {}) as ValidatorOpsResponse;
+      const result: OpsResultLike = {
+        ok: streamed.ops.ok !== false && !streamed.ops.blocked && raw.apply_status !== 'failed',
+        blocked: streamed.ops.blocked,
+        apply_status: raw.apply_status as OpsResultLike['apply_status'],
+        notes: streamed.ops.notes ?? raw.notes ?? [],
+        blockMessage: streamed.ops.blockMessage ?? raw.blockMessage,
+      };
+      setOps(result);
+      if (job) stream?.finish(job.id, { ok: result.ok !== false, error: result.blockMessage, toast: false });
       await load();
+      if (result.ok && result.apply_status === 'applied') setWizard(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
     } finally {
       setBusy(false);
     }
@@ -604,8 +639,12 @@ export function ValidatorsPage() {
             <p className="muted u-text-sm u-mt-0">
               {t('validators.disk.autoClearThreshold', { n: VALIDATOR_DISK_DANGER_PCT })}
               {' · '}
-              {autoClearCandidate
-                ? t('validators.disk.autoClearCandidate', { id: autoClearCandidate.id })
+              {autoClearCandidates.length
+                ? t('validators.disk.autoClearCandidates', {
+                    list: autoClearCandidates
+                      .map((c) => `${c.id} (${formatBytes(c.usedBytes)})`)
+                      .join(' · '),
+                  })
                 : t('validators.disk.autoClearNone')}
             </p>
             <DescriptionList
@@ -961,6 +1000,7 @@ export function ValidatorsPage() {
         }
       >
         <div className="stack val-wizard">
+        {ops ? <OpsResultPanel title={t('validators.wizard.install')} result={ops} /> : null}
         {step === 0 ? (
           <>
             {loading && chains.length === 0 ? (
@@ -1112,14 +1152,17 @@ export function ValidatorsPage() {
               </FormLayout>
             ) : null}
             {chain === 'ada' ? (
-              <label className="u-flex u-gap-2 u-items-center">
-                <input
-                  type="checkbox"
-                  checked={mithril}
-                  onChange={(e) => setMithril(e.target.checked)}
-                />
-                <span>{t('validators.mithril.label')}</span>
-              </label>
+              <div>
+                <label className="u-flex u-gap-2 u-items-center">
+                  <input
+                    type="checkbox"
+                    checked={mithril}
+                    onChange={(e) => setMithril(e.target.checked)}
+                  />
+                  <span>{t('validators.mithril.label')}</span>
+                </label>
+                <p className="muted u-text-sm u-mt-2">{t('validators.mithril.hint')}</p>
+              </div>
             ) : null}
             <FormLayout>
               <Field htmlFor="val-mem" label={t('validators.wizard.memory')}>
@@ -1689,7 +1732,6 @@ export function ValidatorsPage() {
         ]}
         onConfirm={() => {
           setPendingInstall(false);
-          setWizard(false);
           void create(true);
         }}
       />
@@ -1704,8 +1746,12 @@ export function ValidatorsPage() {
         consequences={[
           t('validators.disk.autoClearC1'),
           t('validators.disk.autoClearThreshold', { n: VALIDATOR_DISK_DANGER_PCT }),
-          autoClearCandidate
-            ? t('validators.disk.autoClearCandidate', { id: autoClearCandidate.id })
+          autoClearCandidates.length
+            ? t('validators.disk.autoClearCandidates', {
+                list: autoClearCandidates
+                  .map((c) => `${c.id} (${formatBytes(c.usedBytes)})`)
+                  .join(' · '),
+              })
             : t('validators.disk.autoClearNone'),
         ]}
         onConfirm={() => {

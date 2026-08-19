@@ -126,7 +126,9 @@
     "customHint": "صرف CIDRs جو آپ درج کرتے ہیں سرنگ میں داخل ہوتے ہیں۔ درخواست دینے کے بعد دوبارہ جڑیں۔",
     "lanCidrs": "LAN نیٹ ورکس",
     "customCidr": "CIDR",
-    "addCidr": "شامل کریں۔"
+    "addCidr": "شامل کریں۔",
+    "cidrRequired": "Enter a CIDR (for example 192.168.1.0/24).",
+    "cidrInvalid": "Enter a valid CIDR, for example 192.168.1.0/24."
   },
   "engineNotInstalled": "یہ VPN انجن میزبان پر نصب نہیں ہے۔",
   "serverNotListening": "سرور یونٹ فعال نہیں ہے۔ UDP/TCP {{port}} بند ہو سکتا ہے۔",
@@ -142,5 +144,17 @@
   "showPrivateKey": "Show private key",
   "hidePrivateKey": "Hide private key",
   "deletePeerTitle": "Delete peer {{name}}?",
-  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
+  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored.",
+  "peerNameHint": "Letters, digits, . _ - — no spaces, / or !",
+  "peerNameInvalid": "Spaces, / and ! are not allowed. Use {{preview}} or change the name.",
+  "deleteClientTitle": "Delete OpenVPN client {{name}}?",
+  "deleteClientDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the profile cannot be restored. The OpenVPN server stays up.",
+  "deleteKeyTitle": "Delete Shadowsocks key {{name}}?",
+  "deleteKeyDesc": "Remove access key {{name}} ({{address}}). Clients using this key disconnect. The Shadowsocks server stays up.",
+  "deleteResult": "Removed {{name}}.",
+  "portInvalid": "Listen port must be an integer from 1 to 65535.",
+  "portRequired": "Listen port is required.",
+  "importInvalid": "Could not detect a WireGuard or OpenVPN client conf.",
+  "qrFailed": "Could not generate a QR code for this config. Download or copy the text instead.",
+  "cfgTitle": "Config — {{name}}"
 }

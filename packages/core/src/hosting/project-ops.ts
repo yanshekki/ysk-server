@@ -639,6 +639,7 @@ export class ProjectOpsService {
       detail: { port, pid, health, listening, nginxPath, deployMode, degraded, ...live },
       ok: health.ok && listening });
 
+    notes.push(tl('notes.auto.t0172', { v0: nodeBinary }));
     return {
       ok: health.ok && listening,
       projectId,
@@ -912,8 +913,12 @@ export class ProjectOpsService {
       listening,
       nginxPath: row.nginx_config_path,
       notes: [
-        listening ? `Port ${port} is listening` : `Port ${port} is not listening`,
-        health.ok ? `HTTP OK ${health.status}` : `HTTP fail: ${health.error ?? health.status}`,
+        listening
+          ? tl('notes.health.portListening', { port })
+          : tl('notes.health.portNotListening', { port }),
+        health.ok
+          ? tl('notes.health.httpOk', { status: health.status ?? '' })
+          : tl('notes.health.httpFail', { detail: health.error ?? health.status ?? '' }),
       ],
       written: [] };
   }
@@ -3097,8 +3102,9 @@ export function resolveNodeBinary(
         }
         return { path: c, notes };
       }
-      // /usr/bin/node — only if no ysk major path; note version may skew
-      if (c === '/usr/bin/node' || c === '/usr/local/bin/node' || c === `/usr/bin/node${major}`) {
+      // Only accept the exact major binary (/usr/bin/node20). Generic /usr/bin/node
+      // may be a different major — never silently substitute it for the selected version.
+      if (c === `/usr/bin/node${major}`) {
         notes.push(tl('notes.deploy.usingFallback', { path: c, planned }));
         return { path: c, notes };
       }

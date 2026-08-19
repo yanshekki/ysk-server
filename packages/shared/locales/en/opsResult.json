@@ -19,5 +19,9 @@
   "stepStoppedOld": "Stopped previous process",
   "stepTuningApplied": "Runtime tuning applied",
   "stepUnitWritten": "Service unit written",
-  "stepSystemdStartFailed": "Systemd start failed — using process fallback"
+  "stepSystemdStartFailed": "Systemd start failed — using process fallback",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

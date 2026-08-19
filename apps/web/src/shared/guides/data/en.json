@@ -1002,16 +1002,16 @@
   "security": {
     "id": "security",
     "title": "Account security",
-    "summary": "Panel login security: password, two-factor, passkeys, and sessions.",
+    "summary": "Panel login security: password, TOTP, and sessions.",
     "canDo": [
-      "Password：Change the panel login password.",
-      "Two-factor / WebAuthn：Stronger login verification.",
-      "Sessions：List or revoke signed-in sessions.",
-      "Enable 2FA for admin accounts",
-      "Kick a stolen or shared session"
+      "Password：change the panel login password.",
+      "TOTP：time-based one-time passwords for sign-in.",
+      "Sessions：list or revoke signed-in sessions.",
+      "Turn on TOTP for admin accounts",
+      "Revoke a stolen or shared session"
     ],
     "notes": [
-      "Losing a 2FA device may need out-of-band recovery—back up recovery codes"
+      "Losing a TOTP device may need out-of-band recovery—back up recovery codes."
     ],
     "related": [
       {
@@ -1445,17 +1445,18 @@
   },
   "agents": {
     "id": "agents",
-    "title": "Agents",
-    "summary": "Manage supervised ops agents and playbook-style automation.",
+    "title": "AI agents",
+    "summary": "Register edge agents, queue commands, read history, and probe AI runtimes.",
     "canDo": [
-      "Agent list：View available agents.",
-      "Run：Execute predefined flows within authorized scope.",
-      "Automate repetitive checks",
-      "Pick a playbook",
-      "Confirm scope"
+      "Register：add an edge agent to the control-plane list (registered ≠ online).",
+      "Command：queue CLI presets or custom argv; the edge pulls and acks.",
+      "History：queued / done / error, exit code, and JSON.",
+      "Runtimes：probe, write systemd units, and install OpenClaw / Hermes / IonClaw.",
+      "Status：registered → online → stale (>60s) → offline."
     ],
     "notes": [
-      "Agents must not bypass the EXECUTE / permission model"
+      "Registration does not start a process. The node must run the outbound agent.",
+      "Host-changing commands still need EXECUTE on the edge."
     ],
     "related": [
       {
@@ -1621,18 +1622,18 @@
   "vpn": {
     "id": "vpn",
     "title": "VPN",
-    "summary": "Host WireGuard (and later OpenVPN) as a server for phones/laptops, or connect this host as a client to another VPN.",
+    "summary": "Host WireGuard, OpenVPN, or Shadowsocks as a server for phones/laptops, or connect this host as a client to another VPN.",
     "canDo": [
-      "One-click install WireGuard tools",
-      "Start a WireGuard server and open the listen port in UFW",
-      "Create clients with downloadable conf + QR code",
+      "Install WireGuard, OpenVPN, and Shadowsocks on the Software tab",
+      "Start a server and open the listen port",
+      "Create clients — download conf; WireGuard and Shadowsocks also show a QR",
       "Import a conf and connect this host as a client"
     ],
     "workflow": [
-      "Install tab → install WireGuard",
-      "Server tab → set endpoint/port → Start server → Open firewall",
-      "Create a client → download conf or scan QR on the phone",
-      "Client tab → paste conf → Connect when you need egress via another VPN"
+      "Software tab → install the engine",
+      "Engine tab → set endpoint/port → Apply server",
+      "Add a peer/client → download conf (QR for WireGuard / Shadowsocks)",
+      "Client tab → paste conf → Connect"
     ],
     "notes": [
       "Requires root and YSK_EXECUTE for install, server apply, and client connect",
@@ -1660,15 +1661,15 @@
     "summary": "Run multi-user TigerVNC sessions (one Linux user each), open them in the browser with noVNC, or connect outbound as a client via the server proxy or your own network.",
     "canDo": [
       "One-click install TigerVNC, noVNC, optional XFCE and viewer",
-      "Create independent Linux users for each VNC account (next PR)",
+      "Create independent Linux users for each VNC account",
       "Prefer localhost RFB + noVNC; optional direct ports with firewall",
-      "Choose client path: via server (proxy) or direct RFB"
+      "Choose client path: user-reachable or via server proxy"
     ],
     "workflow": [
       "Install tab → TigerVNC (then noVNC)",
       "Settings → default desktop / resolution / RFB bind",
-      "Accounts → create user session (PR-B)",
-      "Open noVNC or give the user host:port for their own network"
+      "Accounts → create user session",
+      "Open in browser or give the user host:port"
     ],
     "notes": [
       "Open in browser needs noVNC. Install it on the Install tab before opening remotes here.",
@@ -1706,7 +1707,7 @@
       "Apply"
     ],
     "notes": [
-      "Needs YSK_EXECUTE for system apply"
+      "Applying to the host needs system-change permission"
     ]
   },
   "btTracker": {

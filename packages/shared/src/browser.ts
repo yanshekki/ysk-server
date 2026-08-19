@@ -26,6 +26,8 @@ export * from './route-capabilities.js';
 export * from './service-ports.js';
 /** Unified list search/filter (browser-safe pure helpers) */
 export * from './list-query.js';
+export * from './ident.js';
+export * from './docker.js';
 
 /** Locale helpers only (no server t()/tl() loaders) */
 export {

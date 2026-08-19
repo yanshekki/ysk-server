@@ -80,5 +80,6 @@
   "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
   "backToDashboard": "Kembali ke dasbor",
   "validators": "Validator (Beta)",
-  "docker": "Buruh pelabuhan"
+  "docker": "Buruh pelabuhan",
+  "cluster": "Clusters"
 }

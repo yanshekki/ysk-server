@@ -20,6 +20,7 @@ export const resourcesApi = {
       : '';
     return api.requestRaw<{
       items: ResourceRow[];
+      allTotal?: number;
       meta?: {
         total: number;
         page: number;
@@ -27,6 +28,7 @@ export const resourcesApi = {
         q: string;
         filters: Record<string, string>;
         order: 'asc' | 'desc';
+        allTotal?: number;
       };
     }>(`${base(collection)}${q}`);
   },

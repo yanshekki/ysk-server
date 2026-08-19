@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from 'ysk-server-shared';
 import {
   ProjectCreateModal,
+  ProjectDeleteDialog,
   ProjectList,
   projectsApi } from '../features/projects';
 import { summarizeProjects } from '../features/projects/model/status';
@@ -20,15 +21,18 @@ import {
   WithPageGuide,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
+import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { toast } from '../shared/stores/toast-store';
-import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
+import { bindSet } from './bind-handlers';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
+  const { can } = useCapabilities();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ProjectDto | null>(null);
   const [hintRuntime, setHintRuntime] = useState<string | null>(null);
   const [hintVersion, setHintVersion] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,7 +61,7 @@ export function ProjectsPage() {
 
   const items = list.items;
   const stats = useMemo(() => summarizeProjects(items), [items]);
-  const total = list.meta?.total ?? items.length;
+  const total = list.allTotal;
   const facets = list.meta?.facets;
   const runtime = list.filters.runtime ?? '';
 
@@ -161,6 +165,7 @@ export function ProjectsPage() {
         >
           <ProjectList
             items={items}
+            onDelete={can('projects.delete') ? setDeleteTarget : undefined}
             emptyTitle={
               list.activeFilterCount > 0
                 ? t('projects.emptyFilter')
@@ -214,6 +219,22 @@ export function ProjectsPage() {
             } finally {
               setBusy(false);
             }
+          }}
+        />
+        <ProjectDeleteDialog
+          project={deleteTarget}
+          open={Boolean(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={(r) => {
+            const parts = [
+              ...(r.notes ?? []).slice(0, 4),
+              ...(r.warnings ?? []).slice(0, 2),
+            ];
+            toast.ok(
+              parts.length ? parts.join('；') : t('projects.deletedOk'),
+            );
+            setDeleteTarget(null);
+            void list.refresh();
           }}
         />
       </WithPageGuide>

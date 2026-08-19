@@ -136,5 +136,6 @@
   "cannotImpersonateSelf": "آپ پہلے ہی اس اکاؤنٹ کے بطور سائن ان ہیں۔",
   "singleAdminNo2fa": "اس میزبان کا ایک واحد منتظم ہے اور 2FA آف ہے — 2FA کو فعال کریں اور ایک بیک اپ ایڈمن شامل کریں۔",
   "enableAdmin2fa": "Enable admin 2FA",
-  "addBackupAdmin": "Add a backup admin"
+  "addBackupAdmin": "Add a backup admin",
+  "noPackagesHint": "Create a plan from the toolbar, then bind it to users."
 }

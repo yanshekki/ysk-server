@@ -19,5 +19,9 @@
   "stepStoppedOld": "已停止旧进程",
   "stepTuningApplied": "已应用运行时调校",
   "stepUnitWritten": "已写入 systemd 服务",
-  "stepSystemdStartFailed": "systemd 启动失败 — 已降级为进程启动"
+  "stepSystemdStartFailed": "systemd 启动失败 — 已降级为进程启动",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

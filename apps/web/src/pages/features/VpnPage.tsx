@@ -26,6 +26,7 @@ import {
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { isCidr } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
 import { formatDateTime } from '../../shared/lib/datetime';
@@ -48,6 +49,9 @@ import {
   detectClientEngine,
   firewallProtoForEngine,
   hostFromEndpoint,
+  isVpnPeerName,
+  parseListenPortInput,
+  previewVpnPeerName,
   syncEndpointPort,
   type VpnEngineTab,
 } from '../../features/vpn/endpoint-sync';
@@ -113,10 +117,13 @@ export function VpnPage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<VpnStatusResponse | null>(null);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
+  const [resultTab, setResultTab] = useState<TabId | null>(null);
 
   // Shared server form (values follow active engine tab)
   const [endpoint, setEndpoint] = useState('');
   const [listenPort, setListenPort] = useState(51820);
+  const [listenPortText, setListenPortText] = useState('51820');
+  const [portError, setPortError] = useState<string | null>(null);
   const [ovpnProto, setOvpnProto] = useState<'udp' | 'tcp'>('udp');
   const [accessMode, setAccessMode] = useState<'full' | 'lan' | 'custom'>('full');
   const [lanCidrs, setLanCidrs] = useState<string[]>([
@@ -126,7 +133,9 @@ export function VpnPage() {
   ]);
   const [customCidrInput, setCustomCidrInput] = useState('');
   const [customCidrs, setCustomCidrs] = useState<string[]>([]);
+  const [cidrError, setCidrError] = useState<string | null>(null);
   const [peerName, setPeerName] = useState('');
+  const [peerNameTouched, setPeerNameTouched] = useState(false);
 
   // QR / conf modal
   const [cfgOpen, setCfgOpen] = useState(false);
@@ -135,6 +144,7 @@ export function VpnPage() {
   const [cfgQr, setCfgQr] = useState<string | null>(null);
   const [cfgEngine, setCfgEngine] = useState<VpnEngineTab>('wireguard');
   const [cfgRevealKey, setCfgRevealKey] = useState(false);
+  const [cfgQrTried, setCfgQrTried] = useState(false);
   const [pendingPeer, setPendingPeer] = useState<VpnServerPeer | null>(null);
 
   // Client import modal
@@ -221,6 +231,8 @@ export function VpnPage() {
         ? st.serverPort
         : defaultPortForEngine(eng, ovpnProto);
     setListenPort(nextPort);
+    setListenPortText(String(nextPort));
+    setPortError(null);
     if (st?.serverProto === 'tcp' || st?.serverProto === 'udp') {
       setOvpnProto(st.serverProto);
     }
@@ -230,10 +242,12 @@ export function VpnPage() {
   }, [tab, statusReady, hintHost]);
 
   const setPort = (port: number, proto?: 'udp' | 'tcp') => {
-    const p = Number.isFinite(port) && port > 0 && port < 65536 ? Math.floor(port) : listenPort;
-    setListenPort(p);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) return;
+    setListenPort(port);
+    setListenPortText(String(port));
+    setPortError(null);
     if (proto) setOvpnProto(proto);
-    setEndpoint((prev) => syncEndpointPort(prev, p, hintHost));
+    setEndpoint((prev) => syncEndpointPort(prev, port, hintHost));
   };
 
   const peers: VpnServerPeer[] = useMemo(
@@ -272,31 +286,64 @@ export function VpnPage() {
     setCfgText(text);
     setCfgRevealKey(false);
     setCfgQr(null);
+    setCfgQrTried(false);
     setCfgOpen(true);
   };
 
   useEffect(() => {
-    if (!cfgOpen || !cfgRevealKey) {
+    if (!cfgOpen || !cfgText) {
       setCfgQr(null);
+      setCfgQrTried(false);
       return;
     }
-    if (cfgEngine !== 'wireguard' && cfgEngine !== 'outline') return;
+    if (cfgEngine !== 'wireguard' && cfgEngine !== 'outline') {
+      setCfgQr(null);
+      setCfgQrTried(true);
+      return;
+    }
     let cancelled = false;
-    void QRCode.toDataURL(cfgText, {
+    setCfgQrTried(false);
+    const toDataUrl =
+      typeof QRCode.toDataURL === 'function'
+        ? QRCode.toDataURL.bind(QRCode)
+        : (
+            QRCode as { default?: { toDataURL?: typeof QRCode.toDataURL } }
+          ).default?.toDataURL?.bind(
+            (QRCode as { default?: unknown }).default ?? QRCode,
+          );
+    if (!toDataUrl) {
+      setCfgQr(null);
+      setCfgQrTried(true);
+      return;
+    }
+    void toDataUrl(cfgText, {
       errorCorrectionLevel: 'M',
       margin: 1,
       width: 280,
     })
+      .catch(() =>
+        toDataUrl(cfgText, {
+          errorCorrectionLevel: 'L',
+          margin: 1,
+          width: 280,
+        }),
+      )
       .then((url) => {
-        if (!cancelled) setCfgQr(url);
+        if (!cancelled) {
+          setCfgQr(typeof url === 'string' && url ? url : null);
+          setCfgQrTried(true);
+        }
       })
       .catch(() => {
-        if (!cancelled) setCfgQr(null);
+        if (!cancelled) {
+          setCfgQr(null);
+          setCfgQrTried(true);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [cfgOpen, cfgRevealKey, cfgText, cfgEngine]);
+  }, [cfgOpen, cfgText, cfgEngine]);
 
   const runOps = async (
     fn: () => Promise<{
@@ -313,6 +360,7 @@ export function VpnPage() {
     setError(null);
     try {
       const r = await fn();
+      setResultTab(tab as TabId);
       setLastOps({
         ok: r.ok,
         notes: r.notes,
@@ -336,6 +384,7 @@ export function VpnPage() {
       return r;
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('common.loadFailed');
+      setResultTab(tab as TabId);
       setError(msg);
       notifyError(msg);
       return null;
@@ -428,10 +477,12 @@ export function VpnPage() {
       };
     }
     const up = Boolean(engSt?.serverActive);
+    const appliedPort =
+      engSt?.serverPort && engSt.serverPort > 0 ? engSt.serverPort : null;
     return {
       label: t('vpn.statusLine', {
         state: up ? t('vpn.serverUp') : t('vpn.serverDown'),
-        port: listenPort,
+        port: appliedPort ?? '—',
         proto: fwProto === 'both' ? 'tcp+udp' : fwProto,
         peers: peers.length,
       }),
@@ -459,14 +510,30 @@ export function VpnPage() {
 
       <section className="stack vpn-server-settings" aria-label={t('vpn.serverSettings')}>
         <FormLayout columns={2}>
-          <Field label={portLabel} htmlFor={`vpn-port-${engine}`} flush>
+          <Field
+            label={portLabel}
+            htmlFor={`vpn-port-${engine}`}
+            error={portError ?? undefined}
+            flush
+          >
             <input
               id={`vpn-port-${engine}`}
-              type="number"
-              min={1}
-              max={65535}
-              value={listenPort}
-              onChange={(e) => setPort(Number(e.target.value) || listenPort)}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={listenPortText}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^\d]/g, '');
+                setListenPortText(raw);
+                const n = parseListenPortInput(raw);
+                if (n != null) {
+                  setPort(n);
+                } else {
+                  setPortError(
+                    raw ? t('vpn.portInvalid') : t('vpn.portRequired'),
+                  );
+                }
+              }}
             />
           </Field>
           {engine === 'openvpn' ? (
@@ -580,39 +647,76 @@ export function VpnPage() {
               </div>
             ) : null}
             {accessMode === 'custom' ? (
-              <div className="u-flex u-gap-2 u-flex-wrap u-items-center">
-                <input
-                  className="u-input u-w-control-sm"
-                  value={customCidrInput}
-                  onChange={(e) => setCustomCidrInput(e.target.value)}
-                  placeholder="192.168.1.0/24"
-                  aria-label={t('vpn.access.customCidr')}
-                />
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    const c = customCidrInput.trim();
-                    if (!/^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/.test(c)) return;
-                    setCustomCidrs((prev) =>
-                      prev.includes(c) ? prev : [...prev, c],
-                    );
-                    setCustomCidrInput('');
-                  }}
+              <form
+                noValidate
+                className="stack"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const c = customCidrInput.trim();
+                  if (!c) {
+                    setCidrError(t('vpn.access.cidrRequired'));
+                    return;
+                  }
+                  if (!isCidr(c)) {
+                    setCidrError(t('vpn.access.cidrInvalid'));
+                    return;
+                  }
+                  setCustomCidrs((prev) =>
+                    prev.includes(c) ? prev : [...prev, c],
+                  );
+                  setCustomCidrInput('');
+                  setCidrError(null);
+                }}
+              >
+                <Field
+                  label={t('vpn.access.customCidr')}
+                  htmlFor={`vpn-cidr-${engine}`}
+                  required
+                  error={cidrError ?? undefined}
+                  flush
                 >
-                  {t('vpn.access.addCidr')}
-                </Button>
-                {customCidrs.map((c) => (
-                  <Button
-                    key={c}
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setCustomCidrs((p) => p.filter((x) => x !== c))}
-                  >
-                    {c} ×
-                  </Button>
-                ))}
-              </div>
+                  <div className="u-flex u-gap-2 u-flex-wrap u-items-center">
+                    <input
+                      id={`vpn-cidr-${engine}`}
+                      className="u-input u-w-control-sm"
+                      value={customCidrInput}
+                      onChange={(e) => {
+                        setCustomCidrInput(e.target.value);
+                        if (cidrError) setCidrError(null);
+                      }}
+                      placeholder="192.168.1.0/24"
+                    />
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="secondary"
+                      disabled={!customCidrInput.trim()}
+                      title={
+                        !customCidrInput.trim()
+                          ? t('vpn.access.cidrRequired')
+                          : undefined
+                      }
+                    >
+                      {t('vpn.access.addCidr')}
+                    </Button>
+                  </div>
+                </Field>
+                <div className="u-flex u-gap-2 u-flex-wrap">
+                  {customCidrs.map((c) => (
+                    <Button
+                      key={c}
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        setCustomCidrs((p) => p.filter((x) => x !== c))
+                      }
+                    >
+                      {c} ×
+                    </Button>
+                  ))}
+                </div>
+              </form>
             ) : null}
           </div>
         ) : null}
@@ -622,19 +726,38 @@ export function VpnPage() {
             variant="primary"
             size="sm"
             loading={busy}
-            disabled={!engSt?.installed}
-            title={!engSt?.installed ? t('vpn.engineNotInstalled') : undefined}
-            onClick={() =>
+            disabled={!engSt?.installed || parseListenPortInput(listenPortText) == null}
+            title={
+              !engSt?.installed
+                ? t('vpn.engineNotInstalled')
+                : parseListenPortInput(listenPortText) == null
+                  ? t('vpn.portInvalid')
+                  : undefined
+            }
+            onClick={() => {
+              const port = parseListenPortInput(listenPortText);
+              if (port == null) {
+                setPortError(t('vpn.portInvalid'));
+                return;
+              }
+              if (
+                (engine === 'openvpn' || engine === 'wireguard') &&
+                accessMode === 'custom' &&
+                customCidrs.length === 0
+              ) {
+                setCidrError(t('vpn.access.cidrRequired'));
+                return;
+              }
               void runOps(
                 () =>
                   vpnApi.ensureServer({
                     engine,
-                    listenPort,
+                    listenPort: port,
                     // Never send digit-only host typos like "51820:1194"
                     endpoint: (() => {
                       const h = hostFromEndpoint(endpoint, '');
                       return h
-                        ? buildEndpoint(h, listenPort) || undefined
+                        ? buildEndpoint(h, port) || undefined
                         : undefined;
                     })(),
                     proto: engine === 'openvpn' ? ovpnProto : undefined,
@@ -654,8 +777,8 @@ export function VpnPage() {
                         : undefined,
                   }),
                 { openConfig: false },
-              )
-            }
+              );
+            }}
           >
             {t('vpn.ensureServer')}
           </Button>
@@ -708,54 +831,93 @@ export function VpnPage() {
         title={t(peersTitleKey)}
         description={t('vpn.noPeersHint')}
         toolbar={
-          <ActionBar>
-            <input
-              className="u-input u-w-control-xs"
-              value={peerName}
-              onChange={(e) => setPeerName(e.target.value)}
-              placeholder={t('vpn.peerNamePlaceholder')}
-              aria-label={t('vpn.peerName')}
-              disabled={
-                !engineStatus(status, engine)?.installed ||
-                !engineStatus(status, engine)?.serverActive
-              }
-              title={
-                !engineStatus(status, engine)?.installed
-                  ? t('vpn.installEngineFirst')
-                  : !engineStatus(status, engine)?.serverActive
-                    ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              const name = peerName.trim();
+              setPeerNameTouched(true);
+              if (!isVpnPeerName(name)) return;
+              void runOps(
+                () => vpnApi.addPeer({ name, engine }),
+                { openConfig: true, engine },
+              ).then((r) => {
+                if (r?.ok) {
+                  setPeerName('');
+                  setPeerNameTouched(false);
+                }
+              });
+            }}
+          >
+            <ActionBar>
+              <Field
+                label={t('vpn.peerName')}
+                htmlFor={`vpn-peer-${engine}`}
+                required
+                hint={
+                  peerName.trim() && !isVpnPeerName(peerName)
+                    ? undefined
+                    : t('vpn.peerNameHint')
+                }
+                error={
+                  peerNameTouched && peerName.trim() && !isVpnPeerName(peerName)
+                    ? t('vpn.peerNameInvalid', {
+                        preview: previewVpnPeerName(peerName),
+                      })
                     : undefined
-              }
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              loading={busy}
-              disabled={
-                !peerName.trim() ||
-                !engineStatus(status, engine)?.installed ||
-                !engineStatus(status, engine)?.serverActive
-              }
-              title={
-                !engineStatus(status, engine)?.installed
-                  ? t('vpn.installEngineFirst')
-                  : !engineStatus(status, engine)?.serverActive
-                    ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
-                    : undefined
-              }
-              onClick={() => {
-                const name = peerName.trim();
-                void runOps(
-                  () => vpnApi.addPeer({ name, engine }),
-                  { openConfig: true, engine },
-                ).then((r) => {
-                  if (r?.ok) setPeerName('');
-                });
-              }}
-            >
-              {addPeerLabel}
-            </Button>
-          </ActionBar>
+                }
+                flush
+              >
+                <input
+                  id={`vpn-peer-${engine}`}
+                  className="u-input u-w-control-xs"
+                  value={peerName}
+                  onChange={(e) => {
+                    setPeerName(e.target.value);
+                    if (!peerNameTouched) setPeerNameTouched(true);
+                  }}
+                  placeholder={t('vpn.peerNamePlaceholder')}
+                  disabled={
+                    !engineStatus(status, engine)?.installed ||
+                    !engineStatus(status, engine)?.serverActive
+                  }
+                  title={
+                    !engineStatus(status, engine)?.installed
+                      ? t('vpn.installEngineFirst')
+                      : !engineStatus(status, engine)?.serverActive
+                        ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
+                        : undefined
+                  }
+                />
+              </Field>
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                loading={busy}
+                disabled={
+                  !isVpnPeerName(peerName) ||
+                  !engineStatus(status, engine)?.installed ||
+                  !engineStatus(status, engine)?.serverActive
+                }
+                title={
+                  !engineStatus(status, engine)?.installed
+                    ? t('vpn.installEngineFirst')
+                    : !engineStatus(status, engine)?.serverActive
+                      ? t('vpn.needServerRunning', { engine: engineLabel(engine) })
+                      : peerName.trim() && !isVpnPeerName(peerName)
+                        ? t('vpn.peerNameInvalid', {
+                            preview: previewVpnPeerName(peerName),
+                          })
+                        : !peerName.trim()
+                          ? t('vpn.peerNameHint')
+                          : undefined
+                }
+              >
+                {addPeerLabel}
+              </Button>
+            </ActionBar>
+          </form>
         }
         columns={[
           {
@@ -810,6 +972,7 @@ export function VpnPage() {
               size="sm"
               variant="danger"
               loading={busy}
+              data-confirm={r.name}
               onClick={() => setPendingPeer(r)}
             >
               {t('common.delete')}
@@ -841,8 +1004,8 @@ export function VpnPage() {
         onChange={(id) => setTab(id as TabId)}
       >
         <div className="stack vpn-tab-body">
-        {error ? <Alert variant="error">{error}</Alert> : null}
-        {lastOps ? (
+        {error && resultTab === tab ? <Alert variant="error">{error}</Alert> : null}
+        {lastOps && resultTab === tab ? (
           <OpsResultPanel
             title={t('vpn.result')}
             result={lastOps}
@@ -1128,7 +1291,13 @@ export function VpnPage() {
                   showReadyActions={false}
                   onInstalled={() => void load()}
                 />
-                <SoftwareVersionBar softwareId="wireguard" />
+                <SoftwareVersionBar
+                  softwareId="wireguard"
+                  onResult={(r) => {
+                    setLastOps(r);
+                    setResultTab('software');
+                  }}
+                />
               </section>
               <section className="vpn-software-card" aria-label="OpenVPN">
                 <div className="vpn-software-card__head">
@@ -1145,7 +1314,13 @@ export function VpnPage() {
                   showReadyActions={false}
                   onInstalled={() => void load()}
                 />
-                <SoftwareVersionBar softwareId="openvpn" />
+                <SoftwareVersionBar
+                  softwareId="openvpn"
+                  onResult={(r) => {
+                    setLastOps(r);
+                    setResultTab('software');
+                  }}
+                />
               </section>
               <section className="vpn-software-card" aria-label="Shadowsocks">
                 <div className="vpn-software-card__head">
@@ -1162,7 +1337,13 @@ export function VpnPage() {
                   showReadyActions={false}
                   onInstalled={() => void load()}
                 />
-                <SoftwareVersionBar softwareId="shadowsocks" />
+                <SoftwareVersionBar
+                  softwareId="shadowsocks"
+                  onResult={(r) => {
+                    setLastOps(r);
+                    setResultTab('software');
+                  }}
+                />
               </section>
             </div>
           </div>
@@ -1292,7 +1473,11 @@ export function VpnPage() {
       <Modal
         open={cfgOpen}
         onClose={() => setCfgOpen(false)}
-        title={t('vpn.qrTitle', { name: cfgLabel })}
+        title={
+          cfgEngine === 'openvpn'
+            ? t('vpn.cfgTitle', { name: cfgLabel })
+            : t('vpn.qrTitle', { name: cfgLabel })
+        }
         size="lg"
         className="vpn-cfg-modal"
         footer={
@@ -1331,12 +1516,20 @@ export function VpnPage() {
           {cfgQr ? (
             <div className="vpn-cfg__qr-wrap">
               <div className="vpn-cfg__qr-plate">
-                <img src={cfgQr} alt="" width={240} height={240} />
+                <img
+                  src={cfgQr}
+                  alt={t('vpn.qrTitle', { name: cfgLabel })}
+                  width={240}
+                  height={240}
+                />
               </div>
               <p className="vpn-cfg__hint">
                 {cfgEngine === 'outline' ? t('vpn.qrHintSs') : t('vpn.qrHintWg')}
               </p>
             </div>
+          ) : cfgQrTried &&
+            (cfgEngine === 'wireguard' || cfgEngine === 'outline') ? (
+            <Alert variant="warn">{t('vpn.qrFailed')}</Alert>
           ) : null}
 
           <div className="vpn-cfg__section">
@@ -1355,13 +1548,13 @@ export function VpnPage() {
             {/PrivateKey\s*=/i.test(cfgText) ? (
               <Alert variant="warn">{t('vpn.privateKeyOnce')}</Alert>
             ) : null}
-            {/PrivateKey\s*=/i.test(cfgText) ? (
+            {/PrivateKey\s*=/i.test(cfgText) && !cfgRevealKey ? (
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setCfgRevealKey((v) => !v)}
+                onClick={() => setCfgRevealKey(true)}
               >
-                {cfgRevealKey ? t('vpn.hidePrivateKey') : t('vpn.showPrivateKey')}
+                {t('vpn.showPrivateKey')}
               </Button>
             ) : null}
             <pre className="vpn-conf__pre" tabIndex={0}>
@@ -1386,33 +1579,44 @@ export function VpnPage() {
               {t('common.cancel')}
             </Button>
             <Button
+              type="submit"
+              form="vpn-import"
               variant="primary"
               size="md"
               loading={busy}
               disabled={!importName.trim() || !importConf.trim()}
-              onClick={() => {
-                const detected =
-                  clientEngine === 'auto'
-                    ? detectClientEngine(importConf)
-                    : clientEngine;
-                void runOps(
-                  () =>
-                    vpnApi.importClient({
-                      name: importName.trim(),
-                      conf: importConf,
-                      engine: detected,
-                    }),
-                  { openConfig: false },
-                ).then((r) => {
-                  if (r?.ok) setImportOpen(false);
-                });
-              }}
             >
               {t('vpn.importProfile')}
             </Button>
           </>
         }
       >
+        <form
+          id="vpn-import"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            const detected =
+              clientEngine === 'auto'
+                ? detectClientEngine(importConf)
+                : clientEngine;
+            if (!detected) {
+              notifyWarn(t('vpn.importInvalid'));
+              return;
+            }
+            void runOps(
+              () =>
+                vpnApi.importClient({
+                  name: importName.trim(),
+                  conf: importConf,
+                  engine: detected,
+                }),
+              { openConfig: false },
+            ).then((r) => {
+              if (r?.ok) setImportOpen(false);
+            });
+          }}
+        >
         <FormLayout columns={1}>
           <Field label={t('vpn.profileName')} htmlFor="vpn-import-name" flush required>
             <input
@@ -1461,23 +1665,58 @@ export function VpnPage() {
             />
           </Field>
         </FormLayout>
+        </form>
       </Modal>
 
       <ConfirmDialog
         open={Boolean(pendingPeer)}
         onClose={() => setPendingPeer(null)}
-        title={t('vpn.deletePeerTitle', { name: pendingPeer?.name ?? '' })}
-        description={t('vpn.deletePeerDesc', {
-          name: pendingPeer?.name ?? '',
-          address: pendingPeer?.address || pendingPeer?.id || '—',
-        })}
+        title={
+          pendingPeer?.engine === 'openvpn'
+            ? t('vpn.deleteClientTitle', { name: pendingPeer?.name ?? '' })
+            : pendingPeer?.engine === 'outline'
+              ? t('vpn.deleteKeyTitle', { name: pendingPeer?.name ?? '' })
+              : t('vpn.deletePeerTitle', { name: pendingPeer?.name ?? '' })
+        }
+        description={
+          pendingPeer?.engine === 'openvpn'
+            ? t('vpn.deleteClientDesc', {
+                name: pendingPeer?.name ?? '',
+                address: pendingPeer?.address || pendingPeer?.id || '—',
+              })
+            : pendingPeer?.engine === 'outline'
+              ? t('vpn.deleteKeyDesc', {
+                  name: pendingPeer?.name ?? '',
+                  address: pendingPeer?.address || pendingPeer?.id || '—',
+                })
+              : t('vpn.deletePeerDesc', {
+                  name: pendingPeer?.name ?? '',
+                  address: pendingPeer?.address || pendingPeer?.id || '—',
+                })
+        }
         confirmLabel={t('common.delete')}
         severity="destructive"
         busy={busy}
+        dataConfirm={pendingPeer?.name}
         onConfirm={() => {
           const id = pendingPeer?.id;
+          const name = pendingPeer?.name ?? '';
           setPendingPeer(null);
-          if (id) void runOps(() => vpnApi.deletePeer(id), { openConfig: false });
+          if (!id) return;
+          void runOps(() => vpnApi.deletePeer(id), { openConfig: false }).then(
+            (r) => {
+              if (!r) return;
+              const named = t('vpn.deleteResult', { name });
+              const notes = (r.notes ?? []).filter(Boolean);
+              if (!notes.some((n) => n.includes(name))) notes.unshift(named);
+              setLastOps({
+                ok: r.ok,
+                notes,
+                blocked: r.blocked,
+                requiresExecute: r.requiresExecute,
+              });
+            },
+          );
         }}
       />
     </FeaturePageLayout>

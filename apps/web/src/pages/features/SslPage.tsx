@@ -395,7 +395,7 @@ export function SslPage() {
         />
 
         <Card>
-          <CardSection title={t('ssl.certsTitle', { count: items.length })}>
+          <CardSection title={t('ssl.certsTitle', { count: certList.allTotal })}>
             <DataTable
               filters={
                 <ServerListFilters
@@ -467,6 +467,7 @@ export function SslPage() {
               ]}
               rows={items}
               rowKey={(r) => String(r.id ?? r.domain)}
+              filterActive={certList.activeFilterCount > 0}
               empty={
                 <EmptyState
                   title={t('ssl.emptyTitle')}

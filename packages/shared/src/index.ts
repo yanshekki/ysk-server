@@ -15,6 +15,7 @@ export * from './bt-tracker.js';
 export * from './validators.js';
 export * from './staking-playbook.js';
 export * from './docker.js';
+export * from './ident.js';
 export * from './email-domain.js';
 export * from './fleet.js';
 export * from './software.js';

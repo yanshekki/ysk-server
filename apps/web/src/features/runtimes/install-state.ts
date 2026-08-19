@@ -123,6 +123,26 @@ export function versionLineageMatch(a: string, b: string): boolean {
   return true;
 }
 
+/** True when the selected pin is already present (probe list or host default). */
+export function pinInstalledOnHost(
+  pin: string,
+  installed: string[],
+  hostDefault?: string,
+): boolean {
+  const p = String(pin ?? '').trim();
+  if (!p) return false;
+  if (installed.some((v) => hostSatisfiesTarget(v, p) || hostSatisfiesTarget(p, v))) {
+    return true;
+  }
+  if (hostSatisfiesTarget(hostDefault, p)) return true;
+  if (/^(latest|stable|nightly|current)$/i.test(p)) {
+    if (installed.length > 0) return true;
+    const h = String(hostDefault ?? '').trim();
+    return Boolean(h) && /\d/.test(h) && !/no default toolchain|rustup could not choose/i.test(h);
+  }
+  return false;
+}
+
 /**
  * Does host report (e.g. v20.18.0 or PHP 8.2.12) satisfy panel target (20 / 8.2)?
  * Uses component lineage — not string prefix (avoids 8.10 matching 8.1).

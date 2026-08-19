@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "Restaurar primeiro a partir de um instantâneo Mithril (recomendado em testnet)",
-    "action": "Restaurar com Mithril"
+    "action": "Restaurar com Mithril",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "Instância de validador não encontrada",
@@ -113,7 +115,9 @@
     "snapshotLookup": "Não foi possível resolver o ponteiro oficial do instantâneo",
     "needSnapshotConfirm": "Restaurar instantâneo exige confirm=identificador da instância ou SNAPSHOT",
     "snapshotBlocked": "O docker run do instantâneo foi bloqueado pela lista permitida",
-    "snapshotFailed": "A transferência ou extração do instantâneo falhou"
+    "snapshotFailed": "A transferência ou extração do instantâneo falhou",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "Esta funcionalidade é Beta. Alterações no anfitrião precisam de root e YSK_EXECUTE=1.",

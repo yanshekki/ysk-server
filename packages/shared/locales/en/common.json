@@ -40,6 +40,7 @@
   "noData": "No data",
   "input": "Input",
   "pleaseEnter": "Enter {{value}}",
+  "pleaseFill": "Please fill in this field",
   "required": "Required",
   "about": "About",
   "more": "More",

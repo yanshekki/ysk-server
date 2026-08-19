@@ -180,6 +180,7 @@
   "hostnameFixDesc": "{{line}}",
   "hostnameFixDone": "Hostname /etc/hosts updated",
   "startAfterCreateBlocked": "Disabled until the hostname resolves",
+  "startHostnameBlocked": "Cannot start until this host can resolve its hostname. Use “Write hostname to /etc/hosts”.",
   "colName": "Name",
   "colLinuxUser": "Linux user",
   "colDisplay": "Display / port",

@@ -37,6 +37,7 @@ import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput } from '../bind-handlers';
+import { isNginxServerNameList } from 'ysk-server-shared';
 
 type PhpExtRow = {
   id: string;
@@ -198,7 +199,7 @@ export function PhpRuntimePage() {
   const [searchParams] = useSearchParams();
   const ctx = getServerContext();
   const [tab, setTab] = usePageTab(PHP_TABS, 'overview');
-  const [domain, setDomain] = useState(`php.${ctx.domain}`);
+  const [domain, setDomain] = useState('');
   const [poolName, setPoolName] = useState('demo');
   const [version, setVersion] = useState('8.2');
   const [phpCandidates, setPhpCandidates] = useState<string[]>([]);
@@ -281,9 +282,7 @@ export function PhpRuntimePage() {
         const cands = (h.candidates ?? []).map((c) => c.version).filter(Boolean);
         setPhpCandidates(cands);
         // Prefer discovered latest; do not lock on initial '8.2' via `prev ||`
-        if (!searchParams.get('version') && !hostPhp) {
-          if (cands[0]) setVersion(cands[0]);
-        }
+        /* Do not pick the newest candidate (e.g. 8.5) before host probe finishes. */
       })
       .catch(() => {
         if (!cancelled) setPhpCandidates([]);
@@ -1330,7 +1329,7 @@ export function PhpRuntimePage() {
                 variant="primary"
                 size="md"
                 loading={busy}
-                disabled={!iniLoaded && catalog.length === 0}
+                disabled={(!iniLoaded && catalog.length === 0) || !probe}
                 onClick={() =>
                   void run(async () => {
                     const r = await systemApi.phpIniSave({
@@ -1349,6 +1348,7 @@ export function PhpRuntimePage() {
                 variant="secondary"
                 size="md"
                 loading={busy}
+                disabled={!probe}
                 onClick={() =>
                   void run(async () => {
                     await systemApi.phpIniSave({
@@ -1439,7 +1439,13 @@ export function PhpRuntimePage() {
                     size="md"
                     loading={busy}
                     title={t('runtime.applyPhpVhostTitle')}
-                    onClick={() => setPhpApplyOpen(true)}
+                    onClick={() => {
+                      if (!isNginxServerNameList(domain.trim())) {
+                        toast.error(t('runtime.domainRequired'));
+                        return;
+                      }
+                      setPhpApplyOpen(true);
+                    }}
                   >
                     {t('runtime.applyPhpVhost')}
                   </Button>

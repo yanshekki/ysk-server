@@ -412,6 +412,14 @@ describe('ProjectOpsService helpers and honesty paths', () => {
     });
     expect(found.path).toBe('/usr/local/ysk/node/20/bin/node');
 
+    const generic = resolveNodeBinary('20', {
+      pathExists: (p: string) => p === '/usr/bin/node',
+      isRoot: () => true,
+      executeEnabled: () => true,
+    });
+    expect(generic.path).toBe('/usr/local/ysk/node/20/bin/node');
+    expect(generic.path).not.toBe('/usr/bin/node');
+
     // Degraded: may use panel binary when ysk path missing
     const degraded = resolveNodeBinary('20', {
       pathExists: () => false,

@@ -33,6 +33,7 @@ import {
   SoftwareInstallBanner,
   SoftwareVersionBar } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
+import { isIpAddress, isIpv4, isIpv6, isMailDomain } from 'ysk-server-shared';
 import { api } from '../shared/services/api';
 import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
@@ -89,16 +90,25 @@ function notifyOps(
   else notifyWarn(main, opts);
 }
 
-function isIpv4(s: string): boolean {
-  return /^\d{1,3}(\.\d{1,3}){3}$/.test(s.trim());
-}
-
-function isIpv6(s: string): boolean {
-  const t = s.trim();
-  return t.includes(':') && !isIpv4(t);
-}
-
 const TABS = ['domains', 'webmail', 'queue', 'stack', 'about'] as const;
+
+export function validateEmailDomainCreate(
+  domain: string,
+  serverIp: string,
+  serverIpv6: string,
+  t: (k: string) => string,
+): { domain?: string; serverIp?: string; serverIpv6?: string } {
+  const err: { domain?: string; serverIp?: string; serverIpv6?: string } = {};
+  const d = domain.trim();
+  if (!d) err.domain = t('email.domainRequired');
+  else if (!isMailDomain(d)) err.domain = t('email.domainInvalid');
+  const ip = serverIp.trim();
+  if (!ip) err.serverIp = t('email.serverIpRequired');
+  else if (!isIpAddress(ip)) err.serverIp = t('email.serverIpInvalid');
+  const v6 = serverIpv6.trim();
+  if (v6 && !isIpv6(v6)) err.serverIpv6 = t('email.serverIpv6Invalid');
+  return err;
+}
 const GLOBAL_WEBMAIL_PROJECT = 'ysk-webmail';
 
 export function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
@@ -218,6 +228,19 @@ export function EmailPage() {
   const [wmForceHttps, setWmForceHttps] = useState(false);
   const [wmLog, setWmLog] = useState<Record<string, unknown> | null>(null);
   const [wmBusy, setWmBusy] = useState(false);
+  const [wmHostErr, setWmHostErr] = useState<string | null>(null);
+  const [createFieldErr, setCreateFieldErr] = useState<{
+    domain?: string;
+    serverIp?: string;
+    serverIpv6?: string;
+  }>({});
+  const [createFormErr, setCreateFormErr] = useState<string | null>(null);
+  const [kpi, setKpi] = useState({
+    applied: 0,
+    draft: 0,
+    healthy: 0,
+    healthChecked: false,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -311,11 +334,22 @@ export function EmailPage() {
     };
   }, [createOpen]);
 
-  const total = list.meta?.total ?? items.length;
+  const allTotal = list.allTotal;
   const facets = list.meta?.facets;
-  const applied = countAppliedDomains(items, facets);
-  const healthy = countHealthyDomains(items);
-  const draft = countDraftDomains(items, facets);
+  const applied = kpi.applied;
+  const healthy = kpi.healthy;
+  const draft = kpi.draft;
+
+  useEffect(() => {
+    if (list.activeFilterCount > 0) return;
+    setKpi({
+      applied: countAppliedDomains(items, facets),
+      draft: countDraftDomains(items, facets),
+      healthy: countHealthyDomains(items),
+      healthChecked: anyDomainHealthChecked(items),
+    });
+  }, [items, facets, list.activeFilterCount]);
+
   const { isEmailBookmarked, toggleEmail } = useNavBookmarks();
   const mailHostsWanted = useMemo(() => {
     const out = new Set<string>();
@@ -329,11 +363,15 @@ export function EmailPage() {
     return [...out];
   }, [items, wmHost]);
   const missingMailCerts = mailHostsWanted.filter((h) => !certNames.includes(h));
-  const wmHasCert = certNames.includes(wmHost.trim().toLowerCase());
+  const wmHostOk = Boolean(wmHost.trim());
+  const wmHasCert = wmHostOk && certNames.includes(wmHost.trim().toLowerCase());
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    list.setError(null);
+    const field = validateEmailDomainCreate(domain, serverIp, serverIpv6, t);
+    setCreateFieldErr(field);
+    setCreateFormErr(null);
+    if (field.domain || field.serverIp || field.serverIpv6) return;
     setBusy(true);
     try {
       const created = await emailApi.create({
@@ -342,6 +380,8 @@ export function EmailPage() {
         ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}) });
       setDomain('');
       setCreateOpen(false);
+      setCreateFieldErr({});
+      setCreateFormErr(null);
       setServerContext({
         domain,
         serverIp,
@@ -357,7 +397,7 @@ export function EmailPage() {
       else navigate(`/email`);
       void domainName;
     } catch (err) {
-      list.setError(err instanceof Error ? err.message : t('common.createFailed'));
+      setCreateFormErr(err instanceof Error ? err.message : t('common.createFailed'));
     } finally {
       setBusy(false);
     }
@@ -439,9 +479,14 @@ export function EmailPage() {
   }
 
   async function runWebmail(opts: { reinstall?: boolean }) {
+    const host = wmHost.trim();
+    if (!host) {
+      setWmHostErr(t('email.webmailHostnameRequired'));
+      return;
+    }
+    setWmHostErr(null);
     setWmBusy(true);
     try {
-      const host = wmHost.trim() || 'webmail.local';
       const firstDomain = items[0]?.domain?.trim();
       const mailDomain =
         firstDomain ||
@@ -478,13 +523,13 @@ export function EmailPage() {
       title={t('nav.email')}
       status={{
         pill: {
-          label: total ? t('email.pillDomains', { count: total }) : t('email.pillNoDomain'),
-          tone: total ? 'ok' : 'warn' },
+          label: allTotal ? t('email.pillDomains', { count: allTotal }) : t('email.pillNoDomain'),
+          tone: allTotal ? 'ok' : 'warn' },
         items: [
-          { label: t('email.statDomains'), value: total },
+          { label: t('email.statDomains'), value: allTotal },
           {
             label: t('email.statHealthy80'),
-            value: anyDomainHealthChecked(items) ? healthy : '—',
+            value: kpi.healthChecked ? healthy : '—',
             tone: healthy > 0 ? 'ok' : undefined },
           {
             label: t('email.statApplied'),
@@ -533,7 +578,7 @@ export function EmailPage() {
           {
             id: 'domains',
             label: t('email.tabDomains'),
-            badge: items.length || undefined },
+            badge: allTotal || undefined },
           { id: 'webmail', label: t('email.tabWebmail') },
           {
             id: 'queue',
@@ -549,14 +594,18 @@ export function EmailPage() {
         {tab === 'domains' ? (
           <div className="tab-panel mail-panel">
             <ListPanel
-              title={t('email.domainsTitle', { filtered: items.length, total })}
+              title={t('email.domainsTitle', { filtered: items.length, total: allTotal })}
               description={t('email.domainsListDesc')}
               toolbar={
                 <ActionBar>
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={bindSet(setCreateOpen, true)}
+                    onClick={() => {
+                      setCreateFieldErr({});
+                      setCreateFormErr(null);
+                      setCreateOpen(true);
+                    }}
                   >
                     + {t('email.create')}
                   </Button>
@@ -570,7 +619,7 @@ export function EmailPage() {
                   searchAriaLabel={t('email.searchPlaceholder')}
                   searching={list.searching}
                   loading={list.loading}
-                  total={total}
+                  total={allTotal}
                   shown={items.length}
                   activeFilterCount={list.activeFilterCount}
                   onClear={list.clear}
@@ -718,11 +767,17 @@ export function EmailPage() {
                     flush
                     hint={t('email.webmailHostnameHint')}
                     required
+                    error={wmHostErr ?? undefined}
                   >
                     <input
                       id="g-wmd"
                       value={wmHost}
-                      onChange={bindInput(setWmHost)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setWmHost(v);
+                        if (wmHostErr) setWmHostErr(null);
+                        if (!v.trim()) setWmForceHttps(false);
+                      }}
                       placeholder="webmail.example.com"
                       spellCheck={false}
                     />
@@ -739,15 +794,19 @@ export function EmailPage() {
                 </FormLayout>
                 <CheckboxField
                   id="g-wm-https"
-                  checked={wmForceHttps && wmHasCert}
-                  disabled={!wmHasCert}
+                  checked={wmForceHttps && wmHasCert && wmHostOk}
+                  disabled={!wmHostOk || !wmHasCert}
                   onChange={(c) => {
-                    if (c && !wmHasCert) return;
+                    if (c && (!wmHostOk || !wmHasCert)) return;
                     setWmForceHttps(c);
                   }}
                   label={t('email.webmailForceHttps')}
                   description={
-                    wmHasCert ? undefined : t('email.webmailNeedCert', { host: wmHost })
+                    !wmHostOk
+                      ? t('email.webmailHostnameRequired')
+                      : wmHasCert
+                        ? undefined
+                        : t('email.webmailNeedCert', { host: wmHost })
                   }
                 />
                 <ActionBar size="md">
@@ -755,7 +814,12 @@ export function EmailPage() {
                     variant="primary"
                     size="md"
                     loading={wmBusy}
-                    title={t('email.installWebmailTitle')}
+                    disabled={!wmHostOk}
+                    title={
+                      wmHostOk
+                        ? t('email.installWebmailTitle')
+                        : t('email.webmailHostnameRequired')
+                    }
                     onClick={() => void runWebmail({ reinstall: false })}
                   >
                     {t('email.installWebmailProject')}
@@ -764,11 +828,13 @@ export function EmailPage() {
                     variant="secondary"
                     size="md"
                     loading={wmBusy}
-                    disabled={!wmLog?.projectId}
+                    disabled={!wmHostOk || !wmLog?.projectId}
                     title={
-                      wmLog?.projectId
-                        ? t('email.reinstallWebmailTitle')
-                        : t('email.reinstallNeedInstall')
+                      !wmHostOk
+                        ? t('email.webmailHostnameRequired')
+                        : wmLog?.projectId
+                          ? t('email.reinstallWebmailTitle')
+                          : t('email.reinstallNeedInstall')
                     }
                     onClick={() => void runWebmail({ reinstall: true })}
                   >
@@ -788,9 +854,11 @@ export function EmailPage() {
                   <Button
                     variant="ghost"
                     size="md"
+                    disabled={!wmHostOk}
+                    title={wmHostOk ? undefined : t('email.webmailHostnameRequired')}
                     onClick={() =>
                       navigate(
-                        `/ssl?domain=${encodeURIComponent(wmHost.trim() || 'webmail.local')}&action=le`,
+                        `/ssl?domain=${encodeURIComponent(wmHost.trim())}&action=le`,
                       )
                     }
                   >
@@ -832,6 +900,7 @@ export function EmailPage() {
                     size="md"
                     loading={queueBusy}
                     disabled={!queueItems.length}
+                    data-confirm="dialog"
                     title={
                       !queueItems.length
                         ? t('email.flushQueueEmpty')
@@ -895,12 +964,14 @@ export function EmailPage() {
               ]}
               rows={visibleQueue}
               rowKey={(r) => r.id}
+              filterActive={Boolean(queueQ.trim())}
               rowActions={(r) => (
                 <ActionBar>
                   <Button
                     variant="danger"
                     size="sm"
                     loading={queueBusy}
+                    data-confirm={r.id}
                     onClick={() => setDeleteQueueId(r.id)}
                   >
                     {t('email.deleteThisId')}
@@ -1025,25 +1096,48 @@ export function EmailPage() {
           </>
         }
       >
-        <form id="email-create-form" className="stack" onSubmit={bindFormSubmit(onCreate)}>
-          <Field label={t('email.domain')} htmlFor="edomain" flush required>
+        <form
+          id="email-create-form"
+          className="stack"
+          noValidate
+          onSubmit={bindFormSubmit(onCreate)}
+        >
+          {createFormErr ? <Alert variant="error">{createFormErr}</Alert> : null}
+          <Field
+            label={t('email.domain')}
+            htmlFor="edomain"
+            flush
+            required
+            error={createFieldErr.domain}
+          >
             <input
               id="edomain"
               value={domain}
-              onChange={bindInput(setDomain)}
+              onChange={(e) => {
+                setDomain(e.target.value);
+                if (createFieldErr.domain) setCreateFieldErr((p) => ({ ...p, domain: undefined }));
+              }}
               placeholder="example.com"
-              required
               autoFocus
               spellCheck={false}
             />
           </Field>
 
-          <Field label={t('email.serverIp')} htmlFor="eip" flush required>
+          <Field
+            label={t('email.serverIp')}
+            htmlFor="eip"
+            flush
+            required
+            error={createFieldErr.serverIp}
+          >
             <input
               id="eip"
               value={serverIp}
-              onChange={bindInputContext(setServerIp, setServerContext, 'serverIp')}
-              required
+              onChange={(e) => {
+                bindInputContext(setServerIp, setServerContext, 'serverIp')(e);
+                if (createFieldErr.serverIp)
+                  setCreateFieldErr((p) => ({ ...p, serverIp: undefined }));
+              }}
               placeholder="203.0.113.10"
               spellCheck={false}
             />
@@ -1066,11 +1160,20 @@ export function EmailPage() {
             ) : null}
           </Field>
 
-          <Field label={t('email.serverIpv6')} htmlFor="eip6" flush>
+          <Field
+            label={t('email.serverIpv6')}
+            htmlFor="eip6"
+            flush
+            error={createFieldErr.serverIpv6}
+          >
             <input
               id="eip6"
               value={serverIpv6}
-              onChange={bindInputContext(setServerIpv6, setServerContext, 'serverIpv6')}
+              onChange={(e) => {
+                bindInputContext(setServerIpv6, setServerContext, 'serverIpv6')(e);
+                if (createFieldErr.serverIpv6)
+                  setCreateFieldErr((p) => ({ ...p, serverIpv6: undefined }));
+              }}
               placeholder={t('email.serverIpv6Ph')}
               spellCheck={false}
             />

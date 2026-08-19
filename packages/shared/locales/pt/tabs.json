@@ -3,5 +3,7 @@
   "scrollRight": "Rolar as guias para a direita",
   "about": "Sobre",
   "main": "Ações",
-  "stack": "Programas"
+  "stack": "Programas",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

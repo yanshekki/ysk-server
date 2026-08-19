@@ -50,7 +50,7 @@
   "deleteShort": "刪除",
   "denyBadge": "拒絕",
   "emptyRulesTitle": "無規則或無權讀取",
-  "emptyRulesInstalled": "UFW inactive 或需要管理員權限 讀取",
+  "emptyRulesInstalled": "UFW 未啟用，或需要管理員權限讀取",
   "emptyRulesNotInstalled": "安裝 UFW 後再整理",
   "allowPortTitle": "允許埠",
   "protocol": "協議",

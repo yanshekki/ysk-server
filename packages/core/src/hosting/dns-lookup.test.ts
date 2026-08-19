@@ -13,7 +13,7 @@ describe('dns-lookup', () => {
     const r = await lookupDns({
       host: {
         runCommand: async (argv: string[]) => ({
-          stdout: argv.includes('dig') || String(argv).includes('dig') ? '' : 'YSK_NO_DIG',
+          stdout: /command -v\s+dig/.test(argv.join(' ')) ? '' : 'YSK_NO_DIG',
           stderr: '',
           exitCode: 1,
           argv,
@@ -26,7 +26,8 @@ describe('dns-lookup', () => {
     expect(r.ok).toBe(false);
     expect(r.method).toBe('none');
     expect(r.answers).toEqual([]);
-    expect(r.notes.join(' ')).toMatch(/127\.0\.0\.1|ignored|忽略/i);
+    expect(r.notes.join(' ')).not.toMatch(/NXDOMAIN/i);
+    expect(r.notes.join(' ')).toMatch(/dig|未安裝|not installed/i);
   });
 
   it('looks up a public name via node-dns (no host)', async () => {

@@ -80,5 +80,6 @@
   "noAccessDesc": "آپ کے کردار میں یہ صفحہ شامل نہیں۔ ضرورت ہو تو ایڈمن سے پوچھیں۔",
   "backToDashboard": "ڈیش بورڈ پر واپس",
   "validators": "ویلیڈیٹرز (Beta)",
-  "docker": "ڈوکر"
+  "docker": "ڈوکر",
+  "cluster": "Clusters"
 }

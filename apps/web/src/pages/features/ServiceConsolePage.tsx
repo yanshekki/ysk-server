@@ -961,6 +961,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
               title={t('db.console.softwareMissing', {
                 title: console?.title ?? engine,
               })}
+              uninstallTitle={
+                engine === 'mariadb'
+                  ? 'mariadb-client'
+                  : engine === 'mysql'
+                    ? 'mysql-client'
+                    : engine
+              }
               onInstalled={() => void refresh()}
               showReadyActions={false}
             />

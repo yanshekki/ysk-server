@@ -45,5 +45,8 @@
   "liveName": "Live name",
   "draftName": "Draft name",
   "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
-  "discardDraft": "Discard draft"
+  "discardDraft": "Discard draft",
+  "quotaInvalid": "Enter a whole number of MiB, or choose Unlimited.",
+  "serverNameRequired": "Enter a server name.",
+  "serverNameInvalid": "Use a hostname, wildcard, or IP — no spaces or punctuation."
 }

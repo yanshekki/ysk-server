@@ -12,9 +12,18 @@ export function cardanoNetworkEnv(network: string): 'preview' | 'preprod' | 'mai
   return 'preview';
 }
 
-export function buildAdaComposeYaml(spec: ValidatorInstanceDto): string {
+const ADA_IMAGE = 'ghcr.io/intersectmbo/cardano-node';
+const ADA_TAG = '11.0.1';
+
+export function resolveAdaImage(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('ada')[0];
-  const img = `${node?.image ?? 'inputoutput/cardano-node'}:${node?.tag ?? '10.1.4'}`;
+  const image = node?.image === 'inputoutput/cardano-node' || !node?.image ? ADA_IMAGE : node.image;
+  const tag = node?.image === 'inputoutput/cardano-node' || !node?.tag ? ADA_TAG : node.tag;
+  return `${image}:${tag}`;
+}
+
+export function buildAdaComposeYaml(spec: ValidatorInstanceDto): string {
+  const img = resolveAdaImage(spec);
   const p2p = spec.ports.p2p ?? 3001;
   const metrics = spec.ports.metrics ?? 12798;
   const network = cardanoNetworkEnv(spec.network);

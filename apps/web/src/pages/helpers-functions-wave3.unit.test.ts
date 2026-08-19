@@ -16,6 +16,10 @@ import {
   formatExternalTodosText,
   parseAliasDestinations,
   mailboxStatusTone,
+  mailboxStatusLabel,
+  aliasTypeLabel,
+  validateMailboxCreate,
+  validateAliasCreate,
   probeOkTone,
   mapLiveProbeRows,
   parsePolicyRate,
@@ -220,6 +224,22 @@ describe('EmailDomain pure helpers (wave3)', () => {
     ]);
     expect(mailboxStatusTone('active')).toBe('ok');
     expect(mailboxStatusTone('suspended')).toBe('neutral');
+    expect(mailboxStatusLabel('managed', t)).toBe('email.mailboxStatusManaged');
+    expect(mailboxStatusLabel('active', t)).toBe('email.mailboxStatusActiveShort');
+    expect(aliasTypeLabel('forward', t)).toBe('email.typeForward');
+    expect(aliasTypeLabel('catchall', t)).toBe('email.catchall');
+    expect(validateMailboxCreate('', 'x', t)).toMatchObject({
+      localPart: 'email.localPartRequired',
+      password: 'email.passwordTooShort',
+    });
+    expect(validateMailboxCreate('info', '', t)).toEqual({});
+    expect(validateMailboxCreate('BAD SPACE', '', t).localPart).toBe(
+      'email.localPartInvalid',
+    );
+    expect(validateAliasCreate('forward', 'sales', '', t).dest).toBe(
+      'email.aliasDestRequired',
+    );
+    expect(validateAliasCreate('forward', 'sales', 'a@b.com', t)).toEqual({});
     expect(probeOkTone(true)).toBe('ok');
     expect(probeOkTone(false)).toBe('danger');
     expect(probeOkTone(null)).toBe('warn');

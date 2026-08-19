@@ -31,6 +31,8 @@ export type ListMeta = {
   order: ListSortOrder;
   /** Counts per facet key → value, after text filter (before dimension filter on that key optional) */
   facets?: Record<string, Record<string, number>>;
+  /** Unfiltered collection size (before q / dimension filters) */
+  allTotal?: number;
 };
 
 export type ListResponse<T> = {

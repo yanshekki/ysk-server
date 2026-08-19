@@ -19,5 +19,9 @@
   "stepStoppedOld": "이전 프로세스를 중지했습니다.",
   "stepTuningApplied": "런타임 튜닝 적용됨",
   "stepUnitWritten": "작성된 서비스 단위",
-  "stepSystemdStartFailed": "시스템 시작 실패 — 프로세스 대체 사용"
+  "stepSystemdStartFailed": "시스템 시작 실패 — 프로세스 대체 사용",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

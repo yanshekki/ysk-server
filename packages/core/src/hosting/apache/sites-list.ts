@@ -195,6 +195,17 @@ export function listMergedApacheSites(input: {
       }
       const serverName = parseServerNameFromConf(content) || f.replace(/\.conf$/i, '');
       const root = parseDocRootFromConf(content) ?? undefined;
+      const owner = input.projects.find((p) => {
+        const home = String(p.home_dir ?? p.homeDir ?? '').trim();
+        if (!home || !root) return false;
+        const normHome = home.replace(/\/+$/, '');
+        const normRoot = root.replace(/\/+$/, '');
+        return normRoot === normHome || normRoot.startsWith(`${normHome}/`);
+      });
+      if (owner) {
+        claimedConf.add(confPath);
+        continue;
+      }
       const isPhp =
         /proxy:unix:.*fpm|\.php|SetHandler/i.test(content) || f.startsWith('ysk-');
       rows.push({

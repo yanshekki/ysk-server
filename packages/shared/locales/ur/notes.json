@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "redis-cli انسٹال نہیں ہے۔",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "یتیم nginx صفائی ناکام ہوگئی: {{detail}}",
     "settingsWritten": "Nginx عالمی ٹکڑا لکھا گیا۔",
     "settingsNeedExecute": "YSK_EXECUTE کی ضرورت کو اپلائی کریں۔",
-    "reloadFailed": "nginx دوبارہ لوڈ کرنے میں ناکام"
+    "reloadFailed": "nginx دوبارہ لوڈ کرنے میں ناکام",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "سرٹیفکیٹ کی درخواست کریں۔"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "میزبان عمل بند ہے؛ پینل سے ڈیٹا بیس نہیں بنا سکتا",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "ڈیٹا ڈیر کے تحت لکھی گئی پاس ڈبلیو ڈی فائل — اپلائی (EXECUTE+root) کو چلائیں تاکہ Dovecot اسے لوڈ کرے۔",
     "postqueueSetgidBroken": "پوسٹ فکس قطار کے ٹولز ناکام ہو گئے: main.cf میں setgid_group خالی ہے۔ setgid_group=postdrop سیٹ کریں (جب YSK_EXECUTE آن ہوتا ہے تو پینل ٹھیک کرنے کی کوشش کرتا ہے)۔",
     "postqueueMailDown": "پوسٹ فکس نہیں چل رہا ہے (شوق دستیاب نہیں ہے)۔ YSK_EXECUTE آن ہونے پر پینل نے اسے شروع کرنے کی کوشش کی — سافٹ ویئر ٹیب / systemctl اسٹیٹس پوسٹ فکس چیک کریں۔",
-    "postqueueSpoolMissing": "پوسٹ فکس قطار ڈائریکٹریز غائب ہیں (جیسے ہولڈ/)۔ پینل نے سپول ٹری بنانے اور YSK_EXECUTE آن ہونے پر پوسٹ فکس شروع کرنے کی کوشش کی۔"
+    "postqueueSpoolMissing": "پوسٹ فکس قطار ڈائریکٹریز غائب ہیں (جیسے ہولڈ/)۔ پینل نے سپول ٹری بنانے اور YSK_EXECUTE آن ہونے پر پوسٹ فکس شروع کرنے کی کوشش کی۔",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "سیشن نہیں ملا: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "لائیو Nginx کنف: {{path}}",
     "publicRoot": "عوامی روٹ: {{path}}",
     "confNameStale": "کنف {{file}} موجودہ server_name {{serverName}} سے نہیں ملتی۔ نام بدلنے کے لیے پبلک فائلیں دوبارہ لگائیں۔"
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

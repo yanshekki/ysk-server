@@ -19,6 +19,7 @@ import {
   ServerListFilters,
 } from '../../shared/components/ui';
 import type { BadgeTone } from '../../shared/components/ui';
+import { YSK_SERVICE_PORTS } from 'ysk-server-shared';
 import { systemApi } from '../../features/system';
 
 type ExposureMode = 'private' | 'public' | 'restricted';
@@ -52,6 +53,62 @@ function formatPorts(ports: Array<{ port: string; proto?: string }> | undefined)
   return ports
     .map((p) => (p.proto && p.proto !== 'tcp' ? `${p.port}/${p.proto}` : p.port))
     .join(', ');
+}
+
+/** Catalog service ids (nginx / postfix / vsftpd / bt-tracker / …). */
+export function catalogServiceIds(): string[] {
+  return [...new Set(YSK_SERVICE_PORTS.map((p) => p.service))];
+}
+
+function catalogPortsFor(sid: string): Array<{ role: string; port: string; proto?: string }> {
+  return YSK_SERVICE_PORTS.filter((p) => p.service === sid).map((p) => ({
+    role: p.id,
+    port: p.port,
+    proto: p.proto,
+  }));
+}
+
+function catalogDefaultMode(sid: string): ExposureMode {
+  const ports = YSK_SERVICE_PORTS.filter((p) => p.service === sid);
+  if (ports.some((p) => p.privateRecommended)) return 'private';
+  return 'public';
+}
+
+/** Merge API exposure rows with the managed-port catalog so the tab is never blank. */
+export function mergeExposureList(apiItems: ExposureItem[]): ExposureItem[] {
+  const byId = new Map(
+    apiItems
+      .filter((it) => it.serviceId)
+      .map((it) => [it.serviceId, it] as const),
+  );
+  const out: ExposureItem[] = [];
+  for (const sid of catalogServiceIds()) {
+    const existing = byId.get(sid);
+    const ports = catalogPortsFor(sid);
+    const mode = catalogDefaultMode(sid);
+    if (existing) {
+      out.push({
+        ...existing,
+        catalogPorts: existing.catalogPorts?.length ? existing.catalogPorts : ports,
+        defaultMode: existing.defaultMode ?? mode,
+      });
+      byId.delete(sid);
+    } else {
+      out.push({
+        serviceId: sid,
+        desired: {
+          serviceId: sid,
+          mode,
+          ports,
+        },
+        catalogPorts: ports,
+        defaultMode: mode,
+        inSync: true,
+      });
+    }
+  }
+  for (const rest of byId.values()) out.push(rest);
+  return out;
 }
 
 export function FirewallServicesPanel(props: {
@@ -89,13 +146,11 @@ export function FirewallServicesPanel(props: {
         systemApi.serviceExposureList(),
         systemApi.servicesMatrix().catch(() => ({ items: [] as Array<{ id: string; installed?: boolean }> })),
       ]);
-      const list = (r.items ?? []) as ExposureItem[];
-      setItems(
-        list.map((it) => ({
-          ...it,
-          serviceId: String(it.serviceId || it.desired?.serviceId || ''),
-        })),
-      );
+      const list = ((r.items ?? []) as ExposureItem[]).map((it) => ({
+        ...it,
+        serviceId: String(it.serviceId || it.desired?.serviceId || ''),
+      }));
+      setItems(mergeExposureList(list));
       const map: Record<string, boolean> = {};
       for (const row of matrix.items ?? []) {
         if (row.id) map[row.id] = Boolean(row.installed);
@@ -103,6 +158,7 @@ export function FirewallServicesPanel(props: {
       setInstalledMap(map);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
+      setItems(mergeExposureList([]));
     }
   }, [t]);
 
@@ -307,6 +363,7 @@ export function FirewallServicesPanel(props: {
               ) : null}
             </ActionBar>
           )}
+          filterActive={Boolean(q.trim())}
           empty={
             <EmptyState
               title={t('firewall.servicesEmpty')}

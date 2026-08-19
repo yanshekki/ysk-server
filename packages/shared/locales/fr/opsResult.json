@@ -19,5 +19,9 @@
   "stepStoppedOld": "Processus précédent arrêté",
   "stepTuningApplied": "Réglages d’exécution appliqués",
   "stepUnitWritten": "Unité de service écrite",
-  "stepSystemdStartFailed": "Échec du démarrage systemd — bascule sur le processus de secours"
+  "stepSystemdStartFailed": "Échec du démarrage systemd — bascule sur le processus de secours",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

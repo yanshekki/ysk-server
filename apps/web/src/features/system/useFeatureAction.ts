@@ -99,7 +99,12 @@ export function useFeatureAction() {
           const note = ops.notes?.[0]?.trim();
           const extra = ops.notes?.slice(okMessage || note ? 1 : 0).filter(Boolean);
           notifyOk(okMessage ?? note ?? t('common.completed'), {
-            detail: extra?.length ? extra.slice(0, 4).join('\n') : undefined,
+            detail:
+              extra && extra.length > 0 && extra.length <= 2
+                ? extra.join('\n')
+                : extra && extra.length > 2
+                  ? extra[0]
+                  : undefined,
             durationMs: extra && extra.length > 1 ? 7000 : undefined,
           });
         }
@@ -140,5 +145,11 @@ export function useFeatureAction() {
     [t, toOpsResult],
   );
 
-  return { busy, error, setError, result, msg, setMsg, run };
+  const clear = useCallback(() => {
+    setResult(null);
+    setErrorRaw(null);
+    setMsgRaw(null);
+  }, []);
+
+  return { busy, error, setError, result, msg, setMsg, run, clear };
 }

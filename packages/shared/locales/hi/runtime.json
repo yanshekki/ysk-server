@@ -444,7 +444,8 @@
       "interpreter": "दुभाषिया",
       "user": "उपयोगकर्ता",
       "unit": "इकाई",
-      "runtime": "क्रम"
+      "runtime": "क्रम",
+      "pid": "PID"
     },
     "projectsTitle": "वाईएसके परियोजना प्रक्रियाएं",
     "projectsDesc": "पैनल परियोजनाओं के लिए सिस्टमडी इकाइयाँ (डिफ़ॉल्ट परिनियोजन पथ - PM2 नहीं)।",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

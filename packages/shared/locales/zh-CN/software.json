@@ -88,7 +88,9 @@
     "noTarget": "没有可更新版本",
     "needRuntimePage": "请在运行环境页安装此版本",
     "noAptCandidate": "没有可用的 apt 候选版本",
-    "sourceLabel": "来源"
+    "sourceLabel": "来源",
+    "refreshHasUpdate": "Newer version available",
+    "refreshLatest": "Already the latest recorded version"
   },
   "install": {
     "progress": "正在安装：{{list}}…",

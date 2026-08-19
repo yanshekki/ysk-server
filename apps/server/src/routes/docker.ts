@@ -20,6 +20,7 @@ import {
   dockerSystemDf,
   getDockerDaemonSettings,
   inspectDocker,
+  formatDockerInspectSummary,
   dockerExec,
   listDockerComposeProjects,
   listDockerContainers,
@@ -107,6 +108,8 @@ export async function handleDockerRoutes(
           restart: body.restart != null ? String(body.restart) as never : undefined,
           network: body.network != null ? String(body.network) : undefined,
           volumes: Array.isArray(body.volumes) ? (body.volumes as never) : undefined,
+          command: Array.isArray(body.command) ? body.command.map((x) => String(x)) : undefined,
+          entrypoint: body.entrypoint != null ? String(body.entrypoint) : undefined,
         },
       });
       ctx.audit.append({ actor: user.username, action: 'docker.container', detail: { op: 'run' }, ok: result.ok });
@@ -267,7 +270,12 @@ export async function handleDockerRoutes(
 
     if (parts[0] === 'containers' && parts[1] && !parts[2] && method === 'GET') {
       const inspect = await inspectDocker({ host: ctx.host, id: decodeURIComponent(parts[1]) });
-      sendJson(res, inspect.ok ? 200 : 404, { ok: inspect.ok, inspect: inspect.raw, notes: inspect.notes });
+      sendJson(res, inspect.ok ? 200 : 404, {
+        ok: inspect.ok,
+        inspect: inspect.raw,
+        summary: inspect.ok ? formatDockerInspectSummary(inspect.raw) : undefined,
+        notes: inspect.notes,
+      });
       return true;
     }
 

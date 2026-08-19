@@ -444,7 +444,8 @@
       "interpreter": "দোভাষী",
       "user": "ব্যবহারকারী",
       "unit": "ইউনিট",
-      "runtime": "রানটাইম"
+      "runtime": "রানটাইম",
+      "pid": "PID"
     },
     "projectsTitle": "YSK প্রকল্পের প্রক্রিয়া",
     "projectsDesc": "প্যানেল প্রকল্পের জন্য systemd ইউনিট (ডিফল্ট স্থাপন পথ — PM2 নয়)।",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

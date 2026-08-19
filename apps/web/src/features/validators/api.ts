@@ -44,24 +44,27 @@ export const validatorsApi = {
   disk: () => api.requestRaw<ValidatorDiskResponse>('/api/v1/validators/disk'),
   get: (id: string) =>
     api.requestRaw<ValidatorGetResponse>(`/api/v1/validators/${encodeURIComponent(id)}`),
-  create: (body: {
-    chain: string;
-    network: string;
-    profile: string;
-    slug?: string;
-    el?: string;
-    cl?: string;
-    mithril?: boolean;
-    memory?: string;
-    cpus?: string;
-    dataPath?: string;
-    rpcPort?: number;
-    acceptLowDisk?: boolean;
-    execute?: boolean;
-  }) =>
-    api.requestRaw<ValidatorOpsResponse>('/api/v1/validators', {
-      method: 'POST',
-      body: JSON.stringify(body),
+  create: (
+    body: {
+      chain: string;
+      network: string;
+      profile: string;
+      slug?: string;
+      el?: string;
+      cl?: string;
+      mithril?: boolean;
+      memory?: string;
+      cpus?: string;
+      dataPath?: string;
+      rpcPort?: number;
+      acceptLowDisk?: boolean;
+      execute?: boolean;
+    },
+    opts?: { onLog?: (line: InstallLogLine) => void; signal?: AbortSignal },
+  ) =>
+    postSseJson('/api/v1/validators', { ...body, stream: true }, {
+      onLog: opts?.onLog,
+      signal: opts?.signal,
     }),
   start: (id: string, execute = true) => postAction(id, 'start', { execute }),
   stop: (id: string, execute = true) => postAction(id, 'stop', { execute }),

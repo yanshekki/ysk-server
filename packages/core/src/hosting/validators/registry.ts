@@ -137,8 +137,8 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
       {
         id: 'cardano-node',
         role: 'node',
-        image: 'inputoutput/cardano-node',
-        tag: '10.1.4',
+        image: 'ghcr.io/intersectmbo/cardano-node',
+        tag: '11.0.1',
         v1: true,
       },
     ],

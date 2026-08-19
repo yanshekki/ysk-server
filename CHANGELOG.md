@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.1.13 — 2026-08-19
+
+### Fix
+- Validators: compose `command` matches image ENTRYPOINT (Bitcoin no longer doubles `bitcoind`; Avalanche includes `avalanchego`). Cardano image is `ghcr.io/intersectmbo/cardano-node:11.0.1`. Gaia bind-mounts are writable. Install success follows container health, not `compose up` exit 0. Mithril snapshot is off unless written into compose.
+- Docker: probe host ports before `run`; bind-fail leftover of the same name is removed; start/restart succeed only when Ports/Networks actually attach. Optional command/entrypoint. Destructive buttons expose `data-confirm`.
+- Nginx/SSL: managed conf keeps `listen 443` when cert files exist. After Let's Encrypt, rewrite SSL into managed conf so a later sync does not overlay a :80-only template. Invalid `server_name` and empty root/upstream are rejected.
+- Identifiers: project names, FTP users, SQL names, IPs/CIDR, nginx `server_name`, mailbox local-part share `packages/shared/src/ident.ts` on both panel and API.
+- Panel lists: empty search is not the first-install empty state. KPI chips stay on the unfiltered total. ConfirmDialog names the target. Ops results stay on the tab that ran them. Native English required bubbles are off (`noValidate`) with inline locale errors.
+- Public files open the live hostname (HTTPS when the cert is on the vhost). BT Tracker magnet placeholder stays `magnet:?xt=urn:btih:…`.
+- VNC start writes the short hostname into `/etc/hosts` and retries. Galera plan rejects invalid IPs.
+
+### Improve
+- E2E-11110 pages: Files restore confirm, FTP home path, email mailbox/alias validation, backups one conclusion per run, protection ban census, DNS missing-`dig` is not NXDOMAIN, VPN QR + CIDR checks, updates self-apply confirm, PHP ini save locked until probe.
+- Sidebar includes `/cluster`. `/agents` stays out of the feature grid (deep-link only).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.13**.
+
 ## 1.1.12 — 2026-08-18
 
 ### Fix

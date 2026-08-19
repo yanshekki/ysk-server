@@ -84,3 +84,31 @@ export function detectClientEngine(
   }
   return undefined;
 }
+
+const VPN_PEER_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/;
+
+/** Reject space / / ! and other chars the server would silently rewrite. */
+export function isVpnPeerName(raw: string): boolean {
+  const s = String(raw ?? '').trim();
+  if (!s || /[\s/!]/.test(s)) return false;
+  return VPN_PEER_NAME_RE.test(s);
+}
+
+/** Same rewrite as core sanitizePeerName — preview only; do not submit invalid names. */
+export function previewVpnPeerName(raw: string): string {
+  const s = String(raw ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return s || 'client';
+}
+
+/** Integer 1–65535. Does not clamp — 99999 is invalid, not 9999. */
+export function parseListenPortInput(raw: string): number | null {
+  const s = String(raw ?? '').trim();
+  if (!/^\d+$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isInteger(n) && n >= 1 && n <= 65535 ? n : null;
+}

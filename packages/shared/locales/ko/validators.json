@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "먼저 Mithril 스냅샷으로 복원(테스트넷 권장)",
-    "action": "Mithril로 복원"
+    "action": "Mithril로 복원",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "검증자 인스턴스를 찾을 수 없습니다",
@@ -113,7 +115,9 @@
     "snapshotLookup": "공식 스냅샷 포인터를 해석할 수 없습니다",
     "needSnapshotConfirm": "스냅샷 복원에는 confirm=인스턴스 ID 또는 SNAPSHOT이 필요합니다",
     "snapshotBlocked": "스냅샷 docker run이 허용 목록에서 거부되었습니다",
-    "snapshotFailed": "스냅샷 다운로드 또는 압축 해제가 실패했습니다"
+    "snapshotFailed": "스냅샷 다운로드 또는 압축 해제가 실패했습니다",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "이 기능은 Beta입니다. 호스트 변경에는 root와 YSK_EXECUTE=1이 필요합니다.",

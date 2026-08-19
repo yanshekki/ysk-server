@@ -74,6 +74,8 @@ export function VncPage() {
   const [clients, setClients] = useState<VncClientProfile[]>([]);
   const [vncStacks, setVncStacks] = useState<VncStackStatus[]>([]);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
+  const [resultTab, setResultTab] = useState<(typeof TABS)[number] | null>(null);
+  const [cNameTouched, setCNameTouched] = useState(false);
   const [page, setPage] = useState(0);
 
   // Client create / edit form
@@ -221,6 +223,7 @@ export function VncPage() {
     setError(null);
     try {
       const r = await fn();
+      setResultTab(tab as (typeof TABS)[number]);
       setLastOps(opsToPanel(r));
       if (r.resolves === true) setHostnameResolves(true);
       if (r.ok && !r.blocked && r.apply_status !== 'partial') {
@@ -231,6 +234,7 @@ export function VncPage() {
       await load();
       return r;
     } catch (e) {
+      setResultTab(tab as (typeof TABS)[number]);
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
       return null;
     } finally {
@@ -251,6 +255,7 @@ export function VncPage() {
     setCDepth(depth);
     setCBind(rfbBind);
     setCStart(true);
+    setCNameTouched(false);
     setCreateOpen(true);
   };
 
@@ -275,6 +280,7 @@ export function VncPage() {
         defaultRfbBind: rfbBind,
         defaultAutostart: autostart,
       });
+      setResultTab('settings');
       setLastOps({ ok: r.ok, notes: [t('vnc.settingsSaved')] });
       if (r.ok) notifyOk(t('vnc.settingsSaved'));
       else notifyWarn(t('common.opFailed'));
@@ -327,8 +333,8 @@ export function VncPage() {
         active={tab}
         onChange={(id) => setTab(id as (typeof TABS)[number])}
       >
-        {error ? <Alert variant="error">{error}</Alert> : null}
-        {loaded && !hostnameResolves ? (
+        {error && resultTab === tab ? <Alert variant="error">{error}</Alert> : null}
+        {tab === 'accounts' && loaded && !hostnameResolves ? (
           <Alert variant={accounts.length > 0 ? 'warn' : 'info'}>
             <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
               <span>
@@ -342,7 +348,7 @@ export function VncPage() {
             </div>
           </Alert>
         ) : null}
-        {lastOps ? (
+        {lastOps && resultTab === tab ? (
           <OpsResultPanel
             title={t('vnc.result')}
             result={lastOps}
@@ -595,6 +601,12 @@ export function VncPage() {
                       size="sm"
                       variant="secondary"
                       loading={busy}
+                      disabled={!hostnameResolves}
+                      title={
+                        !hostnameResolves
+                          ? t('vnc.startHostnameBlocked')
+                          : undefined
+                      }
                       onClick={() => void runOps(() => vncApi.startAccount(a.id))}
                     >
                       {t('vnc.start')}
@@ -827,14 +839,26 @@ export function VncPage() {
               showReadyActions={false}
               onInstalled={() => void load()}
             />
-            <SoftwareVersionBar softwareId="tigervnc" />
+            <SoftwareVersionBar
+              softwareId="tigervnc"
+              onResult={(r) => {
+                setLastOps(r);
+                setResultTab('install');
+              }}
+            />
             <SoftwareInstallBanner
               feature="novnc"
               title={t('vnc.needNovnc')}
               showReadyActions={false}
               onInstalled={() => void load()}
             />
-            <SoftwareVersionBar softwareId="novnc" />
+            <SoftwareVersionBar
+              softwareId="novnc"
+              onResult={(r) => {
+                setLastOps(r);
+                setResultTab('install');
+              }}
+            />
             <SoftwareInstallBanner
               feature="vnc-xfce"
               title={t('vnc.needXfce')}
@@ -855,7 +879,12 @@ export function VncPage() {
 
         {tab === 'settings' ? (
           <div className="stack">
-            <Alert variant="info">{t('vnc.settingsNeedStack')}</Alert>
+            {!(
+              vncStacks.find((s) => s.id === 'tigervnc')?.installed &&
+              (desktop !== 'xfce' || xfceInstalled)
+            ) ? (
+              <Alert variant="info">{t('vnc.settingsNeedStack')}</Alert>
+            ) : null}
             <SoftwareInstallBanner
               feature="tigervnc"
               title={t('vnc.needTigerVnc')}
@@ -960,48 +989,66 @@ export function VncPage() {
               {t('common.cancel')}
             </Button>
             <Button
+              type="submit"
+              form="vnc-create"
               variant="primary"
               size="md"
               loading={busy}
-              onClick={() => {
-                if (!cName.trim()) {
-                  notifyWarn(t('vnc.needName'));
-                  return;
-                }
-                if (cPass && cPass !== cPass2) {
-                  notifyWarn(t('vnc.passwordMismatch'));
-                  return;
-                }
-                if (cPass && cPass.length < 6) {
-                  notifyWarn(t('vnc.passwordTooShort'));
-                  return;
-                }
-                void runOps(() =>
-                  vncApi.createAccount({
-                    name: cName.trim(),
-                    password: cPass || undefined,
-                    desktop: cDesktop,
-                    geometry: cGeo,
-                    depth: cDepth,
-                    rfbBind: cBind,
-                    start: cStart && hostnameResolves,
-                  }),
-                ).then((r) => {
-                  if (r?.ok) setCreateOpen(false);
-                });
-              }}
+              disabled={!cName.trim()}
+              title={!cName.trim() ? t('vnc.needName') : undefined}
             >
               {t('vnc.createAccountBtn')}
             </Button>
           </>
         }
       >
+        <form
+          id="vnc-create"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            setCNameTouched(true);
+            if (!cName.trim()) return;
+            if (cPass && cPass !== cPass2) {
+              notifyWarn(t('vnc.passwordMismatch'));
+              return;
+            }
+            if (cPass && cPass.length < 6) {
+              notifyWarn(t('vnc.passwordTooShort'));
+              return;
+            }
+            void runOps(() =>
+              vncApi.createAccount({
+                name: cName.trim(),
+                password: cPass || undefined,
+                desktop: cDesktop,
+                geometry: cGeo,
+                depth: cDepth,
+                rfbBind: cBind,
+                start: cStart && hostnameResolves,
+              }),
+            ).then((r) => {
+              if (r?.ok) setCreateOpen(false);
+            });
+          }}
+        >
         <FormLayout columns={1}>
-          <Field label={t('vnc.colName')} htmlFor="c-name" required flush>
+          <Field
+            label={t('vnc.colName')}
+            htmlFor="c-name"
+            required
+            error={
+              cNameTouched && !cName.trim() ? t('vnc.needName') : undefined
+            }
+            flush
+          >
             <input
               id="c-name"
               value={cName}
-              onChange={(e) => setCName(e.target.value)}
+              onChange={(e) => {
+                setCName(e.target.value);
+                if (!cNameTouched) setCNameTouched(true);
+              }}
               placeholder="alice"
             />
           </Field>
@@ -1079,6 +1126,7 @@ export function VncPage() {
             {t('vnc.startAfterCreate')}
           </label>
         </FormLayout>
+        </form>
       </Modal>
 
       <Modal
@@ -1350,6 +1398,7 @@ export function VncPage() {
         confirmLabel={t('common.delete')}
         severity="destructive"
         busy={busy}
+        dataConfirm={delTarget?.name}
       >
         <label className="u-flex u-items-center u-gap-2 u-mt-3">
           <input
@@ -1372,6 +1421,7 @@ export function VncPage() {
         confirmLabel={t('vnc.hostnameFix')}
         cancelLabel={t('common.cancel')}
         busy={busy}
+        dataConfirm={hostname || 'hostname'}
         onConfirm={() => {
           setFixHostsOpen(false);
           void runOps(() => vncApi.fixHostnameHosts()).then(() => void load());

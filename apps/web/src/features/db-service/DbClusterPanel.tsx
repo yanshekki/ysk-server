@@ -21,6 +21,7 @@ import { ActionBar,
   Modal,
   OpsResultPanel,
   SegRadio,
+  TableMore,
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from './api';
@@ -40,17 +41,13 @@ import { hostTimeZoneOpts } from '../../shared/lib/host-timezone';
 import {
   CLUSTER_ENGINE_ORDER,
   clusterServicePath,
+  clusterStatusLabel,
+  clusterStatusTone,
   isStaleClusterPlan,
 } from '../../pages/features/cluster-landing';
 
-export function statusTone(
-  s: string,
-): 'ok' | 'warn' | 'danger' | 'neutral' | 'info' {
-  if (s === 'healthy') return 'ok';
-  if (s === 'planned' || s === 'draft' || s === 'partial') return 'warn';
-  if (s === 'failed' || s === 'degraded') return 'danger';
-  return 'neutral';
-}
+export { clusterStatusLabel };
+export const statusTone = clusterStatusTone;
 
 export function defaultKind(engine: DbServiceEngine): DbClusterKind {
   if (engine === 'mariadb') return 'mariadb-galera';
@@ -65,16 +62,6 @@ export function wizardTitle(kind: DbClusterKind): string {
   if (kind === 'postgres-replica') return i18n.t('db.cluster.kindPgReplica');
   if (kind === 'redis-sentinel') return 'Redis Sentinel';
   return i18n.t('db.cluster.kindRedisReplica');
-}
-
-export function clusterStatusLabel(
-  status: string,
-  t: (k: string, o?: Record<string, unknown>) => string,
-): string {
-  const key = `db.cluster.status.${status}`;
-  const loc = t(key, { defaultValue: '' });
-  if (loc && loc !== key) return loc;
-  return t(`applyStatus.${status}`, { defaultValue: status });
 }
 
 export function ctaLabel(kind: DbClusterKind): string {
@@ -116,7 +103,7 @@ export function DbClusterPanel({
     Array<{ id: string; name: string; engine: string; status: string }>
   >([]);
   const [pendingConfirm, setPendingConfirm] = useState<
-    | { kind: 'remove'; id: string }
+    | { kind: 'remove'; id: string; name: string; engine: string }
     | { kind: 'installPeers'; id: string }
     | { kind: 'push'; id: string }
     | { kind: 'fleetSync'; id: string }
@@ -124,6 +111,11 @@ export function DbClusterPanel({
     | { kind: 'clearStale' }
     | null
   >(null);
+  const [wizFieldErr, setWizFieldErr] = useState<{
+    name?: string;
+    local?: string;
+    peer?: string;
+  }>({});
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -171,10 +163,16 @@ export function DbClusterPanel({
 
   async function onCreatePlan(e: FormEvent) {
     e.preventDefault();
-    if (!localHost.trim() || !peerHost.trim()) {
-      setError(t('db.cluster.needRealIps'));
+    const nextErr: { name?: string; local?: string; peer?: string } = {};
+    if (!name.trim()) nextErr.name = t('common.pleaseFill');
+    if (!localHost.trim()) nextErr.local = t('common.pleaseFill');
+    if (!peerHost.trim()) nextErr.peer = t('common.pleaseFill');
+    if (nextErr.name || nextErr.local || nextErr.peer) {
+      setWizFieldErr(nextErr);
+      if (nextErr.local || nextErr.peer) setError(t('db.cluster.needRealIps'));
       return;
     }
+    setWizFieldErr({});
     await run(async () => {
       const primaryRole =
         kind === 'redis-replica' || kind === 'redis-sentinel' ? 'master' : 'primary';
@@ -527,7 +525,7 @@ export function DbClusterPanel({
             rows={items}
             rowKey={(c) => c.id}
             rowActions={(c) => (
-              <ActionBar align="end">
+              <ActionBar align="end" wrap={false}>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -555,9 +553,7 @@ export function DbClusterPanel({
                 >
                   {t('db.cluster.applyLocal')}
                 </Button>
-                <details className="table-more">
-                  <summary>{t('common.more', { defaultValue: 'More' })}</summary>
-                  <div className="table-more__menu">
+                <TableMore label={t('common.more')}>
                     <Button
                       variant="secondary"
                       size="sm"
@@ -686,13 +682,23 @@ export function DbClusterPanel({
                       variant="danger"
                       size="sm"
                       loading={busy}
-                      title={t('db.cluster.deleteClusterTitle')}
-                      onClick={() => setPendingConfirm({ kind: 'remove', id: c.id })}
+                      title={t('db.cluster.deleteClusterTitle', {
+                        name: c.name,
+                        engine: c.engine || engine,
+                      })}
+                      data-confirm={c.name}
+                      onClick={() =>
+                        setPendingConfirm({
+                          kind: 'remove',
+                          id: c.id,
+                          name: c.name,
+                          engine: c.engine || engine,
+                        })
+                      }
                     >
                       {t('common.delete')}
                     </Button>
-                  </div>
-                </details>
+                </TableMore>
               </ActionBar>
             )}
             empty={
@@ -799,14 +805,22 @@ export function DbClusterPanel({
           </>
         }
       >
-        <form id="dbc-wiz" onSubmit={(e) => void onCreatePlan(e)}>
+        <form id="dbc-wiz" noValidate onSubmit={(e) => void onCreatePlan(e)}>
           <FormLayout columns={1}>
-            <Field label={t('db.cluster.clusterName')} htmlFor="dbc-name" flush required>
+            <Field
+              label={t('db.cluster.clusterName')}
+              htmlFor="dbc-name"
+              flush
+              required
+              error={wizFieldErr.name}
+            >
               <input
                 id="dbc-name"
                 value={name}
-                onChange={bindInput(setName)}
-                required
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (wizFieldErr.name) setWizFieldErr((p) => ({ ...p, name: undefined }));
+                }}
                 spellCheck={false}
               />
             </Field>
@@ -815,6 +829,7 @@ export function DbClusterPanel({
               htmlFor="dbc-local"
               flush
               required
+              error={wizFieldErr.local}
               hint={
                 isRepl
                   ? t('db.cluster.primaryIpHint')
@@ -824,9 +839,11 @@ export function DbClusterPanel({
               <input
                 id="dbc-local"
                 value={localHost}
-                onChange={bindInput(setLocalHost)}
+                onChange={(e) => {
+                  setLocalHost(e.target.value);
+                  if (wizFieldErr.local) setWizFieldErr((p) => ({ ...p, local: undefined }));
+                }}
                 placeholder={t('db.cluster.ipExample1')}
-                required
                 spellCheck={false}
                 autoComplete="off"
               />
@@ -836,6 +853,7 @@ export function DbClusterPanel({
               htmlFor="dbc-peer"
               flush
               required
+              error={wizFieldErr.peer}
               hint={
                 isRepl
                   ? t('db.cluster.replicaHint')
@@ -845,9 +863,11 @@ export function DbClusterPanel({
               <input
                 id="dbc-peer"
                 value={peerHost}
-                onChange={bindInput(setPeerHost)}
+                onChange={(e) => {
+                  setPeerHost(e.target.value);
+                  if (wizFieldErr.peer) setWizFieldErr((p) => ({ ...p, peer: undefined }));
+                }}
                 placeholder={t('db.cluster.ipExample2')}
-                required
                 spellCheck={false}
                 autoComplete="off"
               />
@@ -943,9 +963,15 @@ export function DbClusterPanel({
       <ConfirmDialog
         open={pendingConfirm != null}
         onClose={() => !busy && setPendingConfirm(null)}
+        dataConfirm={
+          pendingConfirm?.kind === 'remove' ? pendingConfirm.name : undefined
+        }
         title={
           pendingConfirm?.kind === 'remove'
-            ? t('db.cluster.deleteClusterTitle')
+            ? t('db.cluster.deleteClusterTitle', {
+                name: pendingConfirm.name,
+                engine: pendingConfirm.engine,
+              })
             : pendingConfirm?.kind === 'clearStale'
               ? t('db.cluster.clearStalePlansTitle')
             : pendingConfirm?.kind === 'installPeers'
@@ -960,7 +986,10 @@ export function DbClusterPanel({
         }
         description={
           pendingConfirm?.kind === 'remove'
-            ? t('db.cluster.deleteClusterDesc')
+            ? t('db.cluster.deleteClusterDesc', {
+                name: pendingConfirm.name,
+                engine: pendingConfirm.engine,
+              })
             : pendingConfirm?.kind === 'clearStale'
               ? t('db.cluster.clearStalePlansDesc', { n: stalePlans.length })
             : pendingConfirm?.kind === 'installPeers'

@@ -2,7 +2,7 @@
  * Page tab state with optional URL sync (`?tab=`).
  * Prefer for feature pages with ≥3 independent task areas.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export type UsePageTabOptions = {
@@ -34,6 +34,8 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   admission: 'geo',
   ipacl: 'geo',
   ip: 'geo',
+  /** Protection IP 准入 (geo) */
+  access: 'geo',
   processes: 'live',
   maintenance: 'ops',
 };
@@ -54,7 +56,7 @@ export function usePageTab(
   tabIds: readonly string[],
   defaultId: string,
   options: UsePageTabOptions = {},
-): [string, (id: string) => void] {
+): [string, (id: string) => void, string | null] {
   const { syncUrl = true, param = 'tab', aliases } = options;
   const [searchParams, setSearchParams] = useSearchParams();
   const [local, setLocal] = useState(defaultId);
@@ -68,28 +70,13 @@ export function usePageTab(
 
   const rawParam = searchParams.get(param);
   const fromUrl = resolveTabId(rawParam, allowed, aliasMap);
+  const unknownTab: string | null =
+    syncUrl && rawParam && !fromUrl ? rawParam : null;
   const active = syncUrl
     ? fromUrl ?? fallback
     : allowed.has(local)
       ? local
       : fallback;
-
-  useEffect(() => {
-    if (!syncUrl || !rawParam) return;
-    const mapped = aliasMap[rawParam];
-    // Keep the operator's tab key (help → about). Only strip unknown keys.
-    if (allowed.has(rawParam)) return;
-    if (mapped && allowed.has(mapped)) return;
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (!fallback || fallback === rawParam) return prev;
-        next.delete(param);
-        return next;
-      },
-      { replace: true },
-    );
-  }, [allowed, aliasMap, fallback, param, rawParam, setSearchParams, syncUrl]);
 
   const setTab = useCallback(
     (id: string) => {
@@ -111,5 +98,5 @@ export function usePageTab(
     [allowed, fallback, param, setSearchParams, syncUrl],
   );
 
-  return [active, setTab];
+  return [active, setTab, unknownTab];
 }

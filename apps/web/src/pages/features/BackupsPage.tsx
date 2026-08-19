@@ -188,7 +188,10 @@ export function BackupsPage() {
     projectId: string;
     snapshotId: string;
   } | null>(null);
-  const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
+  const { busy, error: actErr, result, msg, run, setMsg, setError: setActError, clear } =
+    useFeatureAction();
+  const [bannerClosed, setBannerClosed] = useState(false);
+  const [resultTab, setResultTab] = useState<string | null>(null);
   const [identities, setIdentities] = useState<Array<{ id: string; name?: string }>>([]);
 
   const refresh = useCallback(async () => {
@@ -329,6 +332,10 @@ export function BackupsPage() {
 
   const [tab, setTab] = usePageTab(BK_TABS, 'files');
 
+  useEffect(() => {
+    if (result) setResultTab((prev) => prev ?? tab);
+  }, [result, tab]);
+
   async function downloadBackup(b: BackupItem) {
     setError(null);
     try {
@@ -431,7 +438,19 @@ export function BackupsPage() {
         </>
       }
     >
-      {error || actErr ? <Alert variant="error">{error ?? actErr}</Alert> : null}
+      {(error || actErr) && !bannerClosed ? (
+        <Alert
+          variant="error"
+          onClose={() => {
+            setBannerClosed(true);
+            setError(null);
+            setActError(null);
+          }}
+          closeLabel={t('common.close')}
+        >
+          {error ?? actErr}
+        </Alert>
+      ) : null}
       <div className="ops">
       <PageTabs
         tabs={[
@@ -442,7 +461,14 @@ export function BackupsPage() {
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
-        onChange={setTab}
+        onChange={(id) => {
+          setTab(id);
+          clear();
+          setActError(null);
+          setError(null);
+          setBannerClosed(false);
+          setResultTab(null);
+        }}
         variant="scroll"
       >
         {tab === 'files' ? (
@@ -701,23 +727,25 @@ export function BackupsPage() {
                       empty?: boolean;
                     };
                     await refresh();
-                    const extra =
-                      r.empty
-                        ? t('backups.noProjects')
-                        : Array.isArray(r.results)
-                          ? t('backups.successRatio', { ok: r.results.filter((x) => x.ok && !x.skipped).length, total: r.results.filter((x) => !x.skipped).length })
-                          : '';
+                    const skipped = Array.isArray(r.results)
+                      ? r.results.some((x) => x.skipped)
+                      : false;
+                    const conclusion = r.empty
+                      ? t('backups.nothingToDo')
+                      : skipped
+                        ? t('backups.partialSkipped')
+                        : r.ok === false
+                          ? t('backups.hasFailures')
+                          : t('backups.backupDone');
                     return {
                       ...r,
-                      notes: [
-                        ...(r.notes ?? []),
-                        extra ? t('backups.summary', { extra }) : '',
-                      ].filter(Boolean) };
+                      notes: [conclusion],
+                    };
                   } catch (e) {
                     const m = e instanceof Error ? e.message : t('backups.backupFailed');
                     return { ok: false, notes: [m], blockMessage: m };
                   }
-                }, t('backups.backupDone'))
+                })
               }
             >
               {t('backups.backupAll')}
@@ -797,7 +825,13 @@ export function BackupsPage() {
               variant="ghost"
               size="md"
               loading={busy}
+              disabled={!restic.enabled}
+              title={
+                !restic.enabled ? t('backups.resticNeedConfig') : undefined
+              }
               onClick={() => {
+                if (!restic.enabled) return;
+                setResultTab('ops');
                 void api
                   .requestRaw<{
                     ok?: boolean;
@@ -841,14 +875,7 @@ export function BackupsPage() {
                       : '—' },
                   {
                     label: t('projects.healthDetail.overall'),
-                    value:
-                      lastOk === true
-                        ? lastRun.empty
-                          ? t('backups.nothingZero')
-                          : t('common.success')
-                        : lastOk === false
-                          ? t('backups.hasFailures')
-                          : '—' },
+                    value: lastLabel },
                   {
                     label: t('common.notes'),
                     value: Array.isArray(lastRun.notes)
@@ -1117,43 +1144,6 @@ export function BackupsPage() {
                   )}
                 />
               </div>
-            </div>
-          ) : null}
-          {lastRun ? (
-            <div className="u-mt-4">
-              <DescriptionList
-                columns={2}
-                items={[
-                  {
-                    label: t('projects.healthDetail.overall'),
-                    value: (
-                      <Badge tone={lastTone}>
-                        {lastLabel}
-                      </Badge>
-                    ) },
-                  {
-                    label: t('common.time'),
-                    value: lastRun.at
-                      ? formatDateTime(String(lastRun.at), { locale: i18n.language })
-                      : '—' },
-                  ...(Array.isArray(lastRun.notes) && lastRun.notes.length
-                    ? [
-                        {
-                          label: t('common.notes'),
-                          value: (
-                            <ul className="list-plain list-spaced">
-                              {(lastRun.notes as string[])
-                                .slice(0, 6)
-                                .map((n) => (
-                                  <li key={n}>{localizeBackupNote(n, t)}</li>
-                                ))}
-                            </ul>
-                          ),
-                        },
-                      ]
-                    : []),
-                ]}
-              />
             </div>
           ) : null}
       </section>
@@ -1541,11 +1531,12 @@ export function BackupsPage() {
         }
         description={
           restoreTarget
-            ? restoreMode === 'dry-run'
-              ? t('backups.previewDesc', { name: restoreTarget.name })
-              : restoreMode === 'web'
-                ? t('backups.restoreWebDesc', { name: restoreTarget.name })
-                : t('backups.restoreFullDesc', { name: restoreTarget.name })
+            ? t('backups.restoreNamedDesc', {
+                name: restoreTarget.name,
+                project:
+                  projectNames[restoreTarget.projectId] ||
+                  restoreTarget.projectId,
+              })
             : ''
         }
         confirmLabel={restoreMode === 'dry-run' ? t('system.preview') : t('files.restore')}
@@ -1655,7 +1646,10 @@ export function BackupsPage() {
         title={t('backups.resticSafeTitle')}
         description={
           resticSafe
-            ? t('backups.resticSafeDesc', { snapshot: resticSafe.snapshotId, project: resticSafe.projectId.slice(0, 8)+'…' })
+            ? t('backups.resticSafeNamed', {
+                snapshot: resticSafe.snapshotId,
+                project: projectNames[resticSafe.projectId] || resticSafe.projectId,
+              })
             : ''
         }
         confirmLabel={t('files.restore')}
@@ -1682,7 +1676,11 @@ export function BackupsPage() {
         title={t('backups.overwriteTitle')}
         description={
           resticOverwrite
-            ? t('backups.overwriteDesc', { project: resticOverwrite.projectId.slice(0, 8)+'…' })
+            ? t('backups.overwriteNamedDesc', {
+                snapshot: resticOverwrite.snapshotId,
+                project:
+                  projectNames[resticOverwrite.projectId] || resticOverwrite.projectId,
+              })
             : ''
         }
         label={t('security.ssh.confirmString')}
@@ -1708,7 +1706,9 @@ export function BackupsPage() {
         }}
       />
 
-      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+      {resultTab == null || resultTab === tab ? (
+        <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+      ) : null}
       </div>
     </FeaturePageLayout>
   );

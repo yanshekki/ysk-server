@@ -283,7 +283,12 @@ export function SoftwareInstallBanner({
         <SoftwareUninstallDialog
           open={uninstallOpen}
           feature={feature}
-          title={uninstallTitle ?? readyTitle ?? title}
+          title={
+            uninstallTitle ??
+            missingList[0]?.id ??
+            items.find((i) => i.installed)?.id ??
+            feature
+          }
           busy={uninstallBusy}
           onClose={() => !uninstallBusy && setUninstallOpen(false)}
           onConfirm={runUninstall}

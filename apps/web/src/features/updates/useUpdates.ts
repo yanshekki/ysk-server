@@ -61,20 +61,26 @@ export function useUpdates() {
         // Prefer filtered inventory rows (backend ListQuery) when present
         const listMeta = (inv as { listMeta?: { total?: number } }).listMeta;
         const invRows = inv.inventory ?? [];
-        const merged =
-          inv.advice?.length > 0 && !listQuery?.q && !listQuery?.risk && !listQuery?.upgradable && !listQuery?.approval
+        const hasFilter = Boolean(
+          listQuery?.q || listQuery?.risk || listQuery?.upgradable || listQuery?.approval,
+        );
+        const fromRows = invRows.map((i) => ({
+          packageName: String(i.packageName ?? (i as { name?: string }).name ?? ''),
+          currentVersion: String(i.currentVersion ?? (i as { version?: string }).version ?? ''),
+          candidateVersion: i.candidateVersion as string | undefined,
+          advice: 'skip' as const,
+          risk: (i.risk as AdviceRow['risk']) ?? 'low',
+          cves: [] as string[],
+          requiresApproval: Boolean((i as { needsApproval?: boolean }).needsApproval),
+          summary: '',
+        }));
+        const merged = hasFilter
+          ? fromRows.length > 0
+            ? fromRows
+            : (inv.advice ?? [])
+          : inv.advice?.length
             ? inv.advice
-            : invRows.length > 0
-              ? invRows.map((i) => ({
-                  packageName: String(i.packageName ?? (i as { name?: string }).name ?? ''),
-                  currentVersion: String(i.currentVersion ?? (i as { version?: string }).version ?? ''),
-                  candidateVersion: i.candidateVersion as string | undefined,
-                  advice: 'skip' as const,
-                  risk: (i.risk as AdviceRow['risk']) ?? 'low',
-                  cves: [] as string[],
-                  requiresApproval: Boolean((i as { needsApproval?: boolean }).needsApproval),
-                  summary: '' }))
-              : (inv.advice ?? []);
+            : fromRows;
         setInventory(merged.slice(0, 500));
         setEntries(inv.entries ?? []);
         setLastAt(inv.collectedAt ?? null);

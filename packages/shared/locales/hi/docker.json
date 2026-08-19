@@ -122,7 +122,11 @@
     "mutateFailed": "Docker आदेश विफल",
     "engineFailed": "docker.service नियंत्रित नहीं हो सका",
     "badExec": "Exec केवल अनुमत बाइनरी और प्रीसेट तक सीमित है (कोई शेल नहीं, कोई TTY नहीं)",
-    "uninstallBusy": "Docker हटाने से पहले पैनल-प्रबंधित कंटेनर (वैलिडेटर स्टैक सहित) रोकें"
+    "uninstallBusy": "Docker हटाने से पहले पैनल-प्रबंधित कंटेनर (वैलिडेटर स्टैक सहित) रोकें",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "केवल dry-run। होस्ट बदलने के लिए --execute और YSK_EXECUTE=1 दें।",
@@ -153,7 +157,8 @@
       "start": "docker.service चालू हुआ",
       "stop": "docker.service रुका",
       "restart": "docker.service पुनः चालू हुआ"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "Install Docker Engine first",
   "notInstalledValue": "Not installed",
@@ -225,7 +230,18 @@
     "customPortContainer": "कंटेनर पोर्ट",
     "pctUsed": "{{n}}% प्रयुक्त",
     "customPortHint": "1–65535. Example: 9090 → 80.",
-    "pickBridge": "Bridge network"
+    "pickBridge": "Bridge network",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "Delete {{id}}",
   "deleteDesc": "This cannot be undone.",

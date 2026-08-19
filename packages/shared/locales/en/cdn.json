@@ -43,6 +43,14 @@
     "partial": "Partial"
   },
   "statSites": "Sites",
+  "statSitesCount": "{{n}} sites",
+  "cacheMethod": {
+    "none": "No estimate",
+    "access_log": "Access log",
+    "cache_dir": "Cache directory",
+    "log_format": "Need log format"
+  },
+  "geoMapLabel": "Geo map (JSON)",
   "statApplyFailed": "Apply failed",
   "pillNodesSites": "{{n}} nodes · {{s}} sites",
   "statOnline": "Online",

@@ -49,6 +49,7 @@ import {
   type DockerVolumeRow,
 } from '../../features/docker';
 import { validatorsApi } from '../../features/validators';
+import { isSafeDockerName, parseDockerArgvLine } from 'ysk-server-shared';
 
 const TABS = [
   'overview',
@@ -82,10 +83,10 @@ type DockerDelete =
   | { kind: 'compose'; token: string; project: string; validatorId: string | null };
 
 const PORT_PRESETS = [
-  { id: '80', host: 80, container: 80, label: '80 → 80' },
-  { id: '443', host: 443, container: 443, label: '443 → 443' },
-  { id: '8080', host: 8080, container: 80, label: '8080 → 80' },
-  { id: '3000', host: 3000, container: 3000, label: '3000 → 3000' },
+  { id: '80', host: 80, container: 80, label: '80:80' },
+  { id: '443', host: 443, container: 443, label: '443:443' },
+  { id: '8080', host: 8080, container: 80, label: '8080:80' },
+  { id: '3000', host: 3000, container: 3000, label: '3000:3000' },
 ] as const;
 
 function formatGiB(n: number | null | undefined): string {
@@ -105,6 +106,19 @@ function parseEnv(raw: string): Record<string, string> {
 
 function imageRef(row: DockerImageRow): string {
   return `${row.repository}:${row.tag}`;
+}
+
+function canonImageRef(ref: string): string {
+  return ref.replace(/:latest$/, '');
+}
+
+function isValidatorImage(ref: string): boolean {
+  return /avalanchego|gaia|bitcoind|cardano|yskval|polkadot|solana|agave/i.test(ref);
+}
+
+function loopbackHref(ports: string): string | null {
+  const m = String(ports ?? '').match(/127\.0\.0\.1:(\d+)/);
+  return m ? `http://127.0.0.1:${m[1]}/` : null;
 }
 
 const DOCKER_STATE_KEYS = [
@@ -202,6 +216,11 @@ export function DockerPage() {
   const [insecure, setInsecure] = useState('');
   const [inspectText, setInspectText] = useState('');
   const [daemonConfirm, setDaemonConfirm] = useState(false);
+  const [runCommand, setRunCommand] = useState('');
+  const [runEntrypoint, setRunEntrypoint] = useState('');
+  const [runCmdErr, setRunCmdErr] = useState<string | null>(null);
+  const [runNewVol, setRunNewVol] = useState('');
+  const [volErr, setVolErr] = useState<string | null>(null);
   const stream = useOpsStreamOptional();
 
   const engineInstalled = status?.installed === true;
@@ -250,17 +269,24 @@ export function DockerPage() {
   }, [load]);
 
   useEffect(() => {
+    setOps(null);
+    setError(null);
+  }, [tab]);
+
+  useEffect(() => {
     if (!loaded) return;
     if (!engineInstalled && tab !== 'overview' && tab !== 'about') setTab('overview');
   }, [loaded, engineInstalled, tab, setTab]);
 
   const imageChoices = useMemo(() => {
-    const seen = new Set<string>(IMAGE_PRESETS);
+    const seen = new Set<string>(IMAGE_PRESETS.map(canonImageRef));
     const extra: string[] = [];
     for (const row of images) {
       const ref = imageRef(row);
-      if (!ref || ref.includes('<none>') || seen.has(ref)) continue;
-      seen.add(ref);
+      if (!ref || ref.includes('<none>')) continue;
+      const canon = canonImageRef(ref);
+      if (seen.has(canon) || seen.has(ref)) continue;
+      seen.add(canon);
       extra.push(ref);
     }
     return [...IMAGE_PRESETS, ...extra.slice(0, 8)];
@@ -272,9 +298,20 @@ export function DockerPage() {
   const resolvedRunImage = runImageValue === CUSTOM ? runCustom.trim() : runImage;
 
   const bridgeNets = useMemo(() => {
-    const list = networks.filter((n) => n.driver === 'bridge' && n.name !== 'host' && n.name !== 'none');
-    if (list.some((n) => n.name === 'bridge')) return list;
-    return [{ name: 'bridge', id: 'bridge', driver: 'bridge', scope: 'local', internal: false, protected: true }, ...list];
+    const list = networks.filter((n) => !n.protected && n.name !== 'host' && n.name !== 'none');
+    const hasBridge = list.some((n) => n.name === 'bridge') || networks.some((n) => n.name === 'bridge');
+    if (hasBridge || list.some((n) => n.name === 'bridge')) return list.length ? list : networks.filter((n) => n.name === 'bridge');
+    return [
+      {
+        name: 'bridge',
+        id: 'bridge',
+        driver: 'bridge',
+        scope: 'local',
+        internal: false,
+        protected: true,
+      },
+      ...list,
+    ];
   }, [networks]);
 
   const run = async (
@@ -317,10 +354,12 @@ export function DockerPage() {
         stream?.finish(job.id, { ok: r.ok !== false && !r.blocked, error: r.blockMessage, toast: false });
       }
       await load();
+      return r;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
       if (job) stream?.finish(job.id, { ok: false, error: msg, toast: false });
+      return null;
     } finally {
       setBusy(false);
     }
@@ -373,9 +412,30 @@ export function DockerPage() {
     if (!engineInstalled) return;
     const image = resolvedRunImage.trim();
     if (!image) return;
+    setRunCmdErr(null);
+    const cmd = runCommand.trim() ? parseDockerArgvLine(runCommand) : [];
+    if (runCommand.trim() && !cmd) {
+      setRunCmdErr(t('docker.errors.badCommand'));
+      return;
+    }
+    const ep = runEntrypoint.trim();
+    if (ep && (!parseDockerArgvLine(ep) || parseDockerArgvLine(ep)!.length !== 1)) {
+      setRunCmdErr(t('docker.errors.badCommand'));
+      return;
+    }
     const env = runEnvOn ? parseEnv(runEnv) : {};
     const dest = runVolDest === CUSTOM ? runVolDestCustom.trim() : runVolDest;
-    await run(() =>
+    let volName = runVolName;
+    if (runAttachVol && runNewVol.trim()) {
+      if (!isSafeDockerName(runNewVol.trim())) {
+        setRunCmdErr(t('docker.errors.badName'));
+        return;
+      }
+      const created = await run(() => dockerApi.createVolume(runNewVol.trim()));
+      if (!created?.ok) return;
+      volName = runNewVol.trim();
+    }
+    const r = await run(() =>
       dockerApi.run({
         image,
         name: runName.trim() || undefined,
@@ -383,13 +443,12 @@ export function DockerPage() {
         env: Object.keys(env).length ? env : undefined,
         restart: (runRestart || 'no') as 'no' | 'always' | 'unless-stopped' | 'on-failure',
         network: runNetwork.trim() || undefined,
-        volumes:
-          runAttachVol && runVolName && dest
-            ? [{ name: runVolName, dest }]
-            : [],
+        volumes: runAttachVol && volName && dest ? [{ name: volName, dest }] : [],
+        command: cmd && cmd.length ? cmd : undefined,
+        entrypoint: ep || undefined,
       }),
     );
-    setRunOpen(false);
+    if (r?.ok) setRunOpen(false);
   };
 
   const visibleTabs = engineInstalled ? TABS : (['overview', 'about'] as const);
@@ -398,7 +457,10 @@ export function DockerPage() {
     diskPct != null && diskPct >= 90 ? 'danger' : diskPct != null && diskPct >= 75 ? 'warn' : 'ok';
 
   const imageOptions = [
-    ...imageChoices.map((value) => ({ value, label: value })),
+    ...imageChoices.map((value) => ({
+      value,
+      label: isValidatorImage(value) ? `${value} · ${t('docker.ui.validatorImage')}` : value,
+    })),
     { value: CUSTOM, label: t('docker.ui.imageCustom') },
   ];
 
@@ -638,7 +700,33 @@ export function DockerPage() {
                   );
                 },
               },
-              { key: 'ports', header: t('docker.col.ports'), render: (row) => row.ports || '—' },
+              {
+                key: 'ports',
+                header: t('docker.col.ports'),
+                nowrap: true,
+                render: (row) => {
+                  const href = loopbackHref(row.ports);
+                  return (
+                    <span className="u-nowrap">
+                      {row.ports || '—'}
+                      {href ? (
+                        <>
+                          {' '}
+                          <a href={href} target="_blank" rel="noreferrer">
+                            {t('docker.ui.loopbackUrl')}
+                          </a>
+                          {' · '}
+                          <a
+                            href={`/nginx?create=1&upstream=${encodeURIComponent(href)}`}
+                          >
+                            {t('docker.ui.nginxProxy')}
+                          </a>
+                        </>
+                      ) : null}
+                    </span>
+                  );
+                },
+              },
               {
                 key: 'ysk',
                 header: t('docker.col.managed'),
@@ -679,7 +767,8 @@ export function DockerPage() {
                         setLogFollow(false);
                         setLogId('');
                         setLogs([]);
-                        setInspectText(JSON.stringify(r.inspect, null, 2));
+                        const raw = JSON.stringify(r.inspect, null, 2);
+                        setInspectText(r.summary ? `${r.summary}\n\n${raw}` : raw);
                         setLogTitle(`${id} inspect`);
                       })
                     }
@@ -690,6 +779,7 @@ export function DockerPage() {
                     size="sm"
                     variant="danger"
                     disabled={busy}
+                    data-confirm={id}
                     onClick={() =>
                       setPendingDelete({ kind: 'container', token: id, state: row.state })
                     }
@@ -731,6 +821,7 @@ export function DockerPage() {
                 size="sm"
                 variant="danger"
                 disabled={!engineInstalled || busy}
+                data-confirm={imageRef(row)}
                 onClick={() =>
                   setPendingDelete({
                     kind: 'image',
@@ -792,6 +883,7 @@ export function DockerPage() {
                     size="sm"
                     variant="danger"
                     disabled={!engineInstalled || busy}
+                    data-confirm={row.validatorId ?? row.name}
                     onClick={() =>
                       setPendingDelete({
                         kind: 'compose',
@@ -816,7 +908,10 @@ export function DockerPage() {
                 variant="primary"
                 disabled={!engineInstalled || busy}
                 title={!engineInstalled ? needEngine : undefined}
-                onClick={() => setVolOpen(true)}
+                onClick={() => {
+                  setVolErr(null);
+                  setVolOpen(true);
+                }}
               >
                 {t('docker.actions.createVolume')}
               </Button>
@@ -832,6 +927,7 @@ export function DockerPage() {
                 size="sm"
                 variant="danger"
                 disabled={!engineInstalled || busy}
+                data-confirm={row.name}
                 onClick={() => setPendingDelete({ kind: 'volume', token: row.name })}
               >
                 {t('docker.actions.remove')}
@@ -867,6 +963,7 @@ export function DockerPage() {
                   size="sm"
                   variant="danger"
                   disabled={!engineInstalled || busy}
+                  data-confirm={row.name || row.id}
                   onClick={() =>
                     setPendingDelete({ kind: 'network', token: row.name || row.id })
                   }
@@ -920,6 +1017,7 @@ export function DockerPage() {
                     variant="danger"
                     disabled={!engineInstalled || busy}
                     title={!engineInstalled ? needEngine : undefined}
+                    data-confirm="PRUNE"
                     onClick={() => setPendingPrune(true)}
                   >
                     {t('docker.ui.pruneNow')}
@@ -983,8 +1081,10 @@ export function DockerPage() {
               ) : null}
               <FormActions>
                 <Button
+                  variant="danger"
                   disabled={!engineInstalled || busy}
                   title={!engineInstalled ? needEngine : undefined}
+                  data-confirm="dialog"
                   onClick={() => setDaemonConfirm(true)}
                 >
                   {t('docker.actions.applyDaemon')}
@@ -1163,14 +1263,23 @@ export function DockerPage() {
           <CheckboxField
             id="dock-run-vol"
             label={t('docker.ui.attachVolume')}
-            description={volumes.length ? undefined : t('docker.ui.noVolumesYet')}
             checked={runAttachVol}
             onChange={(on) => {
               setRunAttachVol(on);
               if (on && !runVolName && volumes[0]) setRunVolName(volumes[0].name);
             }}
-            disabled={!volumes.length}
           />
+          {runAttachVol ? (
+            <Field htmlFor="dock-run-newvol" label={t('docker.ui.newVolume')} hint={t('docker.nameHint')}>
+              <input
+                id="dock-run-newvol"
+                value={runNewVol}
+                spellCheck={false}
+                placeholder={t('docker.volPlaceholder')}
+                onChange={(e) => setRunNewVol(e.target.value)}
+              />
+            </Field>
+          ) : null}
           {runAttachVol && volumes.length ? (
             <>
               <Field htmlFor="dock-run-voln" label={t('docker.ui.volumes')}>
@@ -1222,6 +1331,34 @@ export function DockerPage() {
               />
             </Field>
           ) : null}
+          <Field
+            htmlFor="dock-run-ep"
+            label={t('docker.ui.entrypoint')}
+            hint={t('docker.ui.entrypointHint')}
+            error={runCmdErr && runEntrypoint.trim() ? runCmdErr : undefined}
+          >
+            <input
+              id="dock-run-ep"
+              value={runEntrypoint}
+              spellCheck={false}
+              placeholder="nginx"
+              onChange={(e) => setRunEntrypoint(e.target.value)}
+            />
+          </Field>
+          <Field
+            htmlFor="dock-run-cmd"
+            label={t('docker.ui.command')}
+            hint={t('docker.ui.commandHint')}
+            error={runCmdErr && runCommand.trim() ? runCmdErr : undefined}
+          >
+            <input
+              id="dock-run-cmd"
+              value={runCommand}
+              spellCheck={false}
+              placeholder="-g daemon-off"
+              onChange={(e) => setRunCommand(e.target.value)}
+            />
+          </Field>
         </Form>
       </Modal>
 
@@ -1307,20 +1444,54 @@ export function DockerPage() {
           className="dock-form"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!volName.trim()) return;
+            if (!volName.trim()) {
+              setVolErr(t('docker.errors.badName'));
+              return;
+            }
             const name = volName.trim();
-            setVolOpen(false);
-            setVolName('');
-            void run(() => dockerApi.createVolume(name));
+            if (!isSafeDockerName(name)) {
+              setVolErr(t('docker.errors.badName'));
+              return;
+            }
+            setVolErr(null);
+            setBusy(true);
+            void dockerApi
+              .createVolume(name)
+              .then((r) => {
+                if (r?.ok && !r.blocked) {
+                  setVolOpen(false);
+                  setVolName('');
+                  void load();
+                  return;
+                }
+                setVolErr(
+                  r.blockMessage ||
+                    r.notes?.[0] ||
+                    t('docker.errors.badName'),
+                );
+              })
+              .catch((err: unknown) => {
+                setVolErr(err instanceof Error ? err.message : t('docker.errors.badName'));
+              })
+              .finally(() => setBusy(false));
           }}
         >
-          <Field htmlFor="dock-vol" label={t('docker.col.name')} hint={t('docker.nameHint')} required>
+          <Field
+            htmlFor="dock-vol"
+            label={t('docker.col.name')}
+            hint={t('docker.nameHint')}
+            required
+            error={volErr ?? undefined}
+          >
             <input
               id="dock-vol"
               value={volName}
               placeholder={t('docker.volPlaceholder')}
               spellCheck={false}
-              onChange={(e) => setVolName(e.target.value)}
+              onChange={(e) => {
+                setVolName(e.target.value);
+                setVolErr(null);
+              }}
             />
           </Field>
           <Field htmlFor="dock-vol-drv" label={t('docker.ui.driver')}>

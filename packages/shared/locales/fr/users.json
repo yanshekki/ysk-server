@@ -136,5 +136,6 @@
   "cannotImpersonateSelf": "Vous êtes déjà connecté avec ce compte",
   "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde.",
   "enableAdmin2fa": "Enable admin 2FA",
-  "addBackupAdmin": "Add a backup admin"
+  "addBackupAdmin": "Add a backup admin",
+  "noPackagesHint": "Create a plan from the toolbar, then bind it to users."
 }

@@ -134,6 +134,9 @@ describe('EmailService aliases flags and honesty', () => {
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'a.test', serverIp: '1.2.3.4', actor: 'a' });
     expect(() => svc.create({ domain: 'a.test', serverIp: '1.2.3.4', actor: 'a' })).toThrow();
+    expect(() => svc.create({ domain: '', serverIp: '1.2.3.4', actor: 'a' })).toThrow();
+    expect(() => svc.create({ domain: 'not a domain', serverIp: '1.2.3.4', actor: 'a' })).toThrow();
+    expect(() => svc.create({ domain: 'ok.test', serverIp: 'bad', actor: 'a' })).toThrow();
     expect(() => svc.get('nope')).toThrow();
     const bundle = svc.getDnsBundle(created.domain.id);
     expect(bundle.records.length).toBeGreaterThan(0);
@@ -271,9 +274,16 @@ describe('EmailService aliases flags and honesty', () => {
         mailHostname: 'mx.br.example.com',
         actor: 'admin',
       });
+      await expect(
+        bare.createMailbox(created.domain.id, {
+          localPart: 'user1',
+          password: 'short',
+          actor: 'admin',
+        }),
+      ).rejects.toThrow();
+      expect(bare.listMailboxes().length).toBe(0);
       const mb = await bare.createMailbox(created.domain.id, {
         localPart: 'user1',
-        password: 'short',
         actor: 'admin',
       });
       expect(mb.notes.some((n) => n.length > 0)).toBe(true);

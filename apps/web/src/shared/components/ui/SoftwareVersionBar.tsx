@@ -2,7 +2,7 @@
  * In-page software version status + update / uninstall actions.
  * Versions come from GET /system/software/versions — never hardcode pins here.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { systemApi } from '../../../features/system';
 import { updatesApi } from '../../../features/updates';
@@ -28,6 +28,8 @@ export type SoftwareVersionBarProps = {
   allowUninstall?: boolean;
   /** systemd / probe status shown next to the version (running / failed / stopped). */
   unitStatus?: string;
+  /** Recheck / update result for a page-level OpsResultPanel. Toast still fires. */
+  onResult?: (r: { ok: boolean; notes: string[] }) => void;
   className?: string;
 };
 
@@ -49,6 +51,7 @@ export function SoftwareVersionBar({
   onRuntimeInstall,
   allowUninstall = true,
   unitStatus,
+  onResult,
   className }: SoftwareVersionBarProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -58,6 +61,8 @@ export function SoftwareVersionBar({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [uninstallOpen, setUninstallOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
 
   const load = useCallback(
     async (refresh = false) => {
@@ -79,6 +84,13 @@ export function SoftwareVersionBar({
           source: r.source,
           notes: r.notes ?? [] };
         setSt(next);
+        if (refresh) {
+          const note = next.upgradable
+            ? t('software.version.refreshHasUpdate')
+            : t('software.version.refreshLatest');
+          toast.ok(note);
+          onResultRef.current?.({ ok: true, notes: [note] });
+        }
         const pick =
           next.latestVersion ||
           next.candidates[0]?.version ||
@@ -87,7 +99,9 @@ export function SoftwareVersionBar({
         setSelected(pick);
       } catch (e) {
         setSt(null);
-        toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+        const msg = e instanceof Error ? e.message : t('common.loadFailed');
+        toast.error(msg);
+        if (refresh) onResultRef.current?.({ ok: false, notes: [msg] });
       } finally {
         setLoading(false);
       }

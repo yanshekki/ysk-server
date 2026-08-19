@@ -444,7 +444,8 @@
       "interpreter": "Interprète",
       "user": "Utilisateur",
       "unit": "Unité",
-      "runtime": "Durée d'exécution"
+      "runtime": "Durée d'exécution",
+      "pid": "PID"
     },
     "projectsTitle": "Processus des projets YSK",
     "projectsDesc": "Unités systemd pour les projets du panneau (chemin de déploiement par défaut — pas PM2).",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

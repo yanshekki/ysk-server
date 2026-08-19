@@ -630,7 +630,14 @@ export function MigrateHostPage() {
                   title={last.ok ? t('migrate.result') : t('projects.resMigrateIncomplete')}
                   description={
                     last.job
-                      ? `Job ${last.job.id.slice(0, 8)}… · phase ${last.job.phase}`
+                      ? t('migrate.jobPhase', {
+                          id: `${last.job.id.slice(0, 8)}…`,
+                          phase: (() => {
+                            const k = `migrate.phaseName.${last.job.phase}`;
+                            const out = t(k);
+                            return out === k ? last.job.phase : out;
+                          })(),
+                        })
                       : undefined
                   }
                 >
@@ -651,7 +658,13 @@ export function MigrateHostPage() {
                           : t('common.failed')}
                     </Badge>
                     {last.job ? (
-                      <Badge tone="neutral">{last.job.phase}</Badge>
+                      <Badge tone="neutral">
+                        {(() => {
+                          const k = `migrate.phaseName.${last.job.phase}`;
+                          const out = t(k);
+                          return out === k ? last.job.phase : out;
+                        })()}
+                      </Badge>
                     ) : null}
                     {last.apply_status ? (
                       <span className="muted u-text-sm">

@@ -27,6 +27,8 @@ export type UseServerListOptions = {
 export type UseServerListResult<T> = {
   items: T[];
   meta: ListMeta | null;
+  /** Unfiltered collection size — KPIs must not follow search/filters. */
+  allTotal: number;
   loading: boolean;
   /** True while debounce pending or fetch in flight after q change */
   searching: boolean;
@@ -65,6 +67,7 @@ export function useServerList<T>(opts: UseServerListOptions): UseServerListResul
 
   const [items, setItems] = useState<T[]>([]);
   const [meta, setMeta] = useState<ListMeta | null>(null);
+  const [allTotal, setAllTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,6 +139,17 @@ export function useServerList<T>(opts: UseServerListOptions): UseServerListResul
       if (id !== seq.current) return;
       setItems(data.items ?? []);
       setMeta(data.meta ?? null);
+      const payloadAll =
+        typeof (data as { allTotal?: unknown }).allTotal === 'number'
+          ? (data as { allTotal: number }).allTotal
+          : typeof (data.meta as { allTotal?: unknown } | null)?.allTotal === 'number'
+            ? (data.meta as { allTotal: number }).allTotal
+            : null;
+      const filtered =
+        Boolean(debouncedQ) ||
+        Object.values(filters).some((v) => v && v !== 'all');
+      if (payloadAll != null) setAllTotal(payloadAll);
+      else if (!filtered) setAllTotal(data.meta?.total ?? data.items?.length ?? 0);
     } catch (e) {
       if (id !== seq.current) return;
       setError(e instanceof Error ? e.message : 'Load failed');
@@ -201,6 +215,7 @@ export function useServerList<T>(opts: UseServerListOptions): UseServerListResul
   return {
     items,
     meta,
+    allTotal: allTotal ?? meta?.total ?? items.length,
     loading,
     searching,
     error,

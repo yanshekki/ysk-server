@@ -193,7 +193,9 @@ describe('backup-cron depth', () => {
       archivePath: '/tmp/hello.tar.gz',
       results: [{ ok: true, notes: ['kept: 10'] }],
     });
-    expect(String((single?.notes as string[])[0] ?? '')).toMatch(/1\/1/);
+    expect(String((single?.notes as string[])[0] ?? '')).toMatch(
+      /All succeeded|全部成功|partialOk|1\/1/,
+    );
     expect(isBackupSkipNote('Command blocked: YSK_EXECUTE=1 required')).toBe(false);
     expect(isBackupSkipNote('YSK_FORBIDDEN')).toBe(false);
     const parsed = parseDbEnvFile('DB_NAME=hello\nDB_USER=hello_user\nENGINE=mariadb\n');

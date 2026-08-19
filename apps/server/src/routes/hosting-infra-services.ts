@@ -68,7 +68,7 @@ export async function handleHostingInfraServicesRoutes(
               r.target.toLowerCase().includes(q),
           );
         }
-        sendJson(res, 200, { items: filtered, total: filtered.length });
+        sendJson(res, 200, { items: filtered, total: filtered.length, allTotal: items.length });
         return true;
       }
       // Apply: project:ID or standalone resource uuid

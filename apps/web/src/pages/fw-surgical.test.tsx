@@ -61,7 +61,7 @@ describe('firewall surgical + helpers', () => {
       const probe = createUiProbe();
     // RULES
     let v = mount('rules');
-    await waitFor(() => expect(screen.getByText('ALLOW')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/allow/i)).toBeInTheDocument());
     const inp = document.querySelector('input') as HTMLInputElement | null;
     if (inp) {
       fireEvent.change(inp, { target: { value: '22' } });

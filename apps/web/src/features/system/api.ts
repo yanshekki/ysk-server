@@ -887,5 +887,7 @@ export const systemApi = {
       notes: string[];
       likelyLive: boolean;
       liveServerName?: string;
+      quotaMb?: number;
+      hasTls?: boolean;
     }>('/api/v1/hosting/files/status'),
 };

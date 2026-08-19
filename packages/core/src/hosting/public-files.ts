@@ -56,6 +56,10 @@ export interface PublicFilesStatus {
   likelyLive: boolean;
   /** server_name from the live /etc/nginx conf (not the form / meta). */
   liveServerName?: string;
+  /** Last applied quota from meta (undefined = unlimited / never set). */
+  quotaMb?: number;
+  /** Live or managed conf listens on 443 / has ssl_certificate. */
+  hasTls?: boolean;
 }
 
 function confFileName(serverName: string): string {
@@ -321,6 +325,7 @@ export async function applyPublicFileServer(input: {
           publicRoot,
           nginxPath,
           systemConfPath: systemConfPath ?? null,
+          quotaMb: input.quotaMb && input.quotaMb > 0 ? input.quotaMb : null,
           updatedAt: new Date().toISOString(),
         },
         null,
@@ -376,6 +381,7 @@ export function probePublicFileServer(input: {
   let serverName: string | undefined;
   let managedConf: string | undefined;
   let systemConf: string | undefined;
+  let quotaMb: number | undefined;
 
   const metaPath = join(input.dataDir, 'files', 'public-files-meta.json');
   if (existsSync(metaPath)) {
@@ -384,10 +390,12 @@ export function probePublicFileServer(input: {
         serverName?: string;
         nginxPath?: string;
         systemConfPath?: string;
+        quotaMb?: number | null;
       };
       serverName = meta.serverName;
       managedConf = meta.nginxPath;
       systemConf = meta.systemConfPath ?? undefined;
+      if (typeof meta.quotaMb === 'number' && meta.quotaMb > 0) quotaMb = meta.quotaMb;
     } catch {
       notes.push('public-files-meta.json unreadable');
     }
@@ -473,6 +481,20 @@ export function probePublicFileServer(input: {
   }
   notes.push(tl('notes.publicFiles.publicRoot', { path: publicRoot }));
 
+  let hasTls = false;
+  for (const p of [systemConf, managedConf]) {
+    if (!p || !existsSync(p)) continue;
+    try {
+      const body = readFileSync(p, 'utf8');
+      if (/listen\s+443\b/.test(body) || /ssl_certificate\s+/.test(body)) {
+        hasTls = true;
+        break;
+      }
+    } catch {
+      /* optional */
+    }
+  }
+
   return {
     publicRoot,
     publicRootExists: existsSync(publicRoot),
@@ -488,5 +510,7 @@ export function probePublicFileServer(input: {
     notes,
     likelyLive: Boolean(systemConf && existsSync(systemConf) && indexExists),
     liveServerName,
+    quotaMb,
+    hasTls,
   };
 }

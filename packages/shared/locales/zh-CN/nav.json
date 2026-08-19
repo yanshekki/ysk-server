@@ -80,5 +80,6 @@
   "noAccessDesc": "你的角色不能开启此页。如需使用，请向管理员申请。",
   "backToDashboard": "返回仪表板",
   "validators": "验证者节点 (Beta)",
-  "docker": "Docker"
+  "docker": "Docker",
+  "cluster": "Clusters"
 }

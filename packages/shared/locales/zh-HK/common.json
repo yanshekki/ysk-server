@@ -40,6 +40,7 @@
   "noData": "沒有資料",
   "input": "輸入",
   "pleaseEnter": "請輸入 {{value}}",
+  "pleaseFill": "請填寫",
   "required": "必填",
   "about": "說明",
   "more": "更多",

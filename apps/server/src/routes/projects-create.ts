@@ -3,6 +3,7 @@
  * Extracted from projects-catalog.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { isProjectName, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -34,6 +35,10 @@ export async function handleProjectsCreateRoutes(
       dbName?: string;
       templateId?: string;
     };
+    if (!isProjectName(String(data.projectName ?? '').trim())) {
+      sendJson(res, 400, { ok: false, message: tl('notes.needName') });
+      return true;
+    }
     const { runCreateWizard } = await import('ysk-server-core');
     const r = await runCreateWizard({
       db: ctx.db,
@@ -99,8 +104,13 @@ export async function handleProjectsCreateRoutes(
     const gitUrl = data.gitUrl?.trim() || undefined;
     const gitBranch = data.gitBranch?.trim() || undefined;
     if (gitUrl) assertGitUrl(gitUrl);
+    const projectName = String(data.name ?? '').trim();
+    if (!isProjectName(projectName)) {
+      sendJson(res, 400, { ok: false, message: tl('notes.needName') });
+      return true;
+    }
     const created = await ctx.projects.create({
-      name: data.name ?? '',
+      name: projectName,
       domain: data.domain,
       domainAliases: data.domainAliases,
       runtime,

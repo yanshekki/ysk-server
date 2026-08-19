@@ -15,6 +15,16 @@ function host(run: (argv: string[]) => { exitCode: number; stdout: string; stder
     executeEnabled: () => true,
     isRoot: () => true,
     runCommand: async (argv: string[]) => {
+      const joined = argv.map(String).join(' ');
+      if (/command -v\s+dig/.test(joined)) {
+        return {
+          exitCode: 0,
+          stdout: '/usr/bin/dig\n',
+          stderr: '',
+          argv,
+          dryRun: false,
+        };
+      }
       const r = run(argv.map(String));
       return { exitCode: r.exitCode, stdout: r.stdout, stderr: r.stderr ?? '', argv, dryRun: false };
     },

@@ -197,5 +197,11 @@
   "statsAnnouncesHint": "Announce requests seen by the tracker process",
   "leftoverHashesTitle": "Tracker leftover hashes",
   "leftoverHashesHint": "Read-only. These announces are not library or share rows.",
-  "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed."
+  "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed.",
+  "restoredCount": "Re-seeded {{seeded}} of {{attempted}} torrents",
+  "portInvalid": "Enter a port from 1 to 65535.",
+  "extraTrackerRequired": "Enter an announce URL.",
+  "stopPort": "Tracker port {{port}} will stop listening.",
+  "stopPid": "Process PID {{pid}} will exit.",
+  "swarmLeftoverUnlisted": "{{count}} extra leftover announce(s) have no hash in this list."
 }

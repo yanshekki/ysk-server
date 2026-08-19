@@ -444,7 +444,8 @@
       "interpreter": "通訳",
       "user": "ユーザー",
       "unit": "ユニット",
-      "runtime": "処理時間"
+      "runtime": "処理時間",
+      "pid": "PID"
     },
     "projectsTitle": "YSKプロジェクトのプロセス",
     "projectsDesc": "パネル プロジェクトの systemd ユニット (デフォルトのデプロイ パス - PM2 ではありません)。",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

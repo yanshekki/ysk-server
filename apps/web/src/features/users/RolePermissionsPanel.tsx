@@ -127,7 +127,7 @@ export function RolePermissionsPanel({
                   onClick={bindCall1(onRoleChange, r)}
                 >
                   <span className="rbac-role-item__name">
-                    {t(`users.roleName.${r}`, { defaultValue: r })}
+                    {t(`users.roleName.${r}`)}
                   </span>
                   <span className="rbac-role-item__meta">
                     {r === 'admin' ? (
@@ -141,7 +141,7 @@ export function RolePermissionsPanel({
                     )}
                   </span>
                   <span className="rbac-role-item__hint">
-                    {t(`users.roleDesc.${r}`, { defaultValue: '' })}
+                    {t(`users.roleDesc.${r}`)}
                   </span>
                 </button>
               );
@@ -154,7 +154,7 @@ export function RolePermissionsPanel({
           <header className="rbac-panel__toolbar">
             <div className="rbac-panel__toolbar-left">
               <h2 className="rbac-panel__title">
-                {t(`users.roleName.${policyRole}`, { defaultValue: policyRole })}
+                {t(`users.roleName.${policyRole}`)}
               </h2>
               <p className="rbac-panel__subtitle muted u-text-sm">
                 {draftDirty
@@ -202,7 +202,7 @@ export function RolePermissionsPanel({
                 onClick={onSave}
               >
                 {t('rbac.saveRole', {
-                  role: t(`users.roleName.${policyRole}`, { defaultValue: policyRole }),
+                  role: t(`users.roleName.${policyRole}`),
                 })}
               </Button>
             </ActionBar>

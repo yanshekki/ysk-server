@@ -37,6 +37,13 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.13
+
+- **Validators / Docker** — compose argv matches image ENTRYPOINT; Cardano uses GHCR 11.0.1; Docker run probes busy ports and does not toast a leftover as started.
+- **Nginx 443** — managed vhost keeps `listen 443` when a cert exists; later sync does not wipe Let's Encrypt.
+- **Panel honesty** — search-empty ≠ first install; KPI chips are unfiltered; confirms name the target; identifier rules are shared front and back.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.13** together.
+
 ## What's new in 1.1.12
 
 - **Embedded panel** — staking playbooks are in the published web UI (1.1.11 npm packed a stale build after Vite failed).

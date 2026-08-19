@@ -138,6 +138,7 @@
   "applyRenice": "套用 renice",
   "reniceHint": "-20 最高優先 · 19 最低（需 執行）",
   "noData": "無資料",
+  "shareOfMeasured": "佔已量度 {{pct}}%",
   "mountsTitle": "磁碟 mounts ({{count}})",
   "mountsDesc": "真實磁碟用量（已過濾暫存檔系統）",
   "noMounts": "無 mount 列表",

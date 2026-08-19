@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { parseComposeLs, parseContainers, parseDockerInfo, parseImages } from './parse.js';
+import {
+  formatDockerInspectSummary,
+  inspectActualPorts,
+  inspectHasNetwork,
+  parseComposeLs,
+  parseContainers,
+  parseDockerInfo,
+  parseImages,
+  sanitizeDockerCliHelp,
+} from './parse.js';
 
 describe('docker parse', () => {
   it('parses container json lines and ysk labels', () => {
@@ -62,5 +71,32 @@ describe('docker parse', () => {
     expect(info.dataRoot).toBe('/var/lib/docker');
     expect(info.running).toBe(2);
     expect(info.rootless).toBe(false);
+  });
+
+  it('reads actual NetworkSettings.Ports, not PortBindings intent', () => {
+    const leftover = {
+      HostConfig: { PortBindings: { '80/tcp': [{ HostIp: '127.0.0.1', HostPort: '8080' }] } },
+      NetworkSettings: { Ports: {}, Networks: {} },
+    };
+    expect(inspectActualPorts(leftover)).toBe('');
+    expect(inspectHasNetwork(leftover)).toBe(false);
+    const ok = {
+      HostConfig: { PortBindings: { '80/tcp': [{ HostIp: '127.0.0.1', HostPort: '18080' }] } },
+      NetworkSettings: {
+        Ports: { '80/tcp': [{ HostIp: '127.0.0.1', HostPort: '18080' }] },
+        Networks: { bridge: { IPAddress: '172.17.0.2' } },
+      },
+    };
+    expect(inspectActualPorts(ok)).toContain('127.0.0.1:18080->80/tcp');
+    expect(inspectHasNetwork(ok)).toBe(true);
+    expect(formatDockerInspectSummary(leftover)).toMatch(/intent≠actual/);
+  });
+
+  it('strips docker run --help from daemon errors', () => {
+    expect(
+      sanitizeDockerCliHelp(
+        "failed to bind host port 127.0.0.1:8080/tcp: address already in use\nRun 'docker run --help' for more information.",
+      ),
+    ).toBe('failed to bind host port 127.0.0.1:8080/tcp: address already in use');
   });
 });

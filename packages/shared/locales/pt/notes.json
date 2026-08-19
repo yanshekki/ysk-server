@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "redis-cli não está instalado",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "Falha na limpeza do nginx órfão: {{detail}}",
     "settingsWritten": "Trecho global Nginx escrito",
     "settingsNeedExecute": "Aplicar necessidades YSK_EXECUTE",
-    "reloadFailed": "falha no recarregamento do nginx"
+    "reloadFailed": "falha no recarregamento do nginx",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "Solicitar certificado"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "A execução do host está desativada; não é possível criar banco de dados a partir do painel",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "Arquivo Passwd escrito em dataDir - execute apply (EXECUTE + root) para que o Dovecot o carregue",
     "postqueueSetgidBroken": "As ferramentas de fila do Postfix falharam: setgid_group está vazio em main.cf. Defina setgid_group=postdrop (o painel tenta corrigir quando YSK_EXECUTE está ativado).",
     "postqueueMailDown": "O Postfix não está em execução (showq indisponível). O painel tentou iniciá-lo quando YSK_EXECUTE estava ativado - verifique a guia Software / postfix de status do systemctl.",
-    "postqueueSpoolMissing": "Os diretórios da fila Postfix estão faltando (por exemplo, hold/). O painel tentou criar a árvore de spool e iniciar o Postfix quando YSK_EXECUTE estava ativado."
+    "postqueueSpoolMissing": "Os diretórios da fila Postfix estão faltando (por exemplo, hold/). O painel tentou criar a árvore de spool e iniciar o Postfix quando YSK_EXECUTE estava ativado.",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "Sessão não encontrada: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "Conf Nginx em vigor: {{path}}",
     "publicRoot": "Raiz pública: {{path}}",
     "confNameStale": "O ficheiro {{file}} não coincide com o server_name atual {{serverName}}. Volte a aplicar os ficheiros públicos para o renomear."
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

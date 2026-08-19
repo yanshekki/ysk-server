@@ -44,6 +44,19 @@ describe('updates summary', () => {
     expect(s.nextScanAt).toContain('2099');
   });
 
+  it('hides panel update when current equals latest', () => {
+    const s = buildUpdatesSummary({
+      lastInventory: { at: new Date().toISOString(), upgradable: 0 },
+      lastSelf: {
+        updateAvailable: true,
+        currentVersion: '1.1.12',
+        latestVersion: '1.1.12',
+      },
+    });
+    expect(s.panelUpdateAvailable).toBe(false);
+    expect(s.badgeCount).toBe(0);
+  });
+
   it('marks stale when last scan too old', () => {
     const old = new Date(Date.now() - 3 * 24 * 60 * 60_000).toISOString();
     const s = buildUpdatesSummary({

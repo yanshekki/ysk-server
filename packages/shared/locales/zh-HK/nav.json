@@ -21,6 +21,7 @@
   "postgresService": "PostgreSQL 服務",
   "redis": "Redis",
   "redisService": "Redis 服務",
+  "cluster": "叢集",
   "dns": "DNS",
   "ssl": "SSL 憑證",
   "nginx": "Nginx",

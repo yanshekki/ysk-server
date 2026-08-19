@@ -164,5 +164,9 @@
   "skippedListHint": "These projects were skipped:",
   "skippedPendingOs": "Skipped — OS user / home not provisioned",
   "goLogs": "Open logs",
-  "goAbout": "Backup notes"
+  "goAbout": "Backup notes",
+  "previewListingTitle": "Archive contents",
+  "restoreNamedDesc": "Restore {{name}} into project {{project}}.",
+  "overwriteNamedDesc": "Overwrite files of project {{project}} from snapshot {{snapshot}}.",
+  "resticSafeNamed": "Restore snapshot {{snapshot}} of project {{project}} into a safe directory."
 }

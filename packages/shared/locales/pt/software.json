@@ -88,7 +88,9 @@
     "noTarget": "Sem meta de atualização",
     "needRuntimePage": "Instale esta versão na página de tempo de execução",
     "noAptCandidate": "Nenhuma versão candidata adequada",
-    "sourceLabel": "Fonte"
+    "sourceLabel": "Fonte",
+    "refreshHasUpdate": "Newer version available",
+    "refreshLatest": "Already the latest recorded version"
   },
   "install": {
     "progress": "Instalando: {{list}}…",

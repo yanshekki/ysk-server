@@ -88,7 +88,9 @@
     "noTarget": "لا يوجد هدف التحديث",
     "needRuntimePage": "قم بتثبيت هذا الإصدار على صفحة وقت التشغيل",
     "noAptCandidate": "لا يوجد نسخة مرشحة مناسبة",
-    "sourceLabel": "مصدر"
+    "sourceLabel": "مصدر",
+    "refreshHasUpdate": "Newer version available",
+    "refreshLatest": "Already the latest recorded version"
   },
   "install": {
     "progress": "التثبيت: {{list}}…",

@@ -52,7 +52,7 @@ export const dockerApi = {
       `/api/v1/docker/containers/${encodeURIComponent(id)}/logs?tail=${tail}`,
     ),
   inspect: (id: string) =>
-    api.requestRaw<{ ok: boolean; inspect: unknown; notes?: string[] }>(
+    api.requestRaw<{ ok: boolean; inspect: unknown; summary?: string; notes?: string[] }>(
       `/api/v1/docker/containers/${encodeURIComponent(id)}`,
     ),
   containerAction: (id: string, action: 'start' | 'stop' | 'restart' | 'remove', execute = true) =>

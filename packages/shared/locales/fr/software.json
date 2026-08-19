@@ -88,7 +88,9 @@
     "noTarget": "Aucune cible de mise à jour",
     "needRuntimePage": "Installez cette version sur la page du runtime",
     "noAptCandidate": "Aucune version candidate apt",
-    "sourceLabel": "Source"
+    "sourceLabel": "Source",
+    "refreshHasUpdate": "Newer version available",
+    "refreshLatest": "Already the latest recorded version"
   },
   "install": {
     "progress": "Installation : {{list}}…",

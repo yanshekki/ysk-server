@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "redis-cli가 설치되지 않았습니다",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "고아 nginx 정리 실패: {{detail}}",
     "settingsWritten": "Nginx 전역 스니펫이 작성되었습니다.",
     "settingsNeedExecute": "적용에는 YSK_EXECUTE가 필요합니다.",
-    "reloadFailed": "nginx 재로드 실패"
+    "reloadFailed": "nginx 재로드 실패",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "인증서 요청"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "호스트 실행이 꺼져 있습니다. 패널에서 데이터베이스를 생성할 수 없습니다.",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "dataDir 아래에 작성된 Passwd 파일 — Dovecot이 이를 로드하도록 적용(EXECUTE+root)을 실행합니다.",
     "postqueueSetgidBroken": "Postfix 대기열 도구가 실패했습니다. setgid_group이 main.cf에서 비어 있습니다. setgid_group=postdrop을 설정합니다(YSK_EXECUTE가 켜져 있을 때 패널이 수정을 시도함).",
     "postqueueMailDown": "Postfix가 실행되고 있지 않습니다(showq를 사용할 수 없음). YSK_EXECUTE가 켜져 있을 때 패널을 시작하려고 했습니다. 소프트웨어 탭/systemctl 상태 접미사를 확인하세요.",
-    "postqueueSpoolMissing": "Postfix 대기열 디렉터리가 누락되었습니다(예: Hold/). 패널은 YSK_EXECUTE가 켜져 있을 때 스풀 트리를 만들고 Postfix를 시작하려고 했습니다."
+    "postqueueSpoolMissing": "Postfix 대기열 디렉터리가 누락되었습니다(예: Hold/). 패널은 YSK_EXECUTE가 켜져 있을 때 스풀 트리를 만들고 Postfix를 시작하려고 했습니다.",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "세션을 찾을 수 없습니다: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "적용 중인 Nginx 설정: {{path}}",
     "publicRoot": "공개 루트: {{path}}",
     "confNameStale": "설정 파일 {{file}}이(가) 현재 server_name {{serverName}}과(와) 일치하지 않습니다. 공개 파일을 다시 적용해 이름을 바꾸세요."
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

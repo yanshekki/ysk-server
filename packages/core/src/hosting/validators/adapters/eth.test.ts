@@ -88,6 +88,7 @@ describe('avax adapter', () => {
       ports: { rpc: 9650, p2p: 9651 },
     });
     expect(y).toContain('avalanchego');
+    expect(y).toMatch(/command:\n\s+- avalanchego\n/);
     expect(y).not.toContain('/avalanchego/build/avalanchego');
     expect(y).toContain('fuji');
     expect(y).toContain('--state-sync-enabled=true');
@@ -155,16 +156,30 @@ describe('near + ada adapters', () => {
       chain: 'ada',
       network: 'preview',
       clients: {
-        node: { id: 'cardano-node', image: 'inputoutput/cardano-node', tag: '10.1.4' },
+        node: { id: 'cardano-node', image: 'ghcr.io/intersectmbo/cardano-node', tag: '11.0.1' },
       },
       ports: { p2p: 3001, metrics: 12798 },
     });
     expect(y).toContain('NETWORK: preview');
+    expect(y).toContain('ghcr.io/intersectmbo/cardano-node:11.0.1');
+    expect(y).not.toContain('inputoutput/cardano-node');
     expect(y).toContain('cardano-node');
     expect(y).toContain('127.0.0.1:12798:12798');
     expect(y).not.toMatch(/mnemonic|kes|vrf|cold.key/i);
     expect(
       parseAdaMetrics('cardano_node_metrics_connectedPeers_int 8\ncardano_node_metrics_slotNum_int 99\n'),
     ).toEqual({ peers: 8, syncProgress: 1 });
+    const remapped = buildAdaComposeYaml({
+      ...ethSpec,
+      id: 'ada-preview-1',
+      chain: 'ada',
+      network: 'preview',
+      clients: {
+        node: { id: 'cardano-node', image: 'inputoutput/cardano-node', tag: '10.1.4' },
+      },
+      ports: { p2p: 3001, metrics: 12798 },
+    });
+    expect(remapped).toContain('ghcr.io/intersectmbo/cardano-node:11.0.1');
+    expect(remapped).not.toContain('inputoutput/cardano-node');
   });
 });

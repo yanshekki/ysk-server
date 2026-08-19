@@ -3,5 +3,7 @@
   "scrollRight": "向右捲動分頁",
   "about": "說明",
   "main": "操作",
-  "stack": "軟件"
+  "stack": "軟件",
+  "unknown": "無此分頁",
+  "unknownHint": "此頁沒有名為 {{tab}} 的分頁。"
 }

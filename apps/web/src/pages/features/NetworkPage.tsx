@@ -204,7 +204,7 @@ export function NetworkPage() {
   /** Save to NetworkManager (survives reboot) */
   const [routePersist, setRoutePersist] = useState(false);
   const [delRoute, setDelRoute] = useState<NetRoute | null>(null);
-  const [delRoutePersist, setDelRoutePersist] = useState(true);
+  const [delRoutePersist, setDelRoutePersist] = useState(false);
   const [delRoutePhrase, setDelRoutePhrase] = useState('');
 
   /** DNS editor — list of servers (add / edit / remove) */
@@ -599,6 +599,7 @@ export function NetworkPage() {
                         }
                         onClick={() => {
                           setDelRoutePhrase('');
+                          setDelRoutePersist(false);
                           setDelRoute(r);
                         }}
                       >
@@ -1615,7 +1616,7 @@ export function NetworkPage() {
       <Modal
         open={delRoute != null}
         onClose={bindCloseIfIdle(busy, bindSet(setDelRoute, null))}
-        title={t('network.deleteRouteTitle')}
+        title={t('network.deleteRouteNamed', { dst: delRoute?.dst ?? '' })}
         size="sm"
         footer={
           <ActionBar size="sm" align="end">
@@ -1662,9 +1663,13 @@ export function NetworkPage() {
         {delRoute ? (
           <div className="stack">
             <p className="u-text-sm">
-              <code>{delRoute.dst}</code>
-              {delRoute.gateway ? ` via ${delRoute.gateway}` : ''}
-              {delRoute.dev ? ` dev ${delRoute.dev}` : ''}
+              {t('network.deleteRouteBody', {
+                dst: delRoute.dst,
+                via: delRoute.gateway
+                  ? t('network.viaGw', { gw: delRoute.gateway })
+                  : '',
+                dev: delRoute.dev ? t('network.onDev', { dev: delRoute.dev }) : '',
+              })}
             </p>
             {delRoute.dst === 'default' || delRoute.dst === '0.0.0.0/0' ? (
               <>

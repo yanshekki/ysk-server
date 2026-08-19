@@ -6,8 +6,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   applyEmailStack,
   applyLetsEncrypt,
+  applyManagedNginxSite,
   upsertLetsEncryptRecord,
   listCertificatesView,
+  listResources,
+  updateResource,
   dedupeCertificatesInStore,
   deleteCertificate,
 } from 'ysk-server-core';
@@ -18,6 +21,28 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+
+async function rewriteNginxSslAfterLe(
+  ctx: AppContext,
+  domain: string,
+  ok: boolean,
+  executed: boolean,
+): Promise<void> {
+  if (!ok || !executed) return;
+  const want = domain.trim().toLowerCase();
+  if (!want) return;
+  for (const site of listResources(ctx.db, 'nginx_sites')) {
+    const names = String(site.serverName ?? '')
+      .toLowerCase()
+      .split(/\s+/);
+    if (!names.includes(want)) continue;
+    updateResource(ctx.db, 'nginx_sites', String(site.id), { ssl: true, forceHttps: true });
+    await applyManagedNginxSite(ctx.db, ctx.dataDir, String(site.id), {
+      host: ctx.host,
+      execute: true,
+    });
+  }
+}
 
 export async function handleSystemApplyTlsRoutes(
   ctx: AppContext,
@@ -138,6 +163,7 @@ export async function handleSystemApplyTlsRoutes(
       detail: { ...result, certId: certRow.id, domain },
       ok: result.ok,
     });
+    await rewriteNginxSslAfterLe(ctx, domain, result.ok, Boolean(result.executed && result.ok));
     sendOpsResult(res, {
       ok: result.ok,
       executed: result.executed,
@@ -199,6 +225,7 @@ export async function handleSystemApplyTlsRoutes(
       commands: result.commands ?? [],
       notes: result.notes ?? [],
     });
+    await rewriteNginxSslAfterLe(ctx, domain, result.ok, Boolean(result.executed && result.ok));
     sendOpsResult(res, {
       ok: result.ok,
       executed: result.executed,

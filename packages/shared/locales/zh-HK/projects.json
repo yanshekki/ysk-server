@@ -678,5 +678,8 @@
   "netForceHttpsNeedCert": "強制 HTTPS 前，請先在 /ssl 為此域名簽發憑證。",
   "netHttpsLiveNotForced": "已有邊緣設定檔，HTTPS 可能已生效。此項只控制是否強制 HTTP→HTTPS。",
   "gitSyncBlockedDirty": "有本機改動時無法同步。請先檢視 diff，或以重設丟棄後再同步。",
-  "gitViewDiff": "檢視 diff"
+  "gitViewDiff": "檢視 diff",
+  "nameInvalid": "請用小寫名稱：以英文字母開頭，其後可為字母、數字或連字號（最長 31 字）。",
+  "deployVersionMissing": "此主機未安裝 Node {{version}}。請改選已安裝的版本，或先安裝此版本。",
+  "deployUsedBinary": "本次部署使用 {{path}}"
 }

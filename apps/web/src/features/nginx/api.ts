@@ -53,7 +53,7 @@ export const nginxHostingApi = {
     if (params?.source) sp.set('source', params.source);
     if (params?.projectId) sp.set('projectId', params.projectId);
     const qs = sp.toString();
-    return api.requestRaw<{ items: NginxSiteRow[]; total: number }>(
+    return api.requestRaw<{ items: NginxSiteRow[]; total: number; allTotal?: number }>(
       `/api/v1/hosting/nginx/sites${qs ? `?${qs}` : ''}`,
     );
   },

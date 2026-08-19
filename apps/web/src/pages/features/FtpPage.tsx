@@ -40,6 +40,7 @@ import {
   type SelectOption,
 } from '../../features/ftp';
 import { api } from '../../shared/services/api';
+import { isFtpUsername } from 'ysk-server-shared';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
@@ -136,15 +137,30 @@ export function FtpPage() {
   useEffect(() => {
     if (!open) return;
     void loadOptions(username).then((o) => {
-      if (!editId && !homePath && o.homes[0]) {
-        setHomePath(o.homes[0].value);
-      }
+      if (editId) return;
+      const next = o.homes[0]?.value;
+      if (!next) return;
+      setHomePath((prev) => {
+        if (!prev || /\/user$/.test(prev) || (username.trim() && prev.endsWith(`/${username.trim()}`))) {
+          return next;
+        }
+        if (username.trim()) return prev.replace(/\/([^/]+)$/, `/${username.trim()}`);
+        return prev || next;
+      });
     });
-  }, [username, open, editId, homePath, loadOptions]);
+  }, [username, open, editId, loadOptions]);
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
-    const body = buildFtpAccountBody({ username, password, homePath, domain });
+    if (!editId && !isFtpUsername(username)) {
+      toast.error(t('ftp.usernameHint'));
+      return;
+    }
+    const home =
+      !editId && username.trim()
+        ? homePath.replace(/\/([^/]+)$/, `/${username.trim()}`)
+        : homePath;
+    const body = buildFtpAccountBody({ username, password, homePath: home, domain });
     if (editId) await crud.update(editId, body);
     else await crud.create(body);
     setOpen(false);
@@ -207,7 +223,7 @@ export function FtpPage() {
         items: [
           {
             label: t('ftp.accounts'),
-            value: crud.items.length,
+            value: crud.allTotal,
             tone: accountPillTone(crud.items.length, draft),
           },
           {
@@ -231,9 +247,7 @@ export function FtpPage() {
         ],
       }}
     >
-      {crud.error || keyErr ? (
-        <Alert variant="error">{crud.error ?? keyErr}</Alert>
-      ) : null}
+      {crud.error ? <Alert variant="error">{crud.error}</Alert> : null}
       {serviceStatus?.active === 'failed' ? (
         <Alert variant="error">
           {serviceStatus.listenConflict
@@ -274,7 +288,10 @@ export function FtpPage() {
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
-        onChange={setTab}
+        onChange={(id) => {
+          setTab(id);
+          setKeyErr(null);
+        }}
         variant="scroll"
       >
         {tab === 'accounts' ? (
@@ -297,14 +314,9 @@ export function FtpPage() {
                   {t('ftp.createAccountPlus')}
                 </Button>
               </div>
-              {visibleAccounts.length === 0 ? (
-                <div className="empty empty--compact">
-                  <div className="empty__title">{t('ftp.noFtpAccounts')}</div>
-                  <p>{t('ftp.noFtpAccountsDesc')}</p>
-                </div>
-              ) : (
                 <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                  filterActive={crud.activeFilterCount > 0}
                   filters={
                     <ServerListFilters
                       q={crud.q}
@@ -346,6 +358,9 @@ export function FtpPage() {
                     },
                   ]}
                   rows={visibleAccounts}
+                  empty={
+                    <EmptyState title={t('ftp.noFtpAccounts')} description={t('ftp.noFtpAccountsDesc')} />
+                  }
                   rowActions={(r) => (
                     <ActionBar>
                       <Button
@@ -385,6 +400,7 @@ export function FtpPage() {
                         variant="danger"
                         size="sm"
                         disabled={crud.busy}
+                        data-confirm={String(r.username ?? r.id)}
                         onClick={bindSet(setDelId, r.id)}
                       >
                         {t('common.delete')}
@@ -392,7 +408,6 @@ export function FtpPage() {
                     </ActionBar>
                   )}
                 />
-              )}
             </Card>
 
             {crud.items.length > 0 ? (
@@ -605,7 +620,7 @@ export function FtpPage() {
           </>
         }
       >
-        <form id="ftp-f" onSubmit={bindFormSubmit(onSave)}>
+        <form id="ftp-f" noValidate onSubmit={bindFormSubmit(onSave)}>
           <FormLayout columns={2}>
             <Field
               label={t('common.username')}
@@ -719,7 +734,10 @@ export function FtpPage() {
 
       <Modal
         open={keyOpen}
-        onClose={bindSet(setKeyOpen, false)}
+        onClose={() => {
+          setKeyOpen(false);
+          setKeyErr(null);
+        }}
         title={t('ftp.addPubkey')}
         description={t('ftp.addPubkeyDesc')}
         footer={
@@ -727,7 +745,10 @@ export function FtpPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={bindSet(setKeyOpen, false)}
+              onClick={() => {
+                setKeyOpen(false);
+                setKeyErr(null);
+              }}
             >
               {t('common.cancel')}
             </Button>
@@ -736,6 +757,12 @@ export function FtpPage() {
               size="md"
               loading={keyBusy}
               onClick={() => {
+                const user = keyUser.trim();
+                const pub = keyPub.trim();
+                if (!user || !/^ssh-/.test(pub)) {
+                  setKeyErr(t('ftp.sftpKeyInvalid'));
+                  return;
+                }
                 setKeyBusy(true);
                 setKeyErr(null);
                 setKeyMsg(null);
@@ -745,8 +772,8 @@ export function FtpPage() {
                     {
                       method: 'POST',
                       body: JSON.stringify({
-                        username: keyUser,
-                        publicKey: keyPub,
+                        username: user,
+                        publicKey: pub,
                         comment: keyComment || undefined,
                       }),
                     },
@@ -758,7 +785,7 @@ export function FtpPage() {
                     setKeyComment('');
                     return refreshKeys();
                   })
-                  .catch((e: Error) => setKeyErr(e.message))
+                  .catch((e: Error) => setKeyErr(t('ftp.sftpKeyInvalid')))
                   .finally(() => setKeyBusy(false));
               }}
             >
@@ -767,6 +794,7 @@ export function FtpPage() {
           </>
         }
       >
+        {keyErr ? <Alert variant="error">{keyErr}</Alert> : null}
         <FormLayout columns={2}>
           <Field
             label={t('ftp.ftpUsername')}
@@ -838,7 +866,9 @@ export function FtpPage() {
         open={Boolean(delId)}
         onClose={bindSet(setDelId, null)}
         onConfirm={bindRemoveIf(delId, crud.remove, setDelId)}
-        title={t('ftp.deleteAccountTitle')}
+        title={t('ftp.deleteAccountNamed', {
+          name: String(crud.items.find((r) => r.id === delId)?.username ?? delId ?? ''),
+        })}
         description={t('ftp.deleteAccountDesc')}
         severity="standard"
         confirmLabel={t('common.delete')}

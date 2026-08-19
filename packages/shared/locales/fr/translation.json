@@ -145,7 +145,17 @@
     "noteRbacCap": "Agent role is capped at write-low.",
     "journal": "journal",
     "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
-    "noOnlineAgents": "No agents online"
+    "noOnlineAgents": "No agents online",
+    "cmdStatus": {
+      "queued": "Queued",
+      "acked": "Acked",
+      "done": "Done",
+      "error": "Error"
+    },
+    "colExit": "Exit",
+    "unitFallback": "unit",
+    "writeUnit": "Write unit",
+    "writeUnitConfirm": "Write the systemd unit for {{kind}} under /etc/systemd. The service is not started or enabled."
   },
   "ai": {
     "status": {
@@ -478,7 +488,11 @@
     "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
     "trashRestored": "Restored from recycle bin",
     "trashPurged": "Permanently deleted",
-    "trashedOk": "Moved to recycle bin"
+    "trashedOk": "Moved to recycle bin",
+    "previewListingTitle": "Archive contents",
+    "restoreNamedDesc": "Restore {{name}} into project {{project}}.",
+    "overwriteNamedDesc": "Overwrite files of project {{project}} from snapshot {{snapshot}}.",
+    "resticSafeNamed": "Restore snapshot {{snapshot}} of project {{project}} into a safe directory."
   },
   "btTracker": {
     "title": "Traqueur BT",
@@ -679,7 +693,13 @@
     "statsAnnouncesHint": "Announce requests seen by the tracker process",
     "leftoverHashesTitle": "Tracker leftover hashes",
     "leftoverHashesHint": "Read-only. These announces are not library or share rows.",
-    "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed."
+    "publicHostMissingLive": "Tracker is listening but public announce host is not set. Off-host peers cannot find this seed.",
+    "restoredCount": "Re-seeded {{seeded}} of {{attempted}} torrents",
+    "portInvalid": "Enter a port from 1 to 65535.",
+    "extraTrackerRequired": "Enter an announce URL.",
+    "stopPort": "Tracker port {{port}} will stop listening.",
+    "stopPid": "Process PID {{pid}} will exit.",
+    "swarmLeftoverUnlisted": "{{count}} extra leftover announce(s) have no hash in this list."
   },
   "catalog": {
     "sw": {
@@ -918,7 +938,15 @@
     "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
     "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
     "applyFailedNoNote": "No stored reason. Re-apply to capture the error.",
-    "statApplyFailed": "Apply failed"
+    "statApplyFailed": "Apply failed",
+    "statSitesCount": "{{n}} sites",
+    "cacheMethod": {
+      "none": "No estimate",
+      "access_log": "Access log",
+      "cache_dir": "Cache directory",
+      "log_format": "Need log format"
+    },
+    "geoMapLabel": "Geo map (JSON)"
   },
   "cli": {
     "unknownCommand": "Commande inconnue : {{command}}\nExécutez `{{cli}} help`",
@@ -2233,7 +2261,8 @@
     "more": "Plus",
     "redirectedTo": "Ouvert {{to}} (était {{from}})",
     "unavailable": "Not available right now",
-    "ok": "OK"
+    "ok": "OK",
+    "pleaseFill": "Please fill in this field"
   },
   "cron": {
     "presetCdTrue": "application cd + vrai (test)",
@@ -2536,7 +2565,8 @@
       "bad": "Problem"
     },
     "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-    "readinessBlocked": "{{n}} blocker(s)"
+    "readinessBlocked": "{{n}} blocker(s)",
+    "nameRequired": "Enter a project name"
   },
   "dataTable": {
     "empty": "Aucune donnée",
@@ -2899,7 +2929,14 @@
     "hostCount": "On host",
     "registeredUsers": "Registered users",
     "registeredUsersHint": "Panel registrations only — not every MySQL account",
-    "hostStillExists": "Still on host"
+    "hostStillExists": "Still on host",
+    "invalidSqlIdent": "Use a lowercase identifier: start with a letter, then letters, digits, or underscore.",
+    "remoteHostRequired": "Enter a remote host.",
+    "remoteTestUnsaved": "Save this host first, then Test connection. Or fill host and save.",
+    "serverNotInstalled": "This engine is not installed on the server.",
+    "dumpNeedEngine": "Install the engine before exporting a database.",
+    "unboundDatabase": "Database registration removed",
+    "userGoneRefresh": "That user is gone. The list was refreshed."
   },
   "dialogs": {
     "confirmDefault": "Confirmer",
@@ -3145,7 +3182,9 @@
     "startProbeFailed": "Could not re-check DNS health after start",
     "startNotListening": "PowerDNS start returned, but the unit is not answering on port 53",
     "goStartService": "Start DNS service",
-    "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again."
+    "startBindHint": "If start returns to stopped, port 53 is often held by systemd-resolved. Use Heal bind below, then start again.",
+    "digNotInstalled": "dig is not installed",
+    "digNotInstalledHint": "This tab needs the dig binary (bind9-dnsutils). That is not NXDOMAIN. Install bind9-dnsutils from the host package manager; this page does not auto-install it."
   },
   "docker": {
     "title": "Docker",
@@ -3271,7 +3310,11 @@
       "mutateFailed": "La commande Docker a échoué",
       "engineFailed": "Impossible de contrôler docker.service",
       "badExec": "Exec est limité aux binaires et préréglages autorisés (pas de shell, pas de TTY)",
-      "uninstallBusy": "Arrêtez les conteneurs gérés par le panneau (y compris les piles validateur) avant de désinstaller Docker"
+      "uninstallBusy": "Arrêtez les conteneurs gérés par le panneau (y compris les piles validateur) avant de désinstaller Docker",
+      "badCommand": "Invalid command or entrypoint",
+      "portBusy": "Host port {{bind}}:{{port}} is already in use",
+      "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+      "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
     },
     "notes": {
       "dryMutate": "Dry-run uniquement. Passez --execute et YSK_EXECUTE=1 pour modifier l’hôte.",
@@ -3302,7 +3345,8 @@
         "start": "docker.service démarré",
         "stop": "docker.service arrêté",
         "restart": "docker.service redémarré"
-      }
+      },
+      "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
     },
     "needEngineTitle": "Install Docker Engine first",
     "notInstalledValue": "Not installed",
@@ -3374,7 +3418,18 @@
       "customPortContainer": "Port conteneur",
       "pctUsed": "{{n}} % utilisé",
       "customPortHint": "1–65535. Example: 9090 → 80.",
-      "pickBridge": "Bridge network"
+      "pickBridge": "Bridge network",
+      "command": "Command",
+      "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+      "entrypoint": "Entrypoint",
+      "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+      "portMap": "host:container",
+      "portOccupied": "This host port is already in use",
+      "validatorImage": "Managed by validator nodes",
+      "newVolume": "New named volume",
+      "loopbackUrl": "Local test URL",
+      "nginxProxy": "Create Nginx reverse proxy",
+      "intentPorts": "Requested (not published)"
     },
     "deleteTitle": "Delete {{id}}",
     "deleteDesc": "This cannot be undone.",
@@ -3909,7 +3964,28 @@
     "deliverabilityChecks": "Checks",
     "healthPartialScore": "Partial {{n}}/100 (DNS only)",
     "healthPartialHint": "DNS checklist only — live and blacklist not probed.",
-    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases"
+    "deleteImpact": "{{mailboxes}} mailboxes · {{records}} DNS records · {{aliases}} aliases",
+    "domainRequired": "Enter a domain",
+    "domainInvalid": "Enter a valid domain",
+    "serverIpRequired": "Enter a server IP",
+    "serverIpInvalid": "Enter a valid IP address",
+    "serverIpv6Invalid": "Enter a valid IPv6 address",
+    "localPartRequired": "Enter a local part",
+    "localPartInvalid": "Local part may only use letters, digits, . _ + -",
+    "aliasDestRequired": "Enter at least one destination address",
+    "mailboxStatusManaged": "Managed",
+    "mailboxStatusActiveShort": "Active",
+    "mailboxStatusDisabledShort": "Disabled",
+    "mailboxStatusSystem": "System provisioned",
+    "mailboxStatusPending": "Pending system",
+    "mailboxStatusFailed": "System failed",
+    "dnsblCleanStatus": "Not listed",
+    "dnsblListedStatus": "Listed",
+    "deliverabilityDone": "Delivery check complete ({{score}}/100)",
+    "sieveEmpty": "No written Sieve files",
+    "sieveListed": "{{count}} written file(s)",
+    "webmailHostnameRequired": "Enter a webmail hostname",
+    "sieveFilesTitle": "Written files"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Non autorisé",
@@ -4441,7 +4517,8 @@
     "pillTrash": "{{count}} in trash",
     "pillSpace": "{{used}} used",
     "webdavTokenInactive": "Disabled — token #{{id}} is not active",
-    "webdavOffNoToken": "Disabled (no active token)"
+    "webdavOffNoToken": "Disabled (no active token)",
+    "restoreVersionConfirm": "Restore {{version}} over the current file {{file}}? This overwrites the file on disk."
   },
   "firewall": {
     "profiles": {
@@ -4718,7 +4795,9 @@
     "plainConfirmC1": "Usernames and passwords are visible on the network.",
     "plainConfirmC2": "PASV will advertise the configured public IP.",
     "plainConfirmC3": "Host firewall and cloud security group are not opened for you.",
-    "plainConfirmAction": "Start cleartext FTP"
+    "plainConfirmAction": "Start cleartext FTP",
+    "sftpKeyInvalid": "Need a username and a public key that starts with ssh-.",
+    "deleteAccountNamed": "Delete FTP account {{name}}?"
   },
   "geo": {
     "continents": {
@@ -5019,7 +5098,8 @@
     "closeNoSession": "No session yet",
     "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
     "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
-    "clearSessionData": "Clear session data"
+    "clearSessionData": "Clear session data",
+    "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards."
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",
@@ -5385,7 +5465,8 @@
     "selectForSignal": "Select",
     "forceKillTitleNamed": "KILL PID {{pid}} ({{cmd}})?",
     "sendSigTitleNamed": "Send TERM to PID {{pid}} ({{cmd}})?",
-    "controlPlaneNoSignal": "The control-plane process cannot be signalled"
+    "controlPlaneNoSignal": "The control-plane process cannot be signalled",
+    "shareOfMeasured": "{{pct}}% of measured"
   },
   "migrate": {
     "tabInventory": "Inventaire",
@@ -5493,7 +5574,15 @@
     "sourceDbRedis": "Databases / Redis",
     "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis",
     "orphanColEntries": "Entries",
-    "orphanEntries": "{{n}} top-level entries in the directory"
+    "orphanEntries": "{{n}} top-level entries in the directory",
+    "jobPhase": "Job {{id}} · {{phase}}",
+    "phaseName": {
+      "failed": "Failed",
+      "done": "Done",
+      "running": "Running",
+      "queued": "Queued",
+      "cancelled": "Cancelled"
+    }
   },
   "multiCheck": {
     "customPlaceholder": "Code personnalisé",
@@ -5597,7 +5686,8 @@
     "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
     "backToDashboard": "Retour au tableau de bord",
     "validators": "Validateurs (Beta)",
-    "docker": "Docker"
+    "docker": "Docker",
+    "cluster": "Clusters"
   },
   "network": {
     "title": "Interfaces réseau",
@@ -5764,7 +5854,11 @@
       "other": "Other",
       "loopback": "Always on",
       "loopbackHint": "Loopback is always available and cannot be changed."
-    }
+    },
+    "deleteRouteNamed": "Delete route {{dst}}?",
+    "deleteRouteBody": "Remove {{dst}}{{via}}{{dev}} from the live routing table.",
+    "viaGw": " via {{gw}}",
+    "onDev": " on {{dev}}"
   },
   "nginx": {
     "pillSites": "{{count}} site(s)",
@@ -5851,7 +5945,12 @@
     "bodyInherit": "Mondial",
     "stopSites": "{{n}} site(s) will stop answering HTTP.",
     "purgeCacheTitle": "Purge Nginx cache and reload?",
-    "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up."
+    "purgeCacheDesc": "Clears the on-disk cache and reloads Nginx. Live sites stay up.",
+    "deleteTitleNamed": "Delete site {{name}}?",
+    "deleteDescNamed": "Remove {{name}} from the panel. Applied sites will also drop their managed nginx conf.",
+    "invalidServerName": "Enter a valid hostname (e.g. app.example.com).",
+    "needUpstream": "Upstream is required for reverse proxy sites.",
+    "needRoot": "Document root is required for static and PHP sites."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -5930,7 +6029,8 @@
       "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
       "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
       "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+      "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+      "partialOk": "Partial success — {{n}} project(s) skipped"
     },
     "redis": {
       "cliMissing": "redis-cli n'est pas installé",
@@ -5949,7 +6049,8 @@
       "orphanCleanupFailed": "Échec du nettoyage de Nginx orphelin : {{detail}}",
       "settingsWritten": "Extrait global Nginx écrit",
       "settingsNeedExecute": "Appliquer les besoins YSK_EXECUTE",
-      "reloadFailed": "rechargement nginx échoué"
+      "reloadFailed": "rechargement nginx échoué",
+      "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
     },
     "ssl": {
       "requestCert": "Demander un certificat"
@@ -6026,7 +6127,9 @@
       "noManagedZones": "No managed zone files under dataDir/dns/zones",
       "pdnsListZones": "PowerDNS list-zones: {{n}}",
       "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-      "localAOk": "local A {{name}} → {{ip}}"
+      "localAOk": "local A {{name}} → {{ip}}",
+      "digNotInstalled": "dig is not installed",
+      "digEmpty": "dig: no answer"
     },
     "db": {
       "needExecuteCreate": "L'exécution hôte est désactivée ; impossible de créer la base depuis le panneau",
@@ -6073,7 +6176,11 @@
       "dovecotPassdbWrittenNeedApply": "Fichier Passwd écrit sous dataDir - exécutez apply (EXECUTE + root) pour que Dovecot le charge",
       "postqueueSetgidBroken": "Les outils de file d'attente Postfix ont échoué : setgid_group est vide dans main.cf. Définissez setgid_group=postdrop (le panneau essaie de corriger lorsque YSK_EXECUTE est activé).",
       "postqueueMailDown": "Postfix ne fonctionne pas (showq indisponible). Le panneau a essayé de le démarrer lorsque YSK_EXECUTE est activé - vérifiez l'onglet Logiciel / le suffixe d'état systemctl.",
-      "postqueueSpoolMissing": "Les répertoires de file d'attente Postfix sont manquants (par exemple hold/). Le panneau a essayé de créer l'arborescence de spool et de démarrer Postfix lorsque YSK_EXECUTE est activé."
+      "postqueueSpoolMissing": "Les répertoires de file d'attente Postfix sont manquants (par exemple hold/). Le panneau a essayé de créer l'arborescence de spool et de démarrer Postfix lorsque YSK_EXECUTE est activé.",
+      "invalidDomain": "Enter a valid mail domain",
+      "invalidServerIp": "Enter a valid server IP",
+      "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+      "passwordTooShort": "Password must be at least 8 characters"
     },
     "agents": {
       "sessionNotFound": "Session introuvable : {{sessionId}}"
@@ -9051,6 +9158,13 @@
       "liveConf": "Conf Nginx en service : {{path}}",
       "publicRoot": "Racine publique : {{path}}",
       "confNameStale": "Le fichier {{file}} ne correspond pas au server_name actuel {{serverName}}. Réappliquez les fichiers publics pour le renommer."
+    },
+    "needHost": "Enter a host",
+    "health": {
+      "portListening": "Port {{port}} is listening",
+      "portNotListening": "Port {{port}} is not listening",
+      "httpOk": "HTTP OK {{status}}",
+      "httpFail": "HTTP failed: {{detail}}"
     }
   },
   "ops": {
@@ -9112,7 +9226,11 @@
     "stepStoppedOld": "Processus précédent arrêté",
     "stepTuningApplied": "Réglages d’exécution appliqués",
     "stepUnitWritten": "Unité de service écrite",
-    "stepSystemdStartFailed": "Échec du démarrage systemd — bascule sur le processus de secours"
+    "stepSystemdStartFailed": "Échec du démarrage systemd — bascule sur le processus de secours",
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   },
   "pageGuide": {
     "missing": "Aucun contenu d’aide n’est encore disponible pour cette page.",
@@ -9858,7 +9976,10 @@
     "goIsolation": "Open Isolation tab",
     "netHstsNeedHttps": "Turn on force HTTPS first",
     "homeMissing": "Home directory does not exist",
-    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation"
+    "homeMissingHint": "Same live probe as migrate inventory — create the system user on Isolation",
+    "nameInvalid": "Use a lowercase name: start with a letter, then letters, digits, or hyphen (max 31).",
+    "deployVersionMissing": "Node {{version}} is not installed on this host. Pick an installed version, or install this version first.",
+    "deployUsedBinary": "Deploy used {{path}}"
   },
   "protection": {
     "levels": {
@@ -10319,7 +10440,10 @@
     "liveName": "Live name",
     "draftName": "Draft name",
     "draftUnapplied": "This draft is not applied. Nginx still serves the live name.",
-    "discardDraft": "Discard draft"
+    "discardDraft": "Discard draft",
+    "quotaInvalid": "Enter a whole number of MiB, or choose Unlimited.",
+    "serverNameRequired": "Enter a server name.",
+    "serverNameInvalid": "Use a hostname, wildcard, or IP — no spaces or punctuation."
   },
   "rbac": {
     "permissions": "Autorisations",
@@ -11126,7 +11250,8 @@
         "interpreter": "Interprète",
         "user": "Utilisateur",
         "unit": "Unité",
-        "runtime": "Durée d'exécution"
+        "runtime": "Durée d'exécution",
+        "pid": "PID"
       },
       "projectsTitle": "Processus des projets YSK",
       "projectsDesc": "Unités systemd pour les projets du panneau (chemin de déploiement par défaut — pas PM2).",
@@ -11234,7 +11359,12 @@
     "installedHint": "Host probe result — not the control-plane record",
     "targetHint": "Version this page will install or pin",
     "rebuildFromHost": "Rebuild record from host",
-    "rebuiltFromHost": "Record refreshed from host probe"
+    "rebuiltFromHost": "Record refreshed from host probe",
+    "probing": "Probing…",
+    "noBinaryPath": "No binary path",
+    "hostDefaultError": "Host default unavailable",
+    "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+    "domainRequired": "Enter a valid domain before applying the vhost."
   },
   "search": {
     "placeholder": "Rechercher des pages et des ressources…",
@@ -11866,7 +11996,24 @@
     "reloadTitle": "Reload {{label}} configuration without a full restart",
     "stopConfirmPanelSshdOffDesc": "The panel and API will go offline. sshd is not enabled on boot, so SSH may not be a rescue path after reboot.",
     "stopConfirmPanelSshdOffConsequence": "sshd is not enabled on boot. After reboot you may have no SSH rescue path.",
-    "ufwNoLifecycle": "UFW is not started or stopped from this matrix."
+    "ufwNoLifecycle": "UFW is not started or stopped from this matrix.",
+    "restartConfirmConsequence": "{{label}} will briefly interrupt connections, then keep serving HTTP/HTTPS.",
+    "reloadConfirmTitle": "Reload {{label}}?",
+    "reloadConfirmDesc": "Reload {{label}} configuration. Existing sessions should stay up.",
+    "enableConfirmTitle": "Enable {{label}} at boot?",
+    "enableConfirmDesc": "Enable {{label}} so it starts on boot.",
+    "cat": {
+      "web": "Web",
+      "db": "Databases",
+      "mail": "Mail",
+      "dns": "DNS",
+      "ftp": "FTP",
+      "cache": "Cache",
+      "panel": "Panel",
+      "ssh": "SSH",
+      "other": "Other",
+      "runtime": "Runtimes"
+    }
   },
   "software": {
     "title": "Logiciels",
@@ -11958,7 +12105,9 @@
       "noTarget": "Aucune cible de mise à jour",
       "needRuntimePage": "Installez cette version sur la page du runtime",
       "noAptCandidate": "Aucune version candidate apt",
-      "sourceLabel": "Source"
+      "sourceLabel": "Source",
+      "refreshHasUpdate": "Newer version available",
+      "refreshLatest": "Already the latest recorded version"
     },
     "install": {
       "progress": "Installation : {{list}}…",
@@ -12327,7 +12476,22 @@
     "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
     "executeRoot": "System changes {{execute}} · administrator {{root}}",
     "manifestPlan": "Plan {{plan}} ({{bundles}})",
-    "manifestHint": "Last chosen software plan and bundles"
+    "manifestHint": "Last chosen software plan and bundles",
+    "bundle": {
+      "control-plane": "Control plane",
+      "web": "Web hosting",
+      "database": "Databases",
+      "email": "Mail stack",
+      "dns": "DNS",
+      "ftp": "FTP / FTPS",
+      "defense": "Host defense",
+      "runtimes": "Language runtimes"
+    },
+    "planTitle": {
+      "minimal": "Control plane only",
+      "recommended": "Recommended hosting",
+      "full": "All software"
+    }
   },
   "support": {
     "title": "Assistance",
@@ -12689,7 +12853,9 @@
     "scrollRight": "Faire défiler les onglets vers la droite",
     "about": "À propos",
     "main": "Actes",
-    "stack": "Logiciels"
+    "stack": "Logiciels",
+    "unknown": "No such tab",
+    "unknownHint": "This page has no tab named {{tab}}."
   },
   "terminal": {
     "tabSession": "Session",
@@ -13182,7 +13348,9 @@
     "cveNotChecked": "Not checked",
     "cveLabel": "CVE",
     "riskUnevaluated": "Not evaluated — run Scan + OSV",
-    "footerNewVersion": "New version {{version}}"
+    "footerNewVersion": "New version {{version}}",
+    "applySelfConfirmTitle": "Apply panel update?",
+    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run."
   },
   "users": {
     "userCount": "{{count}} utilisateurs",
@@ -13322,7 +13490,8 @@
     "cannotImpersonateSelf": "Vous êtes déjà connecté avec ce compte",
     "singleAdminNo2fa": "Cet hôte a un seul administrateur et 2FA est désactivé : activez 2FA et ajoutez un administrateur de sauvegarde.",
     "enableAdmin2fa": "Enable admin 2FA",
-    "addBackupAdmin": "Add a backup admin"
+    "addBackupAdmin": "Add a backup admin",
+    "noPackagesHint": "Create a plan from the toolbar, then bind it to users."
   },
   "validators": {
     "title": "Validateurs (Beta)",
@@ -13361,7 +13530,8 @@
       "autoClearCandidate": "Current candidate: {{id}}",
       "autoClearNone": "No stopped instance is a candidate right now.",
       "browseRoot": "Open in file browser",
-      "leftoverEmpty": "No leftover instance directories"
+      "leftoverEmpty": "No leftover instance directories",
+      "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
     },
     "chain": {
       "eth": "Ethereum",
@@ -13413,7 +13583,8 @@
     },
     "mithril": {
       "label": "Restaurer d’abord depuis un instantané Mithril (recommandé en testnet)",
-      "action": "Restaurer avec Mithril"
+      "action": "Restaurer avec Mithril",
+      "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
     },
     "errors": {
       "notFound": "Instance de validateur introuvable",
@@ -13439,7 +13610,9 @@
       "snapshotLookup": "Impossible de résoudre le pointeur d’instantané officiel",
       "needSnapshotConfirm": "La restauration d’instantané exige confirm=identifiant d’instance ou SNAPSHOT",
       "snapshotBlocked": "Le docker run d’instantané a été bloqué par la liste d’autorisation",
-      "snapshotFailed": "Échec du téléchargement ou de l’extraction de l’instantané"
+      "snapshotFailed": "Échec du téléchargement ou de l’extraction de l’instantané",
+      "containerNotUp": "Compose started, but the container did not stay running",
+      "probeFailed": "The node is not answering RPC yet. Check logs on this page."
     },
     "notes": {
       "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
@@ -14163,7 +14336,8 @@
     "hostnameFixDesc": "{{line}}",
     "hostnameFixDone": "Hostname /etc/hosts updated",
     "startAfterCreateBlocked": "Disabled until the hostname resolves",
-    "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session."
+    "hostnameBrokenIdle": "Hostname {{hostname}} does not resolve on this host. Fix /etc/hosts before you create a session.",
+    "startHostnameBlocked": "Cannot start until this host can resolve its hostname. Use “Write hostname to /etc/hosts”."
   },
   "vpn": {
     "pageDesc": "Serveur et client VPN",
@@ -14293,7 +14467,9 @@
       "customHint": "Seuls les CIDR que vous répertoriez entrent dans le tunnel. Reconnectez-vous après l'application.",
       "lanCidrs": "Réseaux LAN",
       "customCidr": "CIDR",
-      "addCidr": "Ajouter"
+      "addCidr": "Ajouter",
+      "cidrRequired": "Enter a CIDR (for example 192.168.1.0/24).",
+      "cidrInvalid": "Enter a valid CIDR, for example 192.168.1.0/24."
     },
     "engineNotInstalled": "Ce moteur VPN n'est pas installé sur l'hôte.",
     "serverNotListening": "L'unité serveur n'est pas active. UDP/TCP {{port}} est peut-être fermé.",
@@ -14309,6 +14485,18 @@
     "showPrivateKey": "Show private key",
     "hidePrivateKey": "Hide private key",
     "deletePeerTitle": "Delete peer {{name}}?",
-    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
+    "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored.",
+    "peerNameHint": "Letters, digits, . _ - — no spaces, / or !",
+    "peerNameInvalid": "Spaces, / and ! are not allowed. Use {{preview}} or change the name.",
+    "deleteClientTitle": "Delete OpenVPN client {{name}}?",
+    "deleteClientDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the profile cannot be restored. The OpenVPN server stays up.",
+    "deleteKeyTitle": "Delete Shadowsocks key {{name}}?",
+    "deleteKeyDesc": "Remove access key {{name}} ({{address}}). Clients using this key disconnect. The Shadowsocks server stays up.",
+    "deleteResult": "Removed {{name}}.",
+    "portInvalid": "Listen port must be an integer from 1 to 65535.",
+    "portRequired": "Listen port is required.",
+    "importInvalid": "Could not detect a WireGuard or OpenVPN client conf.",
+    "qrFailed": "Could not generate a QR code for this config. Download or copy the text instead.",
+    "cfgTitle": "Config — {{name}}"
   }
 }

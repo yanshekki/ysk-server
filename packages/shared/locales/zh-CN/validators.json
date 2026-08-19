@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -110,7 +111,8 @@
   },
   "mithril": {
     "label": "先用 Mithril 快照还原（测试网建议）",
-    "action": "用 Mithril 还原"
+    "action": "用 Mithril 还原",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "找不到验证者节点实例",
@@ -136,7 +138,9 @@
     "snapshotLookup": "无法解析官方快照指针",
     "needSnapshotConfirm": "还原快照须 confirm=实例标识 或 SNAPSHOT",
     "snapshotBlocked": "快照的 docker run 被允许清单拒绝",
-    "snapshotFailed": "快照下载或解压失败"
+    "snapshotFailed": "快照下载或解压失败",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "此功能属 Beta。变更主机须 root 及 YSK_EXECUTE=1。",

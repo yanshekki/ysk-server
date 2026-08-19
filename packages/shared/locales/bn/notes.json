@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "redis-cli ইনস্টল করা নেই",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "অরফান এনজিনেক্স পরিষ্কার করা ব্যর্থ হয়েছে: {{detail}}",
     "settingsWritten": "Nginx গ্লোবাল স্নিপেট লেখা",
     "settingsNeedExecute": "আবেদনের প্রয়োজন YSK_EXECUTE",
-    "reloadFailed": "nginx পুনরায় লোড ব্যর্থ হয়েছে"
+    "reloadFailed": "nginx পুনরায় লোড ব্যর্থ হয়েছে",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "সার্টিফিকেটের জন্য অনুরোধ করুন"
@@ -165,7 +167,9 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
-    "localAOk": "local A {{name}} → {{ip}}"
+    "localAOk": "local A {{name}} → {{ip}}",
+    "digNotInstalled": "dig is not installed",
+    "digEmpty": "dig: no answer"
   },
   "db": {
     "needExecuteCreate": "হোস্ট এক্সিকিউট বন্ধ আছে; প্যানেল থেকে ডাটাবেস তৈরি করতে পারে না",
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "dataDir-এর অধীনে লেখা পাসডব্লিউডি ফাইল — প্রয়োগ চালান (EXECUTE+root) যাতে Dovecot এটি লোড করে",
     "postqueueSetgidBroken": "পোস্টফিক্স সারি সরঞ্জাম ব্যর্থ হয়েছে: setgid_group main.cf এ খালি। setgid_group=postdrop সেট করুন (যখন YSK_EXECUTE চালু থাকে তখন প্যানেল ঠিক করার চেষ্টা করে)।",
     "postqueueMailDown": "পোস্টফিক্স চলছে না (শোক অনুপলব্ধ)। YSK_EXECUTE চালু থাকলে প্যানেল এটি শুরু করার চেষ্টা করেছিল — সফ্টওয়্যার ট্যাব / সিস্টেমসিটিএল স্ট্যাটাস পোস্টফিক্স চেক করুন।",
-    "postqueueSpoolMissing": "পোস্টফিক্স সারি ডিরেক্টরি অনুপস্থিত (যেমন হোল্ড/)। প্যানেল স্পুল ট্রি তৈরি করার চেষ্টা করেছে এবং YSK_EXECUTE চালু থাকলে পোস্টফিক্স শুরু করার চেষ্টা করেছে।"
+    "postqueueSpoolMissing": "পোস্টফিক্স সারি ডিরেক্টরি অনুপস্থিত (যেমন হোল্ড/)। প্যানেল স্পুল ট্রি তৈরি করার চেষ্টা করেছে এবং YSK_EXECUTE চালু থাকলে পোস্টফিক্স শুরু করার চেষ্টা করেছে।",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "সেশন পাওয়া যায়নি: {{sessionId}}"
@@ -3190,5 +3198,12 @@
     "liveConf": "লাইভ Nginx কনফ: {{path}}",
     "publicRoot": "পাবলিক রুট: {{path}}",
     "confNameStale": "কনফ {{file}} বর্তমান server_name {{serverName}}-এর সাথে মেলে না। নাম বদলাতে পাবলিক ফাইল আবার প্রয়োগ করুন।"
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

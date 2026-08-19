@@ -163,5 +163,9 @@
     "other": "Other",
     "loopback": "Always on",
     "loopbackHint": "Loopback is always available and cannot be changed."
-  }
+  },
+  "deleteRouteNamed": "Delete route {{dst}}?",
+  "deleteRouteBody": "Remove {{dst}}{{via}}{{dev}} from the live routing table.",
+  "viaGw": " via {{gw}}",
+  "onDev": " on {{dev}}"
 }

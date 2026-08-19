@@ -99,6 +99,7 @@
   "resumeHintDetail": "可恢復上次瀏覽（{{count}} 個分頁）· {{url}} · {{when}}",
   "resumeHintOwned": "可恢復 {{user}} 上次瀏覽（{{count}} 個分頁）· {{url}} · {{when}}",
   "clearSessionData": "清除工作階段資料",
+  "clearSessionConfirm": "這會捨棄上一工作階段的還原快照，之後不能還原那些分頁。",
   "resume": "恢復",
   "resumeDismiss": "關閉",
   "resumeDone": "已恢復工作階段",

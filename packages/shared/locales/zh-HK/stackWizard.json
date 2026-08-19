@@ -22,5 +22,20 @@
   "uninstallNow": "立即移除",
   "uninstallNeedSelect": "請至少勾選一個套餐。不再允許全部不勾就一次刪光。",
   "uninstallConfirmTitle": "移除已選套餐？",
-  "uninstallConfirmDesc": "將移除 {{count}} 個套餐。請輸入 REMOVE 確認。"
+  "uninstallConfirmDesc": "將移除 {{count}} 個套餐。請輸入 REMOVE 確認。",
+  "bundle": {
+    "control-plane": "控制面",
+    "web": "網站寄存",
+    "database": "資料庫",
+    "email": "郵件套件",
+    "dns": "DNS",
+    "ftp": "FTP / FTPS",
+    "defense": "主機防護",
+    "runtimes": "語言執行環境"
+  },
+  "planTitle": {
+    "minimal": "僅控制面",
+    "recommended": "建議寄存組合",
+    "full": "全部軟件"
+  }
 }

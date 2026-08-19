@@ -444,7 +444,8 @@
       "interpreter": "통역사",
       "user": "사용자",
       "unit": "단위",
-      "runtime": "실행 시간"
+      "runtime": "실행 시간",
+      "pid": "PID"
     },
     "projectsTitle": "YSK 프로젝트 프로세스",
     "projectsDesc": "패널 프로젝트용 systemd 단위(기본 배포 경로 - PM2 아님)",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

@@ -48,31 +48,45 @@ export async function lookupDns(input: {
 
   if (input.host) {
     const digType = type === 'CNAME' ? 'CNAME' : type;
-    const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
+    const { resolveBin } = await import('./software-probe/index.js');
     const digPath = await resolveBin(input.host, 'dig');
+    if (!digPath) {
+      return {
+        ok: false,
+        name,
+        type,
+        answers: [],
+        notes: [tl('notes.dns.digNotInstalled')],
+        method: 'none',
+        latencyMs: Date.now() - t0,
+      };
+    }
     const at = server ? `@${server}` : '';
-    const r = digPath
-      ? await input.host.runCommand(
-          [
-            digPath,
-            ...(at ? [at] : []),
-            '+time=3',
-            '+tries=1',
-            '+short',
-            digType,
-            name,
-          ],
-          { timeoutMs: 12_000 },
-        )
-      : await input.host.runCommand(
-          [
-            'bash',
-            '-c',
-            `if ${shellBinExists('dig')}; then dig ${at ? JSON.stringify(at) + ' ' : ''}+time=3 +tries=1 +short ${JSON.stringify(digType)} ${JSON.stringify(name)} 2>/dev/null; else echo YSK_NO_DIG; fi`,
-          ],
-          { timeoutMs: 12_000 },
-        );
+    const r = await input.host.runCommand(
+      [
+        digPath,
+        ...(at ? [at] : []),
+        '+time=3',
+        '+tries=1',
+        '+short',
+        digType,
+        name,
+      ],
+      { timeoutMs: 12_000 },
+    );
     const out = (r.stdout || '').trim();
+    const err = (r.stderr || '').trim();
+    if (`${out}\n${err}`.includes('YSK_NO_DIG')) {
+      return {
+        ok: false,
+        name,
+        type,
+        answers: [],
+        notes: [tl('notes.dns.digNotInstalled')],
+        method: 'none',
+        latencyMs: Date.now() - t0,
+      };
+    }
     if (!out.includes('YSK_NO_DIG') && r.exitCode === 0) {
       const answers = out
         .split('\n')
@@ -85,7 +99,7 @@ export async function lookupDns(input: {
         answers,
         notes: answers.length
           ? [`dig ${type} ${name}`]
-          : [tl('notes.auto.t0259')],
+          : [tl('notes.dns.digEmpty')],
         method: 'dig',
         latencyMs: Date.now() - t0,
       };

@@ -50,6 +50,8 @@ export type { FormProps } from './Form';
 /** Data table — only allowed table for feature pages */
 export { DataTable } from './DataTable';
 export type { DataTableProps, DataColumn, DataColumnMobile } from './DataTable';
+export { TableMore } from './TableMore';
+export type { TableMoreProps } from './TableMore';
 
 /** List shell (same create toolbar rule as DataTable) */
 export { ListPanel } from './ListPanel';

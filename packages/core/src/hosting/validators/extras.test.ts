@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyComposeLimits, composeBind, writeComposeFile } from './compose-runner.js';
-import { snapshotOffer, stakingChecklist } from './extras.js';
+import { rankValidatorAutoClearCandidates, snapshotOffer, stakingChecklist } from './extras.js';
 import { buildEthComposeYaml } from './adapters/eth.js';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -76,6 +76,15 @@ describe('validator extras', () => {
     expect(c.items.some((i) => /Bitcoin|not proof-of-stake|不是權益證明/i.test(i))).toBe(true);
     expect(c.links.some((l) => l.href === 'https://bitcoin.org/en/full-node')).toBe(true);
     expect(c.links.every((l) => l.href.startsWith('https://'))).toBe(true);
+  });
+
+  it('ranks auto-clear so empty failed nodes are last', () => {
+    const ranked = rankValidatorAutoClearCandidates([
+      { id: 'avax-fuji-1', usedBytes: 0, running: false },
+      { id: 'ada-preview-1', usedBytes: 80, running: false },
+      { id: 'eth-hoodi-1', usedBytes: 400, running: true },
+    ]);
+    expect(ranked.map((r) => r.id)).toEqual(['ada-preview-1', 'avax-fuji-1']);
   });
 
   it('points Avalanche at Core and Builder Hub', () => {

@@ -138,6 +138,7 @@
   "applyRenice": "Apply renice",
   "reniceHint": "-20 highest · 19 lowest (needs EXECUTE)",
   "noData": "No data",
+  "shareOfMeasured": "{{pct}}% of measured",
   "mountsTitle": "Disk mounts ({{count}})",
   "mountsDesc": "Real disk usage (temporary filesystems filtered)",
   "noMounts": "No mount list",

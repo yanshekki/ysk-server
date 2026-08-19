@@ -16,6 +16,7 @@ import {
   statusTone,
   statusLabel,
   cmdStatusTone,
+  cmdStatusLabel,
   prettyJson,
   summarizePayload,
   asCliAck,
@@ -23,6 +24,9 @@ import {
   exitCodeOf,
   exitTone,
   exitHint,
+  fleetDisplayStatus,
+  runtimeHonestStatus,
+  runtimeJournalTo,
 } from './AgentsPage';
 import { badgeForKey } from './DashboardPage';
 import { summarizeOpsNotes, toneToBadge, relTime } from './features/ProtectionPage';
@@ -163,6 +167,26 @@ describe('AgentsPage helpers', () => {
     for (const s of ['done', 'queued', 'acked', 'error', 'other']) {
       expect(cmdStatusTone(s)).toBeTruthy();
     }
+    expect(cmdStatusLabel('queued', t)).toBe('agents.cmdStatus.queued');
+    expect(cmdStatusLabel('other', t)).toBe('other');
+  });
+
+  it('fleetDisplayStatus does not mix registered with stale', () => {
+    const old = new Date(Date.now() - 10 * 60_000).toISOString();
+    expect(fleetDisplayStatus('registered', old)).toBe('registered');
+    expect(fleetDisplayStatus('connected', new Date(Date.now() - 90_000).toISOString())).toBe(
+      'stale',
+    );
+    expect(fleetDisplayStatus('connected', old)).toBe('disconnected');
+    expect(fleetDisplayStatus('stale', new Date(Date.now() - 90_000).toISOString())).toBe('stale');
+  });
+
+  it('runtimeHonestStatus treats failed as not running', () => {
+    expect(runtimeHonestStatus({ status: 'running', pathExists: true })).toBe('running');
+    expect(runtimeHonestStatus({ status: 'running', pathExists: false })).toBe('not_installed');
+    expect(runtimeHonestStatus({ status: 'failed', unitActive: 'activating' })).toBe('stuck');
+    expect(runtimeHonestStatus({ status: 'failed' })).toBe('failed');
+    expect(runtimeJournalTo({ kind: 'openclaw' })).toContain('ysk-agent-openclaw.service');
   });
 
   it('prettyJson / summarizePayload', () => {

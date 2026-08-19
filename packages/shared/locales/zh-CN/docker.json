@@ -122,7 +122,11 @@
     "mutateFailed": "Docker 命令失败",
     "engineFailed": "无法控制 docker.service",
     "badExec": "exec 只限允许清单内的二进制与预设（不可用 shell，不可开 TTY）",
-    "uninstallBusy": "请先停止由面板管理的容器（包括验证者堆栈）再卸载 Docker"
+    "uninstallBusy": "请先停止由面板管理的容器（包括验证者堆栈）再卸载 Docker",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "此为试运行。要改主机请加 --execute 及 YSK_EXECUTE=1。",
@@ -153,7 +157,8 @@
       "start": "已启动 docker.service",
       "stop": "已停止 docker.service",
       "restart": "已重启 docker.service"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "请先安装 Docker Engine",
   "notInstalledValue": "未安装",
@@ -225,7 +230,18 @@
     "customPortContainer": "容器端口",
     "pctUsed": "已用 {{n}}%",
     "customPortHint": "1–65535。例如 9090 → 80。",
-    "pickBridge": "选择 bridge 网络"
+    "pickBridge": "选择 bridge 网络",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "删除 {{id}}",
   "deleteDesc": "此操作无法复原。",

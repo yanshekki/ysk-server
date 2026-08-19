@@ -101,6 +101,8 @@
   "lookupType": "Query type",
   "lookupResults": "Results ({{count}})",
   "lookupNoAnswerFail": "No answers / failed",
+  "digNotInstalled": "dig is not installed",
+  "digNotInstalledHint": "This tab needs the dig binary (bind9-dnsutils). That is not NXDOMAIN. Install bind9-dnsutils from the host package manager; this page does not auto-install it.",
   "method": "Method: {{method}}",
   "noAnswers": "No answers",
   "noAnswersDesc": "NXDOMAIN, empty RRset, or resolve failure",

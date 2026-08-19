@@ -80,5 +80,6 @@
   "noAccessDesc": "このページは現在の役割では開けません。必要な場合は管理者に依頼してください。",
   "backToDashboard": "ダッシュボードに戻る",
   "validators": "バリデーター (Beta)",
-  "docker": "ドッカー"
+  "docker": "ドッカー",
+  "cluster": "Clusters"
 }

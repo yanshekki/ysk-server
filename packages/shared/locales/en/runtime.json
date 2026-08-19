@@ -75,6 +75,10 @@
   "globalPhpIniDesc": "One setting per row",
   "managePath": "Management path",
   "loading": "Loading",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
   "cannotLoadSettings": "Cannot load settings table",
   "reloadFailed": "Reload failed",
   "sensitive": "Sensitive setting — careful",
@@ -92,6 +96,7 @@
   "demoVhost": "System tools: demo vhost / pool",
   "demoVhostDesc": "Advanced/debug; daily sites use Projects → Deploy",
   "domain": "Domain",
+  "domainRequired": "Enter a valid domain before applying the vhost.",
   "vhostServerName": "Virtual host server_name",
   "poolName": "Pool name",
   "poolNameHint": "Hand-typed id (demo); project paths use ysks_* users",
@@ -450,7 +455,8 @@
       "interpreter": "Interpreter",
       "user": "User",
       "unit": "Unit",
-      "runtime": "Runtime"
+      "runtime": "Runtime",
+      "pid": "PID"
     },
     "projectsTitle": "YSK project processes",
     "projectsDesc": "systemd units for panel projects (default deploy path — not PM2).",

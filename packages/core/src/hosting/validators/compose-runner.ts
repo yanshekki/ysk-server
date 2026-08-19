@@ -2,7 +2,7 @@
  * Docker Compose runner for validator instances.
  * Host mutations go through HostExecutor (honesty / allowlist).
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
@@ -14,6 +14,16 @@ export function composeProjectName(id: string): string {
 
 export function composeFilePath(instanceDirPath: string): string {
   return `${instanceDirPath.replace(/\/+$/, '')}/compose.yml`;
+}
+
+/** Bind-mounts are created as root; many images run as nonroot. */
+export function prepareValidatorDataDir(dataPath: string): void {
+  mkdirSync(dataPath, { recursive: true });
+  try {
+    chmodSync(dataPath, 0o777);
+  } catch {
+    /* still usable as root */
+  }
 }
 
 /**

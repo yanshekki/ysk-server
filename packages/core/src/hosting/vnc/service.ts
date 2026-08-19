@@ -522,12 +522,18 @@ export class VncService {
     let startFailed = false;
     if (input.start) {
       try {
-        const { probeHostnameResolves } = await import('./hostname-hosts.js');
+        const { probeHostnameResolves, applyHostnameToHosts } = await import('./hostname-hosts.js');
         const hn = await probeHostnameResolves(this.host);
         if (!hn.resolves) {
-          startFailed = true;
-          notes.push(...hn.notes);
-          notes.push(tl('notes.vnc.skipStartHostname'));
+          const fix = await applyHostnameToHosts(this.host);
+          notes.push(...fix.notes);
+          if (!fix.ok || !fix.resolves) {
+            const again = await probeHostnameResolves(this.host);
+            if (!again.resolves) {
+              startFailed = true;
+              notes.push(tl('notes.vnc.skipStartHostname'));
+            }
+          }
         }
       } catch {
         /* still try start */
@@ -734,6 +740,29 @@ export class VncService {
         notes: [...xs.notes, ...prepNotes],
         account: toSummary(rec, await this.resolveStatus(rec)),
       };
+    }
+
+    try {
+      const { probeHostnameResolves, applyHostnameToHosts } = await import(
+        './hostname-hosts.js'
+      );
+      const hn = await probeHostnameResolves(this.host);
+      if (!hn.resolves) {
+        const fix = await applyHostnameToHosts(this.host);
+        prepNotes.push(...fix.notes);
+        if (!fix.ok || !fix.resolves) {
+          const again = await probeHostnameResolves(this.host);
+          if (!again.resolves) {
+            return {
+              ok: false,
+              notes: [...prepNotes, tl('notes.vnc.skipStartHostname')],
+              account: toSummary(rec, await this.resolveStatus(rec)),
+            };
+          }
+        }
+      }
+    } catch {
+      /* still try start */
     }
 
     const st = await startVncSession({

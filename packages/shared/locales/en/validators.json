@@ -52,6 +52,7 @@
     "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
     "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
     "autoClearCandidate": "Current candidate: {{id}}",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}",
     "autoClearNone": "No stopped instance is a candidate right now."
   },
   "chain": {
@@ -126,7 +127,8 @@
     "cl": "Consensus client"
   },
   "mithril": {
-    "label": "Restore from Mithril snapshot first (recommended on testnet)",
+    "label": "After the node is up, restore from a Mithril snapshot",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page.",
     "action": "Restore with Mithril"
   },
   "errors": {
@@ -136,6 +138,8 @@
     "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
     "needDocker": "Docker Compose is required and was not found",
     "composeFailed": "docker compose failed",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
     "needConfirm": "Clear requires confirm=instance id or CLEAR",
     "mithrilAdaOnly": "Mithril restore is only available for Cardano",
     "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",

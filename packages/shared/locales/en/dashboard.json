@@ -89,6 +89,7 @@
   "wizardDesc": "Create a project and optionally draft DNS / mail / database (apply on each feature page)",
   "projectName": "Project name",
   "projectNameHint": "Display name; creates a matching directory",
+  "nameRequired": "Enter a project name",
   "domainOptional": "Domain (optional)",
   "domainHint": "Required to enable DNS and mail options",
   "runtime": "Runtime",

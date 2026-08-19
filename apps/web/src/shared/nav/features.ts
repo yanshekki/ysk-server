@@ -49,6 +49,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/databases/postgres/service', key: 'postgresService', icon: '⚙' },
       { to: '/databases/redis', key: 'redis', icon: '◆' },
       { to: '/databases/redis/service', key: 'redisService', icon: '⚙' },
+      { to: '/cluster', key: 'cluster', icon: '🖧' },
     ],
   },
   {

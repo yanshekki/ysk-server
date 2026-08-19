@@ -239,6 +239,19 @@ export function humanizeOperatorNote(text: string): string | null {
   }
 
   // —— Generic ——
+  const portListen = raw.match(/^Port\s+(\d+)\s+is listening$/i);
+  if (portListen) return tr('opsResult.portListening', { port: portListen[1] });
+  const portClosed = raw.match(/^Port\s+(\d+)\s+is not listening$/i);
+  if (portClosed) return tr('opsResult.portNotListening', { port: portClosed[1] });
+  const httpOk = raw.match(/^HTTP OK\s+(\S+)/i);
+  if (httpOk) return tr('opsResult.httpOk', { status: httpOk[1] });
+  const httpFail = raw.match(/^HTTP fail:\s*(.*)$/i);
+  if (httpFail) return tr('opsResult.httpFail', { detail: httpFail[1] || '' });
+  if (/^running$/i.test(raw)) return tr('projects.status.running');
+  if (/^stopped$/i.test(raw)) return tr('projects.status.stopped');
+  if (/^unhealthy$/i.test(raw)) return tr('projects.status.unhealthy');
+  if (/^failed$/i.test(raw)) return tr('projects.status.failed');
+
   if (/^ok$/i.test(raw) || /^success$/i.test(raw) || /^done$/i.test(raw)) {
     return tr('notes.tpl.success');
   }

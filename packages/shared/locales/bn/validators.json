@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "আগে Mithril স্ন্যাপশট থেকে পুনরুদ্ধার করুন (টেস্টনেটে সুপারিশকৃত)",
-    "action": "Mithril দিয়ে পুনরুদ্ধার"
+    "action": "Mithril দিয়ে পুনরুদ্ধার",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "ভ্যালিডেটর ইনস্ট্যান্স পাওয়া যায়নি",
@@ -113,7 +115,9 @@
     "snapshotLookup": "অফিসিয়াল স্ন্যাপশট পয়েন্টার সমাধান করা যায়নি",
     "needSnapshotConfirm": "স্ন্যাপশট পুনরুদ্ধারে confirm=ইনস্ট্যান্স আইডি বা SNAPSHOT লাগে",
     "snapshotBlocked": "স্ন্যাপশট docker run অনুমোদন তালিকায় আটকে গেছে",
-    "snapshotFailed": "স্ন্যাপশট ডাউনলোড বা খোলা ব্যর্থ"
+    "snapshotFailed": "স্ন্যাপশট ডাউনলোড বা খোলা ব্যর্থ",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "এই বৈশিষ্ট্য Beta। হোস্ট পরিবর্তনে root ও YSK_EXECUTE=1 লাগে।",

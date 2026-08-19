@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
+  isCidr,
+  isIpAddress,
   listFirewallPortChips,
   parsePortChipValue } from 'ysk-server-shared';
 import {
@@ -149,11 +151,24 @@ export function parsePortInputNumber(raw: string): number | null {
   return p.from;
 }
 
-/** Whether a deny IP string looks usable. */
+/** Permanent deny: IPv4 / IPv6 / CIDR (ident.ts). */
 export function isValidDenyIp(ip: string): boolean {
   const s = ip.trim();
   if (!s) return false;
-  return /^[\d.a-fA-F:/]+$/.test(s) && s.length >= 3;
+  return isIpAddress(s) || isCidr(s);
+}
+
+/** Localize UFW action tokens for display. */
+export function firewallActionLabel(
+  action: string | undefined,
+  t: (key: string) => string,
+): string {
+  const raw = String(action ?? '').trim();
+  if (!raw) return '—';
+  if (/DENY/i.test(raw)) return t('firewall.statDeny');
+  if (/REJECT/i.test(raw)) return t('common.blocked');
+  if (/ALLOW/i.test(raw)) return t('firewall.statAllow');
+  return raw;
 }
 
 /**
@@ -224,7 +239,8 @@ export function FirewallPage() {
   const { can } = useCapabilities();
   const canEdit = can('firewall.edit');
   const canFlush = can('firewall.flush');
-  const [tab, setTab] = usePageTab(FW_TABS, 'services');
+  const [tab, setTab, unknownTab] = usePageTab(FW_TABS, 'services');
+  const panel = unknownTab ? null : tab;
   const [status, setStatus] = useState<FwStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [extraPorts, setExtraPorts] = useState('21,30000:30100');
@@ -245,7 +261,19 @@ export function FirewallPage() {
   const [pendingDisable, setPendingDisable] = useState(false);
   const [ruleQ, setRuleQ] = useState('');
   const [debouncedRuleQ, setDebouncedRuleQ] = useState('');
-  const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const [rulesAllTotal, setRulesAllTotal] = useState(0);
+  const { busy, error, result, msg, run: runRaw, setMsg, setError } = useFeatureAction();
+  const [resultTab, setResultTab] = useState<string | null>(null);
+  const run: typeof runRaw = useCallback(
+    (fn, okMessage) => {
+      setResultTab(tab);
+      return runRaw(fn, okMessage);
+    },
+    [runRaw, tab],
+  );
+  useEffect(() => {
+    setResultTab((prev) => (prev == null || prev === tab ? prev : null));
+  }, [tab]);
 
   useEffect(() => {
     const tmr = window.setTimeout(() => setDebouncedRuleQ(ruleQ.trim()), 300);
@@ -270,11 +298,16 @@ export function FirewallPage() {
       // Prefer query-aware GET when searching
       if (q) {
         const { api } = await import('../../shared/services/api');
-        setStatus(
-          await api.requestRaw(`/api/v1/system/firewall/status${q}`),
+        const s = await api.requestRaw<FwStatus>(
+          `/api/v1/system/firewall/status${q}`,
         );
+        setStatus(s);
       } else {
-        setStatus(await systemApi.firewallStatus());
+        const s = await systemApi.firewallStatus();
+        setStatus(s);
+        setRulesAllTotal(
+          s.rules?.length ?? s.numberedRules?.length ?? 0,
+        );
       }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
@@ -361,6 +394,7 @@ export function FirewallPage() {
               variant={active ? 'ghost' : 'primary'}
               size="sm"
               loading={busy}
+              data-confirm={active ? 'ufw' : undefined}
               onClick={() => {
                 if (active) {
                   setPendingDisable(true);
@@ -410,15 +444,23 @@ export function FirewallPage() {
           { id: 'stack', label: t('tabs.stack') },
           { id: 'about', label: t('firewall.tabs.about') },
         ]}
-        active={tab}
+        active={unknownTab ? '' : tab}
         onChange={setTab}
         variant="scroll"
       >
-        {tab === 'services' ? (
+        {unknownTab ? (
+          <div className="tab-panel">
+            <EmptyState
+              title={t('tabs.unknown')}
+              description={t('tabs.unknownHint', { tab: unknownTab })}
+            />
+          </div>
+        ) : null}
+        {panel === 'services' ? (
           <FirewallServicesPanel canEdit={canEdit} ufwActive={Boolean(active)} />
         ) : null}
 
-        {tab === 'rules' ? (
+        {panel === 'rules' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -433,12 +475,13 @@ export function FirewallPage() {
                     searching={Boolean(ruleQ && ruleQ !== debouncedRuleQ)}
                     loading={busy}
                     total={
-                      (status as { rulesMeta?: { total?: number } } | null)?.rulesMeta
-                        ?.total ??
+                      (status as { rulesMeta?: { allTotal?: number } } | null)?.rulesMeta
+                        ?.allTotal ??
+                      rulesAllTotal ??
                       status?.numberedRules?.length ??
                       0
                     }
-                    shown={status?.numberedRules?.length ?? 0}
+                    shown={tableRules.length}
                     activeFilterCount={ruleQ.trim() ? 1 : 0}
                     clear={() => {
                       setRuleQ('');
@@ -458,7 +501,9 @@ export function FirewallPage() {
                     header: t('firewall.colAction'),
                     nowrap: true,
                     render: (r) => (
-                      <Badge tone={firewallActionTone(r.action)}>{r.action}</Badge>
+                      <Badge tone={firewallActionTone(r.action)}>
+                        {firewallActionLabel(r.action, t)}
+                      </Badge>
                     ) },
                   {
                     key: 'to',
@@ -479,6 +524,7 @@ export function FirewallPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
+                        data-confirm={String(r.num)}
                         onClick={() => setDelRuleNum(r.num!)}
                       >
                         {t('common.delete')}
@@ -486,6 +532,7 @@ export function FirewallPage() {
                     </ActionBar>
                   ) : null
                 }
+                filterActive={Boolean(ruleQ.trim())}
                 empty={
                   <EmptyState
                     title={t('firewall.emptyRulesTitle')}
@@ -501,7 +548,7 @@ export function FirewallPage() {
           </div>
         ) : null}
 
-        {tab === 'ports' ? (
+        {panel === 'ports' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -619,7 +666,7 @@ export function FirewallPage() {
           </div>
         ) : null}
 
-        {tab === 'deny' ? (
+        {panel === 'deny' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -627,13 +674,24 @@ export function FirewallPage() {
                 <span className="muted u-text-sm">{t('firewall.denySub')}</span>
               </div>
               <FormLayout columns={2}>
-                <Field label="IP" htmlFor="fw-deny" flush>
+                <Field
+                  label="IP"
+                  htmlFor="fw-deny"
+                  flush
+                  required
+                  error={
+                    denyIp.trim() && !isValidDenyIp(denyIp)
+                      ? t('fail2ban.invalidIp')
+                      : undefined
+                  }
+                >
                   <input
                     id="fw-deny"
                     value={denyIp}
                     onChange={bindInput(setDenyIp)}
                     placeholder={t('firewall.denyPlaceholder')}
                     spellCheck={false}
+                    autoComplete="off"
                   />
                 </Field>
               </FormLayout>
@@ -655,7 +713,7 @@ export function FirewallPage() {
                     }, t('firewall.deniedOk'))
                   }
                 >
-                  DENY from IP
+                  {t('firewall.denyTitle')}
                 </Button>
               </FormActions>
               {(status?.denyFromIps?.length ?? 0) > 0 ? (
@@ -690,7 +748,7 @@ export function FirewallPage() {
           </div>
         ) : null}
 
-        {tab === 'profiles' ? (
+        {panel === 'profiles' ? (
           <div className="tab-panel def-panel">
             <div className="def-section-head">
               <div>
@@ -777,18 +835,17 @@ export function FirewallPage() {
           </div>
         ) : null}
 
-        {tab === 'stack' ? (
+        {panel === 'stack' ? (
           <div className="tab-panel stack">
             <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="ufw" />
           </div>
         ) : null}
 
-        {tab === 'about' ? <PageGuide guideId="firewall" /> : null}
+        {panel === 'about' ? <PageGuide guideId="firewall" /> : null}
       </PageTabs>
 
-      {/* When page already shows ok/error Alert, skip duplicate 操作結果 panel */}
-      {result && !msg && !error ? (
+      {result && resultTab === tab && !msg && !error ? (
         <OpsResultPanel result={result} busy={busy} />
       ) : null}
 
@@ -805,6 +862,7 @@ export function FirewallPage() {
         }}
         title={t('firewall.disableConfirmTitle')}
         description={t('firewall.disableConfirmDesc')}
+        dataConfirm="ufw"
         consequences={[t('firewall.disableConfirmConsequence')]}
         severity="destructive"
         confirmLabel={t('firewall.disableUfw')}
@@ -828,6 +886,7 @@ export function FirewallPage() {
         }}
         title={t('firewall.deleteRuleTitle', { n: delRuleNum ?? '' })}
         description={t('firewall.deleteRuleDesc')}
+        dataConfirm={delRuleNum != null ? String(delRuleNum) : undefined}
         severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

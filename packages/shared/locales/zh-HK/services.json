@@ -59,6 +59,11 @@
   "restartConfirmPanelDesc": "重啟期間面板與 API 會短暫離線。",
   "restartConfirmTitle": "重啟 {{label}}？",
   "restartConfirmDesc": "立即重啟 {{label}}。現有連線可能會中斷。",
+  "restartConfirmConsequence": "{{label}} 會短暫中斷連線，然後繼續提供 HTTP／HTTPS。",
+  "reloadConfirmTitle": "重載 {{label}}？",
+  "reloadConfirmDesc": "重載 {{label}} 設定。現有連線應會保持。",
+  "enableConfirmTitle": "開機啟用 {{label}}？",
+  "enableConfirmDesc": "啟用 {{label}}，開機時自動啟動。",
   "startVerifyFailed": "{{label}} 啟動後未保持健康。",
   "stopConfirmPanelToken": "停止 ysk 伺服器",
   "stopConfirmPanelConsequence": "此瀏覽器工作階段會中斷。請從 SSH 或主機控制台啟動服務單元。",
@@ -102,5 +107,17 @@
     "running": "運行中",
     "failed": "失敗",
     "missing": "未安裝"
+  },
+  "cat": {
+    "web": "網站",
+    "db": "資料庫",
+    "mail": "郵件",
+    "dns": "DNS",
+    "ftp": "FTP",
+    "cache": "快取",
+    "panel": "控制面",
+    "ssh": "SSH",
+    "other": "其他",
+    "runtime": "執行環境"
   }
 }

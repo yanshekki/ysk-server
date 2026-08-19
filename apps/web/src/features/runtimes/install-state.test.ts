@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   compareRuntimeVersions,
   hostSatisfiesTarget,
+  pinInstalledOnHost,
   resolveRuntimeInstallState,
   versionChipLabel,
   versionLineageMatch,
@@ -13,6 +14,12 @@ describe('runtime install-state', () => {
     expect(compareRuntimeVersions('8.3', '8.2')).toBeGreaterThan(0);
     expect(compareRuntimeVersions('latest', '1.1.38')).toBeGreaterThan(0);
     expect(compareRuntimeVersions('stable', '1.81')).toBeGreaterThan(0);
+  });
+
+  it('pinInstalledOnHost requires the selected major', () => {
+    expect(pinInstalledOnHost('20', ['22'], 'v22.11.0')).toBe(false);
+    expect(pinInstalledOnHost('20', ['20'], '')).toBe(true);
+    expect(pinInstalledOnHost('20', [], 'v20.18.0')).toBe(true);
   });
 
   it('matches host report to panel targets', () => {

@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "पहले Mithril स्नैपशॉट से पुनर्स्थापित करें (टेस्टनेट पर अनुशंसित)",
-    "action": "Mithril से पुनर्स्थापित करें"
+    "action": "Mithril से पुनर्स्थापित करें",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "वैलिडेटर इंस्टेंस नहीं मिला",
@@ -113,7 +115,9 @@
     "snapshotLookup": "आधिकारिक स्नैपशॉट सूचक हल नहीं हो सका",
     "needSnapshotConfirm": "स्नैपशॉट पुनर्स्थापना के लिए confirm=इंस्टेंस आईडी या SNAPSHOT चाहिए",
     "snapshotBlocked": "स्नैपशॉट docker run अनुमति सूची से अवरुद्ध हुआ",
-    "snapshotFailed": "स्नैपशॉट डाउनलोड या निकालना विफल"
+    "snapshotFailed": "स्नैपशॉट डाउनलोड या निकालना विफल",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "यह सुविधा Beta है। होस्ट परिवर्तन के लिए root और YSK_EXECUTE=1 चाहिए।",

@@ -38,9 +38,10 @@ describe('btLeftoverHashes', () => {
           { infoHash: 'aa'.repeat(20), kind: 'library' },
           { infoHash: 'bb'.repeat(20), kind: 'library' },
           { infoHash: 'cc'.repeat(20), kind: 'share' },
+          { infoHash: 'dd'.repeat(20), kind: 'swarm' },
         ],
       }),
-    ).toEqual(['bb'.repeat(20)]);
+    ).toEqual(['bb'.repeat(20), 'dd'.repeat(20)]);
   });
 });
 

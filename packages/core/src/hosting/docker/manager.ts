@@ -9,6 +9,7 @@ import {
   isSafeVolumeDest,
   isDockerPruneScope,
   isDockerRestartPolicy,
+  parseDockerArgvLine,
   tl,
   type DockerComposeProject,
   type DockerContainerRow,
@@ -39,6 +40,10 @@ import {
   type DockerOpsResult,
 } from './honesty.js';
 import {
+  formatDockerInspectSummary,
+  inspectActualPorts,
+  inspectHasNetwork,
+  inspectHasPortBindings,
   parseComposeLs,
   parseContainers,
   parseDockerInfo,
@@ -46,7 +51,9 @@ import {
   parseNetworks,
   parseSystemDf,
   parseVolumes,
+  sanitizeDockerCliHelp,
 } from './parse.js';
+import { parseSsListenHosts } from '../panel-tls.js';
 import { composeFilePath, composeProjectName } from '../validators/compose-runner.js';
 import { listValidatorInstances } from '../validators/store.js';
 
@@ -431,7 +438,22 @@ export async function dockerContainerAction(input: DockerCtx & {
   }
   const r = await docker(input.host, argv, { timeoutMs: 60_000 });
   if (r.exitCode !== 0) {
-    return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed')] });
+    return failedDockerOp({
+      notes: [sanitizeDockerCliHelp(r.stderr) || tl('docker.errors.mutateFailed')],
+    });
+  }
+  if (input.action === 'start' || input.action === 'restart') {
+    const ins = await inspectDocker({ host: input.host, id });
+    const unpublished =
+      inspectHasPortBindings(ins.raw) && !inspectActualPorts(ins.raw);
+    const isolated = !inspectHasNetwork(ins.raw);
+    if (unpublished || isolated) {
+      const notes = [
+        tl('docker.errors.unpublished'),
+        formatDockerInspectSummary(ins.raw),
+      ].filter(Boolean);
+      return failedDockerOp({ notes });
+    }
   }
   return appliedDockerOp({ notes: [tl(`docker.notes.${input.action}`)] });
 }
@@ -485,8 +507,49 @@ export function buildDockerRunArgv(req: DockerRunRequest): { ok: true; argv: str
     }
     argv.push('-v', `${vol.name}:${vol.dest}`);
   }
+  const entry = String(req.entrypoint ?? '').trim();
+  if (entry) {
+    const parsed = parseDockerArgvLine(entry);
+    if (!parsed || parsed.length !== 1) {
+      return { ok: false, notes: [tl('docker.errors.badCommand')] };
+    }
+    argv.push('--entrypoint', parsed[0]!);
+  }
   argv.push(req.image);
+  const cmd = req.command ?? [];
+  if (cmd.length) {
+    const parsed = parseDockerArgvLine(cmd.join(' '));
+    if (!parsed || parsed.length !== cmd.length) {
+      return { ok: false, notes: [tl('docker.errors.badCommand')] };
+    }
+    argv.push(...parsed);
+  }
+  if (classifyDockerArgv(['docker', ...argv]) === 'blocked') {
+    return { ok: false, notes: [tl('docker.errors.badCommand')] };
+  }
   return { ok: true, argv };
+}
+
+async function hostPortOccupants(
+  host: HostExecutor,
+  port: number,
+): Promise<string[]> {
+  try {
+    const r = await host.runCommand(['ss', '-lnt'], { timeoutMs: 3_000 });
+    if (r.exitCode !== 0) return [];
+    return parseSsListenHosts(r.stdout, port);
+  } catch {
+    return [];
+  }
+}
+
+function bindBlockedBy(bind: string, occupants: string[]): boolean {
+  if (!occupants.length) return false;
+  const b = bind.trim() || '127.0.0.1';
+  const wild = occupants.some((h) => h === '0.0.0.0' || h === '*' || h === '::');
+  if (wild) return true;
+  if (b === '0.0.0.0') return occupants.length > 0;
+  return occupants.includes(b);
 }
 
 export async function dockerRun(input: DockerCtx & { req: DockerRunRequest }): Promise<DockerOpsResult> {
@@ -495,12 +558,48 @@ export async function dockerRun(input: DockerCtx & { req: DockerRunRequest }): P
   const probe = await probeDockerEngine(input.host);
   const missing = needDocker(probe);
   if (missing) return missing;
+  const ports = input.req.ports ?? [];
+  for (const p of ports) {
+    const hostPort = Number(p.host);
+    const bind = (p.bind ?? '127.0.0.1').trim() || '127.0.0.1';
+    const occupants = await hostPortOccupants(input.host, hostPort);
+    if (bindBlockedBy(bind, occupants)) {
+      return blockedDockerOp({
+        reason: 'validation',
+        notes: [tl('docker.errors.portBusy', { bind, port: String(hostPort) })],
+      });
+    }
+  }
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenDockerOp({ notes: [tl('docker.notes.dryMutate'), built.argv.join(' ')] });
   }
   const r = await docker(input.host, built.argv, { timeoutMs: 180_000 });
-  if (r.exitCode !== 0) return failedDockerOp({ notes: [r.stderr.trim() || tl('docker.errors.mutateFailed')] });
-  return appliedDockerOp({ notes: [tl('docker.notes.ran'), r.stdout.trim()].filter(Boolean) });
+  if (r.exitCode !== 0) {
+    const err = sanitizeDockerCliHelp(r.stderr) || tl('docker.errors.mutateFailed');
+    const name = String(input.req.name ?? '').trim();
+    const notes = [err];
+    if (name && /container name .* already in use/i.test(err)) {
+      notes.push(tl('docker.errors.nameInUse', { name }));
+    } else if (name && /address already in use|failed to bind/i.test(err)) {
+      await docker(input.host, ['rm', '-f', name], { timeoutMs: 20_000 });
+      notes.push(tl('docker.notes.leftoverRemoved', { name }));
+    }
+    return failedDockerOp({ notes });
+  }
+  const cid = r.stdout.trim().slice(0, 64);
+  const inspectId = String(input.req.name ?? '').trim() || cid;
+  if (inspectId && ports.length) {
+    const ins = await inspectDocker({ host: input.host, id: inspectId });
+    const unpublished =
+      inspectHasPortBindings(ins.raw) && !inspectActualPorts(ins.raw);
+    const isolated = !inspectHasNetwork(ins.raw);
+    if (unpublished || isolated) {
+      return failedDockerOp({
+        notes: [tl('docker.errors.unpublished'), formatDockerInspectSummary(ins.raw)],
+      });
+    }
+  }
+  return appliedDockerOp({ notes: [tl('docker.notes.ran'), cid].filter(Boolean) });
 }
 
 export async function dockerPull(input: DockerCtx & { image: string }): Promise<DockerOpsResult> {

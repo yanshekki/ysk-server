@@ -103,11 +103,13 @@ export function buildUpdatesSummary(input: {
     }
   }
 
-  const panelUpdateAvailable = Boolean(self?.updateAvailable);
   const panelCurrent =
     self?.currentVersion != null ? String(self.currentVersion) : undefined;
   const panelLatest =
     self?.latestVersion != null ? String(self.latestVersion) : undefined;
+  const samePanel =
+    Boolean(panelCurrent && panelLatest && panelCurrent === panelLatest);
+  const panelUpdateAvailable = Boolean(self?.updateAvailable) && !samePanel;
 
   const badgeCount = packagesUpgradable + (panelUpdateAvailable ? 1 : 0);
 

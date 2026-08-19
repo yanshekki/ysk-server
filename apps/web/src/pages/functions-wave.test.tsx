@@ -1280,7 +1280,8 @@ describe('functions-wave deep interactions', () => {
     renderAt('/cron', <CronPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
     await clickNamed(user, /create|add|run|enable|disable|delete|save|refresh|install/i, 12);
-    const dialog = screen.queryByRole('dialog');
+    const dialogs = screen.queryAllByRole('dialog');
+    const dialog = dialogs[dialogs.length - 1];
     if (dialog) {
       for (const input of within(dialog).queryAllByRole('textbox')) {
         fireEvent.change(input, { target: { value: 'echo test' } });

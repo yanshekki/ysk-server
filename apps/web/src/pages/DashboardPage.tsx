@@ -178,7 +178,6 @@ export function DashboardPage() {
     summary,
     readiness,
     notifications,
-    notifCounts,
     applyAudit,
     error,
     loading } = useDashboard();
@@ -205,6 +204,7 @@ export function DashboardPage() {
   const [wizServerIp, setWizServerIp] = useState('');
   const [wizServerIpv6, setWizServerIpv6] = useState('');
   const [wizBusy, setWizBusy] = useState(false);
+  const [wizNameErr, setWizNameErr] = useState<string | null>(null);
   const setWizMsg = useCallback((text: string | null) => {
     if (text) toast.ok(text);
   }, []);
@@ -258,6 +258,11 @@ export function DashboardPage() {
 
   async function onWizard(e: FormEvent) {
     e.preventDefault();
+    if (!wizName.trim()) {
+      setWizNameErr(t('dashboard.nameRequired'));
+      return;
+    }
+    setWizNameErr(null);
     setWizBusy(true);
     setWizErr(null);
     setWizMsg(null);
@@ -366,7 +371,6 @@ export function DashboardPage() {
     })).filter((g) => g.items.length > 0);
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
-  const notifBadge = notifications.length;
   const [notifQ, setNotifQ] = useState('');
   const [notifLevel, setNotifLevel] = useState<'all' | 'critical' | 'warn' | 'info'>('all');
   const [dismissedNotifs, setDismissedNotifs] = useState<string[]>(() => {
@@ -378,18 +382,27 @@ export function DashboardPage() {
       return [];
     }
   });
-  const visibleNotifs = useMemo(() => {
+  const liveNotifs = useMemo(() => {
     const dismissed = new Set(dismissedNotifs);
+    return dedupeNotifications(notifications.filter((n) => !dismissed.has(n.id)));
+  }, [notifications, dismissedNotifs]);
+  const liveNotifCounts = useMemo(() => {
+    const counts = { critical: 0, warn: 0, info: 0 };
+    for (const n of liveNotifs) {
+      counts[n.level] += 1;
+    }
+    return counts;
+  }, [liveNotifs]);
+  const notifCount = liveNotifs.length;
+  const visibleNotifs = useMemo(() => {
     const q = notifQ.trim().toLowerCase();
-    return dedupeNotifications(
-      notifications.filter((n) => {
-        if (dismissed.has(n.id)) return false;
-        if (notifLevel !== 'all' && n.level !== notifLevel) return false;
-        if (!q) return true;
-        return [n.title, n.body, n.source].join('\n').toLowerCase().includes(q);
-      }),
-    );
-  }, [notifications, dismissedNotifs, notifQ, notifLevel]);
+    return liveNotifs.filter((n) => {
+      if (notifLevel !== 'all' && n.level !== notifLevel) return false;
+      if (!q) return true;
+      return [n.title, n.body, n.source].join('\n').toLowerCase().includes(q);
+    });
+  }, [liveNotifs, notifQ, notifLevel]);
+  const notifFilterActive = Boolean(notifQ.trim()) || notifLevel !== 'all';
   const dismissNotif = useCallback((id: string) => {
     setDismissedNotifs((prev) => {
       const next = prev.includes(id) ? prev : [...prev, id];
@@ -422,7 +435,7 @@ export function DashboardPage() {
             ? 'neutral'
             : health?.status === 'ok'
               ? 'ok'
-              : notifCounts.critical > 0
+              : liveNotifCounts.critical > 0
                 ? 'danger'
                 : 'warn' },
         items: loading
@@ -439,11 +452,11 @@ export function DashboardPage() {
           { label: t('dashboard.stat.backups'), value: backups },
           {
             label: t('dashboard.stat.notifications'),
-            value: notifications.length,
+            value: notifCount,
             tone:
-              notifCounts.critical > 0
+              liveNotifCounts.critical > 0
                 ? 'danger'
-                : notifCounts.warn > 0
+                : liveNotifCounts.warn > 0
                   ? 'warn'
                   : 'ok' },
           {
@@ -478,13 +491,13 @@ export function DashboardPage() {
       ) : null}
       {loading ? <LoadingBlock /> : null}
       {(() => {
-        const urgent = notifications.filter(
+        const urgent = liveNotifs.filter(
           (n) => n.level === 'critical' || n.level === 'warn',
         );
         if (!urgent.length) return null;
         const first = urgent[0]!;
         return (
-          <Alert variant={notifCounts.critical > 0 ? 'error' : 'warn'}>
+          <Alert variant={liveNotifCounts.critical > 0 ? 'error' : 'warn'}>
             <strong>
               {t('dashboard.barTitle', { count: urgent.length })}
             </strong>
@@ -509,7 +522,7 @@ export function DashboardPage() {
           {
             id: 'notifications',
             label: t('dashboard.tabs.notifications'),
-            badge: notifBadge || undefined },
+            badge: notifCount || undefined },
           { id: 'features', label: t('dashboard.tabs.features') },
           { id: 'about', label: t('common.about') },
         ]}
@@ -618,18 +631,18 @@ export function DashboardPage() {
                 <div className="chip-row u-mb-3">
                   <Badge
                     tone={
-                      notifCounts.critical > 0
+                      liveNotifCounts.critical > 0
                         ? 'danger'
-                        : notifCounts.warn > 0
+                        : liveNotifCounts.warn > 0
                           ? 'warn'
                           : 'ok'
                     }
                   >
-                    {t('dashboard.notifCount', { count: notifications.length })}
-                    {notifCounts.critical > 0
-                      ? t('dashboard.criticalCount', { count: notifCounts.critical })
-                      : notifCounts.warn > 0
-                        ? t('dashboard.warnCount', { count: notifCounts.warn })
+                    {t('dashboard.notifCount', { count: notifCount })}
+                    {liveNotifCounts.critical > 0
+                      ? t('dashboard.criticalCount', { count: liveNotifCounts.critical })
+                      : liveNotifCounts.warn > 0
+                        ? t('dashboard.warnCount', { count: liveNotifCounts.warn })
                         : ''}
                   </Badge>
                   {applyAudit ? (
@@ -652,13 +665,10 @@ export function DashboardPage() {
                     {t('dashboard.executeBadge', { state: executeEnabled === true ? t('common.on') : t('common.off') })}
                   </Badge>
                 </div>
-                {notifications.length > 0 ? (
+                {liveNotifs.length > 0 ? (
                   <ul className="list-plain list-spaced u-mb-3">
-                    {dedupeNotifications(
-                      notifications.filter(
-                        (n) => n.level === 'critical' || n.level === 'warn',
-                      ),
-                    )
+                    {liveNotifs
+                      .filter((n) => n.level === 'critical' || n.level === 'warn')
                       .slice(0, 5)
                       .map((n) => (
                         <li key={n.id}>
@@ -844,7 +854,11 @@ export function DashboardPage() {
                       </span>
                     </header>
                     <div className="dash-kpi__body">
-                      {projects.length === 0 ? (
+                      {loading ? (
+                        <div className="dash-kpi__empty">
+                          <p className="dash-kpi__meta">{t('common.loading')}</p>
+                        </div>
+                      ) : projects.length === 0 ? (
                         <div className="dash-kpi__empty">
                           <p className="dash-kpi__value dash-kpi__value--sm">0</p>
                           <p className="dash-kpi__meta">{t('dashboard.noProjects')}</p>
@@ -901,7 +915,11 @@ export function DashboardPage() {
                       </span>
                     </header>
                     <div className="dash-kpi__body">
-                      {audit.length === 0 ? (
+                      {loading ? (
+                        <div className="dash-kpi__empty">
+                          <p className="dash-kpi__meta">{t('common.loading')}</p>
+                        </div>
+                      ) : audit.length === 0 ? (
                         <div className="dash-kpi__empty">
                           <p className="dash-kpi__meta">
                             {t('dashboard.needLogin')}
@@ -960,7 +978,7 @@ export function DashboardPage() {
                 title={t('dashboard.wizardTitle')}
                 description={t('dashboard.wizardDesc')}
               >
-                <form onSubmit={(e) => void onWizard(e)}>
+                <form noValidate onSubmit={(e) => void onWizard(e)}>
                   <FormLayout columns={2}>
                     <Field
                       label={t('dashboard.projectName')}
@@ -968,14 +986,18 @@ export function DashboardPage() {
                       flush
                       required
                       hint={t('dashboard.projectNameHint')}
+                      error={wizNameErr ?? undefined}
                     >
                       <input
                         id="wiz-name"
                         value={wizName}
-                        onChange={bindInput(setWizName)}
-                        required
+                        onChange={(e) => {
+                          setWizName(e.target.value);
+                          if (wizNameErr) setWizNameErr(null);
+                        }}
                         placeholder="my-app"
                         spellCheck={false}
+                        aria-invalid={Boolean(wizNameErr)}
                       />
                     </Field>
                     <Field
@@ -1154,13 +1176,17 @@ export function DashboardPage() {
 
         {tab === 'notifications' ? (
           <div className="tab-panel">
+            {loading ? (
+              <LoadingBlock />
+            ) : (
             <DataTable
               title={t('dashboard.notifCenterTitle', { count: visibleNotifs.length })}
               description={t('dashboard.notifCenterDesc', {
-                critical: notifCounts.critical,
-                warn: notifCounts.warn,
-                info: notifCounts.info,
+                critical: liveNotifCounts.critical,
+                warn: liveNotifCounts.warn,
+                info: liveNotifCounts.info,
               })}
+              filterActive={notifFilterActive}
               filters={
                 <ActionBar>
                   <input
@@ -1170,6 +1196,18 @@ export function DashboardPage() {
                     placeholder={t('dashboard.notifSearch')}
                     aria-label={t('dashboard.notifSearch')}
                   />
+                  {notifFilterActive ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setNotifQ('');
+                        setNotifLevel('all');
+                      }}
+                    >
+                      {t('listToolbar.clearAll')}
+                    </Button>
+                  ) : null}
                   <SegRadio
                     name="dash-notif-level"
                     value={notifLevel}
@@ -1262,6 +1300,7 @@ export function DashboardPage() {
                 />
               }
             />
+            )}
             {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
               <Card>
                 <CardSection

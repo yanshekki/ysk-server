@@ -288,9 +288,14 @@
 
 .dash-kpi__audit .inline {
   font-size: 0.72rem;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .dash-kpi__time {

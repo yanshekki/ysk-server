@@ -20,7 +20,12 @@ import {
   formatUptime as topFormatUptime,
   kibToHuman,
 } from '../features/metrics/TopHeaderPanel';
-import { isTuningKind } from './features/GenericRuntimePage';
+import {
+  isTuningKind,
+  isRustupDefaultMissingText,
+  looksLikeBinaryPath,
+  looksLikeVersionBanner,
+} from './features/GenericRuntimePage';
 import {
   statusTone as agentStatusTone,
   statusLabel as agentStatusLabel,
@@ -283,6 +288,15 @@ describe('Dashboard badgeForKey / Email asOps', () => {
     expect(badgeForKey('security', [], { executeEnabled: false }, t)?.tone).toBe('warn');
     expect(badgeForKey('projects', [], { executeEnabled: true }, t)?.tone).toBe('ok');
     expect(badgeForKey('totallyUnknown', [], {}, t)?.tone).toBe('neutral');
+  });
+
+  it('runtime path vs version banner helpers', () => {
+    expect(looksLikeBinaryPath('/usr/local/ysk/node/22/bin/node')).toBe(true);
+    expect(looksLikeBinaryPath('v22.14.0')).toBe(false);
+    expect(looksLikeVersionBanner('v22.14.0')).toBe(true);
+    expect(looksLikeVersionBanner('/usr/bin/node')).toBe(false);
+    expect(isRustupDefaultMissingText('error: rustup could not choose a version')).toBe(true);
+    expect(isTuningKind('python')).toBe(true);
   });
 
   it('asOps honesty shape', () => {

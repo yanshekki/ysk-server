@@ -89,6 +89,7 @@
   "wizardDesc": "建立專案，並可選一併登記 DNS／郵件／資料庫草稿（各項需再到對應頁套用）",
   "projectName": "專案名稱",
   "projectNameHint": "控制台顯示名稱；會產生對應目錄",
+  "nameRequired": "請輸入專案名稱",
   "domainOptional": "域名（可留空）",
   "domainHint": "填寫後才可勾選 DNS 與郵件",
   "runtime": "執行環境",

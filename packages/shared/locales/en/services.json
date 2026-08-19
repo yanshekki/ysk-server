@@ -59,6 +59,11 @@
   "restartConfirmPanelDesc": "The panel and API will drop briefly while the unit restarts.",
   "restartConfirmTitle": "Restart {{label}}?",
   "restartConfirmDesc": "Restart {{label}} now. Active connections may drop.",
+  "restartConfirmConsequence": "{{label}} will briefly interrupt connections, then keep serving HTTP/HTTPS.",
+  "reloadConfirmTitle": "Reload {{label}}?",
+  "reloadConfirmDesc": "Reload {{label}} configuration. Existing sessions should stay up.",
+  "enableConfirmTitle": "Enable {{label}} at boot?",
+  "enableConfirmDesc": "Enable {{label}} so it starts on boot.",
   "startVerifyFailed": "{{label}} start did not stay healthy.",
   "stopConfirmPanelToken": "stop ysk-server",
   "stopConfirmPanelConsequence": "This browser session will disconnect. Start the unit from SSH or the host console.",
@@ -102,5 +107,17 @@
   "protectionDoneNote": "Protection probe finished",
   "probeDone": "Probe complete",
   "runProtection": "Run protection probe",
-  "notProbedYet": "Not probed yet"
+  "notProbedYet": "Not probed yet",
+  "cat": {
+    "web": "Web",
+    "db": "Databases",
+    "mail": "Mail",
+    "dns": "DNS",
+    "ftp": "FTP",
+    "cache": "Cache",
+    "panel": "Panel",
+    "ssh": "SSH",
+    "other": "Other",
+    "runtime": "Runtimes"
+  }
 }

@@ -101,6 +101,8 @@
   "lookupType": "查询类型",
   "lookupResults": "查询结果（{{count}} 笔）",
   "lookupNoAnswerFail": "查询无答案／失败",
+  "digNotInstalled": "dig 未安装",
+  "digNotInstalledHint": "此分页需要 dig（bind9-dnsutils）。这不是 NXDOMAIN。请在主机用套件管理安装 bind9-dnsutils；本页不会自动安装。",
   "method": "方法：{{method}}",
   "noAnswers": "没有答案",
   "noAnswersDesc": "NXDOMAIN、空 RRset 或解析失败",

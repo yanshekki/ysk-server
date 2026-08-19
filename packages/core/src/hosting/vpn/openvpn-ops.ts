@@ -531,7 +531,7 @@ export async function deleteOvpnPeer(
     /* */
   }
   void host;
-  return { ok: true, notes: [tl('notes.vpn.peerRemoved')] };
+  return { ok: true, notes: [tl('notes.vpn.peerRemoved', { name: peer.name })] };
 }
 
 export async function isOvpnServerActive(host: HostExecutor): Promise<boolean> {

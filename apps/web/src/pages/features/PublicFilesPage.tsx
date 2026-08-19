@@ -1,8 +1,9 @@
 /**
  * Public files nginx site — settings + live status (honest 404 diagnostics).
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isNginxServerNameToken } from 'ysk-server-shared';
 import {
   WithPageGuide,
   Alert,
@@ -38,37 +39,62 @@ function suggestedFilesHost(): string {
   return host.startsWith('files.') ? host : `files.${host}`;
 }
 
+function parseQuotaMb(raw: string): { ok: boolean; value?: number; unlimited: boolean } {
+  const s = raw.trim();
+  if (!s) return { ok: true, unlimited: true };
+  if (!/^\d+$/.test(s)) return { ok: false, unlimited: false };
+  const n = Number(s);
+  if (!Number.isInteger(n) || n < 1 || n > 1_048_576) return { ok: false, unlimited: false };
+  return { ok: true, value: n, unlimited: false };
+}
+
 export function PublicFilesPage() {
   const { t } = useTranslation();
   const suggested = suggestedFilesHost();
   const [serverName, setServerName] = useState(suggested);
   const [quotaMb, setQuotaMb] = useState('1024');
   const [autoindex, setAutoindex] = useState(true);
-  const { busy, error, result, msg, run, setMsg } = useFeatureAction();
+  const { busy, error, result, msg, run } = useFeatureAction();
   const [status, setStatus] = useState<FilesStatus | null>(null);
   const [statusErr, setStatusErr] = useState<string | null>(null);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const hydrated = useRef(false);
 
   const refreshStatus = useCallback(async () => {
     setStatusErr(null);
     try {
       const s = await systemApi.publicFilesStatus();
       setStatus(s);
-      if (s.serverName && !serverName) setServerName(s.serverName);
+      if (!hydrated.current) {
+        hydrated.current = true;
+        if (s.serverName?.trim()) setServerName(s.serverName.trim());
+        if (typeof s.quotaMb === 'number' && s.quotaMb > 0) setQuotaMb(String(s.quotaMb));
+        else if (s.serverName) setQuotaMb('');
+      }
     } catch (e) {
       setStatusErr(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [serverName, t]);
+  }, [t]);
 
   useEffect(() => {
     void refreshStatus();
   }, [refreshStatus]);
 
   const liveTone = status?.likelyLive ? 'ok' : status?.managedConfExists ? 'warn' : 'danger';
-  const liveName = (status?.liveServerName || status?.serverName || '').trim();
-  const draftDiffers = Boolean(
-    liveName && serverName.trim() && liveName !== serverName.trim(),
-  );
+  const liveName = (status?.liveServerName || '').trim();
+  const persistedDraft = (status?.serverName || '').trim();
+  const formName = serverName.trim();
+  const persistedDraftDiffers = Boolean(liveName && persistedDraft && liveName !== persistedDraft);
+  const formDiffersFromLive = Boolean(liveName && formName && liveName !== formName);
+  const draftDiffers = persistedDraftDiffers || formDiffersFromLive;
+  const nameInvalid = nameTouched && !formName;
+  const nameFormatBad = Boolean(formName) && !isNginxServerNameToken(formName);
+  const quota = parseQuotaMb(quotaMb);
+  const openHost = liveName || (status?.likelyLive ? formName : '');
+  const openHref = openHost
+    ? `${status?.hasTls ? 'https' : 'http'}://${openHost}/`
+    : '';
 
   return (
     <FeaturePageLayout
@@ -103,7 +129,11 @@ export function PublicFilesPage() {
           },
           {
             label: t('publicFiles.quota'),
-            value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
+            value: quota.unlimited
+              ? t('publicFiles.unlimited')
+              : quota.ok
+                ? `${quota.value} MiB`
+                : t('publicFiles.quotaInvalid'),
           },
           {
             label: t('publicFiles.path'),
@@ -129,13 +159,17 @@ export function PublicFilesPage() {
           <Link to="/nginx" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             Nginx
           </Link>
-          {serverName ? (
+          {openHref ? (
             <a
-              href={`http://${serverName}/`}
+              href={openHref}
               target="_blank"
               rel="noreferrer"
               className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-              title={status?.likelyLive ? undefined : t('publicFiles.notLiveHint')}
+              title={
+                status?.likelyLive
+                  ? openHref
+                  : t('publicFiles.notLiveHint')
+              }
             >
               {t('publicFiles.openSite')}
             </a>
@@ -171,7 +205,11 @@ export function PublicFilesPage() {
                 },
                 {
                   label: t('publicFiles.quota'),
-                  value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
+                  value: quota.unlimited
+              ? t('publicFiles.unlimited')
+              : quota.ok
+                ? `${quota.value} MiB`
+                : t('publicFiles.quotaInvalid'),
                 },
                 {
                   label: t('publicFiles.diskRoot'),
@@ -243,13 +281,22 @@ export function PublicFilesPage() {
                 flush
                 required
                 hint={t('publicFiles.serverNameHint')}
+                error={
+                  nameInvalid
+                    ? t('publicFiles.serverNameRequired')
+                    : nameFormatBad
+                      ? t('publicFiles.serverNameInvalid')
+                      : undefined
+                }
               >
                 <input
                   id="pf-sn"
                   value={serverName}
                   onChange={(e) => {
+                    setNameTouched(true);
                     setServerName(e.target.value);
-                    setServerContext({ domain: e.target.value.replace(/^files\./, '') });
+                    const v = e.target.value.trim();
+                    if (v) setServerContext({ domain: v.replace(/^files\./, '') });
                   }}
                   placeholder={suggested || 'files.example.com'}
                   spellCheck={false}
@@ -260,6 +307,7 @@ export function PublicFilesPage() {
                 htmlFor="pf-q"
                 flush
                 hint={t('publicFiles.quotaHint')}
+                error={quota.ok ? undefined : t('publicFiles.quotaInvalid')}
               >
                 <PresetChips
                   options={[
@@ -270,10 +318,20 @@ export function PublicFilesPage() {
                     { value: '10240', label: '10G' },
                     { value: '51200', label: '50G' },
                   ]}
-                  value={quotaMb}
+                  value={quota.unlimited ? '' : quotaMb}
                   onChange={setQuotaMb}
-                  allowCustom
-                  customPlaceholder="MiB"
+                />
+                <input
+                  id="pf-q"
+                  type="number"
+                  min={1}
+                  max={1048576}
+                  step={1}
+                  className="input u-mt-2"
+                  disabled={quota.unlimited}
+                  value={quota.unlimited ? '' : quotaMb}
+                  onChange={(e) => setQuotaMb(e.target.value)}
+                  placeholder="MiB"
                 />
               </Field>
             </FormLayout>
@@ -288,8 +346,8 @@ export function PublicFilesPage() {
             {draftDiffers ? (
               <Alert variant="warn">
                 {t('publicFiles.serverNameMismatch', {
-                  live: liveName,
-                  draft: serverName.trim(),
+                  live: liveName || t('common.noneSelectedShort'),
+                  draft: formName || persistedDraft || t('common.noneSelectedShort'),
                 })}{' '}
                 {t('publicFiles.draftUnapplied')}
               </Alert>
@@ -300,13 +358,17 @@ export function PublicFilesPage() {
                 variant="primary"
                 size="md"
                 loading={busy}
-                disabled={!serverName.trim()}
+                disabled={!formName || nameFormatBad || !quota.ok}
                 title={
-                  !serverName.trim()
-                    ? t('publicFiles.serverNameHint')
+                  !formName
+                    ? t('publicFiles.serverNameRequired')
                     : t('publicFiles.applyConfirmTitle')
                 }
-                onClick={() => setApplyOpen(true)}
+                onClick={() => {
+                  setNameTouched(true);
+                  if (!formName || nameFormatBad || !quota.ok) return;
+                  setApplyOpen(true);
+                }}
               >
                 {t('publicFiles.applyReload')}
               </Button>
@@ -314,11 +376,15 @@ export function PublicFilesPage() {
                 <Button
                   variant="secondary"
                   size="md"
-                  disabled={busy}
+                  disabled={busy || !liveName}
                   title={t('publicFiles.discardDraft')}
                   onClick={() => {
                     setServerName(liveName);
-                    setServerContext({ domain: liveName.replace(/^files\./, '') });
+                    setNameTouched(false);
+                    if (liveName) setServerContext({ domain: liveName.replace(/^files\./, '') });
+                    if (typeof status?.quotaMb === 'number' && status.quotaMb > 0) {
+                      setQuotaMb(String(status.quotaMb));
+                    }
                   }}
                 >
                   {t('publicFiles.discardDraft')}
@@ -342,8 +408,8 @@ export function PublicFilesPage() {
             void run(async () => {
               try {
                 const r = (await systemApi.publicFilesApply({
-                  serverName,
-                  quotaMb: Number(quotaMb) || undefined,
+                  serverName: formName,
+                  quotaMb: quota.unlimited ? undefined : quota.value,
                   reload: true,
                   autoindex,
                 })) as OpsResultLike & {

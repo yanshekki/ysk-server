@@ -122,7 +122,11 @@
     "mutateFailed": "O comando Docker falhou",
     "engineFailed": "Não foi possível controlar o docker.service",
     "badExec": "O exec limita-se a binários e predefinições permitidos (sem shell nem TTY)",
-    "uninstallBusy": "Pare os contentores geridos pelo painel (incluindo pilhas de validador) antes de desinstalar o Docker"
+    "uninstallBusy": "Pare os contentores geridos pelo painel (incluindo pilhas de validador) antes de desinstalar o Docker",
+    "badCommand": "Invalid command or entrypoint",
+    "portBusy": "Host port {{bind}}:{{port}} is already in use",
+    "nameInUse": "A container named {{name}} already exists. Remove it or pick another name.",
+    "unpublished": "Container did not attach to a network or publish ports. Not treating this as started."
   },
   "notes": {
     "dryMutate": "Apenas dry-run. Passe --execute e YSK_EXECUTE=1 para alterar o anfitrião.",
@@ -153,7 +157,8 @@
       "start": "docker.service iniciado",
       "stop": "docker.service parado",
       "restart": "docker.service reiniciado"
-    }
+    },
+    "leftoverRemoved": "Removed leftover container {{name}} after bind failure"
   },
   "needEngineTitle": "Install Docker Engine first",
   "notInstalledValue": "Not installed",
@@ -225,7 +230,18 @@
     "customPortContainer": "Porto do contentor",
     "pctUsed": "{{n}}% usado",
     "customPortHint": "1–65535. Example: 9090 → 80.",
-    "pickBridge": "Bridge network"
+    "pickBridge": "Bridge network",
+    "command": "Command",
+    "commandHint": "Optional. Tokens after the image. Leave blank to use the image CMD.",
+    "entrypoint": "Entrypoint",
+    "entrypointHint": "Optional single binary. Leave blank to use the image ENTRYPOINT.",
+    "portMap": "host:container",
+    "portOccupied": "This host port is already in use",
+    "validatorImage": "Managed by validator nodes",
+    "newVolume": "New named volume",
+    "loopbackUrl": "Local test URL",
+    "nginxProxy": "Create Nginx reverse proxy",
+    "intentPorts": "Requested (not published)"
   },
   "deleteTitle": "Delete {{id}}",
   "deleteDesc": "This cannot be undone.",

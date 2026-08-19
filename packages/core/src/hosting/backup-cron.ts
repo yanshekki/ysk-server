@@ -167,24 +167,19 @@ export async function backupAllProjects(input: {
 
   const skipped = results.filter((r) => isBackupSkippedResult(r));
   const attempted = results.filter((r) => !isBackupSkippedResult(r));
-  const okCount = attempted.filter((r) => r.ok).length;
   // No attempts (all skipped) → ok; otherwise every attempt must succeed
   const ok =
     attempted.length === 0 ? true : attempted.every((r) => r.ok);
 
   const notes: string[] = [
-    tl('notes.auto.t0326', { v0: (okCount), v1: (attempted.length) }) +
-      (skipped.length
-        ? tl('notes.auto.t0327', { v0: (skipped.length) })
-        : ''),
+    attempted.length === 0
+      ? tl('notes.auto.n0590')
+      : !ok
+        ? tl('notes.auto.n1492')
+        : skipped.length
+          ? tl('notes.backup.partialOk', { n: skipped.length })
+          : tl('notes.auto.n0589'),
   ];
-  if (attempted.length === 0) {
-    notes.push(tl('notes.auto.n0590'));
-  } else if (ok) {
-    notes.push(tl('notes.auto.n0589'));
-  } else {
-    notes.push(tl('notes.auto.n1492'));
-  }
 
   return { ok, results, notes };
 }
@@ -211,27 +206,24 @@ export function localizeLastBackupRun(
     attempted = [{ ok: true, notes: [] }];
     skipped = [];
   }
-  const okCount = attempted.filter((r) => r.ok).length;
-
-  const notes: string[] = [
-    tl('notes.auto.t0326', { v0: okCount, v1: attempted.length }) +
-      (skipped.length ? tl('notes.auto.t0327', { v0: skipped.length }) : ''),
-  ];
-  const singleOk =
-    last.ok === true || singleProjectOk;
+  const singleOk = last.ok === true || singleProjectOk;
+  let conclusion: string;
   if (singleOk) {
-    notes.push(
-      attempted.length === 0 && String(last.source || '') !== 'projects.backup'
-        ? tl('notes.auto.n0590')
-        : tl('notes.auto.n0589'),
-    );
+    if (attempted.length === 0 && String(last.source || '') !== 'projects.backup') {
+      conclusion = tl('notes.auto.n0590');
+    } else if (skipped.length > 0) {
+      conclusion = tl('notes.backup.partialOk', { n: skipped.length });
+    } else {
+      conclusion = tl('notes.auto.n0589');
+    }
   } else if (last.ok === false) {
-    notes.push(tl('notes.auto.n1492'));
+    conclusion = tl('notes.auto.n1492');
   } else if (attempted.length === 0 && results.length === 0 && last.archivePath) {
-    notes.push(tl('notes.auto.n0589'));
+    conclusion = tl('notes.auto.n0589');
   } else {
-    notes.push(tl('notes.auto.n1492'));
+    conclusion = tl('notes.auto.n1492');
   }
+  const notes: string[] = [conclusion];
   if (last.sideOk === false) {
     notes.push(tl('notes.auto.n1482'));
   } else if (

@@ -537,7 +537,7 @@ export async function buildMonitorSnapshot(input: {
       publicKey: '',
       endpoint: null,
       online: false,
-      presence: canLive ? 'offline' : 'unknown',
+      presence: canLive ? 'never' : 'unknown',
       lastHandshakeAt: null,
       transferRx: canLive ? 0 : null,
       transferTx: canLive ? 0 : null,

@@ -36,6 +36,7 @@ import { projectsApi } from '../api';
 import { ProjectGitPanel } from './ProjectGitPanel';
 import { systemApi } from '../../system/api';
 import { pm2Api } from '../../pm2/api';
+import { pinInstalledOnHost } from '../../runtimes/install-state';
 import { bindInput, bindVoid, bindValueSet, bindAllOrValue } from '../../../pages/bind-handlers';
 
 /** Match core `pm2AppName` — YSK ecosystem app name from project linux user. */
@@ -146,6 +147,7 @@ export function ProjectDeployTab({
     runtimeVersionChoices(project.runtime),
   );
   const [versionLabels, setVersionLabels] = useState<Record<string, string>>({});
+  const [hostProbe, setHostProbe] = useState<Record<string, unknown> | null>(null);
   const [history, setHistory] = useState<
     Array<{
       id: string;
@@ -309,6 +311,25 @@ export function ProjectDeployTab({
       .catch(() => setHistory([]));
   }, [project.id, project.lastDeployAt]);
 
+  useEffect(() => {
+    if (!processRuntime) {
+      setHostProbe(null);
+      return;
+    }
+    let cancelled = false;
+    void systemApi
+      .runtimes()
+      .then((r) => {
+        if (!cancelled) setHostProbe(r);
+      })
+      .catch(() => {
+        if (!cancelled) setHostProbe(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [project.id, project.runtime, processRuntime]);
+
   function persist(next?: {
     entry?: string;
     skipBuild?: boolean;
@@ -417,6 +438,53 @@ export function ProjectDeployTab({
 
   const anyBusy = Boolean(busy || phpBusy || chainBusy || verBusy);
 
+  const hostPins = (() => {
+    if (!hostProbe || !processRuntime) return { installed: [] as string[], host: '' };
+    const p = (hostProbe.probe as Record<string, unknown> | undefined) ?? hostProbe;
+    const items = (p[project.runtime] as Array<Record<string, unknown>> | undefined) ?? [];
+    const installed = items
+      .filter((i) => i.available)
+      .map((i) => String(i.version ?? ''))
+      .filter(Boolean);
+    const hk =
+      project.runtime === 'node'
+        ? 'hostNode'
+        : project.runtime === 'php'
+          ? 'hostPhp'
+          : project.runtime === 'python'
+            ? 'hostPython'
+            : project.runtime === 'go'
+              ? 'hostGo'
+              : project.runtime === 'rust'
+                ? 'hostRust'
+                : project.runtime === 'java'
+                  ? 'hostJava'
+                  : project.runtime === 'kotlin'
+                    ? 'hostKotlin'
+                    : project.runtime === 'bun'
+                      ? 'hostBun'
+                      : '';
+    const host = hk && p[hk] != null ? String(p[hk]) : '';
+    return { installed, host };
+  })();
+  const selectedMissing =
+    Boolean(hostProbe) &&
+    processRuntime &&
+    Boolean(rtVer) &&
+    !pinInstalledOnHost(rtVer, hostPins.installed, hostPins.host);
+
+  function guardDeploy(fn: () => void) {
+    if (selectedMissing) {
+      onOpsMessage?.(
+        t('projects.deployVersionMissing', {
+          version: rtVer || project.runtimeVersion || '',
+        }),
+      );
+      return;
+    }
+    fn();
+  }
+
   return (
     <div className="tab-panel">
       {ui.showDeploy ? (
@@ -513,7 +581,13 @@ export function ProjectDeployTab({
                   />
                 </Field>
               )}
-              {project.runtimeBin ? (
+              {selectedMissing ? (
+                <Alert variant="warn">
+                  {t('projects.deployVersionMissing', {
+                    version: rtVer || project.runtimeVersion || '',
+                  })}
+                </Alert>
+              ) : project.runtimeBin ? (
                 isRuntimeBinFallback(
                   project.runtime,
                   project.runtimeVersion,
@@ -641,9 +715,19 @@ export function ProjectDeployTab({
                 variant="primary"
                 size="md"
                 loading={anyBusy}
+                disabled={selectedMissing}
+                title={
+                  selectedMissing
+                    ? t('projects.deployVersionMissing', {
+                        version: rtVer || project.runtimeVersion || '',
+                      })
+                    : undefined
+                }
                 onClick={() => {
-                  persist();
-                  onDeploy(deployOpts());
+                  guardDeploy(() => {
+                    persist();
+                    void onDeploy(deployOpts());
+                  });
                 }}
               >
                 {ui.deployIsPhp ? t('projects.deployPhp') : t('projects.deploy')}
@@ -653,7 +737,12 @@ export function ProjectDeployTab({
                   variant="secondary"
                   size="md"
                   loading={anyBusy}
-                  onClick={bindVoid(installToolchainThenDeploy)}
+                  disabled={selectedMissing}
+                  onClick={() =>
+                    guardDeploy(() => {
+                      void installToolchainThenDeploy();
+                    })
+                  }
                 >
                   {t('projects.installToolchainDeployShort')}
                 </Button>
@@ -736,7 +825,8 @@ export function ProjectDeployTab({
                 variant="primary"
                 size="md"
                 loading={anyBusy}
-                onClick={() => onDeploy()}
+                disabled={selectedMissing}
+                onClick={() => guardDeploy(() => void onDeploy())}
               >
                 {t('projects.deploy')}
               </Button>

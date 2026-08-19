@@ -71,6 +71,8 @@
   "peersTitleSs": "访问密钥",
   "peerName": "名称",
   "peerNamePlaceholder": "电话",
+  "peerNameHint": "可用英文字母、数字、. _ -，不可有空格、／或 !",
+  "peerNameInvalid": "不可使用空格、／或 !。请改为 {{preview}}，或自行修改名称。",
   "addPeer": "+ 新增",
   "addPeerWg": "+ 新增 peer",
   "addPeerOvpn": "+ 新增客户端",
@@ -126,7 +128,9 @@
     "customHint": "仅将填写的网段进入 tunnel。应用后请重连。",
     "lanCidrs": "区域网段",
     "customCidr": "CIDR",
-    "addCidr": "添加"
+    "addCidr": "添加",
+    "cidrRequired": "请填写 CIDR（例如 192.168.1.0/24）。",
+    "cidrInvalid": "请填写有效的 CIDR，例如 192.168.1.0/24。"
   },
   "engineNotInstalled": "此主机尚未安装此 VPN 引擎。",
   "serverNotListening": "服务器单元未在运行。UDP/TCP {{port}} 可能未监听。",
@@ -141,6 +145,16 @@
   "privateKeyOnce": "The client private key is shown only here. Download or copy it now — it cannot be recovered later.",
   "showPrivateKey": "Show private key",
   "hidePrivateKey": "Hide private key",
-  "deletePeerTitle": "Delete peer {{name}}?",
-  "deletePeerDesc": "Remove {{name}} ({{address}}). The client disconnects immediately and the config cannot be restored."
+  "deletePeerTitle": "删除对等端 {{name}}？",
+  "deletePeerDesc": "将移除 {{name}}（{{address}}）。客户端会立即断线，配置无法恢复。WireGuard 服务器保持运行。",
+  "deleteClientTitle": "删除 OpenVPN 客户端 {{name}}？",
+  "deleteClientDesc": "将移除 {{name}}（{{address}}）。该客户端会立即断线，配置无法恢复。OpenVPN 服务器保持运行。",
+  "deleteKeyTitle": "删除 Shadowsocks 密钥 {{name}}？",
+  "deleteKeyDesc": "将移除访问密钥 {{name}}（{{address}}）。使用此密钥的客户端会断线。Shadowsocks 服务器保持运行。",
+  "deleteResult": "已移除 {{name}}。",
+  "portInvalid": "监听端口须为 1 至 65535 的整数。",
+  "portRequired": "请填写监听端口。",
+  "importInvalid": "未能识别为 WireGuard 或 OpenVPN 客户端配置。",
+  "qrFailed": "未能生成此配置的二维码。请改为下载或复制文本。",
+  "cfgTitle": "配置 — {{name}}"
 }

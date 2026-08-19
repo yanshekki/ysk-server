@@ -220,3 +220,72 @@ export function parseDockerInfo(text: string): {
     };
   }
 }
+
+export function firstDockerInspect(raw: unknown): Record<string, unknown> | null {
+  if (!raw) return null;
+  const obj = Array.isArray(raw) ? raw[0] : raw;
+  if (!obj || typeof obj !== 'object') return null;
+  return obj as Record<string, unknown>;
+}
+
+function formatPortMap(map: unknown): string {
+  if (!map || typeof map !== 'object') return '';
+  const parts: string[] = [];
+  for (const [ctr, binds] of Object.entries(map as Record<string, unknown>)) {
+    if (!Array.isArray(binds) || !binds.length) continue;
+    for (const b of binds) {
+      if (!b || typeof b !== 'object') continue;
+      const rec = b as { HostIp?: string; HostPort?: string };
+      const ip = rec.HostIp || '0.0.0.0';
+      const hp = rec.HostPort || '';
+      if (hp) parts.push(`${ip}:${hp}->${ctr}`);
+    }
+  }
+  return parts.join(', ');
+}
+
+export function inspectActualPorts(raw: unknown): string {
+  const o = firstDockerInspect(raw);
+  const nets = o?.NetworkSettings as { Ports?: unknown } | undefined;
+  return formatPortMap(nets?.Ports);
+}
+
+export function inspectIntentPorts(raw: unknown): string {
+  const o = firstDockerInspect(raw);
+  const host = o?.HostConfig as { PortBindings?: unknown } | undefined;
+  return formatPortMap(host?.PortBindings);
+}
+
+export function inspectHasNetwork(raw: unknown): boolean {
+  const o = firstDockerInspect(raw);
+  const nets = o?.NetworkSettings as { Networks?: unknown } | undefined;
+  if (!nets?.Networks || typeof nets.Networks !== 'object') return false;
+  return Object.keys(nets.Networks as object).length > 0;
+}
+
+export function inspectHasPortBindings(raw: unknown): boolean {
+  return Boolean(inspectIntentPorts(raw));
+}
+
+export function sanitizeDockerCliHelp(text: string): string {
+  return String(text ?? '')
+    .replace(/\s*See ['"]?docker run --help['"]? for more information\.?/gi, '')
+    .replace(/\s*Run ['"]?docker run --help['"]? for more information\.?/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+export function formatDockerInspectSummary(raw: unknown): string {
+  const actual = inspectActualPorts(raw);
+  const intent = inspectIntentPorts(raw);
+  const net = inspectHasNetwork(raw);
+  const lines = [
+    `published (actual): ${actual || '—'}`,
+    `port bindings (intent): ${intent || '—'}`,
+    `network attached: ${net ? 'yes' : 'no'}`,
+  ];
+  if (intent && !actual) {
+    lines.push('intent≠actual — ports were requested but never published');
+  }
+  return lines.join('\n');
+}

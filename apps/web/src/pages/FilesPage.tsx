@@ -571,6 +571,16 @@ export function FilesPage() {
   const [versions, setVersions] = useState<
     Array<{ id: string; path: string; createdAt: string; bytes: number }>
   >([]);
+  const [liveFileBytes, setLiveFileBytes] = useState<number | null>(null);
+  const [restoredVersionId, setRestoredVersionId] = useState<string | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [pendingFileConfirm, setPendingFileConfirm] = useState<
+    null | 'editor' | 'webdav-off' | 'webdav-reissue'
+  >(null);
+  const browseSideRef = useRef<SideView>('all');
   const [webdavToken, setWebdavToken] = useState<string | null>(null);
   const [webdavEnabled, setWebdavEnabled] = useState(false);
   const [webdavMountPath, setWebdavMountPath] = useState('/webdav');
@@ -683,9 +693,13 @@ export function FilesPage() {
 
   async function issueWebdavToken() {
     if (webdavEnabled && webdavTokenId) {
-      const ok = window.confirm(t('files.webdavReissueConfirm'));
-      if (!ok) return;
+      setPendingFileConfirm('webdav-reissue');
+      return;
     }
+    await reallyIssueWebdavToken();
+  }
+
+  async function reallyIssueWebdavToken() {
     const prevId = webdavTokenId;
     setWebdavBusy(true);
     try {
@@ -708,7 +722,10 @@ export function FilesPage() {
   }
 
   async function disableWebdav() {
-    if (!window.confirm(t('files.webdavDisableConfirm'))) return;
+    setPendingFileConfirm('webdav-off');
+  }
+
+  async function reallyDisableWebdav() {
     setWebdavBusy(true);
     try {
       const r = await filesApi.webdavDisable();
@@ -1137,11 +1154,7 @@ export function FilesPage() {
     setEditorCursor(cursorFromOffset(editorDraft, el.selectionStart));
   }
 
-  function closePreview() {
-    if (editorDirty) {
-      const ok = window.confirm(t('files.editorDiscardConfirm'));
-      if (!ok) return;
-    }
+  function reallyClosePreview() {
     setPreview((prev) => {
       if (prev?.url) {
         try {
@@ -1154,6 +1167,14 @@ export function FilesPage() {
     });
     setEditorDraft('');
     setEditorBytes(0);
+  }
+
+  function closePreview() {
+    if (editorDirty) {
+      setPendingFileConfirm('editor');
+      return;
+    }
+    reallyClosePreview();
   }
 
   async function saveTextEditor() {
@@ -1336,7 +1357,9 @@ export function FilesPage() {
         active={tab}
         onChange={(id) => {
           setTab(id);
-          if (id === 'browse' && (side === 'trash' || side === 'shares')) setSide('all');
+          if (id === 'browse' && (side === 'trash' || side === 'shares')) {
+            setSide(browseSideRef.current === 'favorites' ? 'favorites' : 'all');
+          }
           if (id === 'trash') setSide('trash');
           if (id === 'shares') setSide('shares');
         }}
@@ -1647,8 +1670,16 @@ export function FilesPage() {
               >
                 {items.length === 0 ? (
                   <EmptyState
-                    title={side === 'favorites' ? t('files.emptyFavorites') : t('files.emptyFolder')}
-                    description={t('files.emptyFolderHint')}
+                    title={
+                      query.trim()
+                        ? t('listToolbar.noResults')
+                        : side === 'favorites'
+                          ? t('files.emptyFavorites')
+                          : t('files.emptyFolder')
+                    }
+                    description={
+                      query.trim() ? t('listToolbar.noResultsHint') : t('files.emptyFolderHint')
+                    }
                   />
                 ) : view === 'list' ? (
                   <DataTable
@@ -1770,6 +1801,8 @@ export function FilesPage() {
                                   .then((r) => {
                                     setVersionsPath(e.path);
                                     setVersions(r.items ?? []);
+                                    setLiveFileBytes(typeof e.size === 'number' ? e.size : null);
+                                    setRestoredVersionId(null);
                                   })
                                   .catch((err: Error) => setError(err.message))
                                   .finally(() => setBusy(false));
@@ -1791,7 +1824,11 @@ export function FilesPage() {
                     empty={
                       <EmptyState
                         title={
-                          side === 'favorites' ? t('files.emptyFavorites') : t('files.emptyFolder')
+                          query.trim()
+                            ? t('listToolbar.noResults')
+                            : side === 'favorites'
+                              ? t('files.emptyFavorites')
+                              : t('files.emptyFolder')
                         }
                         description={t('files.emptyFolderHint')}
                       />
@@ -2005,8 +2042,11 @@ export function FilesPage() {
                       className: 'muted',
                       nowrap: true,
                       mobile: 'meta',
-                      render: (t) =>
-                        (t.deletedAt ?? '').slice(0, 19).replace('T', ' ') || '—' },
+                      render: (row) =>
+                        row.deletedAt
+                          ? formatDateTime(row.deletedAt, { withOffset: true })
+                          : '—',
+                    },
                   ]}
                   rows={trash}
                   rowKey={(entry) => entry.trashId}
@@ -2400,19 +2440,7 @@ export function FilesPage() {
                     {
                       label: t('files.webdavPassword'),
                       value: webdavToken ? (
-                        <span className="u-flex u-flex-wrap u-gap-2 u-items-center">
-                          <code className="inline u-break-all">{webdavToken}</code>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyText(t('files.webdavPassword'), webdavToken)
-                            }
-                          >
-                            {t('common.copy')}
-                          </Button>
-                        </span>
+                        <span className="muted">{t('files.webdavTokenOnceHint')}</span>
                       ) : (
                         <span className="muted">
                           {webdavEnabled
@@ -2693,7 +2721,14 @@ export function FilesPage() {
           ) : (
             <ul className="fm-versions__list" aria-label={t('files.versionsTitleShort')}>
               {versions.map((v, idx) => {
-                const newest = idx === 0;
+                const uniqueLive =
+                  liveFileBytes != null &&
+                  versions.filter((x) => x.bytes === liveFileBytes).length === 1;
+                const newest = restoredVersionId
+                  ? v.id === restoredVersionId
+                  : uniqueLive
+                    ? v.bytes === liveFileBytes
+                    : idx === 0;
                 const when = new Date(v.createdAt);
                 return (
                   <li
@@ -2725,21 +2760,13 @@ export function FilesPage() {
                         variant={newest ? 'primary' : 'secondary'}
                         size="sm"
                         loading={busy}
+                        data-confirm={v.id}
                         onClick={() => {
                           if (!versionsPath) return;
-                          setBusy(true);
-                          void filesApi
-                            .restoreVersion(root, versionsPath, v.id)
-                            .then((r) => {
-                              setMsg(
-                                r.notes?.join(' · ') ?? t('files.versionRestored'),
-                              );
-                              setVersionsPath(null);
-                              setVersions([]);
-                              return refresh();
-                            })
-                            .catch((e: Error) => setError(e.message))
-                            .finally(() => setBusy(false));
+                          setPendingRestore({
+                            id: v.id,
+                            label: t('files.versionN', { n: versions.length - idx }),
+                          });
                         }}
                       >
                         {t('files.restore')}
@@ -3078,7 +3105,9 @@ export function FilesPage() {
               label={t('files.shareModeLabel')}
               htmlFor="share-mode"
               flush
-              hint={t('files.shareModeHint')}
+              hint={
+                shareMode === 'direct' ? t('files.shareModeHintDirect') : t('files.shareModeHint')
+              }
             >
               <select
                 id="share-mode"
@@ -3446,6 +3475,39 @@ export function FilesPage() {
       />
 
       <ConfirmDialog
+        open={Boolean(pendingRestore)}
+        onClose={() => setPendingRestore(null)}
+        title={t('files.restore')}
+        description={t('files.restoreVersionConfirm', {
+          version: pendingRestore?.label ?? '',
+          file: versionsPath ? versionsPath.split('/').pop() || versionsPath : '',
+        })}
+        severity="destructive"
+        confirmLabel={t('files.restore')}
+        busy={busy}
+        onConfirm={() => {
+          const id = pendingRestore?.id;
+          const p = versionsPath;
+          setPendingRestore(null);
+          if (!id || !p) return;
+          setBusy(true);
+          void filesApi
+            .restoreVersion(root, p, id)
+            .then(async (r) => {
+              setMsg(r.notes?.join(' · ') ?? t('files.versionRestored'));
+              setRestoredVersionId(id);
+              await refresh();
+              const listed = await filesApi.listVersions(root, p);
+              setVersions(listed.items ?? []);
+              const restored = listed.items?.find((x) => x.id === id);
+              if (restored) setLiveFileBytes(restored.bytes);
+            })
+            .catch((e: Error) => setError(e.message))
+            .finally(() => setBusy(false));
+        }}
+      />
+
+      <ConfirmDialog
         open={Boolean(pendingUnshare)}
         onClose={() => setPendingUnshare(null)}
         onConfirm={() =>
@@ -3470,6 +3532,28 @@ export function FilesPage() {
         cancelLabel={t('common.cancel')}
         danger
         busy={busy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingFileConfirm)}
+        onClose={() => setPendingFileConfirm(null)}
+        title={
+          pendingFileConfirm === 'editor'
+            ? t('files.editorDiscardConfirm')
+            : pendingFileConfirm === 'webdav-off'
+              ? t('files.webdavDisableConfirm')
+              : t('files.webdavReissueConfirm')
+        }
+        description=""
+        severity="standard"
+        confirmLabel={t('common.confirm')}
+        onConfirm={() => {
+          const k = pendingFileConfirm;
+          setPendingFileConfirm(null);
+          if (k === 'editor') reallyClosePreview();
+          if (k === 'webdav-off') void reallyDisableWebdav();
+          if (k === 'webdav-reissue') void reallyIssueWebdavToken();
+        }}
       />
 
       <ConfirmDialog

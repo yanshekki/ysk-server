@@ -203,5 +203,13 @@
   "hitRateUnknown": "No access log with cache status and no cache directory, so hit rate cannot be estimated.",
   "offlineHint": "Offline — probe failed. Remove the node if it is leftover.",
   "applyFailedNoNote": "No stored reason. Re-apply to capture the error.",
-  "statApplyFailed": "Apply failed"
+  "statApplyFailed": "Apply failed",
+  "statSitesCount": "{{n}} sites",
+  "cacheMethod": {
+    "none": "No estimate",
+    "access_log": "Access log",
+    "cache_dir": "Cache directory",
+    "log_format": "Need log format"
+  },
+  "geoMapLabel": "Geo map (JSON)"
 }

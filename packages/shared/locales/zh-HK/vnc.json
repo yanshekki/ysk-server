@@ -180,6 +180,7 @@
   "hostnameFixDesc": "{{line}}",
   "hostnameFixDone": "已更新 /etc/hosts 主機名",
   "startAfterCreateBlocked": "主機名可解析後才可啟用",
+  "startHostnameBlocked": "主機名可解析後才可啟動。請先使用「把主機名寫入 /etc/hosts」。",
   "colName": "名稱",
   "colLinuxUser": "Linux 用戶",
   "colDisplay": "Display／埠",

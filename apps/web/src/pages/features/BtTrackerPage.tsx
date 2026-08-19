@@ -54,12 +54,12 @@ export function btVisibleAndLeftover(opts: {
   const extraVisible = opts.swarm.filter((s) => {
     const h = String(s.infoHash || '').toLowerCase();
     if (!h || libHashes.has(h)) return false;
-    return s.kind !== 'library';
+    return s.kind === 'share';
   }).length;
   const visible = opts.library.length + extraVisible;
   const leftoverFromSwarm = opts.swarm.filter((s) => {
     const h = String(s.infoHash || '').toLowerCase();
-    return Boolean(h) && !libHashes.has(h) && s.kind === 'library';
+    return Boolean(h) && !libHashes.has(h) && s.kind !== 'share';
   }).length;
   const tracker = Number(opts.trackerTorrents);
   const leftoverFromStats =
@@ -78,7 +78,7 @@ export function btLeftoverHashes(opts: {
   const out: string[] = [];
   for (const s of opts.swarm) {
     const h = String(s.infoHash || '').toLowerCase();
-    if (!h || libHashes.has(h) || s.kind !== 'library') continue;
+    if (!h || libHashes.has(h) || s.kind === 'share') continue;
     if (!out.includes(h)) out.push(h);
   }
   return out;
@@ -124,10 +124,13 @@ export function BtTrackerPage() {
   const [library, setLibrary] = useState<BtLibraryLive[]>([]);
   const [jobs, setJobs] = useState<TorrentJobRow[]>([]);
   const [draft, setDraft] = useState<Partial<BtTrackerSettings>>({});
+  const [httpPortText, setHttpPortText] = useState('8000');
+  const [udpPortText, setUdpPortText] = useState('0');
   const [torrentQ, setTorrentQ] = useState('');
   const [torrentFilter, setTorrentFilter] = useState('all');
   const [addOpen, setAddOpen] = useState(false);
   const [stopOpen, setStopOpen] = useState(false);
+  const [resultTab, setResultTab] = useState<string | null>(null);
 
   const refreshJobs = useCallback(async () => {
     try {
@@ -143,6 +146,8 @@ export function BtTrackerPage() {
     const st = await btTrackerApi.status();
     setStatus(st);
     setDraft(st.settings ?? {});
+    setHttpPortText(String(st.settings?.httpPort ?? 8000));
+    setUdpPortText(String(st.settings?.udpPort ?? 0));
     try {
       const [tr, lib] = await Promise.all([btTrackerApi.torrents(), btTrackerApi.library()]);
       setTorrents(tr.items ?? []);
@@ -210,8 +215,26 @@ export function BtTrackerPage() {
     return 'URL';
   }
 
+  function parseListenPort(raw: string, { allowZero }: { allowZero: boolean }): number | null {
+    const s = raw.trim();
+    if (!s) return null;
+    if (!/^\d+$/.test(s)) return null;
+    const n = Number(s);
+    if (allowZero && n === 0) return 0;
+    if (n < 1 || n > 65535) return null;
+    return n;
+  }
+
+  const httpPortParsed = parseListenPort(httpPortText, { allowZero: false });
+  const udpPortParsed = parseListenPort(udpPortText, { allowZero: true });
+
+  const runOnTab = (fn: () => Promise<unknown>, okMessage?: string) => {
+    setResultTab(tab);
+    return run(fn, okMessage);
+  };
+
   const onStart = () =>
-    void run(async () => {
+    void runOnTab(async () => {
       const r = await btTrackerApi.start();
       setMsg(t('btTracker.startedOk'));
       await refresh();
@@ -219,7 +242,7 @@ export function BtTrackerPage() {
     });
 
   const onStop = () =>
-    void run(async () => {
+    void runOnTab(async () => {
       const r = await btTrackerApi.stop();
       setMsg(t('btTracker.stoppedOk'));
       await refresh();
@@ -227,9 +250,19 @@ export function BtTrackerPage() {
     });
 
   const onRestore = () =>
-    void run(async () => {
-      const r = await btTrackerApi.restore();
-      setMsg(t('btTracker.restoredOk'));
+    void runOnTab(async () => {
+      const r = (await btTrackerApi.restore()) as {
+        ok?: boolean;
+        seeded?: number;
+        attempted?: number;
+        failed?: number;
+      };
+      setMsg(
+        t('btTracker.restoredCount', {
+          seeded: r.seeded ?? 0,
+          attempted: r.attempted ?? 0,
+        }),
+      );
       await refresh();
       return r;
     });
@@ -326,8 +359,9 @@ export function BtTrackerPage() {
             </Button>
           </Alert>
         ) : null}
-        {msg ? <Alert variant="ok">{msg}</Alert> : null}
-        {result ? <OpsResultPanel result={result as OpsResultLike} /> : null}
+        {result && resultTab === tab ? (
+          <OpsResultPanel title={t('opsResult.title')} result={result as OpsResultLike} />
+        ) : null}
 
         <PageTabs
           tabs={[
@@ -396,15 +430,19 @@ export function BtTrackerPage() {
 
               <div className="bt-chips" aria-label={t('btTracker.quickStart')}>
                 <span className={`bt-chip ${hasPublicHost ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
-                  {hasPublicHost ? '✓' : '1'} {t('btTracker.step1Title')}
+                  {hasPublicHost ? t('btTracker.stepDone') : t('btTracker.stepTodo')} ·{' '}
+                  {t('btTracker.step1Title')}
                 </span>
                 <span className={`bt-chip ${running ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
-                  {running ? '✓' : '2'} {t('btTracker.step2Title')}
+                  {running ? t('btTracker.stepDone') : t('btTracker.stepTodo')} ·{' '}
+                  {t('btTracker.step2Title')}
                 </span>
                 <span
-                  className={`bt-chip ${torrents.length ? 'bt-chip--ok' : 'bt-chip--todo'}`}
+                  className={`bt-chip ${torrentCount ? 'bt-chip--ok' : 'bt-chip--todo'}`}
                 >
-                  {torrents.length ? '✓' : '3'} {t('btTracker.step3Title')}
+                  {torrentCount ? t('btTracker.stepDone') : t('btTracker.stepTodo')} ·{' '}
+                  {t('btTracker.step3Title')}
+                  {torrentCount ? ` (${torrentCount})` : ''}
                 </span>
               </div>
 
@@ -483,21 +521,21 @@ export function BtTrackerPage() {
               onAdd={() => setAddOpen(true)}
               onDropFiles={() => setAddOpen(true)}
               onPause={(id) => {
-                void run(async () => {
+                void runOnTab(async () => {
                   const r = await btTrackerApi.pauseLibrary(id);
                   await refresh();
                   return r;
                 });
               }}
               onResume={(id) => {
-                void run(async () => {
+                void runOnTab(async () => {
                   const r = await btTrackerApi.resumeLibrary(id);
                   await refresh();
                   return r;
                 });
               }}
               onRemove={(id, deleteFiles) => {
-                void run(async () => {
+                void runOnTab(async () => {
                   const r = await btTrackerApi.removeLibrary(id, deleteFiles);
                   await refresh();
                   return r;
@@ -555,6 +593,13 @@ export function BtTrackerPage() {
                       ))}
                     </ul>
                   )}
+                  {leftoverSwarm > leftoverHashes.length ? (
+                    <p className="muted u-text-sm">
+                      {t('btTracker.swarmLeftoverUnlisted', {
+                        count: leftoverSwarm - leftoverHashes.length,
+                      })}
+                    </p>
+                  ) : null}
                 </CardSection>
               </Card>
             ) : null}
@@ -562,7 +607,7 @@ export function BtTrackerPage() {
               settings={status?.settings ?? null}
               busy={busy}
               onSave={async (extra) => {
-                await run(async () => {
+                await runOnTab(async () => {
                   const r = await btTrackerApi.saveSettings({ extraTrackers: extra });
                   await refresh();
                   return r;
@@ -578,12 +623,14 @@ export function BtTrackerPage() {
           {tab === 'settings' ? (
             <form
               className="tab-panel bt-settings"
+              noValidate
               onSubmit={(e) => {
                 e.preventDefault();
-                void run(async () => {
+                if (httpPortParsed == null || udpPortParsed == null) return;
+                void runOnTab(async () => {
                   const body: Partial<BtTrackerSettings> = {
-                    httpPort: Number(draft.httpPort) || 8000,
-                    udpPort: Number(draft.udpPort) || 0,
+                    httpPort: httpPortParsed,
+                    udpPort: udpPortParsed,
                     listenHost: String(draft.listenHost || '0.0.0.0'),
                     wsEnabled: draft.wsEnabled !== false,
                     autostart: Boolean(draft.autostart),
@@ -606,15 +653,25 @@ export function BtTrackerPage() {
               <div className="bt-settings__card">
                 <h3 className="bt-settings__card-title">{t('btTracker.networkCard')}</h3>
                 <FormLayout columns={2}>
-                  <Field label={t('btTracker.httpPort')} htmlFor="bt-http" flush required>
+                  <Field
+                    label={t('btTracker.httpPort')}
+                    htmlFor="bt-http"
+                    flush
+                    required
+                    error={httpPortParsed == null ? t('btTracker.portInvalid') : undefined}
+                  >
                     <input
                       id="bt-http"
                       type="number"
                       min={1}
                       max={65535}
                       className="input"
-                      value={draft.httpPort ?? 8000}
-                      onChange={(e) => patchDraft('httpPort', Number(e.target.value))}
+                      value={httpPortText}
+                      onChange={(e) => {
+                        setHttpPortText(e.target.value);
+                        const n = parseListenPort(e.target.value, { allowZero: false });
+                        if (n != null) patchDraft('httpPort', n);
+                      }}
                     />
                     <div className="u-mt-2">
                       <PresetChips
@@ -623,20 +680,32 @@ export function BtTrackerPage() {
                           { value: '6881', label: '6881' },
                           { value: '2710', label: '2710' },
                         ]}
-                        value={String(draft.httpPort ?? 8000)}
-                        onChange={(v) => patchDraft('httpPort', Number(v) || 8000)}
+                        value={httpPortText}
+                        onChange={(v) => {
+                          setHttpPortText(v);
+                          patchDraft('httpPort', Number(v));
+                        }}
                       />
                     </div>
                   </Field>
-                  <Field label={t('btTracker.udpPort')} htmlFor="bt-udp" flush>
+                  <Field
+                    label={t('btTracker.udpPort')}
+                    htmlFor="bt-udp"
+                    flush
+                    error={udpPortParsed == null ? t('btTracker.portInvalid') : undefined}
+                  >
                     <input
                       id="bt-udp"
                       type="number"
                       min={0}
                       max={65535}
                       className="input"
-                      value={draft.udpPort ?? 0}
-                      onChange={(e) => patchDraft('udpPort', Number(e.target.value))}
+                      value={udpPortText}
+                      onChange={(e) => {
+                        setUdpPortText(e.target.value);
+                        const n = parseListenPort(e.target.value, { allowZero: true });
+                        if (n != null) patchDraft('udpPort', n);
+                      }}
                     />
                     <div className="u-mt-2">
                       <PresetChips
@@ -785,7 +854,13 @@ export function BtTrackerPage() {
               </div>
 
               <FormActions>
-                <Button type="submit" variant="primary" size="md" loading={busy}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  disabled={httpPortParsed == null || udpPortParsed == null}
+                >
                   {t('btTracker.saveSettings')}
                 </Button>
                 <Button
@@ -809,7 +884,11 @@ export function BtTrackerPage() {
         onClose={() => setStopOpen(false)}
         title={t('btTracker.stopTitle')}
         description={t('btTracker.stopDesc')}
-        danger
+        severity="destructive"
+        consequences={[
+          t('btTracker.stopPort', { port: String(status?.settings?.httpPort ?? '—') }),
+          status?.pid != null ? t('btTracker.stopPid', { pid: String(status.pid) }) : '',
+        ]}
         confirmLabel={t('btTracker.stop')}
         onConfirm={() => {
           setStopOpen(false);

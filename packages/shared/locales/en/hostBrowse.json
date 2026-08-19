@@ -99,6 +99,7 @@
   "resumeHintDetail": "Resume previous session ({{count}} tabs) · {{url}} · {{when}}",
   "resumeHintOwned": "Resume last browse for {{user}} ({{count}} tabs) · {{url}} · {{when}}",
   "clearSessionData": "Clear session data",
+  "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards.",
   "resume": "Resume",
   "resumeDismiss": "Dismiss",
   "resumeDone": "Session resumed",

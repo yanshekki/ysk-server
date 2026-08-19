@@ -141,5 +141,15 @@
   "noteRbacCap": "Agent role is capped at write-low.",
   "journal": "journal",
   "activatingStuckHint": "Activating longer than 5 minutes — treated as failed. Check journal.",
-  "noOnlineAgents": "No agents online"
+  "noOnlineAgents": "No agents online",
+  "cmdStatus": {
+    "queued": "Queued",
+    "acked": "Acked",
+    "done": "Done",
+    "error": "Error"
+  },
+  "colExit": "Exit",
+  "unitFallback": "unit",
+  "writeUnit": "Write unit",
+  "writeUnitConfirm": "Write the systemd unit for {{kind}} under /etc/systemd. The service is not started or enabled."
 }

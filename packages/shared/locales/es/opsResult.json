@@ -19,5 +19,9 @@
   "stepStoppedOld": "Detenido el proceso anterior",
   "stepTuningApplied": "Ajuste de tiempo de ejecución aplicado",
   "stepUnitWritten": "unidad de servicio escrita",
-  "stepSystemdStartFailed": "El inicio de Systemd falló: se utilizó el proceso alternativo"
+  "stepSystemdStartFailed": "El inicio de Systemd falló: se utilizó el proceso alternativo",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

@@ -47,6 +47,10 @@ export function ExtraTrackersPanel(props: {
           className="bt-extras__add"
           onSubmit={(e) => {
             e.preventDefault();
+            if (!url.trim()) {
+              setFieldErr(t('btTracker.extraTrackerRequired'));
+              return;
+            }
             if (!validate(url)) {
               setFieldErr(t('btTracker.extraTrackerBad'));
               return;

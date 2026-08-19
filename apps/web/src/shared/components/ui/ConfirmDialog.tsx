@@ -35,6 +35,8 @@ export interface ConfirmDialogProps {
   danger?: boolean;
   busy?: boolean;
   children?: ReactNode;
+  /** Named target (data-confirm on the dialog) */
+  dataConfirm?: string;
 }
 
 export function ConfirmDialog({
@@ -50,7 +52,8 @@ export function ConfirmDialog({
   severity: severityProp,
   danger = false,
   busy = false,
-  children }: ConfirmDialogProps) {
+  children,
+  dataConfirm }: ConfirmDialogProps) {
   const { t } = useTranslation();
   const [typed, setTyped] = useState('');
 
@@ -66,11 +69,22 @@ export function ConfirmDialog({
     if (open) setTyped('');
   }, [open, matchToken]);
 
+  useEffect(() => {
+    if (!open) return;
+    if (severity !== 'destructive' && severity !== 'critical') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open, severity]);
+
   const isDanger = severity !== 'soft';
+  const consequenceItems = (consequences ?? []).map((c) => String(c).trim()).filter(Boolean);
   const showConsequences =
-    (severity === 'destructive' || severity === 'critical') &&
-    consequences &&
-    consequences.length > 0;
+    (severity === 'destructive' || severity === 'critical') && consequenceItems.length > 0;
 
   return (
     <Modal
@@ -80,6 +94,7 @@ export function ConfirmDialog({
       }}
       title={title}
       description={description}
+      dataConfirm={dataConfirm ?? confirmText}
       size={needsType || showConsequences ? 'md' : 'sm'}
       footer={
         <>
@@ -89,6 +104,8 @@ export function ConfirmDialog({
           <Button
             variant={isDanger ? 'danger' : 'primary'}
             size="md"
+            name={dataConfirm || undefined}
+            data-confirm={dataConfirm || matchToken || 'dialog'}
             onClick={onConfirm}
             loading={busy}
             disabled={!typedOk}
@@ -98,6 +115,7 @@ export function ConfirmDialog({
         </>
       }
     >
+      {showConsequences || (needsType && matchToken) || children ? (
       <div className="confirm-dialog-body">
         {showConsequences ? (
           <Alert variant="warn" className="confirm-dialog-body__consequences">
@@ -105,7 +123,7 @@ export function ConfirmDialog({
               <strong>{t('dialogs.severity.consequencesTitle')}</strong>
             </p>
             <ul className="list-plain list-spaced u-text-sm u-mb-0">
-              {consequences.map((c) => (
+              {consequenceItems.map((c) => (
                 <li key={c}>{c}</li>
               ))}
             </ul>
@@ -132,6 +150,7 @@ export function ConfirmDialog({
 
         {children}
       </div>
+      ) : null}
     </Modal>
   );
 }

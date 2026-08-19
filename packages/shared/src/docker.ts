@@ -136,6 +136,10 @@ export type DockerRunRequest = {
   restart?: DockerRestartPolicy;
   network?: string;
   volumes?: Array<{ name: string; dest: string }>;
+  /** Optional argv after the image (image CMD when omitted). */
+  command?: string[];
+  /** Optional --entrypoint token (image ENTRYPOINT when omitted). */
+  entrypoint?: string;
 };
 
 export const DOCKER_IMAGE_RE =

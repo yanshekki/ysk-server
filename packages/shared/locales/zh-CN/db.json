@@ -198,12 +198,12 @@
     "applyBootstrapDesc": "会安装 Galera drop-in 并 bootstrap（galera_new_cluster）。仅第一个节点用一次。",
     "applyJoinDesc": "会安装 Galera drop-in 并 systemctl restart mariadb",
     "confirmApply": "确认应用",
-    "deleteClusterTitle": "删除集群登记？",
+    "deleteClusterTitle": "删除集群登记「{{name}}」（{{engine}}）？",
     "remoteInstallTitle": "远程安装 peer？",
     "pushTitle": "Push 到 peer？",
     "fleetSyncTitle": "Fleet 同步？",
     "confirmOp": "确认操作",
-    "deleteClusterDesc": "系统 conf 不会自动清（v1）。",
+    "deleteClusterDesc": "将删除 {{engine}} 集群「{{name}}」的登记。系统 conf 不会自动清（v1）。",
     "remoteInstallDesc": "在 peer 上 install conf + restart。需 YSK_EXECUTE + SSH。",
     "pushDesc": "scp 文件到 peer /tmp？需 YSK_EXECUTE=1 与 SSH key。成功 ≠ peer 已 restart。",
     "fleetSyncDesc": "同步 cluster 快照到 fleet 边緣，再可 apply。",
@@ -355,5 +355,12 @@
   "hostCount": "On host",
   "registeredUsers": "Registered users",
   "registeredUsersHint": "Panel registrations only — not every MySQL account",
-  "hostStillExists": "Still on host"
+  "hostStillExists": "Still on host",
+  "invalidSqlIdent": "Use a lowercase identifier: start with a letter, then letters, digits, or underscore.",
+  "remoteHostRequired": "Enter a remote host.",
+  "remoteTestUnsaved": "Save this host first, then Test connection. Or fill host and save.",
+  "serverNotInstalled": "This engine is not installed on the server.",
+  "dumpNeedEngine": "Install the engine before exporting a database.",
+  "unboundDatabase": "Database registration removed",
+  "userGoneRefresh": "That user is gone. The list was refreshed."
 }

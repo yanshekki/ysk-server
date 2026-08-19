@@ -108,6 +108,6 @@
   "unsavedHint": "Unsaved edits on this role",
   "nothingToSave": "Nothing to save",
   "saveRole": "Save {{role}} policy",
-  "discardTitle": "Discard unsaved policy?",
-  "discardDesc": "Switching roles drops unsaved capability edits."
+  "discardTitle": "Discard unsaved changes?",
+  "discardDesc": "Unsaved permission edits will be discarded."
 }

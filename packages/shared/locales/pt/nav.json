@@ -80,5 +80,6 @@
   "noAccessDesc": "A sua função não inclui esta página. Peça a um administrador se precisar dela.",
   "backToDashboard": "Voltar ao painel",
   "validators": "Validadores (Beta)",
-  "docker": "Docker"
+  "docker": "Docker",
+  "cluster": "Clusters"
 }

@@ -64,7 +64,7 @@ export async function handleEmailDomainsCrudRoutes(
             sortFields: ['domain'],
           },
         );
-        sendJson(res, 200, { items, meta });
+        sendJson(res, 200, { items, meta, allTotal: all.length });
         return true;
       }
       if (method === 'GET' && /^\/api\/v1\/email\/domains\/[^/]+$/.test(url.pathname)) {

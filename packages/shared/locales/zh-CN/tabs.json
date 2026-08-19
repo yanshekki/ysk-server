@@ -3,5 +3,7 @@
   "scrollRight": "向右滚动分页",
   "about": "说明",
   "main": "操作",
-  "stack": "软件"
+  "stack": "软件",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

@@ -86,6 +86,15 @@ export function StackWizard() {
   }, [mode, plan, selectedBundles, sqlServer, clamav]);
 
   function titleOf(p: StackPlan | StackBundle) {
+    const id = 'id' in p ? String((p as { id?: string }).id ?? '') : '';
+    if (id) {
+      const bundleKey = `stackWizard.bundle.${id}`;
+      const planKey = `stackWizard.planTitle.${id}`;
+      const bundle = t(bundleKey);
+      if (bundle !== bundleKey) return bundle;
+      const plan = t(planKey);
+      if (plan !== planKey) return plan;
+    }
     if (zh && 'titleZh' in p && p.titleZh) return p.titleZh;
     return p.title;
   }

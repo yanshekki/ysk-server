@@ -19,5 +19,9 @@
   "stepStoppedOld": "पिछली प्रक्रिया रोक दी गई",
   "stepTuningApplied": "रनटाइम ट्यूनिंग लागू की गई",
   "stepUnitWritten": "सेवा इकाई लिखित",
-  "stepSystemdStartFailed": "सिस्टमडी प्रारंभ विफल - प्रक्रिया फ़ॉलबैक का उपयोग करना"
+  "stepSystemdStartFailed": "सिस्टमडी प्रारंभ विफल - प्रक्रिया फ़ॉलबैक का उपयोग करना",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

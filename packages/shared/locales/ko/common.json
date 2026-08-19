@@ -129,5 +129,6 @@
   "more": "더",
   "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})",
   "unavailable": "Not available right now",
-  "ok": "OK"
+  "ok": "OK",
+  "pleaseFill": "Please fill in this field"
 }

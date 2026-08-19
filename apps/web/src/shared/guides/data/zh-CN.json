@@ -1002,16 +1002,16 @@
   "security": {
     "id": "security",
     "title": "账号安全",
-    "summary": "面板登录安全：密码、双因素、通行密钥与会话。",
+    "summary": "面板登录安全：密码、TOTP 与会话。",
     "canDo": [
       "密码：修改面板登录密码。",
-      "双因素／WebAuthn：加强登录验证。",
-      "会话：查看或终止登录会话。",
-      "为管理员启用 2FA",
-      "踢掉被盗用或共享的会话"
+      "TOTP：基于时间的一次性密码加强登录。",
+      "会话：查看或撤销登录会话。",
+      "为管理员开启 TOTP",
+      "撤销被盗或共用的会话"
     ],
     "notes": [
-      "丢失 2FA 设备可能需要带外救援，请妥善备份恢复码"
+      "丢失 TOTP 设备可能需要带外救援，请妥善备份恢复码。"
     ],
     "related": [
       {
@@ -1429,7 +1429,7 @@
     ],
     "related": [
       {
-        "label": "Agents",
+        "label": "人工智能代理",
         "to": "/agents"
       }
     ],
@@ -1445,17 +1445,18 @@
   },
   "agents": {
     "id": "agents",
-    "title": "Agents",
-    "summary": "管理可执行的运维代理与 playbook 式自动化（受监督）。",
+    "title": "人工智能代理",
+    "summary": "登记边缘代理、排队指令、查看记录，并探测人工智能运行时。",
     "canDo": [
-      "代理列表：查看可用 agent。",
-      "执行：在授权范围内跑默认流程。",
-      "重複性检查自动化",
-      "选 playbook",
-      "确认范围"
+      "登记：把边缘代理写入控制面清单（仅登记 ≠ 在线）。",
+      "下指令：排队命令行预设或自定义参数；边缘提取后执行并回报。",
+      "记录：已排队／已完成／错误、退出码与 JSON。",
+      "运行时：探测、写入 systemd 服务单元，并安装 OpenClaw／Hermes／IonClaw。",
+      "状态：仅登记 → 在线 → 超时（>60s）→ 离线。"
     ],
     "notes": [
-      "代理不得绕过 EXECUTE／权限模型"
+      "登记不会启动进程。节点须运行外连代理。",
+      "变更主机的指令仍须在边缘开启 EXECUTE。"
     ],
     "related": [
       {
@@ -1623,18 +1624,18 @@
   "vpn": {
     "id": "vpn",
     "title": "VPN",
-    "summary": "本機可作 WireGuard 伺服器（給手機／筆電連入），亦可作客戶端連到其他 VPN。",
+    "summary": "本机可作 WireGuard、OpenVPN 或 Shadowsocks 服务器（供手机／笔记本连入），亦可作为客户端连到其他 VPN。",
     "canDo": [
-      "一鍵安裝 WireGuard 工具",
-      "啟動伺服器並在防火牆放行監聽埠",
-      "建立客戶端並下載 conf／顯示 QR Code",
-      "匯入 conf 令本機作為客戶端連線"
+      "在「软件」分页安装 WireGuard、OpenVPN、Shadowsocks",
+      "启动服务器并在防火墙放行监听端口",
+      "建立客户端并下载配置；WireGuard 与 Shadowsocks 还可显示二维码",
+      "导入配置令本机作为客户端连接"
     ],
     "workflow": [
-      "安裝分頁 → 安裝 WireGuard",
-      "伺服器分頁 → 設定端點／埠 → 啟動伺服器 → 開防火牆",
-      "建立客戶端 → 下載 conf 或用手機掃 QR",
-      "客戶端分頁 → 貼上 conf → 需要時連線"
+      "「软件」分页 → 安装引擎",
+      "引擎分页 → 设定端点／端口 → 应用服务器",
+      "新增对等端／客户端 → 下载配置（WireGuard／Shadowsocks 可扫二维码）",
+      "「本机连出」分页 → 粘贴配置 → 需要时连接"
     ],
     "notes": [
       "安裝、套用伺服器、客戶端連線需 root 與 YSK_EXECUTE",
@@ -1662,15 +1663,15 @@
     "summary": "用 TigerVNC 提供多用户会话（每账号独立 Linux 用户），用 noVNC 在浏览器打开，或作为 client 连出（经 server 代理／自有网络直连）。",
     "canDo": [
       "一键安装 TigerVNC、noVNC、可选 XFCE 与 viewer",
-      "每个 VNC 账号对应独立 Linux 用户（下一 PR）",
-      "默认 localhost RFB + noVNC；可选直连端口 + 防火墙",
-      "Client 连接路径：经 server 或直连"
+      "每个 VNC 账号对应独立 Linux 用户",
+      "默认 localhost RFB + noVNC；可选直连端口与防火墙",
+      "客户端连接路径：用户可达或经服务器代理"
     ],
     "workflow": [
-      "安装分页 → TigerVNC（再装 noVNC）",
+      "「安装」分页 → TigerVNC（再装 noVNC）",
       "设置 → 默认桌面／分辨率／RFB 监听",
-      "账号 → 创建用户会话（PR-B）",
-      "打开 noVNC，或把 host:port 交给用户自有网络连入"
+      "账号 → 创建用户会话",
+      "在浏览器开启，或将 host:port 交给用户自行连入"
     ],
     "notes": [
       "「在浏览器开启」需要 noVNC。若要在此开启远端，请先到「安装」分页安装。",

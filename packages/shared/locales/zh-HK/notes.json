@@ -5,6 +5,7 @@
   "notFound": "找不到",
   "needPath": "請指定路徑",
   "needName": "請填寫名稱",
+  "needHost": "請填寫主機",
   "needDomain": "請填寫域名",
   "needProjectName": "請填寫專案名稱",
   "needServerIp": "請指定伺服器 IP",
@@ -72,7 +73,14 @@
     "movedToTrash": "已將 {{name}} 移至回收區。{{days}} 日後永久刪除。",
     "restoreNameExists": "無法還原 {{name}} — 已有同名備份檔。",
     "restoredFromTrash": "已從回收區還原 {{name}}。",
-    "trashEmptied": "已從回收區永久刪除 {{n}} 個備份檔。"
+    "trashEmptied": "已從回收區永久刪除 {{n}} 個備份檔。",
+    "partialOk": "部分成功 — 略過 {{n}} 個專案"
+  },
+  "health": {
+    "portListening": "埠 {{port}} 正在監聽",
+    "portNotListening": "埠 {{port}} 未在監聽",
+    "httpOk": "HTTP 正常 {{status}}",
+    "httpFail": "HTTP 失敗：{{detail}}"
   },
   "redis": {
     "cliMissing": "未安裝 redis-cli",
@@ -88,6 +96,7 @@
     "managedDir": "管理設定目錄：{{path}}",
     "includeHint": "於 Nginx 加入：include {{path}}/*.conf;",
     "removedOrphan": "已刪除幽靈 Nginx conf {{path}}",
+    "keptLiveSsl": "保留 {{path}} 的 HTTPS 區塊（受管範本沒有 listen 443）",
     "orphanCleanupFailed": "清理幽靈 Nginx conf 失敗：{{detail}}",
     "settingsWritten": "已寫入 Nginx 全域 snippet",
     "settingsNeedExecute": "套用需 YSK_EXECUTE",
@@ -168,6 +177,8 @@
     "noManagedZones": "dataDir/dns/zones 沒有管理中的 zone 檔",
     "pdnsListZones": "PowerDNS list-zones：{{n}}",
     "lookupIgnoredAt": "dig 不可用 — 已忽略 @{{server}}。不會把系統 resolver 當成該伺服器的答案。",
+    "digNotInstalled": "dig 未安裝",
+    "digEmpty": "dig 無答案",
     "localAOk": "本機 A {{name}} → {{ip}}"
   },
   "db": {
@@ -215,7 +226,11 @@
     "dovecotPassdbWrittenNeedApply": "已寫入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 先可登入",
     "postqueueSetgidBroken": "Postfix 佇列工具失敗：main.cf 中 setgid_group 為空。應設為 postdrop（有 YSK_EXECUTE 時面板會嘗試自動修復）。",
     "postqueueMailDown": "Postfix 未運行（showq 不可用）。有 YSK_EXECUTE 時面板會嘗試啟動 — 請檢查軟件分頁或 systemctl status postfix。",
-    "postqueueSpoolMissing": "Postfix 佇列目錄缺失（例如 hold/）。有 YSK_EXECUTE 時面板會嘗試建立 spool 並啟動 Postfix。"
+    "postqueueSpoolMissing": "Postfix 佇列目錄缺失（例如 hold/）。有 YSK_EXECUTE 時面板會嘗試建立 spool 並啟動 Postfix。",
+    "invalidDomain": "請輸入有效郵件域名",
+    "invalidServerIp": "請輸入有效伺服器 IP",
+    "mailboxLocalPartInvalid": "郵箱本機部分只可用英文字母、數字與 . _ + -",
+    "passwordTooShort": "密碼至少 8 個字元"
   },
   "software": {
     "startUnit": "啟動 {{u}}",
@@ -2935,10 +2950,10 @@
     "serverMissing": "尚未初始化 WireGuard 伺服器 — 請先啟動伺服器。",
     "peerCreated": "已建立客戶端「{{name}}」。",
     "peerNotFound": "找不到客戶端。",
-    "peerRemoved": "已移除客戶端。",
+    "peerRemoved": "已移除 {{name}}。",
     "peersSynced": "已在運行中的 WireGuard 介面重新載入對等端，未重啟伺服器。",
     "setEndpointHint": "請設定公開端點（host:port），手機客戶端才能連上。",
-    "invalidConf": "設定檔須包含 [Interface] 與 PrivateKey。",
+    "invalidConf": "此檔不是有效的 VPN 客戶端設定。請使用 WireGuard 或 OpenVPN 客戶端設定檔。",
     "clientImported": "已匯入設定檔「{{name}}」。",
     "profileNotFound": "找不到客戶端設定檔。",
     "clientUpFailed": "連線失敗：{{detail}}",

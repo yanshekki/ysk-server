@@ -1,4 +1,4 @@
-import { tl } from 'ysk-server-shared';
+import { isIpAddress, isIpv4, isNginxServerNameToken, tl } from 'ysk-server-shared';
 /**
  * MariaDB Galera plan + conf render (pure; never mutates host).
  */
@@ -134,6 +134,26 @@ export function planMariadbGalera(c: DbCluster): ClusterPlan {
 
   if (c.members.length < 2) {
     notes.push(tl('notes.auto.n0826'));
+  }
+
+  const badHosts = c.members.filter((m) => {
+    const h = String(m.host ?? '').trim();
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return !isIpv4(h);
+    return !(isIpAddress(h) || isNginxServerNameToken(h));
+  });
+  if (badHosts.length) {
+    return {
+      ok: false,
+      dryRun: true,
+      clusterId: c.id,
+      kind: c.kind,
+      engine: c.engine,
+      steps: [],
+      files: [],
+      notes: [tl('notes.needName'), ...badHosts.map((m) => String(m.host))],
+      requiresExecute: true,
+      requiresRoot: true,
+    };
   }
 
   const local = c.members.find((m) => m.access === 'local') ?? c.members[0];

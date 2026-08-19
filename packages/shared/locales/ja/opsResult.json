@@ -19,5 +19,9 @@
   "stepStoppedOld": "前のプロセスを停止しました",
   "stepTuningApplied": "実行時チューニングが適用されました",
   "stepUnitWritten": "サービスユニットの書き込み",
-  "stepSystemdStartFailed": "Systemd の起動に失敗しました — プロセス フォールバックを使用しています"
+  "stepSystemdStartFailed": "Systemd の起動に失敗しました — プロセス フォールバックを使用しています",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

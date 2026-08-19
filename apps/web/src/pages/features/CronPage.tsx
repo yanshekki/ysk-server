@@ -197,6 +197,16 @@ export function filterHostCronJobs(
   return jobs.filter((l) => l.user === u);
 }
 
+/** Status tab census: panel jobs + host-other = total (pending included in panel). */
+export function cronLineCensus(opts: {
+  panelJobs: number;
+  hostOtherLines?: number | null;
+}): { panel: number; other: number; total: number } {
+  const panel = Math.max(0, opts.panelJobs);
+  const other = Math.max(0, opts.hostOtherLines ?? 0);
+  return { panel, other, total: panel + other };
+}
+
 export function CronPage() {
   const { t } = useTranslation();
   const [items, setItems] = useState<CronJob[]>([]);
@@ -218,7 +228,20 @@ export function CronPage() {
   const [installOpen, setInstallOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [delCron, setDelCron] = useState<{ id: string; label: string } | null>(null);
-  const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
+  const { busy, error: actErr, result, msg, run: runRaw, setMsg } = useFeatureAction();
+  const [tab, setTab, unknownTab] = usePageTab(CRON_TABS, 'jobs');
+  const panel = unknownTab ? null : tab;
+  const [resultTab, setResultTab] = useState<string | null>(null);
+  const run: typeof runRaw = useCallback(
+    (fn, okMessage) => {
+      setResultTab(tab);
+      return runRaw(fn, okMessage);
+    },
+    [runRaw, tab],
+  );
+  useEffect(() => {
+    setResultTab((prev) => (prev == null || prev === tab ? prev : null));
+  }, [tab]);
 
   function openCreate() {
     setError(null);
@@ -451,13 +474,15 @@ export function CronPage() {
   const hostOk = status?.hostHasYskEntries === true;
   const hostNo = status?.hostHasYskEntries === false;
 
-  const [tab, setTab] = usePageTab(CRON_TABS, 'jobs');
-
   const heroTone = hostOk ? 'ok' : hostNo || needsInstallHint ? 'warn' : 'ok';
+  const lineCensus = cronLineCensus({
+    panelJobs: items.length,
+    hostOtherLines: status?.hostOtherLines,
+  });
 
   return (
     <FeaturePageLayout
-      title={t('nav.cron', { defaultValue: 'Cron' })}
+      title={t('nav.cron')}
       showCapability={false}
       status={{
         pill: {
@@ -483,7 +508,7 @@ export function CronPage() {
             value: status?.managedLines ?? items.length,
           },
           {
-            label: t('dashboard.executeLabel', { defaultValue: t('common.execute') }),
+            label: t('dashboard.executeLabel'),
             value: status?.executeEnabled ? t('common.on') : t('common.off'),
             tone: status?.executeEnabled ? 'ok' : 'warn',
           },
@@ -547,11 +572,19 @@ export function CronPage() {
           { id: 'status', label: t('common.status') },
           { id: 'about', label: t('common.about') },
         ]}
-        active={tab}
+        active={unknownTab ? '' : tab}
         onChange={setTab}
         variant="scroll"
       >
-        {tab === 'jobs' ? (
+        {unknownTab ? (
+          <div className="tab-panel">
+            <EmptyState
+              title={t('tabs.unknown')}
+              description={t('tabs.unknownHint', { tab: unknownTab })}
+            />
+          </div>
+        ) : null}
+        {panel === 'jobs' ? (
           <div className="tab-panel">
             <section className="ops-panel cron-host">
               <header className="ops-panel__head">
@@ -680,7 +713,9 @@ export function CronPage() {
                               size="sm"
                               loading={busy}
                               title={t('cron.deleteTitle')}
-                              data-confirm="dialog"
+                              data-confirm={String(
+                                managed.command || managed.schedule || managed.id,
+                              )}
                               onClick={() =>
                                 setDelCron({
                                   id: managed.id,
@@ -742,6 +777,19 @@ export function CronPage() {
                         <Button
                           variant="secondary"
                           size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            void run(async () => {
+                              const r = await api.runCronNow(job.id);
+                              return r as unknown as OpsResultLike;
+                            }, t('cron.runOnceOk'))
+                          }
+                        >
+                          {t('cron.runOnce')}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           disabled={busy}
                           onClick={() => openEdit(job)}
                         >
@@ -752,7 +800,7 @@ export function CronPage() {
                           size="sm"
                           loading={busy}
                           title={t('cron.deleteTitle')}
-                          data-confirm="dialog"
+                          data-confirm={String(job.command || job.schedule || job.id)}
                           onClick={() =>
                             setDelCron({
                               id: job.id,
@@ -770,7 +818,7 @@ export function CronPage() {
             ) : null}
           </div>
         ) : null}
-        {tab === 'status' ? (
+        {panel === 'status' ? (
           <div className="tab-panel">
             <div className="ops-grid">
               <section className="ops-panel">
@@ -794,7 +842,7 @@ export function CronPage() {
                   <div>
                     <dt>{t('cron.panelLines')}</dt>
                     <dd>
-                      {items.length}
+                      {lineCensus.panel}
                       {pendingManaged.length
                         ? ` · ${t('cron.pendingInstallCount', { n: pendingManaged.length })}`
                         : ''}
@@ -802,11 +850,11 @@ export function CronPage() {
                   </div>
                   <div>
                     <dt>{t('cron.otherLines')}</dt>
-                    <dd>{status?.hostOtherLines ?? 0}</dd>
+                    <dd>{lineCensus.other}</dd>
                   </div>
                   <div>
                     <dt>{t('cron.totalLines')}</dt>
-                    <dd>{status?.hostTotalLines ?? 0}</dd>
+                    <dd>{lineCensus.total}</dd>
                   </div>
                   <div>
                     <dt>{t('cron.lastInstall')}</dt>
@@ -825,12 +873,26 @@ export function CronPage() {
                 <header className="ops-panel__head">
                   <h3 className="ops-panel__title">{t('cron.hostPreview')}</h3>
                 </header>
+                {pendingManaged.length ? (
+                  <div className="u-mb-3">
+                    <p className="ops-panel__sub">
+                      {t('cron.pendingInstall', { count: pendingManaged.length })}
+                    </p>
+                    <ul className="list-plain list-spaced">
+                      {pendingManaged.map((job) => (
+                        <li key={job.id}>
+                          <code>{job.schedule}</code> · {job.user} · {job.command}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
                 {(() => {
                   const preview = String(status?.hostCrontabPreview ?? '').trim();
                   const emptyHost =
                     !preview || /^no crontab for /i.test(preview);
                   if (emptyHost) {
-                    return (
+                    return pendingManaged.length ? null : (
                       <p className="ops-muted">
                         {t('cron.emptyHostCrontab', {
                           user: userFilter || 'root',
@@ -853,10 +915,12 @@ export function CronPage() {
           </div>
         ) : null}
       
-        {tab === 'about' ? <PageGuide guideId="cron" /> : null}
+        {panel === 'about' ? <PageGuide guideId="cron" /> : null}
       </PageTabs>
 
-      <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+      {result && resultTab === tab ? (
+        <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+      ) : null}
       </div>
 
       <Modal
@@ -899,6 +963,7 @@ export function CronPage() {
         <form
           id="cron-create"
           className="feature-form"
+          noValidate
           onSubmit={(e) => void onCreate(e)}
         >
           <Field
@@ -1134,6 +1199,7 @@ export function CronPage() {
         }}
         title={t('cron.deleteTitle')}
         description={t('cron.deleteDesc', { name: delCron?.label ?? '' })}
+        dataConfirm={delCron?.label}
         confirmLabel={t('common.delete')}
         severity="standard"
         busy={busy}

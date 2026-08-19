@@ -150,6 +150,7 @@
   "noVersions": "No version history yet",
   "noVersionsHint": "",
   "versionRestored": "Restored",
+  "restoreVersionConfirm": "Restore {{version}} over the current file {{file}}? This overwrites the file on disk.",
   "renameTitle": "Rename",
   "renameCurrent": "Current: {{name}}",
   "renamed": "Renamed",

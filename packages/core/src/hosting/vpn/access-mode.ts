@@ -2,6 +2,7 @@
  * VPN access mode helpers — routes, AllowedIPs, NAT need.
  */
 
+import { isCidr } from 'ysk-server-shared';
 import type { VpnAccessMode } from './types.js';
 import { DEFAULT_VPN_LAN_CIDRS } from './types.js';
 
@@ -17,7 +18,7 @@ export function normalizeVpnCidrList(raw: unknown): string[] {
   const out: string[] = [];
   for (const x of raw) {
     const c = String(x ?? '').trim();
-    if (/^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/.test(c)) out.push(c);
+    if (isCidr(c)) out.push(c);
   }
   return [...new Set(out)];
 }

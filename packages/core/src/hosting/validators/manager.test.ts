@@ -45,6 +45,9 @@ function mockHost(opts: {
       if (argv[0] === 'docker' && argv.includes('up')) {
         return opts.composeFail ? r('', 1) : r('started');
       }
+      if (argv[0] === 'docker' && argv.includes('ps')) {
+        return r('{"State":"running"}');
+      }
       if (argv[0] === 'docker') return r('ok');
       return r('');
     },

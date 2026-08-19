@@ -164,5 +164,9 @@
   "trashEmptyDescConfirm": "Permanently delete {{count}} archive(s). Type the count to confirm.",
   "trashRestored": "Restored from recycle bin",
   "trashPurged": "Permanently deleted",
-  "trashedOk": "Moved to recycle bin"
+  "trashedOk": "Moved to recycle bin",
+  "previewListingTitle": "Archive contents",
+  "restoreNamedDesc": "Restore {{name}} into project {{project}}.",
+  "overwriteNamedDesc": "Overwrite files of project {{project}} from snapshot {{snapshot}}.",
+  "resticSafeNamed": "Restore snapshot {{snapshot}} of project {{project}} into a safe directory."
 }

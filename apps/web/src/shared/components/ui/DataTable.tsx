@@ -79,6 +79,11 @@ export interface DataTableProps<T> {
   /** Activate a row (e.g. open a folder). Ignore clicks on buttons/links. */
   onRowActivate?: (row: T) => void;
   empty?: ReactNode;
+  /**
+   * When the table is empty because search/filters have no hits — not because
+   * the collection itself is empty. Shows listToolbar.noResults instead of `empty`.
+   */
+  filterActive?: boolean;
   className?: string;
   /** Compact density (default true) */
   dense?: boolean;
@@ -98,6 +103,7 @@ export function DataTable<T>({
   rowClassName,
   onRowActivate,
   empty,
+  filterActive = false,
   className,
   dense = true,
 }: DataTableProps<T>) {
@@ -167,7 +173,11 @@ export function DataTable<T>({
 
       {rows.length === 0 ? (
         <div className="data-table__empty">
-          {empty ?? <EmptyState title={t('dataTable.empty')} />}
+          {filterActive ? (
+            <EmptyState title={t('listToolbar.noResults')} description={t('listToolbar.noResultsHint')} />
+          ) : (
+            empty ?? <EmptyState title={t('dataTable.empty')} />
+          )}
         </div>
       ) : !compact ? (
         <div className="data-table__wrap table-wrap">
@@ -231,7 +241,7 @@ export function DataTable<T>({
                   })}
                   {rowActions ? (
                     <td className="u-nowrap data-table__actions-cell" data-mobile="actions">
-                      {rowActions(row)}
+                      <div className="data-table__actions-inner">{rowActions(row)}</div>
                     </td>
                   ) : null}
                 </tr>

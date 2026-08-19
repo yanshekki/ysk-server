@@ -355,5 +355,12 @@
   "hostCount": "On host",
   "registeredUsers": "Registered users",
   "registeredUsersHint": "Panel registrations only — not every MySQL account",
-  "hostStillExists": "Still on host"
+  "hostStillExists": "Still on host",
+  "invalidSqlIdent": "Use a lowercase identifier: start with a letter, then letters, digits, or underscore.",
+  "remoteHostRequired": "Enter a remote host.",
+  "remoteTestUnsaved": "Save this host first, then Test connection. Or fill host and save.",
+  "serverNotInstalled": "This engine is not installed on the server.",
+  "dumpNeedEngine": "Install the engine before exporting a database.",
+  "unboundDatabase": "Database registration removed",
+  "userGoneRefresh": "That user is gone. The list was refreshed."
 }

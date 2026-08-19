@@ -57,12 +57,22 @@ describe('usePageTab', () => {
     expect(geo.result.current[0]).toBe('geo');
   });
 
-  it('rewrites unknown query tabs to the default', async () => {
+  it('keeps unknown query tabs and reports them (does not drop the param)', async () => {
     const { result } = renderHook(
       () => usePageTab(['account', 'tools'] as const, 'account'),
       { wrapper: wrapRouter('/?tab=nope') },
     );
     expect(result.current[0]).toBe('account');
+    expect(result.current[2]).toBe('nope');
+  });
+
+  it('maps access onto geo (IP access)', () => {
+    const { result } = renderHook(
+      () => usePageTab(['command', 'geo', 'bans'] as const, 'command'),
+      { wrapper: wrapRouter('/?tab=access') },
+    );
+    expect(result.current[0]).toBe('geo');
+    expect(result.current[2]).toBeNull();
   });
 
   it('maps allowlist / ssh=system aliases', async () => {

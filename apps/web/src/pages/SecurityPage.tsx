@@ -24,6 +24,7 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
+  Form,
   FormActions,
   FormHint,
   FormLayout,
@@ -504,7 +505,26 @@ export function SecurityPage() {
 
             <Card>
               <CardSection title={t('security.changePasswordTitle')}>
-                <FormLayout columns={1}>
+                <Form
+                  id="sec-change-pw"
+                  columns={1}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!curPw || !newPw || !newPw2) return;
+                    if (newPw.length < 8 || newPw !== newPw2) return;
+                    setPwBusy(true);
+                    void api
+                      .changePassword(curPw, newPw)
+                      .then(() => {
+                        toast.ok(t('security.passwordChanged'));
+                        setCurPw('');
+                        setNewPw('');
+                        setNewPw2('');
+                      })
+                      .catch((err: Error) => toast.error(err.message))
+                      .finally(() => setPwBusy(false));
+                  }}
+                >
                   <Field label={t('security.currentPassword')} htmlFor="sec-cur-pw" flush required>
                     <input
                       id="sec-cur-pw"
@@ -512,6 +532,7 @@ export function SecurityPage() {
                       value={curPw}
                       onChange={bindInput(setCurPw)}
                       autoComplete="current-password"
+                      required
                     />
                   </Field>
                   <Field label={t('security.newPassword')} htmlFor="sec-new-pw" flush required>
@@ -522,6 +543,7 @@ export function SecurityPage() {
                       onChange={bindInput(setNewPw)}
                       autoComplete="new-password"
                       minLength={8}
+                      required
                     />
                   </Field>
                   <Field
@@ -537,15 +559,22 @@ export function SecurityPage() {
                       value={newPw2}
                       onChange={bindInput(setNewPw2)}
                       autoComplete="new-password"
+                      required
                     />
                   </Field>
-                </FormLayout>
                 <FormActions>
                   <Button
+                    type="submit"
                     variant="primary"
                     size="md"
                     loading={pwBusy}
-                    disabled={!curPw || newPw.length < 8 || newPw !== newPw2}
+                    disabled={
+                      !curPw ||
+                      !newPw ||
+                      !newPw2 ||
+                      newPw.length < 8 ||
+                      newPw !== newPw2
+                    }
                     title={
                       !curPw
                         ? t('security.needCurrentPassword')
@@ -555,23 +584,11 @@ export function SecurityPage() {
                             ? t('security.passwordMismatch')
                             : t('security.changePassword')
                     }
-                    onClick={() => {
-                      setPwBusy(true);
-                      void api
-                        .changePassword(curPw, newPw)
-                        .then(() => {
-                          toast.ok(t('security.passwordChanged'));
-                          setCurPw('');
-                          setNewPw('');
-                          setNewPw2('');
-                        })
-                        .catch((e: Error) => toast.error(e.message))
-                        .finally(() => setPwBusy(false));
-                    }}
                   >
                     {t('security.changePassword')}
                   </Button>
                 </FormActions>
+                </Form>
               </CardSection>
             </Card>
 
@@ -1190,9 +1207,11 @@ export function SecurityPage() {
                 {
                   key: 'risk',
                   header: t('security.colRisk'),
-                  render: (tool) => t(`security.risk.${String(tool.risk)}`, {
-                    defaultValue: String(tool.risk),
-                  }) },
+                  render: (tool) => {
+                    const key = `security.risk.${String(tool.risk)}`;
+                    const label = t(key);
+                    return label === key ? String(tool.risk) : label;
+                  } },
                 {
                   key: 'approval',
                   header: t('security.colApproval'),

@@ -69,7 +69,8 @@
     "movedToTrash": "Moved {{name}} to the recycle bin. Permanent delete after {{days}} days.",
     "restoreNameExists": "Cannot restore {{name}} — a live archive with that name already exists.",
     "restoredFromTrash": "Restored {{name}} from the recycle bin.",
-    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin."
+    "trashEmptied": "Permanently deleted {{n}} archive(s) from the recycle bin.",
+    "partialOk": "Partial success — {{n}} project(s) skipped"
   },
   "redis": {
     "cliMissing": "未安装 redis-cli",
@@ -88,7 +89,8 @@
     "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}",
     "settingsWritten": "已写入 Nginx 全局 snippet",
     "settingsNeedExecute": "应用需 YSK_EXECUTE",
-    "reloadFailed": "nginx reload 失败"
+    "reloadFailed": "nginx reload 失败",
+    "keptLiveSsl": "Kept live HTTPS block in {{path}} (managed template had no listen 443)"
   },
   "ssl": {
     "requestCert": "申请证书"
@@ -165,6 +167,8 @@
     "noManagedZones": "No managed zone files under dataDir/dns/zones",
     "pdnsListZones": "PowerDNS list-zones: {{n}}",
     "lookupIgnoredAt": "dig is unavailable — @{{server}} was ignored. Not using the system resolver as that server’s answer.",
+    "digNotInstalled": "dig 未安装",
+    "digEmpty": "dig 无答案",
     "localAOk": "local A {{name}} → {{ip}}"
   },
   "db": {
@@ -212,7 +216,11 @@
     "dovecotPassdbWrittenNeedApply": "已写入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 才可登录",
     "postqueueSetgidBroken": "Postfix 队列工具失败：main.cf 中 setgid_group 为空。应设为 postdrop（有 YSK_EXECUTE 时面板会尝试自动修复）。",
     "postqueueMailDown": "Postfix 未运行（showq 不可用）。有 YSK_EXECUTE 时面板会尝试启动 — 请检查软件分页或 systemctl status postfix。",
-    "postqueueSpoolMissing": "Postfix 队列目录缺失（例如 hold/）。有 YSK_EXECUTE 时面板会尝试创建 spool 并启动 Postfix。"
+    "postqueueSpoolMissing": "Postfix 队列目录缺失（例如 hold/）。有 YSK_EXECUTE 时面板会尝试创建 spool 并启动 Postfix。",
+    "invalidDomain": "Enter a valid mail domain",
+    "invalidServerIp": "Enter a valid server IP",
+    "mailboxLocalPartInvalid": "Mailbox local-part may only use letters, digits, . _ + -",
+    "passwordTooShort": "Password must be at least 8 characters"
   },
   "agents": {
     "sessionNotFound": "找不到 session：{{sessionId}}"
@@ -2895,9 +2903,9 @@
     "serverMissing": "尚未初始化 WireGuard 伺服器 — 請先啟動伺服器。",
     "peerCreated": "已建立客戶端「{{name}}」。",
     "peerNotFound": "找不到客戶端。",
-    "peerRemoved": "已移除客戶端。",
+    "peerRemoved": "已移除 {{name}}。",
     "setEndpointHint": "請設定公開端點（host:port），手機客戶端才能連上。",
-    "invalidConf": "設定檔須包含 [Interface] 與 PrivateKey。",
+    "invalidConf": "此文件不是有效的 VPN 客户端配置。请使用 WireGuard 或 OpenVPN 客户端配置文件。",
     "clientImported": "已匯入設定檔「{{name}}」。",
     "profileNotFound": "找不到客戶端設定檔。",
     "clientUpFailed": "連線失敗：{{detail}}",
@@ -3190,5 +3198,12 @@
     "liveConf": "生效 Nginx 配置文件：{{path}}",
     "publicRoot": "公开根目录：{{path}}",
     "confNameStale": "配置文件 {{file}} 与当前 server_name {{serverName}} 不一致。请再套用公用文件以改名。"
+  },
+  "needHost": "Enter a host",
+  "health": {
+    "portListening": "Port {{port}} is listening",
+    "portNotListening": "Port {{port}} is not listening",
+    "httpOk": "HTTP OK {{status}}",
+    "httpFail": "HTTP failed: {{detail}}"
   }
 }

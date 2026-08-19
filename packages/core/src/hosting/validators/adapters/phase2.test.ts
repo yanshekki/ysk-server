@@ -34,7 +34,8 @@ function spec(over: Partial<ValidatorInstanceDto> & Pick<ValidatorInstanceDto, '
 describe('phase 2 compose + status parsers', () => {
   it('Bitcoin prune + localhost rpc', () => {
     const y = buildBtcComposeYaml(spec({ id: 'btc-testnet-1', chain: 'btc', network: 'testnet', ports: { rpc: 18332, p2p: 18333 } }));
-    expect(y).toContain('bitcoind');
+    expect(y).toContain('lncm/bitcoind');
+    expect(y).not.toMatch(/command:\n\s+- bitcoind\n/);
     expect(y).toContain('-prune=550');
     expect(y).toContain('-testnet=1');
     expect(y).toContain('127.0.0.1:18332:18332');
@@ -44,6 +45,7 @@ describe('phase 2 compose + status parsers', () => {
   it('Cosmos gaiad init + rpc', () => {
     const y = buildCosmosComposeYaml(spec({ id: 'cosmos-testnet-1', chain: 'cosmos', network: 'testnet', ports: { rpc: 26657, p2p: 26656 } }));
     expect(y).toContain('gaiad');
+    expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
     expect(parseCosmosStatus({ result: { sync_info: { catching_up: false }, node_info: { version: '23' } } }).syncProgress).toBe(1);
   });

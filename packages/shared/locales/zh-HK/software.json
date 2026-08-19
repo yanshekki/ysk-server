@@ -84,6 +84,8 @@
     "latest": "最新",
     "upToDate": "已是最新／倉庫最新",
     "refresh": "重新檢查最新",
+    "refreshHasUpdate": "有較新版本",
+    "refreshLatest": "已是紀錄中的最新版本",
     "pick": "選擇版本",
     "noTarget": "沒有可更新版本",
     "needRuntimePage": "請在執行環境頁安裝此版本",

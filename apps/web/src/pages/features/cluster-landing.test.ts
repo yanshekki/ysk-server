@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   clusterEngineFromServiceRow,
   clusterServicePath,
+  clusterStatusLabel,
+  clusterStatusTone,
   isStaleClusterPlan,
   pickClusterLandingPath,
   serviceRowLooksInstalled,
@@ -42,6 +44,21 @@ describe('service row install probe', () => {
       'redis',
     );
     expect(serviceRowLooksInstalled({ installed: false, active: 'active' })).toBe(true);
+  });
+});
+
+describe('cluster status copy', () => {
+  const t = (k: string, o?: Record<string, unknown>) =>
+    o ? `${k}:${JSON.stringify(o)}` : k;
+
+  it('maps planned / partial / failed like the engine cluster tab', () => {
+    expect(clusterStatusLabel('planned', t)).toContain('db.cluster.status.planned');
+    expect(clusterStatusLabel('partial', t)).toContain('db.cluster.status.partial');
+    expect(clusterStatusLabel('failed', t)).toContain('db.cluster.status.failed');
+    expect(clusterStatusTone('planned')).toBe('warn');
+    expect(clusterStatusTone('partial')).toBe('warn');
+    expect(clusterStatusTone('failed')).toBe('danger');
+    expect(clusterStatusTone('healthy')).toBe('ok');
   });
 });
 

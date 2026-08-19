@@ -61,8 +61,12 @@ export function ServiceLifecycleBar({
   const { t } = useTranslation();
   const { busy, run, result } = useFeatureAction();
   const [resolvedUnit, setResolvedUnit] = useState(unitProp?.trim() || '');
+  const [matrixRunning, setMatrixRunning] = useState<boolean | undefined>(undefined);
   const [pendingStop, setPendingStop] = useState(false);
   const [pendingRestart, setPendingRestart] = useState(false);
+  const [pendingReload, setPendingReload] = useState(false);
+  const [pendingEnable, setPendingEnable] = useState(false);
+  const confirmLifecycle = danger === 'panel' || danger === 'edge' || danger === 'sshd';
   const [bootEnabled, setBootEnabled] = useState<string | undefined>();
   const [sshdBootOff, setSshdBootOff] = useState(false);
 
@@ -103,6 +107,9 @@ export function ServiceLifecycleBar({
         const row = (r.items ?? []).find((x) => x.id === matrixId);
         if (!unitProp?.trim() && row?.unit && row.unit !== '—') setResolvedUnit(row.unit);
         if (row?.enabled) setBootEnabled(row.enabled);
+        const act = String(row?.active ?? '').toLowerCase();
+        if (act === 'active' || act === 'running') setMatrixRunning(true);
+        else if (act === 'inactive' || act === 'failed' || act === 'stopped') setMatrixRunning(false);
       })
       .catch(() => {
         /* keep empty — buttons stay disabled */
@@ -114,6 +121,7 @@ export function ServiceLifecycleBar({
 
   const unit = resolvedUnit;
   const canAct = Boolean(installed && (unit || onAction));
+  const isRunning = running ?? matrixRunning;
 
   const confirmCopy = useMemo(() => {
     if (danger === 'fail2ban') {
@@ -237,7 +245,7 @@ export function ServiceLifecycleBar({
       role="group"
       aria-label={t('services.lifecycleTitle', { label })}
     >
-      {show('start') && running !== true ? (
+      {show('start') && isRunning !== true ? (
         <Button
           variant="primary"
           size={size}
@@ -253,9 +261,9 @@ export function ServiceLifecycleBar({
           variant="danger"
           size={size}
           loading={busy}
-          disabled={!canAct || running === false}
+          disabled={!canAct || isRunning === false}
           title={
-            running === false
+            isRunning === false
               ? t('services.needRunning', { label })
               : danger === 'panel'
                 ? sshdBootOff
@@ -276,7 +284,7 @@ export function ServiceLifecycleBar({
           variant="secondary"
           size={size}
           loading={busy}
-          disabled={!canAct || running === false}
+          disabled={!canAct || isRunning === false}
           title={
             danger === 'panel'
               ? sshdBootOff
@@ -284,9 +292,9 @@ export function ServiceLifecycleBar({
                 : t('services.stopConfirmPanelDesc')
               : t('services.restartConfirmTitle', { label })
           }
-          data-confirm={danger === 'panel' || danger === 'edge' ? 'dialog' : undefined}
+          data-confirm={confirmLifecycle ? 'dialog' : undefined}
           onClick={() => {
-            if (danger === 'panel' || danger === 'edge') setPendingRestart(true);
+            if (confirmLifecycle) setPendingRestart(true);
             else void fire('restart');
           }}
         >
@@ -298,9 +306,13 @@ export function ServiceLifecycleBar({
           variant="secondary"
           size={size}
           loading={busy}
-          disabled={!canAct || running === false}
+          disabled={!canAct || isRunning === false}
           title={t('services.reloadTitle', { label })}
-          onClick={() => void fire('reload')}
+          data-confirm={danger === 'sshd' ? 'dialog' : undefined}
+          onClick={() => {
+            if (danger === 'sshd') setPendingReload(true);
+            else void fire('reload');
+          }}
         >
           {t('services.action.reload')}
         </Button>
@@ -312,7 +324,11 @@ export function ServiceLifecycleBar({
           loading={busy}
           disabled={!canAct}
           title={t('services.bootDisabledWarn', { label })}
-          onClick={() => void fire('enable')}
+          data-confirm={danger === 'sshd' ? 'dialog' : undefined}
+          onClick={() => {
+            if (danger === 'sshd') setPendingEnable(true);
+            else void fire('enable');
+          }}
         >
           {t('services.action.enable')}
         </Button>
@@ -352,10 +368,42 @@ export function ServiceLifecycleBar({
             ? t('services.restartConfirmPanelDesc')
             : t('services.restartConfirmDesc', { label })
         }
-        consequences={confirmCopy.consequences}
+        consequences={
+          danger === 'edge'
+            ? [t('services.restartConfirmConsequence', { label }), stopDetail].filter(
+                (x): x is string => Boolean(x),
+              )
+            : confirmCopy.consequences
+        }
         confirmText={confirmCopy.confirmText}
         severity={confirmCopy.severity}
         confirmLabel={t('services.action.restart')}
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={pendingReload}
+        onClose={() => setPendingReload(false)}
+        onConfirm={() => {
+          setPendingReload(false);
+          void fire('reload');
+        }}
+        title={t('services.reloadConfirmTitle', { label })}
+        description={t('services.reloadConfirmDesc', { label })}
+        severity="standard"
+        confirmLabel={t('services.action.reload')}
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={pendingEnable}
+        onClose={() => setPendingEnable(false)}
+        onConfirm={() => {
+          setPendingEnable(false);
+          void fire('enable');
+        }}
+        title={t('services.enableConfirmTitle', { label })}
+        description={t('services.enableConfirmDesc', { label })}
+        severity="standard"
+        confirmLabel={t('services.action.enable')}
         busy={busy}
       />
       {showResult && result ? (

@@ -3,5 +3,7 @@
   "scrollRight": "탭을 오른쪽으로 스크롤",
   "about": "설명",
   "main": "행위",
-  "stack": "소프트웨어"
+  "stack": "소프트웨어",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

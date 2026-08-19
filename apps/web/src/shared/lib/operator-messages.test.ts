@@ -24,6 +24,12 @@ describe('isOperatorNoise', () => {
     ).toBe(true);
   });
 
+  it('localizes health port / HTTP notes', () => {
+    expect(humanizeOperatorNote('HTTP fail: boom')).not.toBe('HTTP fail: boom');
+    expect(humanizeOperatorNote('running')).not.toBe('running');
+    expect(humanizeOperatorNote('Port 3102 is listening')).toBeTruthy();
+  });
+
   it('allows clean operator notes', () => {
     expect(isOperatorNoise('Certificate issued for example.com')).toBe(false);
     expect(isOperatorNoise('Project deployed')).toBe(false);

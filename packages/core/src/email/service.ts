@@ -6,7 +6,7 @@ import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from 'ysk-server-shared';
-import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import { ErrorCodes, YskError, isIpAddress, isMailDomain, tl} from 'ysk-server-shared';
 import {
   buildExternalTodos,
   planEmailStackInstall,
@@ -74,6 +74,14 @@ export class EmailService {
     installPlan: ReturnType<typeof planEmailStackInstall>;
   } {
     const domain = input.domain.trim().toLowerCase();
+    if (!isMailDomain(domain)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.invalidDomain'), {
+        httpStatus: 400 });
+    }
+    if (!isIpAddress(input.serverIp)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.invalidServerIp'), {
+        httpStatus: 400 });
+    }
     if (domains(this.db).some((e) => e.domain === domain)) {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0081', { v0: (domain) }), {
         httpStatus: 400 });
@@ -352,7 +360,9 @@ export class EmailService {
     const row = this.get(domainId);
     const local = input.localPart.trim().toLowerCase();
     if (!/^[a-z0-9._+-]{1,64}$/.test(local)) {
-      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1509'), { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.mailboxLocalPartInvalid'), {
+        httpStatus: 400,
+      });
     }
     const address = `${local}@${row.domain}`;
     const existing = this.db.snapshot.mailboxes.find(
@@ -370,13 +380,16 @@ export class EmailService {
     let passwordHash: string | undefined;
     let passwordScheme: string | undefined;
 
-    if (input.password && input.password.length >= 8) {
+    if (input.password) {
+      if (input.password.length < 8) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.passwordTooShort'), {
+          httpStatus: 400,
+        });
+      }
       const hashed = await hashMailboxPassword(input.password);
       passwordHash = hashed.hash;
       passwordScheme = hashed.scheme;
       notes.push(...hashed.notes);
-    } else if (input.password) {
-      notes.push(tl('notes.auto.n0668'));
     }
 
     if (this.dataDir) {

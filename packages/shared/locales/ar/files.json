@@ -359,5 +359,6 @@
   "pillTrash": "{{count}} in trash",
   "pillSpace": "{{used}} used",
   "webdavTokenInactive": "Disabled — token #{{id}} is not active",
-  "webdavOffNoToken": "Disabled (no active token)"
+  "webdavOffNoToken": "Disabled (no active token)",
+  "restoreVersionConfirm": "Restore {{version}} over the current file {{file}}? This overwrites the file on disk."
 }

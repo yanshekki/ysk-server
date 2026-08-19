@@ -52,6 +52,7 @@
     "autoClearC1": "磁碟危急時會刪除最大的已停止實例，不會再詢問。",
     "autoClearThreshold": "觸發條件：檔案系統用量達 85% 或以上。",
     "autoClearCandidate": "目前候選：{{id}}",
+    "autoClearCandidates": "已停止候選（有資料且較大者優先）：{{list}}",
     "autoClearNone": "目前沒有已停止實例可作為候選。"
   },
   "chain": {
@@ -126,7 +127,8 @@
     "cl": "共識層客戶端"
   },
   "mithril": {
-    "label": "先用 Mithril 快照還原（測試網建議）",
+    "label": "節點起來後用 Mithril 快照還原",
+    "hint": "這是安裝成功後的一次性還原，不會寫入 compose。之後也可在實例頁再執行。",
     "action": "用 Mithril 還原"
   },
   "errors": {
@@ -136,6 +138,8 @@
     "diskUnknownMainnet": "無法量度可用磁碟，拒絕建立主網節點",
     "needDocker": "需要 Docker Engine",
     "composeFailed": "docker compose 失敗",
+    "containerNotUp": "Compose 已啟動，但容器未能保持運行",
+    "probeFailed": "節點尚未回應 RPC。請在本頁查看日誌。",
     "needConfirm": "清空須 confirm=實例識別碼 或 CLEAR",
     "mithrilAdaOnly": "Mithril 還原只適用於 Cardano",
     "needMithrilConfirm": "Mithril 需要 confirm=實例識別碼 或 MITHRIL",

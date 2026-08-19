@@ -157,6 +157,12 @@ export async function applyManagedNginxSite(
   const confPath = join(dir, `ysk_site_${slug}.conf`);
   const forceHttps = Boolean(site.forceHttps ?? site.force_https);
   const hsts = Boolean(site.hsts);
+  const { resolveSiteTlsFiles } = await import('./ssl-certs.js');
+  const tls = resolveSiteTlsFiles({ db, dataDir, serverName });
+  const wantSsl = Boolean(site.ssl) || tls.ssl;
+  const ssl = wantSsl && tls.ssl;
+  const sslCertificate = tls.sslCertificate;
+  const sslCertificateKey = tls.sslCertificateKey;
   const bodySize =
     site.clientMaxBody && site.clientMaxBody !== 'inherit'
       ? String(site.clientMaxBody)
@@ -168,27 +174,33 @@ export async function applyManagedNginxSite(
     conf = renderNginxStatic({
       serverName,
       docRoot: String(site.root ?? join(dataDir, 'www', slug)),
-      ssl: Boolean(site.ssl),
-      forceHttps,
-      hsts,
+      ssl,
+      sslCertificate,
+      sslCertificateKey,
+      forceHttps: ssl && forceHttps,
+      hsts: ssl && hsts,
     });
   } else if (kind === 'php') {
     conf = renderNginxPhpFpm({
       serverName,
       docRoot: String(site.root ?? join(dataDir, 'www', slug)),
       fpmSocket: String(site.socket ?? '/run/php/php8.2-fpm.sock'),
-      ssl: Boolean(site.ssl),
-      forceHttps,
-      hsts,
+      ssl,
+      sslCertificate,
+      sslCertificateKey,
+      forceHttps: ssl && forceHttps,
+      hsts: ssl && hsts,
     });
   } else {
     conf = renderNginxProxy({
       serverName,
       upstream: String(site.upstream ?? 'http://127.0.0.1:3000'),
-      ssl: Boolean(site.ssl),
+      ssl,
+      sslCertificate,
+      sslCertificateKey,
       cloudflareRealIp: Boolean(site.cloudflareRealIp ?? false),
-      forceHttps,
-      hsts,
+      forceHttps: ssl && forceHttps,
+      hsts: ssl && hsts,
     });
   }
   // Inject site-level body size / autoindex after server_name line

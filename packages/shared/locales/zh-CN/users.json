@@ -49,6 +49,7 @@
   "mailboxes": "邮箱",
   "diskMiB": "盘 MiB",
   "noPackages": "尚未有套餐",
+  "noPackagesHint": "请用列表右上角创建套餐，然后绑定到用户。",
   "createUserDesc": "密码至少 8 位；创建后可于详情改角色与权限",
   "username": "用户名",
   "passwordHint": "至少 8 位",

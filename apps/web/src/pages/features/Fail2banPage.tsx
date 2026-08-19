@@ -32,6 +32,7 @@ import { ServiceLifecycleBar, systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
+import { isCidr, isIpAddress } from 'ysk-server-shared';
 import {
   collectHostIps,
   collectLoginIps,
@@ -120,56 +121,31 @@ export function clampMaxretry(v: unknown): number {
   return Math.max(1, Math.min(50, Math.floor(n)));
 }
 
-function isIpv4Octets(s: string): boolean {
-  const parts = s.split('.');
-  if (parts.length !== 4) return false;
-  return parts.every((o) => {
-    if (!/^\d{1,3}$/.test(o)) return false;
-    const n = Number(o);
-    return n >= 0 && n <= 255;
-  });
-}
-
-function isIpv6Addr(s: string): boolean {
-  if (!s || s.includes('%') || s.includes('/')) return false;
-  if (!/^[0-9a-fA-F:]+$/.test(s)) return false;
-  const halves = s.split('::');
-  if (halves.length > 2) return false;
-  const hexOk = (x: string) => !x || /^[0-9a-fA-F]{1,4}$/.test(x);
-  if (halves.length === 1) {
-    const segs = halves[0].split(':');
-    return segs.length === 8 && segs.every(hexOk);
-  }
-  const left = halves[0] ? halves[0].split(':') : [];
-  const right = halves[1] ? halves[1].split(':') : [];
-  return left.length + right.length < 8 && [...left, ...right].every(hexOk);
-}
-
-/** Strict IPv4 / IPv6 — rejects 999.999.999.999 and bare words. */
+/** Strict IPv4 / IPv6 — ident.ts isIpAddress (rejects 999.999.999.999). */
 export function isValidBanIp(ip: string): boolean {
-  const s = ip.trim();
-  if (!s) return false;
-  if (s.includes('.')) return isIpv4Octets(s);
-  if (s.includes(':')) return isIpv6Addr(s);
-  return false;
+  return isIpAddress(ip);
 }
 
 /** Ban IP or CIDR for ignoreip. */
 export function isValidIgnoreIp(ip: string): boolean {
   const s = ip.trim();
-  const slash = s.lastIndexOf('/');
-  if (slash < 0) return isValidBanIp(s);
-  const addr = s.slice(0, slash);
-  const bits = Number(s.slice(slash + 1));
-  if (!Number.isInteger(bits) || bits < 0) return false;
-  if (isIpv4Octets(addr)) return bits <= 32;
-  if (isIpv6Addr(addr)) return bits <= 128;
-  return false;
+  return isIpAddress(s) || isCidr(s);
+}
+
+/** Active-ban census: banned list length, else jail currentlyBanned sum. */
+export function fail2banBanCensus(status: {
+  banned?: Array<unknown> | null;
+  jails?: Array<{ currentlyBanned?: number }>;
+} | null | undefined): number {
+  if (!status) return 0;
+  if (Array.isArray(status.banned)) return status.banned.length;
+  return (status.jails ?? []).reduce((a, j) => a + (j.currentlyBanned ?? 0), 0);
 }
 
 export function Fail2banPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(F2B_TABS, 'bans');
+  const [tab, setTab, unknownTab] = usePageTab(F2B_TABS, 'bans');
+  const panel = unknownTab ? null : tab;
   const [status, setStatus] = useState<F2bStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -183,7 +159,18 @@ export function Fail2banPage() {
   const [applyConfirm, setApplyConfirm] = useState(false);
   const [hostIps, setHostIps] = useState<string[]>([]);
   const [loginIps, setLoginIps] = useState<string[]>([]);
-  const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const { busy, error, result, msg, run: runRaw, setMsg, setError } = useFeatureAction();
+  const [resultTab, setResultTab] = useState<string | null>(null);
+  const run: typeof runRaw = useCallback(
+    (fn, okMessage) => {
+      setResultTab(tab);
+      return runRaw(fn, okMessage);
+    },
+    [runRaw, tab],
+  );
+  useEffect(() => {
+    setResultTab((prev) => (prev == null || prev === tab ? prev : null));
+  }, [tab]);
 
   const catalog = status?.catalog ?? [];
   const jailOptions = useMemo(
@@ -225,6 +212,7 @@ export function Fail2banPage() {
   const [banQ, setBanQ] = useState('');
   const bannedAll = status?.banned ?? [];
   const banned = useMemo(() => filterBannedRows(bannedAll, banQ), [bannedAll, banQ]);
+  const banCensus = fail2banBanCensus(status);
   const selfIpOpts = useMemo(
     () => ({
       hostIps,
@@ -272,8 +260,7 @@ export function Fail2banPage() {
         items: [
           {
             label: t('fail2ban.statCurrentBan'),
-            value:
-              status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0 },
+            value: banCensus },
           {
             label: t('fail2ban.statTotal'),
             value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0 },
@@ -342,7 +329,7 @@ export function Fail2banPage() {
           {
             id: 'bans',
             label: t('fail2ban.tabs.bans'),
-            badge: banned.length || undefined },
+            badge: banCensus || undefined },
           {
             id: 'whitelist',
             label: t('fail2ban.tabs.whitelist'),
@@ -356,27 +343,46 @@ export function Fail2banPage() {
           { id: 'stack', label: t('tabs.stack') },
           { id: 'about', label: t('fail2ban.tabs.about') },
         ]}
-        active={tab}
+        active={unknownTab ? '' : tab}
         onChange={setTab}
         variant="scroll"
       >
-        {tab === 'bans' ? (
+        {unknownTab ? (
+          <div className="tab-panel">
+            <EmptyState
+              title={t('tabs.unknown')}
+              description={t('tabs.unknownHint', { tab: unknownTab })}
+            />
+          </div>
+        ) : null}
+        {panel === 'bans' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('fail2ban.manualBanTitle')}</h3>
               </div>
               <FormLayout columns={2}>
-                <Field label="IP" htmlFor="f2b-ban-ip" flush required>
+                <Field
+                  label="IP"
+                  htmlFor="f2b-ban-ip"
+                  flush
+                  required
+                  error={
+                    banIp.trim() && !isValidBanIp(banIp)
+                      ? t('fail2ban.invalidIp')
+                      : undefined
+                  }
+                >
                   <input
                     id="f2b-ban-ip"
                     value={banIp}
                     onChange={bindInput(setBanIp)}
                     placeholder={t('fail2ban.ipPlaceholder')}
                     spellCheck={false}
+                    autoComplete="off"
                   />
                 </Field>
-                <Field label="Jail" htmlFor="f2b-ban-jail" flush>
+                <Field label={t('fail2ban.colJail')} htmlFor="f2b-ban-jail" flush>
                   {(() => {
                     const jails = status?.jails?.length
                       ? status.jails.map((j) => j.name)
@@ -432,7 +438,7 @@ export function Fail2banPage() {
                     setBanIp,
                   )}
                 >
-                  banip
+                  {t('protection.ban')}
                 </Button>
               </FormActions>
               <FormHint>{t('fail2ban.manualBanHint')}</FormHint>
@@ -442,7 +448,7 @@ export function Fail2banPage() {
               <div className="def-section-head">
                 <h3 className="def-section-head__title">
                   {t('fail2ban.currentBans')}{' '}
-                  <Badge tone="neutral">{banned.length}</Badge>
+                  <Badge tone="neutral">{banCensus}</Badge>
                 </h3>
               </div>
               <DataTable
@@ -452,7 +458,7 @@ export function Fail2banPage() {
                   <ServerListFilters
                     q={banQ}
                     setQ={setBanQ}
-                    total={bannedAll.length}
+                    total={banCensus}
                     shown={banned.length}
                     activeFilterCount={banQ.trim() ? 1 : 0}
                     clear={bindSet(setBanQ, '')}
@@ -462,7 +468,7 @@ export function Fail2banPage() {
                 columns={[
                   {
                     key: 'jail',
-                    header: 'Jail',
+                    header: t('fail2ban.colJail'),
                     nowrap: true,
                     render: (b) => <code className="inline">{b.jail}</code> },
                   {
@@ -514,6 +520,7 @@ export function Fail2banPage() {
                     </Button>
                   </ActionBar>
                 )}
+                filterActive={Boolean(banQ.trim())}
                 empty={
                   <EmptyState
                     title={t('fail2ban.emptyBansTitle')}
@@ -525,7 +532,7 @@ export function Fail2banPage() {
           </div>
         ) : null}
 
-        {tab === 'whitelist' ? (
+        {panel === 'whitelist' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -621,6 +628,7 @@ export function Fail2banPage() {
                       ? t('fail2ban.applyIgnoreEmptyWarn')
                       : t('fail2ban.applyIgnoreNeedConfirm')
                   }
+                  data-confirm="ignoreip"
                   onClick={() => setApplyConfirm(true)}
                 >
                   {t('fail2ban.applyPolicyIgnoreip')}
@@ -703,6 +711,7 @@ export function Fail2banPage() {
             )();
           }}
           title={t('fail2ban.applyPolicyIgnoreip')}
+          dataConfirm="ignoreip"
           description={
             (status?.ignoreIps?.length ?? 0) === 0
               ? t('fail2ban.applyIgnoreEmptyWarn')
@@ -712,7 +721,7 @@ export function Fail2banPage() {
           danger={(status?.ignoreIps?.length ?? 0) === 0}
         />
 
-        {tab === 'jails' ? (
+        {panel === 'jails' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -765,7 +774,7 @@ export function Fail2banPage() {
           </div>
         ) : null}
 
-        {tab === 'policy' ? (
+        {panel === 'policy' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -901,7 +910,7 @@ export function Fail2banPage() {
           </div>
         ) : null}
 
-        {tab === 'service' ? (
+        {panel === 'service' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
               <div className="def-section-head">
@@ -953,17 +962,19 @@ export function Fail2banPage() {
           </div>
         ) : null}
 
-        {tab === 'stack' ? (
+        {panel === 'stack' ? (
           <div className="tab-panel stack">
             <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="fail2ban" />
           </div>
         ) : null}
 
-        {tab === 'about' ? <PageGuide guideId="fail2ban" /> : null}
+        {panel === 'about' ? <PageGuide guideId="fail2ban" /> : null}
       </PageTabs>
 
-      <OpsResultPanel result={result} message={msg} busy={busy} />
+      {result && resultTab === tab ? (
+        <OpsResultPanel result={result} message={msg} busy={busy} />
+      ) : null}
     </FeaturePageLayout>
   );
 }

@@ -75,7 +75,15 @@ function filterInventoryAdvice(inv: InvRow[], advice: InvRow[], url: URL) {
       },
     },
   );
-  return { inventory: items, meta, advice };
+  const kept = new Set(items.map((r) => String(r.packageName ?? r.name ?? '')));
+  const filteredAdvice =
+    url.searchParams.get('q') ||
+    url.searchParams.get('risk') ||
+    url.searchParams.get('upgradable') ||
+    url.searchParams.get('approval')
+      ? advice.filter((a) => kept.has(String(a.packageName ?? a.name ?? '')))
+      : advice;
+  return { inventory: items, meta, advice: filteredAdvice };
 }
 
 

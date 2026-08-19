@@ -12,14 +12,27 @@ import {
   inferExecBin,
 } from './manager.js';
 
-function mockHost(opts: { execute?: boolean; docker?: boolean; info?: string } = {}): HostExecutor {
+function mockHost(opts: {
+  execute?: boolean;
+  docker?: boolean;
+  info?: string;
+  ss?: string;
+  runFail?: string;
+  inspect?: unknown;
+} = {}): HostExecutor {
   const execute = opts.execute ?? false;
   const dockerOk = opts.docker !== false;
-  return {
+  const calls: string[][] = [];
+  const host = {
     executeEnabled: () => execute,
     isRoot: () => true,
+    calls,
     runCommand: async (argv: string[]) => {
-      const r = (stdout: string, exitCode = 0) => ({ stdout, stderr: '', exitCode });
+      calls.push(argv);
+      const r = (stdout: string, exitCode = 0, stderr = '') => ({ stdout, stderr, exitCode });
+      if (argv[0] === 'ss') {
+        return r(opts.ss ?? '');
+      }
       if (argv[0] === 'docker' && argv[1] === 'version') {
         return dockerOk ? r('27.0.3') : r('', 1);
       }
@@ -41,13 +54,21 @@ function mockHost(opts: { execute?: boolean; docker?: boolean; info?: string } =
             }),
         );
       }
+      if (argv[0] === 'docker' && argv[1] === 'inspect') {
+        return r(JSON.stringify(opts.inspect ?? [{ NetworkSettings: { Ports: {}, Networks: { bridge: {} } } }]));
+      }
       if (argv[0] === 'docker' && argv[1] === 'volume') return r('');
       if (argv[0] === 'docker' && argv[1] === 'network') return r('');
-      if (argv[0] === 'docker' && argv[1] === 'run') return r('cid123');
+      if (argv[0] === 'docker' && argv[1] === 'run') {
+        if (opts.runFail) return r('', 125, opts.runFail);
+        return r('cid123');
+      }
+      if (argv[0] === 'docker' && argv[1] === 'rm') return r(argv[3] ?? 'rm');
       if (argv[0] === 'docker' && argv[1] === 'start') return r('ok');
       return r('ok');
     },
-  } as unknown as HostExecutor;
+  };
+  return host as unknown as HostExecutor;
 }
 
 describe('docker manager', () => {
@@ -117,6 +138,83 @@ describe('docker manager', () => {
     if (never.ok) {
       expect(never.argv[never.argv.indexOf('--restart') + 1]).toBe('no');
     }
+    const withCmd = buildDockerRunArgv({
+      image: 'nginx:alpine',
+      entrypoint: 'nginx',
+      command: ['-g', 'daemon-off'],
+    });
+    expect(withCmd.ok).toBe(true);
+    if (withCmd.ok) {
+      expect(withCmd.argv).toContain('--entrypoint');
+      expect(withCmd.argv.at(-3)).toBe('nginx:alpine');
+      expect(withCmd.argv.slice(-2)).toEqual(['-g', 'daemon-off']);
+    }
+    expect(buildDockerRunArgv({ image: 'alpine:3.20', command: ['echo', 'a;b'] }).ok).toBe(false);
+  });
+
+  it('blocks run when the host port is already listening', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-dock-'));
+    dirs.push(dataDir);
+    const r = await dockerRun({
+      host: mockHost({
+        execute: true,
+        docker: true,
+        ss: 'LISTEN 0 511 127.0.0.1:8080 0.0.0.0:*',
+      }),
+      dataDir,
+      execute: true,
+      req: { image: 'nginx:alpine', name: 'qa-dock-web', ports: [{ host: 8080, container: 80 }] },
+    });
+    expect(r.ok).toBe(false);
+    expect(r.apply_status).toBe('blocked');
+    expect(String(r.notes?.join(' '))).toMatch(/portBusy|8080/);
+  });
+
+  it('removes named leftover after bind failure', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-dock-'));
+    dirs.push(dataDir);
+    const host = mockHost({
+      execute: true,
+      docker: true,
+      runFail:
+        "failed to bind host port 127.0.0.1:8080/tcp: address already in use\nRun 'docker run --help' for more information.",
+    });
+    const r = await dockerRun({
+      host,
+      dataDir,
+      execute: true,
+      req: { image: 'nginx:alpine', name: 'qa-dock-web' },
+    });
+    expect(r.ok).toBe(false);
+    expect(r.apply_status).toBe('failed');
+    expect(String(r.notes?.join(' '))).not.toMatch(/docker run --help/);
+    const calls = (host as unknown as { calls: string[][] }).calls;
+    expect(calls.some((a) => a[0] === 'docker' && a[1] === 'rm' && a.includes('qa-dock-web'))).toBe(
+      true,
+    );
+  });
+
+  it('start without published ports is failed, not applied', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-dock-'));
+    dirs.push(dataDir);
+    const r = await dockerContainerAction({
+      host: mockHost({
+        execute: true,
+        docker: true,
+        inspect: [
+          {
+            HostConfig: { PortBindings: { '80/tcp': [{ HostIp: '127.0.0.1', HostPort: '8080' }] } },
+            NetworkSettings: { Ports: {}, Networks: {} },
+          },
+        ],
+      }),
+      dataDir,
+      execute: true,
+      id: 'qa-dock-web',
+      action: 'start',
+    });
+    expect(r.apply_status).toBe('failed');
+    expect(r.ok).toBe(false);
   });
 
   it('container start without execute stays written', async () => {

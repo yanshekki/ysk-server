@@ -46,6 +46,7 @@ describe('applyListQuery', () => {
     const { items, meta } = applyListQuery(DATA, q, matchers);
     expect(items.map((i) => i.name)).toEqual(['alice']);
     expect(meta.total).toBe(1);
+    expect(meta.allTotal).toBe(4);
   });
 
   it('filters by role and computes facets after text only', () => {

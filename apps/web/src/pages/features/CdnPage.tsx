@@ -24,6 +24,7 @@ import {
   PageGuide,
   PageTabs,
   ServerListFilters,
+  TableMore,
   buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
@@ -228,6 +229,9 @@ export function sanitizeCdnNote(note: string, preview: (s: string) => string): s
   if (!s) return '';
   if (/PR-C3|not fan-out/i.test(s)) return preview(s);
   if (/dryRun:\s*not write|dry-run|dryRun/i.test(s)) return preview(s);
+  if (/hit-rate|log_format|none/i.test(s) && /unknown|cannot|no access log/i.test(s)) {
+    return preview(s);
+  }
   return s.replace(/\bPR-C3\b/gi, '').replace(/\s{2,}/g, ' ').trim();
 }
 
@@ -271,6 +275,16 @@ export function cdnMsgIsError(msg: string): boolean {
 /** Compact hit-rate label for status strip. */
 export function formatHitRatePct(pct: number | null | undefined): string {
   return pct != null ? `${pct}%` : '—';
+}
+
+export function cacheMethodLabel(
+  method: string | undefined,
+  tr: (k: string) => string,
+): string {
+  const m = String(method || 'none').trim() || 'none';
+  const key = `cdn.cacheMethod.${m}`;
+  const out = tr(key);
+  return out === key ? tr('cdn.cacheMethod.none') : out;
 }
 
 /** Status pill label: `Nn / Ss`. */
@@ -1294,9 +1308,7 @@ export function CdnPage() {
                   mobile: 'actions',
                   render: (s) => (
                     <ActionBar className="cdn-site-ops" wrap={false}>
-                      <details className="table-more">
-                        <summary>{t('common.more')}</summary>
-                        <div className="table-more__menu">
+                      <TableMore label={t('common.more')}>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1418,14 +1430,14 @@ export function CdnPage() {
                         size="sm"
                         loading={busy}
                         title={t('cdn.deleteSiteTitle')}
+                        data-confirm="dialog"
                         onClick={() =>
                           setDelSite({ id: s.id, name: String(s.name || s.id) })
                         }
                       >
                         {t('common.delete')}
                       </Button>
-                        </div>
-                      </details>
+                      </TableMore>
                     </ActionBar>
                   ) },
               ]}
@@ -1486,7 +1498,7 @@ export function CdnPage() {
                         {t('cdn.statDraining', { n: dashboard.nodes.draining })}
                       </Badge>
                       <Badge tone="neutral">
-                        {t('cdn.statSites', { n: dashboard.sites.total })}
+                        {t('cdn.statSitesCount', { n: dashboard.sites.total })}
                       </Badge>
                       <Badge
                         tone={
@@ -1585,7 +1597,7 @@ export function CdnPage() {
                         <Badge tone={c.hitRatePct != null ? 'ok' : 'warn'}>
                           {c.hitRatePct != null
                             ? `${c.hitRatePct}%`
-                            : c.method}
+                            : cacheMethodLabel(c.method, t)}
                         </Badge>
                         {c.hits != null ? (
                           <span className="muted u-text-sm">
@@ -1988,7 +2000,7 @@ export function CdnPage() {
               </select>
             </Field>
             <Field
-              label="geoMap JSON"
+              label={t('cdn.geoMapLabel')}
               htmlFor="site-geo"
               fullWidth
               flush
@@ -2099,6 +2111,7 @@ export function CdnPage() {
           void onDeleteSite(id);
         }}
         title={t('cdn.confirmDeleteSite')}
+        dataConfirm={delSite?.name ?? 'dialog'}
         description={t('cdn.deleteSiteDesc', { name: delSite?.name ?? '' })}
         consequences={[
           t('cdn.deleteSiteC1'),

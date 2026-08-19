@@ -3,5 +3,7 @@
   "scrollRight": "Scroll tabs right",
   "about": "About",
   "main": "Actions",
-  "stack": "Software"
+  "stack": "Software",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

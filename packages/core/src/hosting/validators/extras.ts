@@ -1,7 +1,7 @@
 /**
  * Remaining validator ops: summaries, prune, switch-network, compose, snapshot, stats, auto-clear.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   isValidatorInstanceId,
@@ -24,6 +24,7 @@ import {
   composeFilePath,
   composeProjectName,
   composePsRunning,
+  prepareValidatorDataDir,
   writeComposeFile,
 } from './compose-runner.js';
 import { planInstallFor } from './adapters/index.js';
@@ -189,7 +190,7 @@ export async function switchValidatorNetwork(input: {
   } catch {
     /* continue */
   }
-  mkdirSync(inst.dataPath, { recursive: true });
+  prepareValidatorDataDir(inst.dataPath);
   const newId = isValidatorInstanceId(`${inst.chain}-${input.network}-${inst.slug}`)
     ? `${inst.chain}-${input.network}-${inst.slug}`
     : nextValidatorInstanceId(input.dataDir, inst.chain, input.network);
@@ -201,7 +202,7 @@ export async function switchValidatorNetwork(input: {
     desiredState: 'stopped',
     updatedAt: new Date().toISOString(),
   };
-  mkdirSync(next.dataPath, { recursive: true });
+  prepareValidatorDataDir(next.dataPath);
   const plan = planInstallFor(next);
   writeComposeFile(composeFilePath(instanceDir(input.dataDir, next.id)), plan.composeYaml, next.id);
   if (newId !== inst.id) deleteValidatorInstance(input.dataDir, inst.id);
@@ -383,9 +384,9 @@ export async function runValidatorAutoClear(input: {
     });
     if (on) running.add(inst.id);
   }
-  const candidates = disk.instances
-    .filter((i) => !running.has(i.id))
-    .sort((a, b) => b.usedBytes - a.usedBytes);
+  const candidates = rankValidatorAutoClearCandidates(
+    disk.instances.map((i) => ({ id: i.id, usedBytes: i.usedBytes, running: running.has(i.id) })),
+  );
   const target = candidates[0];
   if (!target) return { cleared: [], notes: [tl('validators.notes.autoClearNone')] };
   const r = await clearValidatorInstance({
@@ -434,6 +435,20 @@ function playbookLines(chain: string, field: 'steps' | 'yskDoes' | 'youDo' | 'ne
     out.push(line);
   }
   return out;
+}
+
+export function rankValidatorAutoClearCandidates(
+  items: Array<{ id: string; usedBytes: number; running?: boolean }>,
+): Array<{ id: string; usedBytes: number }> {
+  return items
+    .filter((i) => !i.running)
+    .map((i) => ({ id: i.id, usedBytes: i.usedBytes }))
+    .sort((a, b) => {
+      const aEmpty = a.usedBytes <= 0 ? 1 : 0;
+      const bEmpty = b.usedBytes <= 0 ? 1 : 0;
+      if (aEmpty !== bEmpty) return aEmpty - bEmpty;
+      return b.usedBytes - a.usedBytes;
+    });
 }
 
 export function dataDirHasChainData(dataPath: string): boolean {

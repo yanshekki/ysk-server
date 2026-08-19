@@ -9,8 +9,13 @@ import { formatDateTime } from '../../../shared/lib/datetime';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
 import { deriveProjectStatus } from '../model/status';
 
-/** List row only — delete is detail/advanced, not list (same as email domains). */
-export function ProjectListItem({ project }: { project: ProjectDto }) {
+export function ProjectListItem({
+  project,
+  onDelete,
+}: {
+  project: ProjectDto;
+  onDelete?: (project: ProjectDto) => void;
+}) {
   const { t } = useTranslation();
   const { isProjectBookmarked, toggleProject } = useNavBookmarks();
   const [pinBusy, setPinBusy] = useState(false);
@@ -68,20 +73,26 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
         </Button>
         <ProjectStatusBadge project={project} />
         {bucket === 'pending_os' ? (
-          <>
-            <Link
-              to={`/projects/${project.id}?tab=isolation`}
-              className="list-row__link"
-            >
-              {t('projects.next.provisionOsAction')}
-            </Link>
-            <Link
-              to={`/projects/${project.id}?tab=advanced`}
-              className="list-row__link"
-            >
-              {t('common.delete')}
-            </Link>
-          </>
+          <Link
+            to={`/projects/${project.id}?tab=isolation`}
+            className="list-row__link"
+          >
+            {t('projects.next.provisionOsAction')}
+          </Link>
+        ) : null}
+        {onDelete ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            data-confirm={project.name}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(project);
+            }}
+          >
+            {t('common.delete')}
+          </Button>
         ) : null}
         <Link to={`/projects/${project.id}`} className="list-row__chevron" aria-hidden>
           ›

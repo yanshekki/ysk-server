@@ -57,6 +57,14 @@
   "jobsTitle": "Migration jobs ({{count}})",
   "jobsDesc": "State under dataDir/migrate/;",
   "phase": "Phase",
+  "jobPhase": "Job {{id}} · {{phase}}",
+  "phaseName": {
+    "failed": "Failed",
+    "done": "Done",
+    "running": "Running",
+    "queued": "Queued",
+    "cancelled": "Cancelled"
+  },
   "target": "Target",
   "updated": "Updated",
   "notes": "Notes",

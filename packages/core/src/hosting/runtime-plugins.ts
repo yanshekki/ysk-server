@@ -637,11 +637,28 @@ export function buildRuntimePluginUninstallScriptLines(
       }
       case 'pip': {
         const pkgs = (p.pipPackages ?? []).map((x) => JSON.stringify(x)).join(' ');
+        const aptPkgs = (p.pipPackages ?? [])
+          .map((x) => `python3-${x.replace(/^python-/i, '')}`)
+          .join(' ');
         lines.push(
-          `if python3 -m pip uninstall -y ${pkgs} 2>/dev/null; then true`,
-          `elif command -v pip3 >/dev/null 2>&1; then pip3 uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
-          `elif command -v pip >/dev/null 2>&1; then pip uninstall -y ${pkgs} || ysk_plugin_fail ${p.id}`,
-          `else ysk_plugin_fail ${p.id}; fi`,
+          `YSK_PIP_OK=0`,
+          `if command -v pipx >/dev/null 2>&1; then`,
+          `  pipx uninstall ${pkgs} >/tmp/ysk-pipx-un.out 2>&1 && YSK_PIP_OK=1 || true`,
+          `fi`,
+          `if [ "$YSK_PIP_OK" = "0" ] && command -v apt-get >/dev/null 2>&1; then`,
+          `  export DEBIAN_FRONTEND=noninteractive`,
+          `  apt-get remove -y ${aptPkgs} >/tmp/ysk-apt-un.out 2>&1 && YSK_PIP_OK=1 || true`,
+          `fi`,
+          `if [ "$YSK_PIP_OK" = "0" ]; then`,
+          `  python3 -m pip uninstall -y --break-system-packages ${pkgs} >/tmp/ysk-pip-un.out 2>&1 && YSK_PIP_OK=1 || true`,
+          `fi`,
+          `if [ "$YSK_PIP_OK" = "0" ] && command -v pip3 >/dev/null 2>&1; then`,
+          `  pip3 uninstall -y ${pkgs} >/tmp/ysk-pip3-un.out 2>&1 && YSK_PIP_OK=1 || true`,
+          `fi`,
+          `if [ "$YSK_PIP_OK" = "0" ]; then`,
+          `  echo "YSK_PLUGIN_SKIP:${p.id}: pip/pipx/apt could not remove ${p.id}" >&2`,
+          `  ysk_plugin_fail ${p.id}`,
+          `fi`,
         );
         break;
       }
@@ -904,6 +921,11 @@ export async function uninstallRuntimePlugins(input: {
         .split(/\s+/)
         .filter(Boolean)
     : [];
+  const skipLines = out
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('YSK_PLUGIN_SKIP:'));
+  notes.push(...skipLines.slice(0, 8));
 
   if (r.exitCode === 0) {
     notes.push(tl('notes.runtime.pluginsUninstallOk'));
@@ -911,7 +933,9 @@ export async function uninstallRuntimePlugins(input: {
   }
   if (pluginFailed.length) {
     notes.unshift(
-      tl('notes.runtime.pluginsUninstallFailed', { list: pluginFailed.join(', ') }),
+      tl('notes.runtime.pluginsUninstallFailed', {
+        list: [...pluginFailed, ...skipLines].filter(Boolean).join(' · ') || pluginFailed.join(', '),
+      }),
     );
   } else {
     notes.unshift(

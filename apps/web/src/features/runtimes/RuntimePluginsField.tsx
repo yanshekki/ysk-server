@@ -274,14 +274,10 @@ export function RuntimePluginsField({
           ids.length === 1
             ? t('runtime.pluginUninstalled', { name: label })
             : t('runtime.pluginBatchUninstalled', { n: ids.length }),
-          t('runtime.pluginUninstallFailed', { name: label }),
+          (r.notes ?? []).filter(Boolean).slice(0, 2).join(' · ') ||
+            t('runtime.pluginUninstallFailed', { name: label }),
         );
         setUninstallSelected([]);
-        if (r.ok !== false && !r.blocked) {
-          setRows((prev) =>
-            prev.map((row) => (ids.includes(row.id) ? { ...row, installed: false } : row)),
-          );
-        }
         await load({ bust: true });
       } catch (e) {
         const m = e instanceof Error ? e.message : t('runtime.pluginUninstallFailed', { name: label });

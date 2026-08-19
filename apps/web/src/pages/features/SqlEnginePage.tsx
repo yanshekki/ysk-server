@@ -36,7 +36,8 @@ import type { ResourceRow } from '../../features/resources/api';
 import { dbEngineApi, type DbEngineKind, type DbEngineStatus } from '../../features/db-engine';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
-import { api } from '../../shared/services/api';
+import { api, ApiError } from '../../shared/services/api';
+import { isSqlIdent } from 'ysk-server-shared';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '../../shared/lib/datetime';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
@@ -45,7 +46,7 @@ import {
   ServiceExposureDialog,
   usePrivateStartGate,
 } from '../../features/network/service-exposure';
-import { bindCall1, bindCloseIfIdle, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
+import { bindCall1, bindCloseIfIdle, bindFormSubmit, bindInput, bindSet, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 import { formatEngineVersion } from './ServiceConsolePage';
 
 export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
@@ -112,8 +113,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const users = useResourceCrud('mysql/users', { engine });
   const [svc, setSvc] = useState<DbEngineStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { busy: actBusy, error: actError, result, msg, run, setMsg, setError } =
+  const { busy: actBusy, error: actError, result, msg, run, setMsg, setError, clear } =
     useFeatureAction();
+  const [resultTab, setResultTab] = useState<string | null>(null);
+  const [delRemote, setDelRemote] = useState<Record<string, unknown> | null>(null);
+  const [createErr, setCreateErr] = useState<string | null>(null);
+  const [userErr, setUserErr] = useState<string | null>(null);
+  const [remoteHostErr, setRemoteHostErr] = useState<string | null>(null);
   const startGate = usePrivateStartGate(engine);
 
   const [tab, setTab] = useState('databases');
@@ -185,6 +191,10 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     void refreshExtras();
   }, [refreshSvc, refreshExtras]);
 
+  useEffect(() => {
+    if (result) setResultTab((prev) => prev ?? tab);
+  }, [result, tab]);
+
 
   async function onStart(exposure?: {
     exposureDecision?: 'keep-private' | 'public' | 'restricted';
@@ -230,6 +240,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
   async function onCreateDb(e: FormEvent) {
     e.preventDefault();
+    if (!isSqlIdent(name)) {
+      setCreateErr(t('db.invalidSqlIdent'));
+      return;
+    }
+    if (createUser && password.trim().length < 8) {
+      setCreateErr(t('db.passwordMin8'));
+      return;
+    }
+    if (createUser && username.trim() && !isSqlIdent(username)) {
+      setCreateErr(t('db.invalidSqlIdent'));
+      return;
+    }
+    setCreateErr(null);
     await dbs.create({
       name,
       engine,
@@ -246,6 +269,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
   async function onCreateUser(e: FormEvent) {
     e.preventDefault();
+    if (!isSqlIdent(username)) {
+      setUserErr(t('db.invalidSqlIdent'));
+      return;
+    }
+    if (password.trim().length < 8) {
+      setUserErr(t('db.passwordMin8'));
+      return;
+    }
+    setUserErr(null);
     await users.create({
       username,
       password,
@@ -293,7 +325,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             tone: svc?.executeEnabled ? 'ok' : 'warn' },
           {
             label: t('db.registeredCount'),
-            value: dbs.items.length,
+            value: dbs.allTotal,
             hint: t('db.registeredVsHostHint'),
           },
           {
@@ -303,7 +335,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           },
           {
             label: t('db.registeredUsers'),
-            value: users.items.length,
+            value: users.allTotal,
             hint: t('db.registeredUsersHint'),
           },
           {
@@ -338,13 +370,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || !firstDumpName}
+            disabled={busy || !firstDumpName || !installed}
             title={
-              !firstDumpName ? t('db.dumpNeedRegistered') : t('db.dumpFirstDbTitle')
+              !installed
+                ? t('db.dumpNeedEngine')
+                : !firstDumpName
+                  ? t('db.dumpNeedRegistered')
+                  : t('db.dumpFirstDbTitle')
             }
             onClick={() => {
               const name = firstDumpName;
               if (!name) return;
+              if (!installed) {
+                setError(t('db.dumpNeedEngine'));
+                return;
+              }
               setMsg(null);
               setError(null);
               void systemApi
@@ -364,9 +404,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           <Button
             variant="secondary"
             size="sm"
-            disabled={busy || !firstDumpName}
+            disabled={busy || !firstDumpName || !installed}
             title={
-              !firstDumpName ? t('db.importNeedRegistered') : t('db.importLatestNeedConfirm')
+              !installed
+                ? t('db.installFirst', { engine: title })
+                : !firstDumpName
+                  ? t('db.importNeedRegistered')
+                  : t('db.importLatestNeedConfirm')
             }
             onClick={() => {
               const name = firstDumpName;
@@ -446,6 +490,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         <SoftwareInstallBanner
           feature={engine === 'mariadb' ? 'mariadb' : 'mysql'}
           title={t('db.installBannerHint', { engine: title })}
+          uninstallTitle={engine === 'mariadb' ? 'mariadb-client' : 'mysql-client'}
         />
       ) : null}
       <Card>
@@ -571,6 +616,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         confirmLabel={t('db.unfreezeConfirmBtn')}
       />
 
+      {resultTab == null || resultTab === tab ? (
       <OpsResultPanel
         title={t('systemd.opsResult')}
         result={result}
@@ -580,6 +626,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         }
         busy={busy}
       />
+      ) : null}
 
       <Modal
         open={Boolean(lastTempPassword)}
@@ -601,14 +648,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
 
       <PageTabs
         tabs={[
-          { id: 'databases', label: t('db.tabDatabases', { count: dbs.items.length }) },
-          { id: 'users', label: t('db.tabUsers', { count: users.items.length }) },
+          { id: 'databases', label: t('db.tabDatabases', { count: dbs.allTotal }) },
+          { id: 'users', label: t('db.tabUsers', { count: users.allTotal }) },
           { id: 'temp', label: t('db.tabTemp', { count: tempUsers.length }) },
           { id: 'remote', label: t('db.tabRemote', { count: remoteHosts.length }) },
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
-        onChange={setTab}
+        onChange={(id) => {
+          setTab(id);
+          clear();
+          setResultTab(null);
+        }}
       >
         {tab === 'databases' ? (
           <Card>
@@ -626,7 +677,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                         variant="secondary"
                         size="sm"
                         loading={busy}
-                        title={t('db.adoptHostDbTitle')}
+                        disabled={!installed}
+                        title={
+                          !installed
+                            ? t('db.installFirst', { engine: title })
+                            : t('db.adoptHostDbTitle')
+                        }
                         onClick={() => {
                           void dbs.create({ name: n, engine });
                         }}
@@ -639,6 +695,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               ) : null}
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                filterActive={dbs.activeFilterCount > 0}
                 filters={
                   <ServerListFilters
                     q={dbs.q}
@@ -685,8 +742,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     <button
                       type="button"
                       className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-                      disabled={busy}
-                      title={busy ? t('common.processing') : t('common.apply')}
+                      disabled={busy || !installed}
+                      title={
+                        !installed
+                          ? t('db.installFirst', { engine: title })
+                          : busy
+                            ? t('common.processing')
+                            : t('common.apply')
+                      }
                       onClick={bindVoidCall2(dbs.apply, r.id, true)}
                     >
                       {t('common.apply')}
@@ -694,8 +757,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     <button
                       type="button"
                       className={buttonClassName({ variant: 'danger', size: 'sm' })}
-                      disabled={busy}
-                      title={busy ? t('common.processing') : t('common.delete')}
+                      disabled={busy || !installed}
+                      title={
+                        !installed
+                          ? t('db.installFirst', { engine: title })
+                          : busy
+                            ? t('common.processing')
+                            : t('common.delete')
+                      }
+                      data-confirm={String(r.name ?? r.id)}
                       onClick={bindSet(setDelDb, r.id)}
                     >
                       {t('common.delete')}
@@ -727,6 +797,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </div>
               <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
+                filterActive={users.activeFilterCount > 0}
                 filters={
                   <ServerListFilters
                     q={users.q}
@@ -753,7 +824,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     header: t('common.database'),
                     render: (r) =>
                       r.databaseId
-                        ? dbNameById.get(String(r.databaseId)) ?? String(r.databaseId)
+                        ? dbNameById.get(String(r.databaseId)) ?? t('db.unboundDatabase')
                         : '—' },
                   {
                     key: 'status',
@@ -766,8 +837,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <button
                     type="button"
                     className={buttonClassName({ variant: 'danger', size: 'sm' })}
-                    disabled={busy}
-                    title={busy ? t('common.processing') : t('common.delete')}
+                    disabled={busy || !installed}
+                    title={
+                      !installed
+                        ? t('db.installFirst', { engine: title })
+                        : busy
+                          ? t('common.processing')
+                          : t('common.delete')
+                    }
+                    data-confirm={String(r.username ?? r.id)}
                     onClick={bindSet(setDelUser, r.id)}
                   >
                     {t('common.delete')}
@@ -820,7 +898,16 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   variant="primary"
                   size="md"
                   loading={busy}
+                  disabled={!installed}
+                  title={
+                    !installed ? t('db.serverNotInstalled') : undefined
+                  }
                   onClick={() => {
+                    if (!installed) {
+                      setError(t('db.serverNotInstalled'));
+                      return;
+                    }
+                    setResultTab('temp');
                     void run(async () => {
                       const r = await api.requestRaw<{
                         ok: boolean;
@@ -909,12 +996,20 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     placeholder={t('db.prodReplicaPlaceholder')}
                   />
                 </Field>
-                <Field label={t('common.host')} htmlFor="rh-host" required flush>
+                <Field
+                  label={t('common.host')}
+                  htmlFor="rh-host"
+                  required
+                  flush
+                  error={remoteHostErr ?? undefined}
+                >
                   <input
                     id="rh-host"
                     value={remoteHost}
-                    onChange={bindInput(setRemoteHost)}
-                    required
+                    onChange={(e) => {
+                      setRemoteHost(e.target.value);
+                      if (remoteHostErr) setRemoteHostErr(null);
+                    }}
                   />
                 </Field>
                 <Field label={t('common.port')} htmlFor="rh-port" flush>
@@ -946,13 +1041,19 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   size="md"
                   loading={busy}
                   onClick={() => {
+                    if (!remoteHost.trim()) {
+                      setRemoteHostErr(t('db.remoteHostRequired'));
+                      return;
+                    }
+                    setRemoteHostErr(null);
+                    setResultTab('remote');
                     void api
                       .requestRaw('/api/v1/db/remote-hosts', {
                         method: 'POST',
                         body: JSON.stringify({
                           engine,
                           label: remoteLabel || remoteHost,
-                          host: remoteHost,
+                          host: remoteHost.trim(),
                           port: Number(remotePort) || undefined,
                           username: remoteUser || undefined,
                           password: remotePass || undefined }) })
@@ -965,6 +1066,54 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   }}
                 >
                   {t('common.save')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  disabled={!remoteHost.trim()}
+                  title={t('db.remoteTestUnsaved')}
+                  onClick={() => {
+                    if (!remoteHost.trim()) {
+                      setRemoteHostErr(t('db.remoteHostRequired'));
+                      return;
+                    }
+                    setRemoteHostErr(null);
+                    setResultTab('remote');
+                    void api
+                      .requestRaw('/api/v1/db/remote-hosts', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          engine,
+                          label: remoteLabel || remoteHost,
+                          host: remoteHost.trim(),
+                          port: Number(remotePort) || undefined,
+                          username: remoteUser || undefined,
+                          password: remotePass || undefined,
+                        }),
+                      })
+                      .then((row) => {
+                        const id = String(
+                          (row as { host?: { id?: string } }).host?.id ?? '',
+                        );
+                        if (!id) {
+                          setMsg(t('db.remoteHostSaved'));
+                          return refreshExtras();
+                        }
+                        return api
+                          .requestRaw(`/api/v1/db/remote-hosts/${id}/test`, {
+                            method: 'POST',
+                            body: '{}',
+                          })
+                          .then((r) => {
+                            const notes = (r as { notes?: string[] }).notes?.join('；');
+                            setMsg(notes || t('db.remoteTestDone'));
+                            return refreshExtras();
+                          });
+                      })
+                      .catch((e: Error) => setError(e.message));
+                  }}
+                >
+                  {t('db.remoteTest')}
                 </Button>
               </FormActions>
               <ul className="list-plain list-spaced u-mt-4">
@@ -1003,14 +1152,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       variant="danger"
                       size="sm"
                       title={t('db.remoteDeleteTitle')}
-                      onClick={() => {
-                        if (!window.confirm(t('db.remoteDeleteConfirm', { name: String(h.label || h.host) }))) return;
-                        void api
-                          .requestRaw(`/api/v1/db/remote-hosts/${h.id}`, {
-                            method: 'DELETE' })
-                          .then(() => refreshExtras())
-                          .catch((e: Error) => setError(e.message));
-                      }}
+                      data-confirm={String(h.host ?? h.label ?? h.id)}
+                      onClick={() => setDelRemote(h)}
                     >
                       {t('common.delete')}
                     </Button>
@@ -1049,7 +1192,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </>
         }
       >
-        <form id="sql-create" onSubmit={bindFormSubmit(onCreateDb)}>
+        <form id="sql-create" noValidate onSubmit={bindFormSubmit(onCreateDb)}>
           <FormLayout>
             <Field
               label={t('db.dbName')}
@@ -1057,12 +1200,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               required
               flush
               hint={t('db.dbNameHint')}
+              error={createErr ?? undefined}
             >
               <input
                 id="dn"
                 value={name}
-                onChange={bindInput(setName)}
-                required
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (createErr) setCreateErr(null);
+                }}
                 placeholder="my_app"
                 spellCheck={false}
               />
@@ -1140,25 +1286,41 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           </>
         }
       >
-        <form id="sql-user" onSubmit={bindFormSubmit(onCreateUser)}>
+        <form id="sql-user" noValidate onSubmit={bindFormSubmit(onCreateUser)}>
           <FormLayout columns={2}>
-            <Field label={t('common.username')} htmlFor="uun" required flush>
+            <Field
+              label={t('common.username')}
+              htmlFor="uun"
+              required
+              flush
+              error={userErr && !isSqlIdent(username) ? userErr : undefined}
+            >
               <input
                 id="uun"
                 value={username}
-                onChange={bindInput(setUsername)}
-                required
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (userErr) setUserErr(null);
+                }}
                 spellCheck={false}
               />
             </Field>
-            <Field label={t('common.password')} htmlFor="upw" required hint={t('users.passwordHint')} flush>
+            <Field
+              label={t('common.password')}
+              htmlFor="upw"
+              required
+              hint={t('users.passwordHint')}
+              flush
+              error={userErr && password.trim().length < 8 ? userErr : undefined}
+            >
               <input
                 id="upw"
                 type="password"
                 value={password}
-                onChange={bindInput(setPassword)}
-                required
-                minLength={8}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (userErr) setUserErr(null);
+                }}
                 autoComplete="new-password"
               />
             </Field>
@@ -1219,7 +1381,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <ConfirmDialog
         open={Boolean(delDb)}
         onClose={bindSet(setDelDb, null)}
-        onConfirm={bindRemoveIf(delDb, dbs.remove, setDelDb)}
+        onConfirm={() => {
+          const id = delDb;
+          if (!id) return;
+          void dbs
+            .remove(id)
+            .then(() => users.refresh())
+            .finally(() => setDelDb(null));
+        }}
         title={t('db.deleteDbTitle')}
         description={t('db.deleteDbDesc')}
         confirmText={
@@ -1238,10 +1407,52 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <ConfirmDialog
         open={Boolean(delUser)}
         onClose={bindSet(setDelUser, null)}
-        onConfirm={bindRemoveIf(delUser, users.remove, setDelUser)}
+        onConfirm={() => {
+          const id = delUser;
+          if (!id) return;
+          void users
+            .remove(id)
+            .catch((e: unknown) => {
+              if (e instanceof ApiError && e.status === 404) {
+                setMsg(t('db.userGoneRefresh'));
+                return users.refresh();
+              }
+              throw e;
+            })
+            .finally(() => setDelUser(null));
+        }}
         title={t('db.deleteUserTitle')}
         description={t('db.deleteUserDesc')}
+        confirmText={
+          String(
+            users.items.find((x) => String((x as { id?: string }).id) === delUser)?.username ??
+              delUser ??
+              '',
+          )
+        }
         severity="standard"
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={Boolean(delRemote)}
+        onClose={() => setDelRemote(null)}
+        onConfirm={() => {
+          const row = delRemote;
+          setDelRemote(null);
+          if (!row?.id) return;
+          void api
+            .requestRaw(`/api/v1/db/remote-hosts/${row.id}`, { method: 'DELETE' })
+            .then(() => refreshExtras())
+            .catch((e: Error) => setError(e.message));
+        }}
+        title={t('db.remoteDeleteTitle')}
+        description={t('db.remoteDeleteConfirm', {
+          name: String(delRemote?.label || delRemote?.host || ''),
+        })}
+        confirmText={String(delRemote?.host || delRemote?.label || '')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

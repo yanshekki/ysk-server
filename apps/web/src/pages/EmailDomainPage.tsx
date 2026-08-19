@@ -37,6 +37,7 @@ import {
   SegRadio,
   DescriptionList } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
+import { isMailboxLocalPart } from 'ysk-server-shared';
 import { ApiError, api } from '../shared/services/api';
 import { formatDateTime } from '../shared/lib/datetime';
 import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
@@ -44,17 +45,14 @@ import {
   bindBusyApplyPolicy,
   bindBusyAutodiscover,
   bindBusyBootstrap,
-  bindBusyCreateMailbox,
   bindBusyDnsblMulti,
   bindBusyDual,
   bindBusyFlagsUpdate,
-  bindBusyListSieve,
   bindBusyLiveReload,
 
   bindBusyMap,
   bindBusyMutateList,
   bindBusySet,
-  bindBusySetAndTab,
   bindBusySetRelay,
   bindBusyWebmailSso,
   bindBusyWriteSieve,
@@ -197,6 +195,57 @@ export function mailboxStatusTone(
   return 'neutral';
 }
 
+export function mailboxStatusLabel(
+  status: unknown,
+  t: (k: string) => string,
+): string {
+  const s = String(status ?? '').toLowerCase();
+  if (s === 'managed') return t('email.mailboxStatusManaged');
+  if (s === 'active') return t('email.mailboxStatusActiveShort');
+  if (s === 'disabled') return t('email.mailboxStatusDisabledShort');
+  if (s === 'system_provisioned') return t('email.mailboxStatusSystem');
+  if (s === 'managed_pending_system') return t('email.mailboxStatusPending');
+  if (s === 'managed_system_failed') return t('email.mailboxStatusFailed');
+  return s || '—';
+}
+
+export function aliasTypeLabel(type: unknown, t: (k: string) => string): string {
+  const s = String(type ?? '').toLowerCase();
+  if (s === 'forward') return t('email.typeForward');
+  if (s === 'alias') return t('email.typeAlias');
+  if (s === 'catchall') return t('email.catchall');
+  return s || '—';
+}
+
+export function validateMailboxCreate(
+  localPart: string,
+  password: string,
+  t: (k: string) => string,
+): { localPart?: string; password?: string } {
+  const err: { localPart?: string; password?: string } = {};
+  const local = localPart.trim();
+  if (!local) err.localPart = t('email.localPartRequired');
+  else if (!isMailboxLocalPart(local)) err.localPart = t('email.localPartInvalid');
+  if (password && password.length < 8) err.password = t('email.passwordTooShort');
+  return err;
+}
+
+export function validateAliasCreate(
+  type: 'forward' | 'alias' | 'catchall',
+  localPart: string,
+  destRaw: string,
+  t: (k: string) => string,
+): { localPart?: string; dest?: string } {
+  const err: { localPart?: string; dest?: string } = {};
+  if (type !== 'catchall') {
+    const local = localPart.trim();
+    if (!local) err.localPart = t('email.localPartRequired');
+    else if (!isMailboxLocalPart(local)) err.localPart = t('email.localPartInvalid');
+  }
+  if (!parseAliasDestinations(destRaw).length) err.dest = t('email.aliasDestRequired');
+  return err;
+}
+
 const MBOX_PAGE_SIZE = 10;
 
 /** Probe / check cell tone from ok tri-state. */
@@ -330,10 +379,11 @@ export function dnsblSummaryLabel(
   dnsbl: { ok?: boolean } | null | undefined,
   liveDnsbl: { ok?: boolean } | null | undefined,
   notTested: string,
+  labels?: { clean?: string; listed?: string },
 ): string {
   const src = dnsbl ?? liveDnsbl;
   if (!src) return notTested;
-  return src.ok ? 'Clean' : 'Listed';
+  return src.ok ? (labels?.clean ?? 'Clean') : (labels?.listed ?? 'Listed');
 }
 
 /** DNSBL summary tone. */
@@ -395,6 +445,17 @@ export function EmailDomainPage() {
   const [mboxPass, setMboxPass] = useState('');
   const [mboxLog, setMboxLog] = useState<Record<string, unknown> | null>(null);
   const [createMboxOpen, setCreateMboxOpen] = useState(false);
+  const [mboxFieldErr, setMboxFieldErr] = useState<{
+    localPart?: string;
+    password?: string;
+  }>({});
+  const [aliasFieldErr, setAliasFieldErr] = useState<{
+    localPart?: string;
+    dest?: string;
+  }>({});
+  const [sieveFiles, setSieveFiles] = useState<Array<Record<string, unknown>> | null>(
+    null,
+  );
   const [mailboxes, setMailboxes] = useState<Array<Record<string, unknown>>>([]);
   const [aliases, setAliases] = useState<Array<Record<string, unknown>>>([]);
   const [aliasLocal, setAliasLocal] = useState('sales');
@@ -479,6 +540,20 @@ export function EmailDomainPage() {
     }
     return found;
   }, [id]);
+
+  useEffect(() => {
+    setMboxLog(null);
+    setAliasLog(null);
+    setFlagsLog(null);
+    setRelayLog(null);
+    setPolicyLog(null);
+    setWebmailLog(null);
+    setBootstrapLog(null);
+    setAdvancedOpsLog(null);
+    setSieveFiles(null);
+    setMboxFieldErr({});
+    setAliasFieldErr({});
+  }, [tab]);
 
   useEffect(() => {
     if (tab !== 'relay') return;
@@ -792,11 +867,14 @@ export function EmailDomainPage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={bindOpenCreate(
-                      setCreateMboxOpen,
-                      [setMboxLocal, setMboxPass],
-                      ['info', ''],
-                    )}
+                    onClick={() => {
+                      setMboxFieldErr({});
+                      bindOpenCreate(
+                        setCreateMboxOpen,
+                        [setMboxLocal, setMboxPass],
+                        ['info', ''],
+                      )();
+                    }}
                   >
                     {t('email.createMailbox')}
                   </Button>
@@ -846,7 +924,7 @@ export function EmailDomainPage() {
                   nowrap: true,
                   render: (m) => (
                     <Badge tone={mailboxStatusTone(m.status)}>
-                      {String(m.status ?? '—')}
+                      {mailboxStatusLabel(m.status, t)}
                     </Badge>
                   ),
                 },
@@ -901,6 +979,7 @@ export function EmailDomainPage() {
                     variant="danger"
                     size="sm"
                     loading={busy}
+                    data-confirm={String(m.address ?? m.id)}
                     onClick={() =>
                       setDelMailbox({
                         id: String(m.id),
@@ -958,6 +1037,26 @@ export function EmailDomainPage() {
           <div className="tab-panel">
             <Card>
               <CardSection title={t('email.aliasesTitle')}>
+                <form
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const err = validateAliasCreate(aliasType, aliasLocal, aliasDest, t);
+                    setAliasFieldErr(err);
+                    if (err.localPart || err.dest) return;
+                    bindBusyMutateList(
+                      withBusy,
+                      () =>
+                        emailApi.createAlias(domain.id, {
+                          type: aliasType,
+                          localPart: aliasType === 'catchall' ? undefined : aliasLocal,
+                          destinations: parseAliasDestinations(aliasDest) }),
+                      setAliasLog,
+                      () => emailApi.listAliases(domain.id),
+                      setAliases,
+                    )();
+                  }}
+                >
                 <FormLayout columns={2}>
                   <Field label={t('email.aliasType')} htmlFor="al-type" flush>
                     <SegRadio
@@ -986,11 +1085,22 @@ export function EmailDomainPage() {
                       </span>
                     </Field>
                   ) : (
-                    <Field label={t('email.localPart')} htmlFor="al-local" hint={t('email.localPartHint')} flush>
+                    <Field
+                      label={t('email.localPart')}
+                      htmlFor="al-local"
+                      hint={t('email.localPartHint')}
+                      flush
+                      required
+                      error={aliasFieldErr.localPart}
+                    >
                       <input
                         id="al-local"
                         value={aliasLocal}
-                        onChange={bindInput(setAliasLocal)}
+                        onChange={(e) => {
+                          setAliasLocal(e.target.value);
+                          if (aliasFieldErr.localPart)
+                            setAliasFieldErr((p) => ({ ...p, localPart: undefined }));
+                        }}
                         placeholder="sales"
                       />
                     </Field>
@@ -1001,41 +1111,38 @@ export function EmailDomainPage() {
                     hint={t('email.targetMailboxHint')}
                     fullWidth
                     flush
+                    required
+                    error={aliasFieldErr.dest}
                   >
                     <input
                       id="al-dest"
                       value={aliasDest}
-                      onChange={bindInput(setAliasDest)}
+                      onChange={(e) => {
+                        setAliasDest(e.target.value);
+                        if (aliasFieldErr.dest)
+                          setAliasFieldErr((p) => ({ ...p, dest: undefined }));
+                      }}
                       placeholder={`info@${domain.domain}`}
                     />
                   </Field>
                 </FormLayout>
                 <FormActions>
                   <Button
+                    type="submit"
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusyMutateList(
-                      withBusy,
-                      () =>
-                        emailApi.createAlias(domain.id, {
-                          type: aliasType,
-                          localPart: aliasType === 'catchall' ? undefined : aliasLocal,
-                          destinations: parseAliasDestinations(aliasDest) }),
-                      setAliasLog,
-                      () => emailApi.listAliases(domain.id),
-                      setAliases,
-                    )}
                   >
                     {t('email.addAlias')}
                   </Button>
                 </FormActions>
+                </form>
                 {aliases.length > 0 ? (
                   <ul className="list-plain list-spaced u-mt-4">
                     {aliases.map((a) => (
                       <li key={String(a.id)} className=" u-flex u-justify-between">
                         <span>
-                          <Badge>{String(a.type)}</Badge>{' '}
+                          <Badge>{aliasTypeLabel(a.type, t)}</Badge>{' '}
                           <code className="inline">{String(a.source)}</code> →{' '}
                           {(a.destinations as string[] | undefined)?.join(', ')}
                         </span>
@@ -1195,12 +1302,20 @@ export function EmailDomainPage() {
                         ? (live as { ok?: boolean }).ok
                           ? t('email.liveOk')
                           : t('email.liveBad')
-                        : t('email.notTested'),
+                        : deliverability
+                          ? deliverability.panelReady
+                            ? t('email.liveOk')
+                            : t('email.liveBad')
+                          : t('email.notTested'),
                       tone: live
                         ? (live as { ok?: boolean }).ok
                           ? 'ok'
                           : 'warn'
-                        : 'default',
+                        : deliverability
+                          ? deliverability.panelReady
+                            ? 'ok'
+                            : 'warn'
+                          : 'default',
                     },
                     {
                       label: t('email.blacklist'),
@@ -1208,6 +1323,10 @@ export function EmailDomainPage() {
                         dnsbl as { ok?: boolean } | null,
                         (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
                         t('email.notTested'),
+                        {
+                          clean: t('email.dnsblCleanStatus'),
+                          listed: t('email.dnsblListedStatus'),
+                        },
                       ),
                       tone: dnsblSummaryTone(
                         dnsbl as { ok?: boolean } | null,
@@ -1221,12 +1340,14 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusyLiveReload(
-                      withBusy,
-                      () => emailApi.deliverability(domain.id),
-                      setDeliverability,
-                      load,
-                    )}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.deliverability(domain.id);
+                        setDeliverability(r);
+                        await load();
+                        notifyOk(t('email.deliverabilityDone', { score: r.score }));
+                      });
+                    }}
                   >
                     {t('email.runDeliverabilityPack')}
                   </Button>
@@ -1282,6 +1403,65 @@ export function EmailDomainPage() {
                 </ActionBar>
               </CardSection>
             </Card>
+
+            {deliverability ? (
+              <Card>
+                <CardSection title={t('email.deliverabilityTitle')}>
+                  <SummaryStrip
+                    items={[
+                      {
+                        label: t('email.healthScore'),
+                        value: `${deliverability.score}/100`,
+                        tone: healthScoreTone(deliverability.score),
+                      },
+                      {
+                        label: t('email.deliverabilityChecks'),
+                        value: String(deliverability.items.length),
+                      },
+                      {
+                        label: t('email.panelReady'),
+                        value: deliverability.panelReady
+                          ? t('common.ready')
+                          : t('email.gaps'),
+                        tone: deliverability.panelReady ? 'ok' : 'warn',
+                      },
+                    ]}
+                  />
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'title',
+                        header: t('common.name'),
+                        render: (i) => <strong>{i.title}</strong>,
+                      },
+                      {
+                        key: 'ok',
+                        header: t('common.status'),
+                        render: (i) => (
+                          <Badge tone={deliverabilityItemTone(i)}>
+                            {i.ok === true
+                              ? t('email.checkOk')
+                              : i.level === 'external'
+                                ? t('email.checkExternal')
+                                : i.ok === false
+                                  ? t('email.checkFail')
+                                  : '—'}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: 'detail',
+                        header: t('common.notes'),
+                        className: 'u-text-sm',
+                        render: (i) => i.detail || i.fixHint || '—',
+                      },
+                    ]}
+                    rows={deliverability.items}
+                    rowKey={(i) => i.id}
+                  />
+                </CardSection>
+              </Card>
+            ) : null}
 
             {live ? (
               <Card>
@@ -1357,7 +1537,7 @@ export function EmailDomainPage() {
                   </div>
                 </CardSection>
               </Card>
-            ) : (
+            ) : !deliverability ? (
               <Card>
                 <div className="mail-empty">
                   <EmptyState
@@ -1366,7 +1546,7 @@ export function EmailDomainPage() {
                   />
                 </div>
               </Card>
-            )}
+            ) : null}
 
             {dnsbl ? (
               <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} />
@@ -1386,12 +1566,14 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusyLiveReload(
-                      withBusy,
-                      () => emailApi.deliverability(domain.id),
-                      setDeliverability,
-                      load,
-                    )}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.deliverability(domain.id);
+                        setDeliverability(r);
+                        await load();
+                        notifyOk(t('email.deliverabilityDone', { score: r.score }));
+                      });
+                    }}
                   >
                     {t('email.runDeliverabilityPack')}
                   </Button>
@@ -1608,16 +1790,54 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusyListSieve(
-                      withBusy,
-                      domain.domain,
-                      emailApi.listSieve,
-                      setWebmailLog,
-                    )}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.listSieve(
+                          `postmaster@${domain.domain}`,
+                        );
+                        const items = r.items ?? [];
+                        setSieveFiles(items);
+                        const names = items.map((f) =>
+                          String(f.path ?? f.name ?? ''),
+                        );
+                        setWebmailLog({
+                          ok: true,
+                          notes: names.length
+                            ? names
+                            : [t('email.sieveEmpty')],
+                        });
+                        if (names.length) {
+                          notifyOk(t('email.sieveListed', { count: names.length }));
+                        } else {
+                          notifyOk(t('email.sieveEmpty'));
+                        }
+                      });
+                    }}
                   >
                     {t('email.listWrittenFiles')}
                   </Button>
                 </FormActions>
+                {sieveFiles ? (
+                  sieveFiles.length ? (
+                    <ul className="list-plain list-spaced u-mt-3" aria-label={t('email.sieveFilesTitle')}>
+                      {sieveFiles.map((f, i) => (
+                        <li key={String(f.path ?? f.name ?? i)}>
+                          <code className="inline">
+                            {String(f.path ?? f.name ?? '')}
+                          </code>
+                          {f.bytes != null ? (
+                            <span className="muted u-text-sm">
+                              {' '}
+                              ({String(f.bytes)})
+                            </span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="muted u-mt-3">{t('email.sieveEmpty')}</p>
+                  )
+                ) : null}
               </CardSection>
             </Card>
             {webmailLog ? <OpsResultPanel title={t('email.result')} result={asOps(webmailLog)} /> : null}
@@ -1971,7 +2191,12 @@ export function EmailDomainPage() {
 
       <Modal
         open={createMboxOpen}
-        onClose={bindSet(setCreateMboxOpen, false)}
+        onClose={() => {
+          if (!busy) {
+            setCreateMboxOpen(false);
+            setMboxFieldErr({});
+          }
+        }}
         title={t('email.createMailboxTitle')}
         description={t('email.createMailboxDesc', { local: mboxLocal || '…', domain: domain.domain })}
         footer={
@@ -1979,62 +2204,94 @@ export function EmailDomainPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={bindSet(setCreateMboxOpen, false)}
+              onClick={() => {
+                setCreateMboxOpen(false);
+                setMboxFieldErr({});
+              }}
             >
               {t('common.cancel')}
             </Button>
             <Button
+              type="submit"
+              form="email-mbox-create"
               variant="primary"
               size="md"
               loading={busy}
-              onClick={bindBusyCreateMailbox(
-                withBusy,
-                emailApi.createMailbox,
-                domain.id,
-                mboxLocal,
-                mboxPass,
-                setMboxLog,
-                emailApi.listMailboxes,
-                setMailboxes,
-                () => setCreateMboxOpen(false),
-                () => setMboxPass(''),
-              )}
             >
               {t('email.createMailboxBtn')}
             </Button>
           </>
         }
       >
-        <FormLayout columns={1}>
-          <Field
-            label={t('email.localPartLabel')}
-            htmlFor="mlocal"
-            hint={t('email.localPartFullHint', { local: mboxLocal || '…', domain: domain.domain })}
-            required
-            flush
-          >
-            <input
-              id="mlocal"
-              value={mboxLocal}
-              onChange={bindInput(setMboxLocal)}
-              placeholder="info"
-            />
-          </Field>
-          <Field
-            label={t('common.password')}
-            htmlFor="mpass"
-            hint={t('email.passwordOptionalHint8')}
-            flush
-          >
-            <input
-              id="mpass"
-              type="password"
-              value={mboxPass}
-              onChange={bindInput(setMboxPass)}
-              autoComplete="new-password"
-            />
-          </Field>
-        </FormLayout>
+        <form
+          id="email-mbox-create"
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            const err = validateMailboxCreate(mboxLocal, mboxPass, t);
+            setMboxFieldErr(err);
+            if (err.localPart || err.password) return;
+            void withBusy(async () => {
+              try {
+                const r = await emailApi.createMailbox(domain.id, {
+                  localPart: mboxLocal,
+                  password: mboxPass || undefined,
+                });
+                setMboxLog(r);
+                notifyOpsResult(r, t);
+                setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                setCreateMboxOpen(false);
+                setMboxPass('');
+              } catch (ex) {
+                const msg =
+                  ex instanceof Error ? ex.message : t('email.localPartInvalid');
+                if (/password|密碼/i.test(msg)) setMboxFieldErr({ password: msg });
+                else setMboxFieldErr({ localPart: msg });
+              }
+            });
+          }}
+        >
+          <FormLayout columns={1}>
+            <Field
+              label={t('email.localPartLabel')}
+              htmlFor="mlocal"
+              hint={t('email.localPartFullHint', { local: mboxLocal || '…', domain: domain.domain })}
+              required
+              flush
+              error={mboxFieldErr.localPart}
+            >
+              <input
+                id="mlocal"
+                value={mboxLocal}
+                onChange={(e) => {
+                  setMboxLocal(e.target.value);
+                  if (mboxFieldErr.localPart)
+                    setMboxFieldErr((p) => ({ ...p, localPart: undefined }));
+                }}
+                placeholder="info"
+              />
+            </Field>
+            <Field
+              label={t('common.password')}
+              htmlFor="mpass"
+              hint={t('email.passwordOptionalHint8')}
+              flush
+              error={mboxFieldErr.password}
+            >
+              <input
+                id="mpass"
+                type="password"
+                value={mboxPass}
+                onChange={(e) => {
+                  setMboxPass(e.target.value);
+                  if (mboxFieldErr.password)
+                    setMboxFieldErr((p) => ({ ...p, password: undefined }));
+                }}
+                autoComplete="new-password"
+              />
+            </Field>
+          </FormLayout>
+        </form>
       </Modal>
 
       <Modal

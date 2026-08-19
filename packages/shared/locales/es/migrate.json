@@ -104,5 +104,13 @@
   "sourceDbRedis": "Databases / Redis",
   "sourceDbRedisValue": "{{db}} databases · {{redis}} Redis",
   "orphanColEntries": "Entries",
-  "orphanEntries": "{{n}} top-level entries in the directory"
+  "orphanEntries": "{{n}} top-level entries in the directory",
+  "jobPhase": "Job {{id}} · {{phase}}",
+  "phaseName": {
+    "failed": "Failed",
+    "done": "Done",
+    "running": "Running",
+    "queued": "Queued",
+    "cancelled": "Cancelled"
+  }
 }

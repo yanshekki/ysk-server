@@ -368,18 +368,16 @@ export async function deleteSsPeer(
 ): Promise<{ ok: boolean; notes: string[] }> {
   const state = loadSsServer(dataDir);
   if (!state) return { ok: false, notes: [tl('notes.vpn.serverMissing')] };
-  const before = state.peers.length;
+  const peer = state.peers.find((p) => p.id === peerId);
+  if (!peer) return { ok: false, notes: [tl('notes.vpn.peerNotFound')] };
   state.peers = state.peers.filter((p) => p.id !== peerId);
-  if (state.peers.length === before) {
-    return { ok: false, notes: [tl('notes.vpn.peerNotFound')] };
-  }
   saveSsServer(dataDir, state);
   try {
     rmSync(join(ssServerDir(dataDir), 'clients', `${peerId}.txt`), { force: true });
   } catch {
     /* */
   }
-  return { ok: true, notes: [tl('notes.vpn.peerRemoved')] };
+  return { ok: true, notes: [tl('notes.vpn.peerRemoved', { name: peer.name })] };
 }
 
 export async function isSsServerActive(host: HostExecutor): Promise<boolean> {

@@ -104,8 +104,16 @@ export async function digLocalAuthoritative(input: {
   if (!name) {
     return { ok: false, answers: [], notes: ['empty name'], method: 'none' };
   }
-  const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
+  const { resolveBin } = await import('./software-probe/index.js');
   const digPath = await resolveBin(input.host, 'dig');
+  if (!digPath) {
+    return {
+      ok: false,
+      answers: [],
+      notes: [tl('notes.dns.digNotInstalled')],
+      method: 'none',
+    };
+  }
 
   const servers: string[] = [];
   if (input.server?.trim()) servers.push(input.server.trim());
@@ -128,17 +136,16 @@ export async function digLocalAuthoritative(input: {
   let lastNotes: string[] = [];
   for (const server of servers) {
     const at = `@${server}`;
-    const argv = digPath
-      ? [digPath, at, '+time=2', '+tries=1', '+short', type, name]
-      : [
-          'bash',
-          '-c',
-          `if ${shellBinExists('dig')}; then dig ${at} +time=2 +tries=1 +short ${JSON.stringify(type)} ${JSON.stringify(name)} 2>&1; else echo YSK_NO_DIG; fi`,
-        ];
+    const argv = [digPath, at, '+time=2', '+tries=1', '+short', type, name];
     const r = await input.host.runCommand(argv, { timeoutMs: 10_000 });
     const out = `${r.stdout || ''}\n${r.stderr || ''}`;
     if (out.includes('YSK_NO_DIG')) {
-      return { ok: false, answers: [], notes: ['dig not installed'], method: 'none' };
+      return {
+        ok: false,
+        answers: [],
+        notes: [tl('notes.dns.digNotInstalled')],
+        method: 'none',
+      };
     }
     if (/connection refused|timed out|no servers could be reached/i.test(out)) {
       lastNotes = [
@@ -160,13 +167,7 @@ export async function digLocalAuthoritative(input: {
     }
 
     // Empty +short: check status (REFUSED = zone not loaded into PowerDNS)
-    const statusArgv = digPath
-      ? [digPath, at, '+time=2', '+tries=1', '+noall', '+comments', type, name]
-      : [
-          'bash',
-          '-c',
-          `if ${shellBinExists('dig')}; then dig ${at} +time=2 +tries=1 +noall +comments ${JSON.stringify(type)} ${JSON.stringify(name)} 2>&1; else true; fi`,
-        ];
+    const statusArgv = [digPath, at, '+time=2', '+tries=1', '+noall', '+comments', type, name];
     const st = await input.host.runCommand(statusArgv, { timeoutMs: 8_000 });
     const stOut = `${st.stdout || ''}\n${st.stderr || ''}`;
     if (/status:\s*REFUSED/i.test(stOut)) {
@@ -370,11 +371,19 @@ export async function probeDnsServiceHealth(input: {
       name: digTarget,
       type: 'SOA',
     });
-    answeringLocal = dig.ok;
     digAnswers = dig.answers;
     digNotes = dig.notes;
-    if (!dig.ok) notes.push(...(dig.notes ?? []).slice(0, 2));
+    if (dig.method === 'none') {
+      answeringLocal = undefined;
+      notes.push(...(dig.notes ?? []).slice(0, 2));
+    } else {
+      answeringLocal = dig.ok;
+      if (!dig.ok) notes.push(...(dig.notes ?? []).slice(0, 2));
+    }
 
+    if (dig.method === 'none') {
+      /* skip A probe — missing dig is not NXDOMAIN */
+    } else {
     // Local A probe: apex/www + relative names from managed zone meta (no hard-coded business hosts)
     let relA: string[] | undefined;
     try {
@@ -413,6 +422,7 @@ export async function probeDnsServiceHealth(input: {
     }
     if (answeringLocalA === false) {
       notes.push(tl('notes.dns.localAFailed', { zone: digTarget }));
+    }
     }
   } else if (digTarget && !listenUdp53 && !unitActive) {
     answeringLocal = false;
@@ -463,6 +473,8 @@ export async function probeDnsServiceHealth(input: {
     answering:
       answeringLocal === true || answeringLocalA === true
         ? 'ok'
+        : (digNotes ?? []).some((n) => /dig 未安裝|dig is not installed|dig not installed/i.test(n))
+          ? 'warn'
         : answeringLocal === false
           ? 'danger'
           : 'neutral',
@@ -518,21 +530,18 @@ export async function digPublicNs(input: {
     (input.publicResolver || process.env.YSK_DNS_PUBLIC_RESOLVER || '8.8.8.8').trim() ||
     '8.8.8.8';
   if (!zone) return { ns: [], notes: ['empty zone for public NS dig'], resolver };
-  const { resolveBin, shellBinExists } = await import('./software-probe/index.js');
+  const { resolveBin } = await import('./software-probe/index.js');
   const digPath = await resolveBin(input.host, 'dig');
+  if (!digPath) {
+    return { ns: [], notes: [tl('notes.dns.digNotInstalled')], resolver };
+  }
   const at = `@${resolver}`;
-  const argv = digPath
-    ? [digPath, at, '+time=2', '+tries=1', '+short', 'NS', zone]
-    : [
-        'bash',
-        '-c',
-        `if ${shellBinExists('dig')}; then dig ${at} +time=2 +tries=1 +short NS ${JSON.stringify(zone)} 2>&1; else echo YSK_NO_DIG; fi`,
-      ];
+  const argv = [digPath, at, '+time=2', '+tries=1', '+short', 'NS', zone];
   try {
     const r = await input.host.runCommand(argv, { timeoutMs: 8_000 });
     const out = `${r.stdout || ''}\n${r.stderr || ''}`;
     if (out.includes('YSK_NO_DIG')) {
-      return { ns: [], notes: ['dig not installed — skip public NS check'], resolver };
+      return { ns: [], notes: [tl('notes.dns.digNotInstalled')], resolver };
     }
     if (/connection refused|timed out|no servers could be reached/i.test(out)) {
       return { ns: [], notes: [`public dig ${at} failed (network)`], resolver };

@@ -37,6 +37,7 @@ import {
   type NginxSiteRow,
 } from '../../features/nginx/api';
 import { bindSet } from '../bind-handlers';
+import { isNginxServerNameList } from 'ysk-server-shared';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 
@@ -58,6 +59,8 @@ export function NginxPage() {
   } = useResourceCrud('nginx/sites');
 
   const [sites, setSites] = useState<NginxSiteRow[]>([]);
+  const [allTotal, setAllTotal] = useState(0);
+  const [formErr, setFormErr] = useState<string | null>(null);
   const [listErr, setListErr] = useState<string | null>(null);
   const [listBusy, setListBusy] = useState(false);
   const [q, setQ] = useState('');
@@ -109,6 +112,7 @@ export function NginxPage() {
         projectId: projectFilter || undefined,
       });
       setSites(r.items ?? []);
+      setAllTotal(typeof r.allTotal === 'number' ? r.allTotal : (r.total ?? r.items?.length ?? 0));
     } catch (e) {
       setListErr(e instanceof Error ? e.message : t('common.loadFailed'));
     } finally {
@@ -143,6 +147,11 @@ export function NginxPage() {
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
+    const err = siteFormError();
+    if (err) {
+      setFormErr(err);
+      return;
+    }
     await create({
       serverName: serverName.trim(),
       kind,
@@ -151,6 +160,7 @@ export function NginxPage() {
       ssl,
     });
     setCreateOpen(false);
+    setFormErr(null);
     await refresh();
   };
 
@@ -203,6 +213,13 @@ export function NginxPage() {
     } finally {
       setPreviewBusy(false);
     }
+  };
+
+  const siteFormError = () => {
+    if (!isNginxServerNameList(serverName)) return t('nginx.invalidServerName');
+    if (kind === 'proxy' && !upstream.trim()) return t('nginx.needUpstream');
+    if (kind !== 'proxy' && !root.trim()) return t('nginx.needRoot');
+    return null;
   };
 
   const kindLabel = (k: string) => {
@@ -300,8 +317,8 @@ export function NginxPage() {
       subtitle={t('nginx.pageDesc')}
       status={{
         pill: {
-          label: t('nginx.pillSites', { count: sites.length }),
-          tone: sites.length ? 'ok' : 'warn',
+          label: t('nginx.pillSites', { count: allTotal || sites.length }),
+          tone: (allTotal || sites.length) ? 'ok' : 'warn',
         },
       }}
       actions={
@@ -317,6 +334,7 @@ export function NginxPage() {
             size="sm"
             loading={purgeBusy}
             title={t('nginx.purgeCacheTitle')}
+            data-confirm="dialog"
             onClick={() => setPendingPurge(true)}
           >
             {t('nginx.purgeCache')}
@@ -351,13 +369,15 @@ export function NginxPage() {
           />
           <ServiceLifecycleBar
             unit="nginx"
+            matrixId="nginx"
             label="Nginx"
             danger="edge"
             actions={['start', 'stop', 'restart', 'reload']}
             size="sm"
             className="u-mt-3"
+            showResult
             onDone={() => void refresh()}
-            stopDetail={t('nginx.stopSites', { n: sites.length })}
+            stopDetail={t('nginx.stopSites', { n: allTotal || sites.length })}
           />
         </div>
 
@@ -383,7 +403,8 @@ export function NginxPage() {
 
         <DataTable
           rowKey={(r) => r.id}
-          title={t('nginx.listTitle', { count: sites.length })}
+          title={t('nginx.listTitle', { count: allTotal || sites.length })}
+          filterActive={Boolean(q.trim()) || source !== 'all'}
           columns={[
             {
               key: 'server',
@@ -472,6 +493,7 @@ export function NginxPage() {
                     variant="danger"
                     size="sm"
                     loading={busy}
+                    data-confirm={r.serverName}
                     onClick={() => setDelId(r.id)}
                   >
                     {t('common.delete')}
@@ -496,9 +518,21 @@ export function NginxPage() {
           description={preview?.path ?? undefined}
           size="xl"
           footer={
-            <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
-              {t('common.close')}
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => {
+                  const text = preview?.content ?? '';
+                  if (text && navigator.clipboard) void navigator.clipboard.writeText(text);
+                }}
+              >
+                {t('common.copy')}
+              </Button>
+              <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
+                {t('common.close')}
+              </Button>
+            </>
           }
         >
           <LogViewer
@@ -524,7 +558,8 @@ export function NginxPage() {
             </>
           }
         >
-          <form id="ngx-create" onSubmit={(e) => void onCreate(e)}>
+          <form id="ngx-create" noValidate onSubmit={(e) => void onCreate(e)}>
+            {formErr ? <Alert variant="error">{formErr}</Alert> : null}
             <SiteForm
               serverName={serverName}
               setServerName={setServerName}
@@ -555,7 +590,7 @@ export function NginxPage() {
             </>
           }
         >
-          <form id="ngx-edit" onSubmit={(e) => void onEdit(e)}>
+          <form id="ngx-edit" noValidate onSubmit={(e) => void onEdit(e)}>
             <SiteForm
               serverName={serverName}
               setServerName={setServerName}
@@ -581,11 +616,22 @@ export function NginxPage() {
                 void refresh();
               });
           }}
-          title={t('nginx.deleteTitle')}
-          description={t('nginx.deleteDesc')}
+          title={t('nginx.deleteTitleNamed', {
+            name: sites.find((s) => s.id === delId)?.serverName || delId || '',
+          })}
+          description={t('nginx.deleteDescNamed', {
+            name: sites.find((s) => s.id === delId)?.serverName || delId || '',
+          })}
+          severity={
+            sites.find((s) => s.id === delId)?.apply_status === 'applied' ? 'critical' : 'standard'
+          }
+          confirmText={
+            sites.find((s) => s.id === delId)?.apply_status === 'applied'
+              ? sites.find((s) => s.id === delId)?.serverName
+              : undefined
+          }
           confirmLabel={t('common.delete')}
           cancelLabel={t('common.cancel')}
-          danger
           busy={busy}
         />
 
@@ -751,8 +797,8 @@ function SiteForm(props: {
             id="sn"
             value={props.serverName}
             onChange={(e) => props.setServerName(e.target.value)}
-            required
             placeholder="app.example.com"
+            autoComplete="off"
             spellCheck={false}
           />
         </Field>

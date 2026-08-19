@@ -3,5 +3,7 @@
   "scrollRight": "Faire défiler les onglets vers la droite",
   "about": "À propos",
   "main": "Actes",
-  "stack": "Logiciels"
+  "stack": "Logiciels",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

@@ -444,7 +444,8 @@
       "interpreter": "مترجم",
       "user": "صارف",
       "unit": "یونٹ",
-      "runtime": "رن ٹائم"
+      "runtime": "رن ٹائم",
+      "pid": "PID"
     },
     "projectsTitle": "YSK پروجیکٹ کے عمل",
     "projectsDesc": "پینل پراجیکٹس کے لیے سسٹمڈ یونٹس (پہلے سے طے شدہ تعیناتی کا راستہ - PM2 نہیں)۔",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

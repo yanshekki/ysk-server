@@ -563,6 +563,8 @@ export function HostBrowsePage() {
     void runNavigate({ url: raw, action: 'goto' });
   }, [runNavigate, urlDraft]);
 
+  const [pendingClearSession, setPendingClearSession] = useState(false);
+
   const dismissResume = useCallback(() => {
     setResumeSnap(null);
     void hostBrowseApi.clearLastSnapshot().catch(() => undefined);
@@ -1259,7 +1261,8 @@ export function HostBrowsePage() {
                       size="sm"
                       variant="danger"
                       title={t('hostBrowse.clearSessionData')}
-                      onClick={dismissResume}
+                      data-confirm="dialog"
+                      onClick={() => setPendingClearSession(true)}
                       disabled={busy}
                     >
                       {t('hostBrowse.clearSessionData')}
@@ -1875,6 +1878,19 @@ export function HostBrowsePage() {
         }
         danger
         confirmLabel={t('common.confirm')}
+      />
+      <ConfirmDialog
+        open={pendingClearSession}
+        onClose={() => setPendingClearSession(false)}
+        title={t('hostBrowse.clearSessionData')}
+        description={t('hostBrowse.clearSessionConfirm')}
+        severity="destructive"
+        dataConfirm="dialog"
+        confirmLabel={t('hostBrowse.clearSessionData')}
+        onConfirm={() => {
+          setPendingClearSession(false);
+          dismissResume();
+        }}
       />
     </FeaturePageLayout>
   );

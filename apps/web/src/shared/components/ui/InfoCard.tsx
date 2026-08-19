@@ -4,6 +4,7 @@
  * Do NOT use kpi-card (max-width 14rem) for this content.
  */
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge, type BadgeTone } from './Badge';
 
 export type InfoFact = {
@@ -15,7 +16,7 @@ export type InfoFact = {
 
 export interface InfoCardProps {
   title: string;
-  badge?: { label: string; tone?: BadgeTone };
+  badge?: { label: string; tone?: BadgeTone; to?: string };
   facts: InfoFact[];
   actions?: ReactNode;
   className?: string;
@@ -30,7 +31,13 @@ export function InfoCard({ title, badge, facts, actions, className }: InfoCardPr
       <header className="info-card__head">
         <h4 className="info-card__title">{title}</h4>
         {badge ? (
-          <Badge tone={badge.tone ?? 'neutral'}>{badge.label}</Badge>
+          badge.to ? (
+            <Link to={badge.to} className="info-card__badge-link">
+              <Badge tone={badge.tone ?? 'neutral'}>{badge.label}</Badge>
+            </Link>
+          ) : (
+            <Badge tone={badge.tone ?? 'neutral'}>{badge.label}</Badge>
+          )
         ) : null}
       </header>
       <div className="info-card__facts">

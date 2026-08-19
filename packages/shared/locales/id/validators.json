@@ -35,7 +35,8 @@
     "autoClearCandidate": "Current candidate: {{id}}",
     "autoClearNone": "No stopped instance is a candidate right now.",
     "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories"
+    "leftoverEmpty": "No leftover instance directories",
+    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
   },
   "chain": {
     "eth": "Ethereum",
@@ -87,7 +88,8 @@
   },
   "mithril": {
     "label": "Pulihkan dulu dari snapshot Mithril (disarankan di testnet)",
-    "action": "Pulihkan dengan Mithril"
+    "action": "Pulihkan dengan Mithril",
+    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
   },
   "errors": {
     "notFound": "Instans validator tidak ditemukan",
@@ -113,7 +115,9 @@
     "snapshotLookup": "Tidak dapat menyelesaikan penunjuk snapshot resmi",
     "needSnapshotConfirm": "Pemulihan snapshot memerlukan confirm=id instans atau SNAPSHOT",
     "snapshotBlocked": "docker run snapshot diblokir oleh daftar izin",
-    "snapshotFailed": "Unduhan atau ekstraksi snapshot gagal"
+    "snapshotFailed": "Unduhan atau ekstraksi snapshot gagal",
+    "containerNotUp": "Compose started, but the container did not stay running",
+    "probeFailed": "The node is not answering RPC yet. Check logs on this page."
   },
   "notes": {
     "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",

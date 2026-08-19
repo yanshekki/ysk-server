@@ -444,7 +444,8 @@
       "interpreter": "解释器",
       "user": "用户",
       "unit": "单元",
-      "runtime": "运行时"
+      "runtime": "运行时",
+      "pid": "PID"
     },
     "projectsTitle": "YSK 项目进程",
     "projectsDesc": "面板项目对应的 systemd unit（默认部署路径，不是 PM2）。",
@@ -552,5 +553,10 @@
   "installedHint": "Host probe result — not the control-plane record",
   "targetHint": "Version this page will install or pin",
   "rebuildFromHost": "Rebuild record from host",
-  "rebuiltFromHost": "Record refreshed from host probe"
+  "rebuiltFromHost": "Record refreshed from host probe",
+  "probing": "Probing…",
+  "noBinaryPath": "No binary path",
+  "hostDefaultError": "Host default unavailable",
+  "pm2Tick": "{{at}} · projects {{projects}} · PM2 {{pm2}} · running {{run}}",
+  "domainRequired": "Enter a valid domain before applying the vhost."
 }

@@ -19,5 +19,9 @@
   "stepStoppedOld": "تم إيقاف العملية السابقة",
   "stepTuningApplied": "تم تطبيق ضبط وقت التشغيل",
   "stepUnitWritten": "وحدة الخدمة مكتوبة",
-  "stepSystemdStartFailed": "فشل بدء تشغيل Systemd — باستخدام العملية الاحتياطية"
+  "stepSystemdStartFailed": "فشل بدء تشغيل Systemd — باستخدام العملية الاحتياطية",
+  "portListening": "Port {{port}} is listening",
+  "portNotListening": "Port {{port}} is not listening",
+  "httpOk": "HTTP OK {{status}}",
+  "httpFail": "HTTP failed: {{detail}}"
 }

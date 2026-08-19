@@ -3,5 +3,7 @@
   "scrollRight": "Desplazarse por las pestañas hacia la derecha",
   "about": "Acerca de",
   "main": "Comportamiento",
-  "stack": "Software"
+  "stack": "Software",
+  "unknown": "No such tab",
+  "unknownHint": "This page has no tab named {{tab}}."
 }

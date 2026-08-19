@@ -33,6 +33,11 @@
   }
 }
 
+.info-card__badge-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .info-card {
   display: flex;
   flex-direction: column;

@@ -76,6 +76,50 @@ describe('managed-resources apply honesty', () => {
     const confPath = String(writtenOnly.site?.confPath ?? '');
     expect(existsSync(confPath)).toBe(true);
     expect(readFileSync(confPath, 'utf8')).toContain('app.example.com');
+    expect(readFileSync(confPath, 'utf8')).not.toMatch(/listen\s+443/);
+  });
+
+  it('applyManagedNginxSite emits listen 443 when cert files exist', async () => {
+    const { db, dir } = setup(false);
+    const certDir = join(dir, 'certs', 'dock.example.com');
+    mkdirSync(certDir, { recursive: true });
+    writeFileSync(join(certDir, 'fullchain.pem'), '-----BEGIN CERTIFICATE-----\nM\n-----END CERTIFICATE-----\n');
+    writeFileSync(join(certDir, 'privkey.pem'), '-----BEGIN PRIVATE KEY-----\nK\n-----END PRIVATE KEY-----\n');
+    db.snapshot.certificates = [
+      {
+        id: 'c1',
+        domain: 'dock.example.com',
+        fullchain_path: join(certDir, 'fullchain.pem'),
+        privkey_path: join(certDir, 'privkey.pem'),
+      },
+    ];
+    const site = createResource(db, 'nginx_sites', {
+      serverName: 'dock.example.com',
+      kind: 'proxy',
+      upstream: 'http://127.0.0.1:18080',
+      ssl: false,
+    });
+    const r = await applyManagedNginxSite(db, dir, String(site.id), { execute: false });
+    expect(r.ok).toBe(true);
+    const confPath = String(r.site?.confPath ?? '');
+    const body = readFileSync(confPath, 'utf8');
+    expect(body).toMatch(/listen\s+443/);
+    expect(body).toContain('ssl_certificate');
+  });
+
+  it('applyManagedNginxSite writes conf as written; blocks system without execute (ssl-less continued)', async () => {
+    const { host, db, dir } = setup(false);
+    const site = createResource(db, 'nginx_sites', {
+      serverName: 'app2.example.com',
+      kind: 'proxy',
+      upstream: 'http://127.0.0.1:3000',
+    });
+    const writtenOnly = await applyManagedNginxSite(db, dir, String(site.id), {
+      execute: false,
+    });
+    expect(writtenOnly.ok).toBe(true);
+    const confPath = String(writtenOnly.site?.confPath ?? '');
+    expect(readFileSync(confPath, 'utf8')).toContain('app2.example.com');
 
     const blocked = await applyManagedNginxSite(db, dir, String(site.id), {
       host,
