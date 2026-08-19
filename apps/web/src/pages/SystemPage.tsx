@@ -18,6 +18,7 @@ import {
   ConfirmDialog,
   OpsResultPanel,
   PageTabs,
+  JsonViewer,
   LogViewer,
   LoadingBlock,
   buttonClassName } from '../shared/components/ui';
@@ -1462,13 +1463,7 @@ export function SystemPage() {
                     <div className="sys-preview__meta">
                       {t('system.snapshotMeta', { at: formatDateTime(snapshot.exportedAt, { locale: i18n.language, ...hostTimeZoneOpts({ withOffset: true }) }), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
                     </div>
-                    <LogViewer
-                      text={JSON.stringify(snapshot, null, 2)}
-                      emptyLabel="—"
-                      highlight={false}
-                      linkIps={false}
-                      maxHeight={260}
-                    />
+                    <JsonViewer value={snapshot} maxHeight={260} />
                   </div>
                 ) : (
                   <p className="sys-muted">{t('system.previewHint')}</p>

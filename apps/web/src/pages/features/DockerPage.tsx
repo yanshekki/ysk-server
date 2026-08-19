@@ -25,6 +25,7 @@ import {
   InfoCard,
   InfoCardGrid,
   LoadingBlock,
+  JsonViewer,
   Modal,
   OpsResultPanel,
   PageGuide,
@@ -214,7 +215,8 @@ export function DockerPage() {
   const [useInsecure, setUseInsecure] = useState(false);
   const [mirrors, setMirrors] = useState('');
   const [insecure, setInsecure] = useState('');
-  const [inspectText, setInspectText] = useState('');
+  const [inspectValue, setInspectValue] = useState<unknown>(null);
+  const [inspectSummary, setInspectSummary] = useState('');
   const [daemonConfirm, setDaemonConfirm] = useState(false);
   const [runCommand, setRunCommand] = useState('');
   const [runEntrypoint, setRunEntrypoint] = useState('');
@@ -371,7 +373,8 @@ export function DockerPage() {
   };
 
   const openLogs = async (id: string) => {
-    setInspectText('');
+    setInspectValue(null);
+    setInspectSummary('');
     setLogs(null);
     setLogId(id);
     setLogTitle(id);
@@ -767,8 +770,8 @@ export function DockerPage() {
                         setLogFollow(false);
                         setLogId('');
                         setLogs([]);
-                        const raw = JSON.stringify(r.inspect, null, 2);
-                        setInspectText(r.summary ? `${r.summary}\n\n${raw}` : raw);
+                        setInspectValue(r.inspect ?? null);
+                        setInspectSummary(r.summary ?? '');
                         setLogTitle(`${id} inspect`);
                       })
                     }
@@ -1660,15 +1663,19 @@ export function DockerPage() {
         open={Boolean(logTitle)}
         onClose={() => {
           setLogTitle('');
-          setInspectText('');
+          setInspectValue(null);
+          setInspectSummary('');
           setLogId('');
           setLogFollow(false);
         }}
         title={logTitle}
         size="lg"
       >
-        {inspectText ? (
-          <pre className="code-block">{inspectText}</pre>
+        {inspectValue != null ? (
+          <div className="stack">
+            {inspectSummary ? <p className="muted u-text-sm u-m-0">{inspectSummary}</p> : null}
+            <JsonViewer value={inspectValue} />
+          </div>
         ) : (
           <div className="stack">
             <ActionBar size="sm">

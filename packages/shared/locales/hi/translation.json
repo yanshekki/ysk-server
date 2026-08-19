@@ -2262,7 +2262,10 @@
     "redirectedTo": "{{to}} खोला गया (पहले {{from}})",
     "unavailable": "Not available right now",
     "ok": "OK",
-    "pleaseFill": "Please fill in this field"
+    "pleaseFill": "Please fill in this field",
+    "copied": "Copied",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
   },
   "cron": {
     "presetCdTrue": "सीडी ऐप + सत्य (परीक्षण)",
@@ -13618,7 +13621,8 @@
       "noContainer": "No compose container exists for this instance.",
       "restarting": "Container is restarting. Check logs on this page.",
       "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-      "oom": "Out of memory. Set a memory limit or add RAM, then restart."
+      "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
+      "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart."
     },
     "notes": {
       "beta": "यह सुविधा Beta है। होस्ट परिवर्तन के लिए root और YSK_EXECUTE=1 चाहिए।",

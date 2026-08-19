@@ -11,6 +11,10 @@ import {
   buildDotComposeYaml,
   buildSolComposeYaml,
   buildSuiComposeYaml,
+  cosmosChainId,
+  cosmosGenesisUrl,
+  cosmosSeeds,
+  ensureCosmosGenesisFile,
   ensureSuiFullnodeFiles,
   suiFullnodeYaml,
   parseAptosLedger,
@@ -95,9 +99,28 @@ describe('phase 2 compose + status parsers', () => {
     const y = buildCosmosComposeYaml(spec({ id: 'cosmos-testnet-1', chain: 'cosmos', network: 'testnet', ports: { rpc: 26657, p2p: 26656 } }));
     expect(y).toContain('gaiad');
     expect(y).toContain('--minimum-gas-prices=0.005uatom');
+    expect(y).toContain('official-genesis.json');
+    expect(y).toContain('--chain-id provider');
+    expect(y).toContain('provider-seed-01');
+    expect(y).toContain('--p2p.seeds=');
     expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
+    expect(cosmosChainId('testnet')).toBe('provider');
+    expect(cosmosGenesisUrl('testnet')).toContain('provider-genesis.json');
+    expect(cosmosSeeds('testnet')).toContain('provider-seed-01');
     expect(parseCosmosStatus({ result: { sync_info: { catching_up: false }, node_info: { version: '23' } } }).syncProgress).toBe(1);
+  });
+
+  it('writes official Cosmos genesis instead of empty gaiad init', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cosmos-'));
+    const fetchFn = (async () =>
+      new Response(Buffer.from(`{"chain_id":"provider","app_state":${'{}'.repeat(20)}}`), {
+        status: 200,
+      })) as unknown as typeof fetch;
+    const r = await ensureCosmosGenesisFile(dir, 'testnet', fetchFn);
+    expect(r.ok).toBe(true);
+    expect(readFileSync(join(dir, 'official-genesis.json'), 'utf8')).toContain('provider');
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it('Sui / Aptos / Polkadot / Solana heavy', () => {
@@ -114,6 +137,8 @@ describe('phase 2 compose + status parsers', () => {
     expect(aptos).toContain('aptos-node');
     expect(aptos).toContain('127.0.0.1:18080:8080');
     expect(aptos).not.toContain('127.0.0.1:8080:8080');
+    expect(aptos).toContain('nofile:');
+    expect(aptos).toContain('65536');
     expect(buildDotComposeYaml(spec({ id: 'dot-westend-1', chain: 'dot', network: 'westend', ports: { rpc: 9933, p2p: 30333 } }))).toContain('--chain=westend');
     const sol = buildSolComposeYaml(spec({ id: 'sol-mainnet-1', chain: 'sol', network: 'mainnet', ports: { rpc: 8899 } }));
     expect(sol).toContain('HEAVY');

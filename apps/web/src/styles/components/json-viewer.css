@@ -1,0 +1,107 @@
+/* Read-only JSON tree — same chrome as Files fm-vscode. */
+.json-viewer {
+  display: flex;
+  flex-direction: column;
+  min-height: 8rem;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family:
+    'Cascadia Code',
+    'Fira Code',
+    'JetBrains Mono',
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.json-viewer__toolbar {
+  display: flex;
+  align-items: center;
+  min-height: 2.15rem;
+  padding: 0.2rem 0.5rem;
+  background: #252526;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.json-viewer__toolbar .btn {
+  color: #cccccc;
+  border-color: transparent;
+  background: transparent;
+}
+
+.json-viewer__toolbar .btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.json-viewer__tree,
+.json-viewer__fallback {
+  overflow: auto;
+  padding: 0.55rem 0.75rem 0.85rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.json-viewer__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.1rem;
+}
+
+.json-viewer__toggle {
+  flex: 0 0 1.05rem;
+  width: 1.05rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #858585;
+  font-size: 0.6rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.json-viewer__toggle:hover,
+.json-viewer__toggle:focus-visible {
+  color: #cccccc;
+}
+
+.json-viewer__children {
+  margin-left: 0.55rem;
+  padding-left: 0.55rem;
+  border-left: 1px solid #3c3c3c;
+}
+
+.json-viewer__preview {
+  color: #808080;
+}
+
+.json-viewer .tok-keyword {
+  color: #569cd6;
+}
+
+.json-viewer .tok-string {
+  color: #ce9178;
+}
+
+.json-viewer .tok-number {
+  color: #b5cea8;
+}
+
+.json-viewer .tok-comment {
+  color: #6a9955;
+}
+
+.json-viewer .tok-attr {
+  color: #9cdcfe;
+}
+
+.json-viewer .tok-punct,
+.json-viewer .tok-plain {
+  color: #d4d4d4;
+}

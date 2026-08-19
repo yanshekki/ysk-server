@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   deriveValidatorRuntimeStatus,
   isTransientValidatorProbeError,
+  isValidatorNofileHint,
+  isValidatorOomHint,
   pickValidatorContainerHint,
 } from './runtime-status.js';
 
@@ -100,6 +102,18 @@ describe('pickValidatorContainerHint', () => {
         'restarting',
       ]),
     ).toMatch(/unexpected token/);
+  });
+
+  it('prefers Aptos nofile panic over a later log line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        'thread panicked at aptos_node::utils::ensure_max_open_files_limit',
+        'restarting',
+      ]),
+    ).toMatch(/ensure_max_open_files_limit/);
+    expect(isValidatorNofileHint('ensure_max_open_files_limit')).toBe(true);
+    expect(isValidatorOomHint('exit (137)')).toBe(true);
   });
 });
 

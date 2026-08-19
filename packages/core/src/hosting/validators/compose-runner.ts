@@ -102,13 +102,20 @@ export function applyComposeLimits(
 ): string {
   if (!limits?.memory && !limits?.cpus) return yaml;
   const extra: string[] = [];
+  let out = yaml;
   if (limits.memory && /^\d+[mMgGkK]$/.test(limits.memory)) {
-    extra.push(`    mem_limit: ${limits.memory}`);
-    extra.push(`    pids_limit: 4096`);
+    if (/mem_limit:/i.test(out)) {
+      out = out.replace(/mem_limit:\s*\S+/g, `mem_limit: ${limits.memory}`);
+      out = out.replace(/memswap_limit:\s*\S+/g, `memswap_limit: ${limits.memory}`);
+    } else {
+      extra.push(`    mem_limit: ${limits.memory}`);
+      extra.push(`    memswap_limit: ${limits.memory}`);
+      extra.push(`    pids_limit: 4096`);
+    }
   }
   if (limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus)) extra.push(`    cpus: ${JSON.stringify(limits.cpus)}`);
-  if (!extra.length) return yaml;
-  return yaml.replace(/^([ \t]+restart:\s+unless-stopped)\s*$/gm, `$1\n${extra.join('\n')}`);
+  if (!extra.length) return out;
+  return out.replace(/^([ \t]+restart:\s+unless-stopped)\s*$/gm, `$1\n${extra.join('\n')}`);
 }
 
 export function stampYskComposeLabels(yaml: string, instanceId: string): string {
@@ -237,6 +244,7 @@ export type ComposePsInfo = {
   created: boolean;
   missing: boolean;
   restartCount: number | null;
+  exitCode: number | null;
 };
 
 export function restartCountFromStatus(status: string): number | null {
@@ -260,6 +268,7 @@ export function composePsInfoFromStates(
         created: false,
         missing: true,
         restartCount: null,
+        exitCode: null,
       };
     }
     return {
@@ -269,6 +278,7 @@ export function composePsInfoFromStates(
       created: false,
       missing: false,
       restartCount: null,
+      exitCode: null,
     };
   }
   const restarting = states.some((s) => s.includes('restart'));
@@ -280,6 +290,7 @@ export function composePsInfoFromStates(
       created: true,
       missing: false,
       restartCount: null,
+      exitCode: null,
     };
   }
   const dead = states.filter((s) => s === 'exited' || s === 'dead');
@@ -291,6 +302,7 @@ export function composePsInfoFromStates(
     created: false,
     missing: false,
     restartCount: restarting ? restartCount : null,
+    exitCode: null,
   };
 }
 
@@ -307,11 +319,15 @@ export function composePsInfoFromStdout(stdout: string): ComposePsInfo | null {
     .filter(Boolean);
   if (!states.length) return null;
   let restartCount: number | null = null;
+  let exitCode: number | null = null;
   for (const o of rows) {
     const n = restartCountFromStatus(String(o.Status ?? o.status ?? ''));
     if (n != null) restartCount = Math.max(restartCount ?? 0, n);
+    const code = Number(o.ExitCode ?? o.exitCode);
+    if (Number.isInteger(code) && code !== 0) exitCode = code;
   }
-  return composePsInfoFromStates(states, true, restartCount);
+  const info = composePsInfoFromStates(states, true, restartCount);
+  return { ...info, exitCode };
 }
 
 export async function composePsInfo(input: {
@@ -342,6 +358,7 @@ export async function composePsInfo(input: {
       created: false,
       missing: true,
       restartCount: null,
+      exitCode: null,
     };
   }
 }

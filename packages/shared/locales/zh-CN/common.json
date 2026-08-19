@@ -130,5 +130,8 @@
   "more": "更多的",
   "redirectedTo": "已转到 {{to}}（原为 {{from}}）",
   "unavailable": "Not available right now",
-  "ok": "OK"
+  "ok": "OK",
+  "copied": "Copied",
+  "expandAll": "Expand all",
+  "collapseAll": "Collapse all"
 }

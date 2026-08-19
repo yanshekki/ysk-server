@@ -26,6 +26,7 @@ import {
   Field,
   Form,
   FormHint,
+  JsonViewer,
   Modal,
   SegRadio,
   ServerListFilters,
@@ -1124,20 +1125,15 @@ intervalMs: 5000`}
             ) : null}
             <div>
               <div className="muted u-text-sm u-mb-1">{t('agents.labelAckCli')}</div>
-              <pre
-                className="ops-pre u-pre-wrap u-scroll-xl"
-              >
-                {prettyJson(resultCmd.result)}
-              </pre>
+              <JsonViewer value={resultCmd.result} maxHeight="min(40vh, 22rem)" />
             </div>
             {unwrapCliBody(asCliAck(resultCmd.result)) !== resultCmd.result ? (
               <div>
                 <div className="muted u-text-sm u-mb-1">{t('agents.labelStdoutBody')}</div>
-                <pre
-                  className="ops-pre u-pre-wrap u-scroll-lg"
-                >
-                  {prettyJson(unwrapCliBody(asCliAck(resultCmd.result)))}
-                </pre>
+                <JsonViewer
+                  value={unwrapCliBody(asCliAck(resultCmd.result))}
+                  maxHeight="min(32vh, 18rem)"
+                />
               </div>
             ) : null}
           </div>

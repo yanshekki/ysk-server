@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.1.17 — 2026-08-20
+
+### Fix
+- Cosmos Hub testnet: download official ICS `provider` genesis instead of empty `gaiad init` (InitChain panic). Seeds written into config and `--p2p.seeds`.
+- Avalanche: `--state-sync-enabled` is not a v1.13.5 CLI flag. C-Chain `configs/chains/C/config.json` + `--chain-config-dir`.
+- Ethereum Hoodi: CL checkpoint `https://hoodi.beaconstate.info` (ethpandaops SSZ was invalid).
+- Aptos: compose `ulimits.nofile` 65536. Panic `ensure_max_open_files_limit` shows a nofile last-error.
+- NEAR / heavy chains: default and baked `mem_limit`/`memswap_limit` 4g + `pids_limit` 4096. Compose ExitCode 137 is “Out of memory” even with empty logs.
+
+### Improve
+- Panel JSON (Docker inspect, PM2 raw, System snapshot, Agents, Redis, Security probe) uses a collapsible JsonViewer (Files token colours, no extra editor).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.17**.
+
 ## 1.1.16 — 2026-08-19
 
 ### Fix

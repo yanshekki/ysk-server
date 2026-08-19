@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.17
+
+- **Validators** — Cosmos uses official testnet genesis; Avalanche state-sync is C-Chain JSON; Hoodi checkpoint is beaconstate.info; Aptos raises nofile; NEAR defaults to 4g and ExitCode 137 is Out of memory.
+- **Panel** — JSON displays use a collapsible JsonViewer.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.17** together.
+
 ## What's new in 1.1.16
 
 - **Validators** — running + RPC miss is not Error; Created/missing are not Stopped. Avalanche uses the image binary path. Cosmos sets min gas prices. reth HTTP API no longer includes `engine`. Heavy chains default to 8g RAM. Sui testnet uses a real testnet tag. Aptos RPC avoids host 8080.

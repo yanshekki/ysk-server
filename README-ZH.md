@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.17 新內容
+
+- **驗證者** — Cosmos 使用官方測試網 genesis；Avalanche state-sync 寫入 C-Chain JSON；Hoodi checkpoint 改用 beaconstate.info；Aptos 提高 nofile；NEAR 預設 4g，ExitCode 137 標記憶體不足。
+- **面板** — JSON 顯示改用可摺疊 JsonViewer。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.17**。
+
 ## 1.1.16 新內容
 
 - **驗證者** — 運行中但 RPC 未就緒不再標「錯誤」；Created／無容器不再標「已停止」。Avalanche 用映像真實路徑。Cosmos 設定最低 gas。reth HTTP API 不含 `engine`。重鏈預設 8g 記憶體。Sui 測試網用真正 testnet tag。Aptos RPC 避開主機 8080。

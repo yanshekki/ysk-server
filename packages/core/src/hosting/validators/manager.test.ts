@@ -8,7 +8,9 @@ import {
   createValidatorInstance,
   isClearConfirm,
   removeValidatorInstance,
+  specProfileStateSync,
   startValidatorInstance,
+  statusValidatorInstance,
 } from './manager.js';
 import { getValidatorInstance } from './store.js';
 
@@ -227,5 +229,47 @@ describe('validator manager', () => {
     expect(isClearConfirm('eth-hoodi-1', 'CLEAR')).toBe(true);
     expect(isClearConfirm('eth-hoodi-1', 'clear')).toBe(true);
     expect(isClearConfirm('eth-hoodi-1', 'x')).toBe(false);
+  });
+
+  it('state-sync is off only for the rpc profile', () => {
+    expect(specProfileStateSync('minimal')).toBe(true);
+    expect(specProfileStateSync('pruned')).toBe(true);
+    expect(specProfileStateSync('rpc')).toBe(false);
+  });
+
+  it('status maps ExitCode 137 to oom even with empty logs', async () => {
+    const dataDir = tmp();
+    await createValidatorInstance({
+      dataDir,
+      host: mockHost({ execute: false }),
+      execute: false,
+      chain: 'near',
+      network: 'testnet',
+      profile: 'minimal',
+    });
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      runCommand: async (argv, runOpts) => {
+        const r = (stdout: string, exitCode = 0): RunResult => ({
+          stdout,
+          stderr: '',
+          exitCode,
+          argv,
+          dryRun: Boolean(runOpts?.dryRun),
+        });
+        if (argv.includes('ps') && argv.includes('--format')) {
+          return r(
+            JSON.stringify([
+              { State: 'restarting', Status: 'Restarting (1) 1 second ago', ExitCode: 137 },
+            ]),
+          );
+        }
+        if (argv.includes('logs')) return r('');
+        return r('');
+      },
+    } as HostExecutor;
+    const st = await statusValidatorInstance({ dataDir, host, id: 'near-testnet-1' });
+    expect(st.lastError).toMatch(/記憶體不足|memory|oom/i);
   });
 });

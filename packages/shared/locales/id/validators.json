@@ -121,7 +121,8 @@
     "noContainer": "No compose container exists for this instance.",
     "restarting": "Container is restarting. Check logs on this page.",
     "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-    "oom": "Out of memory. Set a memory limit or add RAM, then restart."
+    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
+    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart."
   },
   "notes": {
     "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",

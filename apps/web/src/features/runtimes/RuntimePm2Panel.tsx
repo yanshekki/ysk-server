@@ -14,6 +14,7 @@ import {
   DataTable,
   DescriptionList,
   EmptyState,
+  JsonViewer,
   Modal,
   buttonClassName } from '../../shared/components/ui';
 import {
@@ -608,9 +609,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       ) : null}
 
       <Modal open={rawApp != null} onClose={() => setRawApp(null)} title={rawApp?.name ?? 'JSON'}>
-        <pre className="code-block u-text-sm u-scroll-preview">
-          {rawApp ? JSON.stringify(rawApp.raw, null, 2) : ''}
-        </pre>
+        {rawApp ? <JsonViewer value={rawApp.raw} /> : null}
       </Modal>
     </div>
   );

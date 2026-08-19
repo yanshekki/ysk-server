@@ -141,6 +141,7 @@
     "containerNotUp": "Compose 已啟動，但容器未能保持運行",
     "probeFailed": "節點尚未回應 RPC。請在本頁查看日誌。",
     "oom": "記憶體不足。請設定記憶體上限或增加 RAM，然後重新啟動。",
+    "nofile": "程序已達開啟檔案上限（nofile）。請提高 ulimits.nofile 後重新啟動。",
     "noContainer": "此實例沒有 Compose 容器。",
     "restarting": "容器正在重新啟動。請在本頁查看日誌。",
     "restartingCount": "容器正在重新啟動（第 {{n}} 次）。請在本頁查看日誌。",

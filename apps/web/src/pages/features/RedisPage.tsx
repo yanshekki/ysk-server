@@ -21,6 +21,7 @@ import {
   Modal,
   OpsResultPanel,
   PresetChips,
+  JsonViewer,
   SplitPanel } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -533,7 +534,12 @@ export function RedisPage() {
                     </ActionBar>
                   </div>
                   <div className="redis-detail-value">
-                    <pre>{formatValue(selected)}</pre>
+                    {selected.value !== null &&
+                    typeof selected.value === 'object' ? (
+                      <JsonViewer value={selected.value} maxHeight="min(40vh, 22rem)" />
+                    ) : (
+                      <pre>{formatValue(selected)}</pre>
+                    )}
                   </div>
                 </div>
               )

@@ -5,7 +5,7 @@ import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import { composeBind } from '../compose-runner.js';
 
 export const ETH_CHECKPOINT: Record<string, string> = {
-  hoodi: 'https://checkpoint-sync.hoodi.ethpandaops.io',
+  hoodi: 'https://hoodi.beaconstate.info',
   sepolia: 'https://checkpoint-sync.sepolia.ethpandaops.io',
   mainnet: 'https://beaconstate.info',
 };

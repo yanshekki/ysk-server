@@ -72,11 +72,53 @@ export function parseBtcInfo(body: unknown): Probe {
   };
 }
 
+export function cosmosChainId(network: string): string {
+  return network === 'mainnet' ? 'cosmoshub-4' : 'provider';
+}
+
+/** Official Cosmos Hub testnet is ICS `provider` (theta-testnet-001 is killed). */
+export function cosmosGenesisUrl(network: string): string {
+  if (network === 'mainnet') {
+    return 'https://raw.githubusercontent.com/cosmos/mainnet/master/genesis.json';
+  }
+  return 'https://raw.githubusercontent.com/cosmos/testnets/master/provider/provider-genesis.json';
+}
+
+export function cosmosSeeds(network: string): string {
+  if (network === 'mainnet') {
+    return 'ade4d8bc8cbe014af6ebdf3cb7b1e9ad36f412c0@seeds.polkachu.com:14956';
+  }
+  return '08ec17e86dac67b9da70deb20177655495a55407@provider-seed-01.hub-testnet.polypore.xyz:26656,4ea6e56300a2f37b90e58de5ee27d1c9065cf871@provider-seed-02.hub-testnet.polypore.xyz:26656';
+}
+
+export async function ensureCosmosGenesisFile(
+  dataPath: string,
+  network: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const dir = String(dataPath ?? '').replace(/\/+$/, '');
+  mkdirSync(dir, { recursive: true });
+  const dest = join(dir, 'official-genesis.json');
+  if (existsSync(dest)) return { ok: true, notes: [] };
+  const url = cosmosGenesisUrl(network);
+  try {
+    const res = await fetchFn(url);
+    if (!res.ok) return { ok: false, notes: [`cosmos genesis http ${res.status} ${url}`] };
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length < 64) return { ok: false, notes: ['cosmos genesis too small'] };
+    writeFileSync(dest, buf);
+    return { ok: true, notes: [] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : 'cosmos genesis fetch failed'] };
+  }
+}
+
 export function buildCosmosComposeYaml(spec: ValidatorInstanceDto): string {
   const rpc = spec.ports.rpc ?? 26657;
   const p2p = spec.ports.p2p ?? 26656;
-  const chainId = spec.network === 'mainnet' ? 'cosmoshub-4' : 'provider';
-  return `# ysk-server validators cosmos — generated (state-sync later)
+  const chainId = cosmosChainId(spec.network);
+  const seeds = cosmosSeeds(spec.network);
+  return `# ysk-server validators cosmos — generated (official genesis)
 services:
   node:
     image: ${img(spec, 'ghcr.io/cosmos/gaia', 'v23.3.0')}
@@ -89,10 +131,19 @@ services:
           echo "data dir not writable: /data" >&2
           exit 1
         fi
-        if [ ! -f /data/config/genesis.json ]; then
+        if [ ! -f /data/official-genesis.json ]; then
+          echo "official genesis missing: /data/official-genesis.json" >&2
+          exit 1
+        fi
+        if [ ! -f /data/config/config.toml ]; then
           gaiad init ysk --home /data --chain-id ${chainId}
         fi
-        gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --minimum-gas-prices=0.005uatom
+        cp /data/official-genesis.json /data/config/genesis.json
+        if [ -f /data/config/config.toml ]; then
+          sed -i -e '/minimum-gas-prices =/ s^= .*^= "0.005uatom"^' /data/config/app.toml || true
+          sed -i -e '/seeds =/ s^= .*^= "${seeds}"^' /data/config/config.toml || true
+        fi
+        gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom
     ports:
       - "127.0.0.1:${rpc}:26657"
       - "0.0.0.0:${p2p}:26656"
@@ -259,6 +310,10 @@ services:
       - /data/fullnode.yaml
     environment:
       APTOS_NETWORK: ${net}
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     ports:
       - "127.0.0.1:${rpc}:8080"
       - "0.0.0.0:${p2p}:6180"

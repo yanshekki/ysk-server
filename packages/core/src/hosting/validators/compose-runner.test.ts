@@ -41,6 +41,7 @@ describe('composePsInfoFromStates', () => {
       created: true,
       missing: false,
       restartCount: null,
+      exitCode: null,
     });
   });
 
@@ -62,5 +63,15 @@ describe('composePsInfoFromStates', () => {
         JSON.stringify([{ State: 'restarting', Status: 'Restarting (2) 3 seconds ago' }]),
       ),
     ).toMatchObject({ restarting: true, running: false, restartCount: 2 });
+  });
+
+  it('reads non-zero ExitCode including OOM 137', () => {
+    expect(
+      composePsInfoFromStdout(
+        JSON.stringify([
+          { State: 'exited', Status: 'Exited (137) 1 second ago', ExitCode: 137 },
+        ]),
+      ),
+    ).toMatchObject({ exited: true, running: false, exitCode: 137 });
   });
 });

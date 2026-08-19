@@ -130,5 +130,8 @@
   "redirectedTo": "{{to}} खोला गया (पहले {{from}})",
   "unavailable": "Not available right now",
   "ok": "OK",
-  "pleaseFill": "Please fill in this field"
+  "pleaseFill": "Please fill in this field",
+  "copied": "Copied",
+  "expandAll": "Expand all",
+  "collapseAll": "Collapse all"
 }

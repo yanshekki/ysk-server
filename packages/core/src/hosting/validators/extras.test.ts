@@ -14,8 +14,19 @@ describe('validator extras', () => {
       cpus: '2.0',
     });
     expect(y).toContain('mem_limit: 4g');
+    expect(y).toContain('memswap_limit: 4g');
     expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('cpus: "2.0"');
+  });
+
+  it('replaces existing mem_limit instead of stacking a second one', () => {
+    const y = applyComposeLimits(
+      'services:\n  node:\n    restart: unless-stopped\n    mem_limit: 8g\n    memswap_limit: 8g\n',
+      { memory: '4g' },
+    );
+    expect(y).toContain('mem_limit: 4g');
+    expect(y).toContain('memswap_limit: 4g');
+    expect(y).not.toContain('mem_limit: 8g');
   });
 
   it('quotes the full bind so YAML does not split on host-path quotes', () => {

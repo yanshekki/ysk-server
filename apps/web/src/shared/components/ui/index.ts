@@ -78,6 +78,9 @@ export type { ActionBarProps, ActionBarAlign, ActionBarSize } from './ActionBar'
 export { CodeBlock, LogViewer } from './CodeBlock';
 export type { CodeBlockProps, LogViewerProps } from './CodeBlock';
 
+export { JsonViewer, parseJsonInput, prettyJsonText, collectExpandablePaths } from './JsonViewer';
+export type { JsonViewerProps } from './JsonViewer';
+
 export { OpsResultPanel } from './OpsResultPanel';
 export type { OpsResultPanelProps, OpsResultLike } from './OpsResultPanel';
 

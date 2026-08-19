@@ -1,6 +1,16 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildEthComposeYaml, parseEthPeerCount, parseEthSyncing } from './eth.js';
-import { buildAvaxComposeYaml, parseAvaxHealth, probeAvaxStakingIdentity } from './avax.js';
+import { ETH_CHECKPOINT } from './eth-clients.js';
+import {
+  avaxCChainConfig,
+  buildAvaxComposeYaml,
+  ensureAvaxChainConfig,
+  parseAvaxHealth,
+  probeAvaxStakingIdentity,
+} from './avax.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 
 const ethSpec = {
@@ -36,6 +46,9 @@ describe('eth adapter', () => {
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(y).toContain('--disable-deposit-contract-sync');
+    expect(y).toContain('hoodi.beaconstate.info');
+    expect(y).not.toContain('checkpoint-sync.hoodi.ethpandaops.io');
+    expect(ETH_CHECKPOINT.hoodi).toBe('https://hoodi.beaconstate.info');
     expect(y).not.toMatch(/":\//);
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/data/reth:/data/reth"');
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/jwt.hex:/jwt/jwt.hex:ro"');
@@ -95,9 +108,20 @@ describe('avax adapter', () => {
     expect(y).not.toMatch(/command:\n\s+- avalanchego\n/);
     expect(y).toContain('--network-id=fuji');
     expect(y).toContain('fuji');
-    expect(y).toContain('--state-sync-enabled=true');
+    expect(y).toContain('--chain-config-dir=/data/configs/chains');
+    expect(y).not.toContain('--state-sync-enabled');
+    expect(avaxCChainConfig(true)).toContain('"state-sync-enabled": true');
     expect(y).toContain('127.0.0.1:9650:9650');
     expect(parseAvaxHealth({ healthy: true }).healthy).toBe(true);
+  });
+
+  it('writes C-Chain state-sync into config.json', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-avax-cfg-'));
+    ensureAvaxChainConfig(dir, true);
+    expect(readFileSync(join(dir, 'configs', 'chains', 'C', 'config.json'), 'utf8')).toContain(
+      '"state-sync-enabled": true',
+    );
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it('reads NodeID and BLS proof from info.getNodeID', async () => {
@@ -144,6 +168,9 @@ describe('near + ada adapters', () => {
     });
     expect(y).toContain('neard');
     expect(y).toContain('--chain-id testnet');
+    expect(y).toContain('mem_limit: 4g');
+    expect(y).toContain('memswap_limit: 4g');
+    expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('127.0.0.1:3030:3030');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(parseNearStatus({ sync_info: { syncing: false }, version: { version: '2.5.0' }, peers: [1, 2] })).toEqual({

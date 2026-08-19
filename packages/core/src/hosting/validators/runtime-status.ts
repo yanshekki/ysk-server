@@ -8,12 +8,15 @@ const FATAL_CONTAINER_RE =
   /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found/i;
 
 const OOM_RE = /\bkilled\b|out of memory|\booms?k?ill|cannot allocate memory|exit \(137\)/i;
+const NOFILE_RE = /too many open files|ensure_max_open_files_limit|RLIMIT_NOFILE/i;
 
 /** First compose-log line that explains why a node is not healthy. */
 export function pickValidatorContainerHint(lines: string[]): string | null {
   const trimmed = lines.map((l) => l.trim()).filter(Boolean);
   const oom = trimmed.find((l) => OOM_RE.test(l));
   if (oom) return oom.slice(0, 280);
+  const nofile = trimmed.find((l) => NOFILE_RE.test(l));
+  if (nofile) return nofile.slice(0, 280);
   const fatal = trimmed.find((l) => FATAL_CONTAINER_RE.test(l));
   if (fatal) return fatal.slice(0, 280);
   const last = trimmed[trimmed.length - 1];
@@ -22,6 +25,10 @@ export function pickValidatorContainerHint(lines: string[]): string | null {
 
 export function isValidatorOomHint(err: string | null | undefined): boolean {
   return OOM_RE.test(String(err || ''));
+}
+
+export function isValidatorNofileHint(err: string | null | undefined): boolean {
+  return NOFILE_RE.test(String(err || ''));
 }
 
 export function isTransientValidatorProbeError(err: string | null | undefined): boolean {

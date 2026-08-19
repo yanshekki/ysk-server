@@ -20,7 +20,6 @@ import {
   CardSection,
   ConfirmDialog,
   DataTable,
-  DescriptionList,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -30,6 +29,7 @@ import {
   FormLayout,
   Modal,
   PromptDialog,
+  JsonViewer,
   PageTabs } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { formatDateTime } from '../shared/lib/datetime';
@@ -416,19 +416,6 @@ export function SecurityPage() {
 
   const allowed = tools.filter((tool) => tool.allowed).length;
   const needsApproval = tools.filter((tool) => tool.requiresApproval).length;
-
-  const probeItems = (() => {
-    if (!result) return [];
-    try {
-      const o = JSON.parse(result) as Record<string, unknown>;
-      return Object.entries(o)
-        .filter(([, v]) => v == null || typeof v !== 'object')
-        .slice(0, 16)
-        .map(([k, v]) => ({ label: k, value: String(v) }));
-    } catch {
-      return [{ label: t('security.output'), value: result.slice(0, 500) }];
-    }
-  })();
 
   return (
     <FeaturePageLayout
@@ -1024,12 +1011,10 @@ export function SecurityPage() {
               </CardSection>
             </Card>
 
-            {probeItems.length > 0 ? (
+            {result ? (
               <Card>
                 <CardSection title={t('security.recentProbe')}>
-                  <DescriptionList
-                    items={probeItems.map((i) => ({ label: i.label, value: i.value }))}
-                  />
+                  <JsonViewer value={result} maxHeight={320} />
                 </CardSection>
               </Card>
             ) : null}

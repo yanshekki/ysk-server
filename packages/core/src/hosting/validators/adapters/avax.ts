@@ -1,11 +1,24 @@
 /**
  * Avalanche adapter — avalanchego, state-sync on for minimal/pruned.
  */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
 import { readRpcJson } from '../rpc-json.js';
+
+/** C-Chain JSON — `--state-sync-enabled` is not an avalanchego CLI flag. */
+export function avaxCChainConfig(stateSync: boolean): string {
+  return `${JSON.stringify({ 'state-sync-enabled': stateSync }, null, 2)}\n`;
+}
+
+export function ensureAvaxChainConfig(dataPath: string, stateSync = true): void {
+  const dir = join(String(dataPath ?? '').replace(/\/+$/, ''), 'configs', 'chains', 'C');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'config.json'), avaxCChainConfig(stateSync), 'utf8');
+}
 
 export function buildAvaxComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('avax')[0];
@@ -13,7 +26,6 @@ export function buildAvaxComposeYaml(spec: ValidatorInstanceDto): string {
   const rpc = spec.ports.rpc ?? 9650;
   const p2p = spec.ports.p2p ?? 9651;
   const netId = spec.network === 'mainnet' ? 'mainnet' : 'fuji';
-  const stateSync = spec.profile === 'validator-ready' ? 'true' : 'true';
   return `# ysk-server validators avax — generated
 services:
   node:
@@ -26,7 +38,7 @@ services:
       - --http-port=9650
       - --staking-port=9651
       - --db-dir=/data
-      - --state-sync-enabled=${stateSync}
+      - --chain-config-dir=/data/configs/chains
     ports:
       - "127.0.0.1:${rpc}:9650"
       - "0.0.0.0:${p2p}:9651"

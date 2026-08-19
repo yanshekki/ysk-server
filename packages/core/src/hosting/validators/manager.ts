@@ -57,11 +57,12 @@ import {
 } from './store.js';
 import { planInstallFor } from './adapters/index.js';
 import { probeEthStatus } from './adapters/eth.js';
-import { probeAvaxStatus } from './adapters/avax.js';
+import { ensureAvaxChainConfig, probeAvaxStatus } from './adapters/avax.js';
 import { probeNearStatus } from './adapters/near.js';
 import { probeAdaStatus } from './adapters/ada.js';
 import {
   ensureAptosFullnodeFiles,
+  ensureCosmosGenesisFile,
   ensureSuiFullnodeFiles,
   probeAptosStatus,
   probeBtcStatus,
@@ -76,10 +77,16 @@ import type { ValidatorNodeStatus } from './adapters/base.js';
 import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
 import {
   deriveValidatorRuntimeStatus,
+  isValidatorNofileHint,
   isValidatorOomHint,
   pickValidatorContainerHint,
 } from './runtime-status.js';
 import type { OpsLogFn } from '../ops-log.js';
+
+/** State-sync for pruned/minimal/validator-ready. Full rpc keeps the full state. */
+export function specProfileStateSync(profile: string): boolean {
+  return profile !== 'rpc';
+}
 
 export type ValidatorMutateOpts = {
   dataDir: string;
@@ -224,6 +231,19 @@ export async function createValidatorInstance(
   }
   if (inst.chain === 'aptos') {
     await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
+  }
+  if (inst.chain === 'cosmos') {
+    const cosmos = await ensureCosmosGenesisFile(inst.dataPath, inst.network);
+    if (!cosmos.ok && input.execute) {
+      return failedValidatorOp({
+        instanceId: inst.id,
+        written: [inst.dataPath],
+        notes: [tl('validators.errors.composeFailed'), ...cosmos.notes],
+      });
+    }
+  }
+  if (inst.chain === 'avax') {
+    ensureAvaxChainConfig(inst.dataPath, specProfileStateSync(inst.profile));
   }
   writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
   upsertValidatorInstance(input.dataDir, inst);
@@ -378,6 +398,16 @@ export async function startValidatorInstance(
     const plan = planInstallFor(inst);
     if (inst.chain === 'sui') await ensureSuiFullnodeFiles(inst.dataPath, inst.network);
     if (inst.chain === 'aptos') await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
+    if (inst.chain === 'cosmos') {
+      const cosmos = await ensureCosmosGenesisFile(inst.dataPath, inst.network);
+      if (!cosmos.ok) {
+        return failedValidatorOp({
+          instanceId: inst.id,
+          notes: [tl('validators.errors.composeFailed'), ...cosmos.notes],
+        });
+      }
+    }
+    if (inst.chain === 'avax') ensureAvaxChainConfig(inst.dataPath, specProfileStateSync(inst.profile));
     const limits = inst.limits?.memory
       ? inst.limits
       : { ...inst.limits, memory: defaultValidatorMemoryLimit(inst.chain) };
@@ -605,8 +635,11 @@ export async function statusValidatorInstance(input: {
       tail: 80,
     });
     const hint = pickValidatorContainerHint(logs.lines);
-    if (hint && isValidatorOomHint(hint)) lastError = tl('validators.errors.oom');
-    else if (hint) lastError = hint;
+    if (ps.exitCode === 137 || (hint && isValidatorOomHint(hint))) {
+      lastError = tl('validators.errors.oom');
+    } else if (hint && isValidatorNofileHint(hint)) {
+      lastError = tl('validators.errors.nofile');
+    } else if (hint) lastError = hint;
     else if (ps.restarting) {
       lastError =
         ps.restartCount != null

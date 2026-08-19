@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-19 — **1.1.16** (E2E-11115 leftover: validator RPC/compose states + all-chain testnet compose). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-20 — **1.1.17** (E2E-11116 leftover: Cosmos official genesis, Avalanche C-Chain config, Hoodi checkpoint, Aptos nofile, NEAR 4g). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 
