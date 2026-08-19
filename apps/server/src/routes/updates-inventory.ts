@@ -75,7 +75,7 @@ function filterInventoryAdvice(inv: InvRow[], advice: InvRow[], url: URL) {
       },
     },
   );
-  const kept = new Set(items.map((r) => String(r.packageName ?? r.name ?? '')));
+  const kept = new Set(items.map((r) => String(r.packageName ?? '')));
   const filteredAdvice =
     url.searchParams.get('q') ||
     url.searchParams.get('risk') ||
