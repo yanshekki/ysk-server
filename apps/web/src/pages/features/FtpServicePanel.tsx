@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
@@ -259,55 +260,58 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
             <Alert variant="warn">{t('ftp.plaintextInsecure')}</Alert>
           ) : null}
           <div className="ftps-overview-actions">
-            {!installed ? (
+            <ActionBar size="md" className="ftps-overview-actions__main">
+              {!installed ? (
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  onClick={() => {
+                    if (publicPlain) setPlainConfirm(true);
+                    else void onInstallAndStart();
+                  }}
+                >
+                  {t('ftp.installAndStart')}
+                </Button>
+              ) : (
+                <Button
+                  variant={running ? 'secondary' : 'primary'}
+                  size="md"
+                  loading={busy}
+                  disabled={!running && (listenConflict || failed)}
+                  title={startBlockedTitle}
+                  onClick={() => requestStartOrApply()}
+                >
+                  {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
+                </Button>
+              )}
+              {sslReady && !settings.sslEnable ? (
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={busy}
+                  title={t('ftp.enableFtpsAndStart')}
+                  onClick={() => void onEnableFtpsAndStart()}
+                >
+                  {t('ftp.enableFtpsAndStart')}
+                </Button>
+              ) : null}
               <Button
-                variant="primary"
+                variant="secondary"
                 size="md"
                 loading={busy}
                 onClick={() => {
-                  if (publicPlain) setPlainConfirm(true);
-                  else void onInstallAndStart();
+                  setError(null);
+                  setMsg(null);
+                  void refresh();
                 }}
               >
-                {t('ftp.installAndStart')}
+                {t('common.refresh')}
               </Button>
-            ) : (
-              <Button
-                variant={running ? 'secondary' : 'primary'}
-                size="md"
-                loading={busy}
-                disabled={!running && (listenConflict || failed)}
-                title={startBlockedTitle}
-                onClick={() => requestStartOrApply()}
-              >
-                {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
-              </Button>
-            )}
-            {sslReady ? (
-              <Button
-                variant="primary"
-                size="md"
-                loading={busy}
-                title={t('ftp.enableFtpsAndStart')}
-                onClick={() => void onEnableFtpsAndStart()}
-              >
-                {t('ftp.enableFtpsAndStart')}
-              </Button>
-            ) : null}
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy}
-              onClick={() => {
-                setError(null);
-                setMsg(null);
-                void refresh();
-              }}
-            >
-              {t('common.refresh')}
-            </Button>
-            {installed ? (
+            </ActionBar>
+            {installed && running ? (
               <ServiceLifecycleBar
+                className="ftps-overview-actions__stop"
                 unit="vsftpd"
                 label="vsftpd"
                 installed={installed}

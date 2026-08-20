@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
 import { api, ApiError } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
@@ -253,6 +253,11 @@ export function LoginPage() {
         )}
 
         <div className="login-card__footer">
+          <nav className="login-card__legal" aria-label={t('legal.hubTitle')}>
+            <Link to="/legal/terms">{t('legal.terms')}</Link>
+            <Link to="/legal/privacy">{t('legal.privacy')}</Link>
+            <Link to="/legal/disclaimer">{t('legal.disclaimer')}</Link>
+          </nav>
           <p className="login-card__powered">
             {t('files.publicSharePoweredPrefix', { defaultValue: 'Powered by ' })}
             <a href="https://ysk.hk/" target="_blank" rel="noreferrer">

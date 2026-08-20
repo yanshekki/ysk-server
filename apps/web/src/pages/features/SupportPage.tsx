@@ -3,6 +3,7 @@
  * No pricing. Issues → email@ysk.hk
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { HealthResponse } from 'ysk-server-shared';
 import { toast } from '../../shared/stores/toast-store';
@@ -255,6 +256,23 @@ export function SupportPage() {
               <a className="btn btn--secondary btn--md" href={COMPANY_URL} target="_blank" rel="noreferrer">
                 {t('support.yskWebsite')}
               </a>
+            </div>
+          </CardSection>
+        </Card>
+
+        <Card>
+          <CardSection title={t('legal.hubTitle')}>
+            <p className="u-text-sm u-mb-3 support-page__prose">{t('legal.hubSub')}</p>
+            <div className="u-flex u-flex-wrap u-gap-2">
+              <Link className="btn btn--secondary btn--md" to="/legal/terms">
+                {t('legal.terms')}
+              </Link>
+              <Link className="btn btn--secondary btn--md" to="/legal/privacy">
+                {t('legal.privacy')}
+              </Link>
+              <Link className="btn btn--secondary btn--md" to="/legal/disclaimer">
+                {t('legal.disclaimer')}
+              </Link>
             </div>
           </CardSection>
         </Card>

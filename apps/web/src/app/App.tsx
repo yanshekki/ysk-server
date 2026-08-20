@@ -50,6 +50,9 @@ const FilesPage = lazy(() =>
 const PublicSharePage = lazy(() =>
   import('../pages/PublicSharePage').then((m) => ({ default: m.PublicSharePage })),
 );
+const LegalPage = lazy(() =>
+  import('../pages/LegalPage').then((m) => ({ default: m.LegalPage })),
+);
 const VncSharePage = lazy(() =>
   import('../pages/features/VncSharePage').then((m) => ({ default: m.VncSharePage })),
 );
@@ -252,6 +255,23 @@ export function App() {
               <GuestOnly>
                 <LoginPage />
               </GuestOnly>
+            }
+          />
+          {/* Public legal documents — no panel session */}
+          <Route
+            path="/legal"
+            element={
+              <Lazy>
+                <LegalPage />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/legal/:docId"
+            element={
+              <Lazy>
+                <LegalPage />
+              </Lazy>
             }
           />
           {/* Public file share — no panel session */}

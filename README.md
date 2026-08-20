@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.21
+
+- **Legal** — public `/legal` Terms of Use, Privacy Policy, and Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. MIT `LICENSE`.
+- **Panel** — after a successful self-update, confirm to reload the UI. Cardano producer attach is drag-and-drop. FTP overview actions stay on one row.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.21** together.
+
 ## What's new in 1.1.20
 
 - **Validators** — Cardano can attach KES/VRF/opcert and run as a block producer (official `CARDANO_BLOCK_PRODUCER`; cold keys refused). Lighthouse v8 flag fix. Nimbus `--el`. Solana `anzaxyz/agave`. Avalanche ifconfigMe + host TZ. Wizard shows a RAM-short warning instead of a silent Next disable.
@@ -48,11 +54,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - **Validators** — Hoodi uses lighthouse v8.2.2 + EthStaker checkpoint. Cosmos state-sync is section-scoped. NEAR 12g with RAM preflight. Avalanche opendns public-ip. P2P UDP/seeds. Live ↓/↑ traffic. Official GitHub version picker.
 - **Panel** — ops-stream maximize, compose YAML editor, staking credential cards, full Docker inspect/log modals.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.19** together.
-
-## What's new in 1.1.18
-
-- **Validators** — Cosmos Hub testnet uses Gaia v28 + state-sync. Hoodi checkpoint is Sigma Prime. Aptos nofile is 1048576. NEAR defaults to 8g with a matching swap cap.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.18** together.
 
 [Full changelog](./CHANGELOG.md)
 
@@ -153,6 +154,7 @@ YSK Server is **free**. If it helps:
 - Crypto: `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA)
 - Hands-on work: **YSK Limited** — write to us (no prices on this page)
 - Bugs and questions: [email@ysk.hk](mailto:email@ysk.hk)
+- Legal: [Terms](./docs/legal/terms.md) · [Privacy](./docs/legal/privacy.md) · [Disclaimer](./docs/legal/disclaimer.md) (panel `/legal`)
 
 ## Development
 

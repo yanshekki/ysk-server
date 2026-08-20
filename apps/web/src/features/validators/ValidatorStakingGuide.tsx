@@ -25,6 +25,7 @@ import {
   buttonClassName,
 } from '../../shared/components/ui';
 import { credentialCopyText, formatHexForDisplay } from './credentials-display';
+import { ProducerFileDrop } from './ProducerFileDrop';
 
 type CredItem = { label: string; value?: string | null; pending: string };
 
@@ -370,6 +371,8 @@ async function fileToProducerPayload(file: File): Promise<string> {
   return btoa(bin);
 }
 
+type ProducerPick = { name: string; payload: string };
+
 function CardanoProducerAttach({
   status,
   mainnet,
@@ -382,63 +385,55 @@ function CardanoProducerAttach({
   onDetach?: () => void;
 }) {
   const { t } = useTranslation();
-  const [kes, setKes] = useState<string | undefined>();
-  const [vrf, setVrf] = useState<string | undefined>();
-  const [opcert, setOpcert] = useState<string | undefined>();
+  const [kes, setKes] = useState<ProducerPick | undefined>();
+  const [vrf, setVrf] = useState<ProducerPick | undefined>();
+  const [opcert, setOpcert] = useState<ProducerPick | undefined>();
 
-  function slotLabel(present: boolean | undefined, fp: string | null | undefined): string {
-    return present && fp
-      ? t('validators.producer.present', { fp })
-      : t('validators.producer.missing');
+  function take(file: File, setPick: (p: ProducerPick) => void) {
+    void fileToProducerPayload(file).then((payload) => setPick({ name: file.name, payload }));
   }
 
   return (
-    <div className="stack u-mt-3" data-testid="cardano-producer">
+    <div className="val-producer" data-testid="cardano-producer">
       <Alert variant="warn">{t('validators.producer.warn')}</Alert>
-      <p className="muted u-text-sm">{t('validators.producer.hint')}</p>
-      <FormLayout>
-        <Field htmlFor="ada-kes" label={t('validators.producer.kes')} hint={slotLabel(status?.kesPresent, status?.kesFp)}>
-          <input
-            id="ada-kes"
-            type="file"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              void fileToProducerPayload(f).then(setKes);
-            }}
-          />
-        </Field>
-        <Field htmlFor="ada-vrf" label={t('validators.producer.vrf')} hint={slotLabel(status?.vrfPresent, status?.vrfFp)}>
-          <input
-            id="ada-vrf"
-            type="file"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              void fileToProducerPayload(f).then(setVrf);
-            }}
-          />
-        </Field>
-        <Field
-          htmlFor="ada-opcert"
+      <p className="val-producer__hint muted u-text-sm">{t('validators.producer.hint')}</p>
+      <div className="val-producer__slots">
+        <ProducerFileDrop
+          id="ada-kes"
+          label={t('validators.producer.kes')}
+          fileHint="kes.skey"
+          present={status?.kesPresent}
+          fingerprint={status?.kesFp}
+          queuedName={kes?.name}
+          onFile={(f) => take(f, setKes)}
+          onClear={() => setKes(undefined)}
+        />
+        <ProducerFileDrop
+          id="ada-vrf"
+          label={t('validators.producer.vrf')}
+          fileHint="vrf.skey"
+          present={status?.vrfPresent}
+          fingerprint={status?.vrfFp}
+          queuedName={vrf?.name}
+          onFile={(f) => take(f, setVrf)}
+          onClear={() => setVrf(undefined)}
+        />
+        <ProducerFileDrop
+          id="ada-opcert"
           label={t('validators.producer.opcert')}
-          hint={slotLabel(status?.opcertPresent, status?.opcertFp)}
-        >
-          <input
-            id="ada-opcert"
-            type="file"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              void fileToProducerPayload(f).then(setOpcert);
-            }}
-          />
-        </Field>
-      </FormLayout>
-      <ActionBar>
+          fileHint="node.cert"
+          present={status?.opcertPresent}
+          fingerprint={status?.opcertFp}
+          queuedName={opcert?.name}
+          onFile={(f) => take(f, setOpcert)}
+          onClear={() => setOpcert(undefined)}
+        />
+      </div>
+      <ActionBar className="val-producer__actions">
         <Button
+          variant="primary"
           disabled={!kes && !vrf && !opcert}
-          onClick={() => onApply({ kes, vrf, opcert })}
+          onClick={() => onApply({ kes: kes?.payload, vrf: vrf?.payload, opcert: opcert?.payload })}
         >
           {t('validators.producer.apply')}
         </Button>

@@ -1,0 +1,16 @@
+{
+  "hubTitle": "Jurídico",
+  "hubSub": "Termos de utilização, política de privacidade e isenção de responsabilidade do YSK Server",
+  "terms": "Termos de utilização",
+  "privacy": "Política de privacidade",
+  "disclaimer": "Isenção de responsabilidade",
+  "updated": "Última atualização {{date}}",
+  "englishPrevails": "Línguas oficiais: inglês e chinês escrito de Hong Kong. Em caso de divergência, prevalece o inglês.",
+  "notOfficialLocale": "O idioma da interface não é uma língua jurídica oficial. O texto vinculativo abaixo é inglês, salvo se o alterar.",
+  "officialLang": "Texto oficial",
+  "officialEn": "English",
+  "officialZh": "繁體中文（香港）",
+  "signIn": "Iniciar sessão",
+  "mitNote": "O código-fonte está sob licença MIT. Estas páginas são condições adicionais de utilização.",
+  "backToIndex": "Todos os documentos jurídicos"
+}

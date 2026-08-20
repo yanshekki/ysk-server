@@ -5106,6 +5106,22 @@
     "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards.",
     "clearCookiesConfirm": "This clears cookies stored on the host for this browse session. Sites that were signed in will need to be signed in again."
   },
+  "legal": {
+    "hubTitle": "قانوني",
+    "hubSub": "شروط الاستخدام وسياسة الخصوصية وإخلاء المسؤولية لـ YSK Server",
+    "terms": "شروط الاستخدام",
+    "privacy": "سياسة الخصوصية",
+    "disclaimer": "إخلاء المسؤولية",
+    "updated": "آخر تحديث {{date}}",
+    "englishPrevails": "اللغتان الرسميتان: الإنجليزية والصينية المكتوبة في هونغ كونغ. عند الاختلاف تُعتمد الإنجليزية.",
+    "notOfficialLocale": "لغة العرض ليست لغة قانونية رسمية. النص الملزم أدناه بالإنجليزية ما لم تغيّره.",
+    "officialLang": "النص الرسمي",
+    "officialEn": "English",
+    "officialZh": "繁體中文（香港）",
+    "signIn": "تسجيل الدخول",
+    "mitNote": "الشفرة المصدرية مرخّصة برخصة MIT. هذه الصفحات شروط استخدام إضافية.",
+    "backToIndex": "جميع الوثائق القانونية"
+  },
   "listToolbar": {
     "searchPlaceholder": "يبحث…",
     "searchAria": "قائمة البحث",
@@ -13371,7 +13387,10 @@
     "riskUnevaluated": "Not evaluated — run Scan + OSV",
     "footerNewVersion": "New version {{version}}",
     "applySelfConfirmTitle": "Apply panel update?",
-    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run."
+    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
+    "reloadUi": "Reload UI",
+    "reloadUiTitle": "Reload the panel UI?",
+    "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
   },
   "users": {
     "userCount": "{{count}} المستخدمين",
@@ -14172,7 +14191,15 @@
       "detachTitle": "Detach producer keys from {{id}}?",
       "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
       "detachC1": "The node will no longer produce blocks.",
-      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
+      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
+      "presentShort": "On host",
+      "queuedShort": "Ready",
+      "queued": "Selected · {{name}}",
+      "fileHint": "Typical name {{file}}",
+      "dropOrBrowse": "Drop {{file}} here or browse",
+      "dropping": "Drop to attach {{label}}",
+      "browse": "Browse",
+      "clearFile": "Remove"
     }
   },
   "vnc": {

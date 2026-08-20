@@ -1,0 +1,16 @@
+{
+  "hubTitle": "法律文件",
+  "hubSub": "YSK Server 的使用条款、隐私政策与免责声明",
+  "terms": "使用条款",
+  "privacy": "隐私政策",
+  "disclaimer": "免责声明",
+  "updated": "最后更新日期：{{date}}",
+  "englishPrevails": "正式语言为英文及香港书面中文。如有歧义，以英文为准。",
+  "notOfficialLocale": "你的界面语言并非正式法律语言。除非你切换，以下具约束力的文本为英文。",
+  "officialLang": "正式文本",
+  "officialEn": "English",
+  "officialZh": "繁體中文（香港）",
+  "signIn": "登录",
+  "mitNote": "源代码以 MIT 许可。本页为额外使用条件。",
+  "backToIndex": "全部法律文件"
+}

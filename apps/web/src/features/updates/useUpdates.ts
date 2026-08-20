@@ -25,6 +25,7 @@ export function useUpdates() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [uiReloadVersion, setUiReloadVersion] = useState<string | null>(null);
   const applySelfLock = useRef(false);
 
   const load = useCallback(async (
@@ -410,6 +411,7 @@ export function useUpdates() {
           notes: [],
         });
         toast.ok(t('updates.panelRestarted', { version: ver }));
+        setUiReloadVersion(ver || expectVersion || '');
         return back;
       }
       if (expectVersion) {
@@ -423,6 +425,7 @@ export function useUpdates() {
         }));
       }
       toast.ok(t('updates.panelRestartWait'));
+      setUiReloadVersion(expectVersion || '');
       return null;
     },
     [t],
@@ -546,5 +549,8 @@ export function useUpdates() {
     load,
     applySelf,
     applyPackage,
-    applyPackages };
+    applyPackages,
+    uiReloadVersion,
+    dismissUiReload: () => setUiReloadVersion(null),
+  };
 }

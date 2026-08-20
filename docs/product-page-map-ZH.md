@@ -66,6 +66,18 @@
 | 系統 | `/system` | 系統索引 | T |
 | 系統 | `/support` | 支援（僅限面板） | |
 
+**公開（無須登入）**
+
+| 路由 | 頁面 |
+|-------|------|
+| `/legal` | 法律文件索引 |
+| `/legal/terms` | 使用條款 |
+| `/legal/privacy` | 私隱政策 |
+| `/legal/disclaimer` | 免責聲明 |
+| `/login` | 登入 |
+| `/share/:token` | 公開檔案分享 |
+| `/vnc-share/:token` | 公開 VNC 分享 |
+
 **重新導向（不在側欄）**
 
 | 路由 | 轉往 |

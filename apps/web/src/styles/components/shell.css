@@ -406,6 +406,14 @@
   color: var(--text-muted);
 }
 
+.login-card__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.85rem;
+  margin: 0 0 var(--space-3);
+}
+
 .login-card__powered {
   margin: 0;
   line-height: 1.4;

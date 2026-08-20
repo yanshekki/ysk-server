@@ -88,6 +88,13 @@
 | [api/overview-ZH.md](./api/overview-ZH.md) | HTTP API 地圖 |
 | [i18n-ZH.md](./i18n-ZH.md) | 語言包（zh-HK／zh-CN／en） |
 
+## 法律文件
+
+| 文件 | 用途 |
+|------|------|
+| [legal/README-ZH.md](./legal/README-ZH.md) | 使用條款、私隱政策、免責聲明 — 正式英文 + 香港書面中文 |
+| [../LICENSE](../LICENSE) | MIT 原始碼授權 |
+
 ## 操作員手冊
 
 | 文件 | 用途 |

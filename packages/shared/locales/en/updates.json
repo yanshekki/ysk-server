@@ -151,6 +151,9 @@
   "panelRestarting": "Panel is restarting to load the new version…",
   "panelRestarted": "Panel is back · {{version}}",
   "panelRestartWait": "Panel apply finished. If this page does not refresh, reload after a few seconds.",
+  "reloadUi": "Reload UI",
+  "reloadUiTitle": "Reload the panel UI?",
+  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost.",
   "aptCandidate": "apt Candidate",
   "advice": {
     "update": "Update recommended",

@@ -13,6 +13,7 @@ const pagesDir = join(root, 'src', 'pages');
 /** Thin wrappers + non-page modules + guest/public surfaces */
 const SKIP = new Set([
   'LoginPage.tsx',
+  'LegalPage.tsx', // public legal pack — not panel FeaturePageLayout chrome
   'PublicSharePage.tsx', // guest landing — not panel FeaturePageLayout chrome
   'VncSharePage.tsx', // public share viewer — not panel chrome
   'NodeRuntimePage.tsx', // re-export only → GenericRuntimePage

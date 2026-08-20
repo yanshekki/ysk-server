@@ -88,6 +88,13 @@
 | [api/overview.md](./api/overview.md) | HTTP API map |
 | [i18n.md](./i18n.md) | Locales: Tier-1 (zh-HK / zh-CN / en) + Tier-2 world languages + RTL |
 
+## Legal
+
+| Doc | Purpose |
+|-----|---------|
+| [legal/README.md](./legal/README.md) | Terms, Privacy, Disclaimer — official EN + zh-HK |
+| [../LICENSE](../LICENSE) | MIT source licence |
+
 ## User manual
 
 | Doc | Purpose |

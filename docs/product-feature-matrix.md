@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-20 — **1.1.20** (Cardano producer attach, Lighthouse v8 / Nimbus / Agave flags, Avalanche ifconfigMe + TZ, wizard RAM warning, LogViewer filter). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-20 — **1.1.21** (public `/legal` pack, panel UI reload after self-update, Cardano producer drag-drop, FTP overview actions). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 

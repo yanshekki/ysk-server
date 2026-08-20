@@ -32,3 +32,5 @@ export * from './route-capabilities.js';
 export * from './list-query.js';
 /** i18n — locale catalogs + t() for server/CLI/web */
 export * from './i18n/index.js';
+/** Official legal pack (EN + zh-HK body; panel chrome is i18n) */
+export * from './legal/index.js';

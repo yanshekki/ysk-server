@@ -22,6 +22,11 @@ export function shouldToastUpdateError(err: unknown): boolean {
   return !isPanelRestartDisconnect(err);
 }
 
+/** Full page load so hashed JS/CSS match the restarted panel. Caller must confirm first. */
+export function reloadPanelUi(loc: Pick<Location, 'reload'> = window.location): void {
+  loc.reload();
+}
+
 export async function waitForPanelAfterRestart(input: {
   probe: () => Promise<{ currentVersion?: unknown; ok?: unknown }>;
   expectVersion?: string;

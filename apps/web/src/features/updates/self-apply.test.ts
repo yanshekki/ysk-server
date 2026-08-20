@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   isPanelRestartDisconnect,
+  reloadPanelUi,
   shouldToastUpdateError,
   waitForPanelAfterRestart,
 } from './self-apply';
@@ -64,5 +65,13 @@ describe('waitForPanelAfterRestart', () => {
       },
     });
     expect(r).toBeNull();
+  });
+});
+
+describe('reloadPanelUi', () => {
+  it('calls location.reload only when invoked', () => {
+    const loc = { reload: vi.fn() };
+    reloadPanelUi(loc);
+    expect(loc.reload).toHaveBeenCalledTimes(1);
   });
 });

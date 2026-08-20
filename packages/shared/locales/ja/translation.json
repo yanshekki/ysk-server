@@ -5106,6 +5106,22 @@
     "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards.",
     "clearCookiesConfirm": "This clears cookies stored on the host for this browse session. Sites that were signed in will need to be signed in again."
   },
+  "legal": {
+    "hubTitle": "法務",
+    "hubSub": "YSK Server の利用規約、プライバシーポリシー、免責事項",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "disclaimer": "免責事項",
+    "updated": "最終更新 {{date}}",
+    "englishPrevails": "正文は英語と香港書面中国語です。相違がある場合は英語が優先します。",
+    "notOfficialLocale": "表示言語は正文の言語ではありません。切り替えない限り、拘束力のある本文は英語です。",
+    "officialLang": "正文",
+    "officialEn": "English",
+    "officialZh": "繁體中文（香港）",
+    "signIn": "サインイン",
+    "mitNote": "ソースコードは MIT ライセンスです。本ページは追加の利用条件です。",
+    "backToIndex": "すべての法務文書"
+  },
   "listToolbar": {
     "searchPlaceholder": "検索…",
     "searchAria": "一覧を検索",
@@ -13371,7 +13387,10 @@
     "riskUnevaluated": "Not evaluated — run Scan + OSV",
     "footerNewVersion": "New version {{version}}",
     "applySelfConfirmTitle": "Apply panel update?",
-    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run."
+    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
+    "reloadUi": "Reload UI",
+    "reloadUiTitle": "Reload the panel UI?",
+    "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
   },
   "users": {
     "userCount": "{{count}} ユーザー",
@@ -14172,7 +14191,15 @@
       "detachTitle": "Detach producer keys from {{id}}?",
       "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
       "detachC1": "The node will no longer produce blocks.",
-      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
+      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
+      "presentShort": "On host",
+      "queuedShort": "Ready",
+      "queued": "Selected · {{name}}",
+      "fileHint": "Typical name {{file}}",
+      "dropOrBrowse": "Drop {{file}} here or browse",
+      "dropping": "Drop to attach {{label}}",
+      "browse": "Browse",
+      "clearFile": "Remove"
     }
   },
   "vnc": {

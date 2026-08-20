@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.21 — 2026-08-20
+
+### Add
+- Public `/legal` pack: Terms of Use, Privacy Policy, Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. Root MIT `LICENSE`.
+
+### Improve
+- After a successful panel self-update, a confirm dialog reloads the SPA so the new UI loads.
+- Cardano producer attach uses drag-and-drop fields for KES, VRF, and opcert.
+- FTP service overview actions stay on one row (Stop / enable FTPS no longer wrap).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.21**.
+
 ## 1.1.20 — 2026-08-20
 
 ### Fix

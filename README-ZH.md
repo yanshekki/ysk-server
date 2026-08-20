@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.21 新內容
+
+- **法律文件** — 公開 `/legal` 使用條款、私隱政策、免責聲明（正式英文 + 香港書面中文；如有歧義以英文為準）。登入頁腳與 Support 有連結。MIT `LICENSE`。
+- **面板** — 自行更新成功後需確認才 reload UI。Cardano producer 改拖放上傳。FTP 總覽按鈕不再走位。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.21**。
+
 ## 1.1.20 新內容
 
 - **驗證者** — Cardano 可掛 KES／VRF／opcert，以官方 `CARDANO_BLOCK_PRODUCER` 當 block producer（拒收 cold）。Lighthouse v8 旗標修正。Nimbus 改 `--el`。Solana 用 `anzaxyz/agave`。Avalanche 用 ifconfigMe 加主機 TZ。精靈記憶體不足會顯示警告，不再默默關掉「下一步」。
@@ -48,11 +54,6 @@
 - **驗證者** — Hoodi 用 lighthouse v8.2.2 加 EthStaker checkpoint。Cosmos state-sync 只改 `[statesync]`。NEAR 預設 12g 並預檢 RAM。Avalanche 用 opendns 公網 IP。P2P 開 UDP／seed。列表即時 ↓／↑。官方 GitHub 版本可選。
 - **面板** — 操作串流可放大、compose YAML 編輯器、質押憑證卡片、Docker inspect／log 用滿寬。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.19**。
-
-## 1.1.18 新內容
-
-- **驗證者** — Cosmos Hub 測試網改 Gaia v28 加 state-sync；Hoodi checkpoint 用 Sigma Prime；Aptos nofile 1048576；NEAR 預設 8g 並設對等 swap 上限。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.18**。
 
 [完整變更紀錄](./CHANGELOG.md)
 
@@ -153,6 +154,7 @@ YSK Server **免費**。若對你有幫助：
 - 加密貨幣：`yanshekki.eth`（EVM）· `yanshekki.near` · `$yanshekki`（ADA）
 - 需要代為操作： **YSK Limited** — 請來信（本頁不標價）
 - 問題與回報：[email@ysk.hk](mailto:email@ysk.hk)
+- 法律文件：[使用條款](./docs/legal/terms-ZH.md) · [私隱政策](./docs/legal/privacy-ZH.md) · [免責聲明](./docs/legal/disclaimer-ZH.md)（面板 `/legal`）
 
 ## 開發
 

@@ -72,6 +72,7 @@ const BOOT_NAMESPACES = [
   'applyStatus',
   'search',
   'updates',
+  'legal',
 ] as const;
 
 const NS_MODULES = import.meta.glob<{ default: Catalog }>(

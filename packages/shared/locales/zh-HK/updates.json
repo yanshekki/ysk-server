@@ -178,6 +178,9 @@
   "panelRestarting": "面板正在重啟以載入新版本…",
   "panelRestarted": "面板已恢復 · {{version}}",
   "panelRestartWait": "已套用更新。若此頁未重新整理，請數秒後重新載入。",
+  "reloadUi": "重新載入介面",
+  "reloadUiTitle": "重新載入面板介面？",
+  "reloadUiDesc": "面板服務已是 {{version}}。此分頁仍是舊前端，須重新載入才會換成新畫面。此頁未儲存的欄位會消失。",
   "aptCandidate": "套件管理 Candidate（候選版本）",
   "advice": {
     "update": "建議更新",

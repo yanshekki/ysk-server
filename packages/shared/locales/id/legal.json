@@ -1,0 +1,16 @@
+{
+  "hubTitle": "Hukum",
+  "hubSub": "Ketentuan penggunaan, kebijakan privasi, dan penafian YSK Server",
+  "terms": "Ketentuan penggunaan",
+  "privacy": "Kebijakan privasi",
+  "disclaimer": "Penafian",
+  "updated": "Terakhir diperbarui {{date}}",
+  "englishPrevails": "Bahasa resmi: Inggris dan Tionghoa tertulis Hong Kong. Jika berbeda, versi Inggris yang berlaku.",
+  "notOfficialLocale": "Bahasa tampilan bukan bahasa hukum resmi. Teks yang mengikat di bawah ini adalah Inggris kecuali Anda menggantinya.",
+  "officialLang": "Teks resmi",
+  "officialEn": "English",
+  "officialZh": "繁體中文（香港）",
+  "signIn": "Masuk",
+  "mitNote": "Kode sumber dilisensikan di bawah MIT. Halaman ini adalah syarat penggunaan tambahan.",
+  "backToIndex": "Semua dokumen hukum"
+}

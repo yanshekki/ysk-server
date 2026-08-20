@@ -1,0 +1,162 @@
+/* Cardano producer hot-key attach — drop tiles, not native file controls. */
+
+.val-producer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.val-producer__hint {
+  margin: 0;
+}
+
+.val-producer__slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 860px) {
+  .val-producer__slots {
+    grid-template-columns: 1fr;
+  }
+}
+
+.val-producer-slot {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.val-producer-slot.is-drag {
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+}
+
+.val-producer-slot.is-queued {
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
+.val-producer-slot.is-attached:not(.is-queued) {
+  border-color: var(--border-color);
+}
+
+.val-producer-slot__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-subtle, #f8fafc);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.val-producer-slot__label {
+  font-size: var(--text-sm);
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+}
+
+.val-producer-slot__drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 8.25rem;
+  margin: 0.7rem 0.75rem 0.35rem;
+  padding: 0.9rem 0.75rem;
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle, #f8fafc);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--transition),
+    background var(--transition);
+}
+
+.val-producer-slot__drop:hover,
+.val-producer-slot__drop:focus-within {
+  border-color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.val-producer-slot.is-drag .val-producer-slot__drop {
+  border-color: var(--brand-blue);
+  border-style: solid;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.val-producer-slot.is-queued .val-producer-slot__drop {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.val-producer-slot__glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--brand-blue);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.val-producer-slot.is-queued .val-producer-slot__glyph {
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.val-producer-slot__title {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--text-main);
+  line-height: 1.35;
+  word-break: break-all;
+}
+
+.val-producer-slot__browse {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-white);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--brand-blue);
+}
+
+.val-producer-slot__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.35rem 0.8rem 0.65rem;
+}
+
+.val-producer-slot__meta {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-sub);
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.val-producer__actions {
+  margin-top: 0.15rem;
+}

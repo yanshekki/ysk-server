@@ -656,6 +656,14 @@
     "detachTitle": "Detach producer keys from {{id}}?",
     "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
     "detachC1": "The node will no longer produce blocks.",
-    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
+    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
+    "presentShort": "On host",
+    "queuedShort": "Ready",
+    "queued": "Selected · {{name}}",
+    "fileHint": "Typical name {{file}}",
+    "dropOrBrowse": "Drop {{file}} here or browse",
+    "dropping": "Drop to attach {{label}}",
+    "browse": "Browse",
+    "clearFile": "Remove"
   }
 }

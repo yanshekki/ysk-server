@@ -5106,6 +5106,22 @@
     "clearSessionConfirm": "This discards the resume snapshot for the previous browse session. You cannot restore those tabs afterwards.",
     "clearCookiesConfirm": "This clears cookies stored on the host for this browse session. Sites that were signed in will need to be signed in again."
   },
+  "legal": {
+    "hubTitle": "Legal",
+    "hubSub": "Términos de uso, política de privacidad y descargo de responsabilidad de YSK Server",
+    "terms": "Términos de uso",
+    "privacy": "Política de privacidad",
+    "disclaimer": "Descargo de responsabilidad",
+    "updated": "Última actualización {{date}}",
+    "englishPrevails": "Idiomas oficiales: inglés y chino escrito de Hong Kong. Si difieren, prevalece el inglés.",
+    "notOfficialLocale": "El idioma de la interfaz no es un idioma jurídico oficial. El texto vinculante es inglés salvo que lo cambie.",
+    "officialLang": "Texto oficial",
+    "officialEn": "English",
+    "officialZh": "繁體中文（香港）",
+    "signIn": "Iniciar sesión",
+    "mitNote": "El código fuente está bajo licencia MIT. Estas páginas son condiciones adicionales de uso.",
+    "backToIndex": "Todos los documentos legales"
+  },
   "listToolbar": {
     "searchPlaceholder": "Buscar…",
     "searchAria": "Lista de búsqueda",
@@ -13371,7 +13387,10 @@
     "riskUnevaluated": "Not evaluated — run Scan + OSV",
     "footerNewVersion": "New version {{version}}",
     "applySelfConfirmTitle": "Apply panel update?",
-    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run."
+    "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
+    "reloadUi": "Reload UI",
+    "reloadUiTitle": "Reload the panel UI?",
+    "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
   },
   "users": {
     "userCount": "{{count}} usuarios",
@@ -14172,7 +14191,15 @@
       "detachTitle": "Detach producer keys from {{id}}?",
       "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
       "detachC1": "The node will no longer produce blocks.",
-      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
+      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
+      "presentShort": "On host",
+      "queuedShort": "Ready",
+      "queued": "Selected · {{name}}",
+      "fileHint": "Typical name {{file}}",
+      "dropOrBrowse": "Drop {{file}} here or browse",
+      "dropping": "Drop to attach {{label}}",
+      "browse": "Browse",
+      "clearFile": "Remove"
     }
   },
   "vnc": {

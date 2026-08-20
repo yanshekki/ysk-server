@@ -46,3 +46,5 @@ export {
  * Web UI should not construct server errors.
  */
 export { ErrorCodes, type ErrorCode } from './errors-codes.js';
+/** Official legal pack (browser-safe constants + copy) */
+export * from './legal/index.js';

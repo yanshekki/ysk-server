@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { shouldToastUpdateError, useUpdates, updatesApi } from '../features/updates';
+import { reloadPanelUi, shouldToastUpdateError, useUpdates, updatesApi } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
 import {
   PageGuide,
@@ -247,6 +247,32 @@ export function selfUpdateTone(
   return 'neutral';
 }
 
+export function UpdatesReloadUiDialog({
+  open,
+  version,
+  onClose,
+  onReload,
+}: {
+  open: boolean;
+  version: string;
+  onClose: () => void;
+  onReload: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <ConfirmDialog
+      open={open}
+      onClose={onClose}
+      dataConfirm="reload-ui"
+      title={t('updates.reloadUiTitle')}
+      description={t('updates.reloadUiDesc', { version: version || '—' })}
+      confirmLabel={t('updates.reloadUi')}
+      severity="soft"
+      onConfirm={onReload}
+    />
+  );
+}
+
 export function UpdatesPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
@@ -262,9 +288,13 @@ export function UpdatesPage() {
     load,
     applySelf,
     applyPackage,
-    applyPackages } = useUpdates();
+    applyPackages,
+    uiReloadVersion,
+    dismissUiReload,
+  } = useUpdates();
 
   const [pendingSelf, setPendingSelf] = useState(false);
+  const [reloadPrompt, setReloadPrompt] = useState(false);
   const [tab, setTab] = usePageTab(UPD_TABS, 'overview');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
   const [summary, setSummary] = useState<{
@@ -296,6 +326,10 @@ export function UpdatesPage() {
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
   /** Soft-cancel sequential fallback between packages */
   const [batchAbort, setBatchAbort] = useState<AbortController | null>(null);
+
+  useEffect(() => {
+    if (uiReloadVersion != null) setReloadPrompt(true);
+  }, [uiReloadVersion]);
 
   // Deep-link: /updates?q=nginx → packages tab + search
   useEffect(() => {
@@ -1329,6 +1363,16 @@ export function UpdatesPage() {
                       >
                         {t('updates.recheck')}
                       </Button>
+                      {uiReloadVersion != null ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          data-confirm="reload-ui"
+                          onClick={() => setReloadPrompt(true)}
+                        >
+                          {t('updates.reloadUi')}
+                        </Button>
+                      ) : null}
                     </ActionBar>
                   }
                 />
@@ -1527,6 +1571,17 @@ export function UpdatesPage() {
           </div>
         ) : null}
       </PageTabs>
+
+      <UpdatesReloadUiDialog
+        open={reloadPrompt && uiReloadVersion != null}
+        version={uiReloadVersion ?? ''}
+        onClose={() => setReloadPrompt(false)}
+        onReload={() => {
+          setReloadPrompt(false);
+          dismissUiReload();
+          reloadPanelUi();
+        }}
+      />
 
       <ConfirmDialog
         open={pendingSelf}

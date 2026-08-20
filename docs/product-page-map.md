@@ -66,6 +66,18 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | System | `/system` | System index | T |
 | System | `/support` | Support (panel-only) | |
 
+**Public (no login)**
+
+| Route | Page |
+|-------|------|
+| `/legal` | Legal index |
+| `/legal/terms` | Terms of Use |
+| `/legal/privacy` | Privacy Policy |
+| `/legal/disclaimer` | Disclaimer |
+| `/login` | Sign in |
+| `/share/:token` | Public file share |
+| `/vnc-share/:token` | Public VNC share |
+
 **Redirects (not sidebar)**
 
 | Route | Goes to |
