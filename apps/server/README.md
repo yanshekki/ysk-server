@@ -32,7 +32,7 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
 ## What's new in 1.1.17
 
-- E2E-11116 leftover: Cosmos official genesis, Avalanche C-Chain state-sync, Hoodi checkpoint, Aptos nofile, NEAR 4g/OOM. Panel JSON uses JsonViewer.
+- E2E-11116 leftover: Cosmos official genesis, Avalanche C-Chain state-sync, Hoodi checkpoint, Aptos nofile, NEAR 4g/OOM. Panel JSON uses JsonViewer. Log tails share a unified LogViewer.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.17**.
 
 ## What's new in 1.1.16

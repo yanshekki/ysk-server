@@ -27,6 +27,7 @@ import {
   Form,
   FormHint,
   JsonViewer,
+  LogViewer,
   Modal,
   SegRadio,
   ServerListFilters,
@@ -1118,9 +1119,11 @@ intervalMs: 5000`}
             {asCliAck(resultCmd.result)?.stderr ? (
               <div>
                 <div className="muted u-text-sm u-mb-1">{t('agents.labelStderr')}</div>
-                <pre className="ops-pre u-pre-wrap u-scroll-sm">
-                  {String(asCliAck(resultCmd.result)?.stderr).slice(0, 4000)}
-                </pre>
+                <LogViewer
+                  text={String(asCliAck(resultCmd.result)?.stderr).slice(0, 4000)}
+                  maxHeight="min(28vh, 14rem)"
+                  downloadName="stderr.log"
+                />
               </div>
             ) : null}
             <div>

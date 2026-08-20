@@ -540,6 +540,7 @@ export function NginxPage() {
             maxHeight={420}
             linkIps={false}
             highlight={false}
+            toolbar={false}
           />
         </Modal>
 

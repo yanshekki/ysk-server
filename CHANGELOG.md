@@ -13,6 +13,7 @@
 
 ### Improve
 - Panel JSON (Docker inspect, PM2 raw, System snapshot, Agents, Redis, Security probe) uses a collapsible JsonViewer (Files token colours, no extra editor).
+- Unified LogViewer: line numbers, severity colour, filter, wrap, follow-scroll, copy/download, next error. Validators, Docker, Logs, project logs, PM2 stream, Agents stderr, and install/ops live stream share it.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.17**.
 
 ## 1.1.16 — 2026-08-19

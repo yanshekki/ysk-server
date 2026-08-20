@@ -15,6 +15,7 @@ import {
   DescriptionList,
   EmptyState,
   JsonViewer,
+  LogViewer,
   Modal,
   buttonClassName } from '../../shared/components/ui';
 import {
@@ -601,9 +602,13 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       {live && tickLog.length > 0 ? (
         <Card>
           <CardSection title={t('runtime.pm2.streamLog')} description={t('runtime.pm2.streamLogDesc')}>
-            <pre className="code-block u-text-sm u-scroll-sm">
-              {tickLog.join('\n')}
-            </pre>
+            <LogViewer
+              lines={tickLog}
+              follow={live}
+              showFollow={false}
+              downloadName="pm2.log"
+              maxHeight="min(40vh, 22rem)"
+            />
           </CardSection>
         </Card>
       ) : null}

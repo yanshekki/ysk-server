@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-20 — 對齊 **1.1.17**（E2E-11116 leftover：Cosmos 官方 genesis、Avalanche C-Chain 設定、Hoodi checkpoint、Aptos nofile、NEAR 4g）。只連官方網站，不接錢包。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。   
+**重計：** 2026-08-20 — 對齊 **1.1.17**（E2E-11116 leftover：Cosmos 官方 genesis、Avalanche C-Chain 設定、Hoodi checkpoint、Aptos nofile、NEAR 4g；統一 LogViewer）。只連官方網站，不接錢包。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。   
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

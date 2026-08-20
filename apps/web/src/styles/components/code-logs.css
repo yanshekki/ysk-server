@@ -15,66 +15,7 @@ pre.code--spaced {
   margin-top: var(--space-4);
 }
 
-/* —— Log viewer (highlighted lines + IP deep-links) —— */
-.log-viewer {
-  margin: 0;
-  padding: 0.5rem 0;
-  background: #0b1220;
-  border-radius: 0;
-  border: 0;
-  font-size: 0.775rem;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  overflow: auto;
-  max-height: 420px;
-  color: #e2e8f0;
-  line-height: 1.55;
-}
-.log-viewer__line {
-  display: grid;
-  grid-template-columns: 2.75rem 1fr;
-  gap: 0.65rem;
-  padding: 0.2rem 0.9rem;
-  white-space: pre;
-  word-break: normal;
-  overflow-wrap: normal;
-  overflow-x: auto;
-  border-left: 2px solid transparent;
-}
-.log-viewer__line:hover {
-  background: rgba(148, 163, 184, 0.09);
-}
-.log-viewer__n {
-  color: #64748b;
-  text-align: right;
-  user-select: none;
-  font-variant-numeric: tabular-nums;
-  padding-top: 0.05rem;
-}
-.log-viewer__line--error {
-  background: rgba(239, 68, 68, 0.12);
-  color: #fecaca;
-  border-left-color: #f87171;
-}
-.log-viewer__line--warn {
-  background: rgba(245, 158, 11, 0.1);
-  color: #fde68a;
-  border-left-color: #fbbf24;
-}
-.log-viewer__line--info .log-viewer__t {
-  color: #cbd5e1;
-}
-.log-viewer__line--debug {
-  opacity: 0.65;
-}
-.log-viewer__ip {
-  color: #60a5fa;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-weight: 600;
-}
-.log-viewer__ip:hover {
-  color: #93c5fd;
-}
+/* Log viewer chrome lives in log-viewer.css */
 
 /* —— Log Center page layout (SOC) —— */
 .lc-head-actions {
@@ -497,42 +438,15 @@ pre.code--spaced {
 }
 
 .lc-viewer-shell .log-viewer {
-  margin: 0;
   flex: 1 1 auto;
-  max-height: min(58vh, 620px);
   min-height: 14rem;
-  border-radius: 0;
-  border: 0;
 }
 
-.lc-viewer-shell--nowrap .log-viewer__line {
-  white-space: pre;
-  word-break: normal;
+.lc-viewer-shell .log-viewer__body {
+  flex: 1 1 auto;
 }
 
-.lc-viewer-shell--nowrap .log-viewer {
-  overflow-x: auto;
-}
 
-/* Empty state fills the shell cleanly */
-.log-viewer--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 14rem;
-  padding: 1.75rem 1.25rem;
-  box-sizing: border-box;
-}
-.log-viewer__empty-msg {
-  margin: 0;
-  max-width: 28rem;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.88rem;
-  font-family: var(--font-sans, system-ui, sans-serif);
-  font-weight: 550;
-  line-height: 1.5;
-}
 
 
 /* —— Install live stream (runtime apt/curl progress) —— */

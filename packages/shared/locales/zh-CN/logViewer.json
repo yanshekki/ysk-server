@@ -1,3 +1,17 @@
 {
-  "banIpTitle": "到防护中心 ban {{ip}}"
+  "banIpTitle": "到防护中心 ban {{ip}}",
+  "filter": "Filter",
+  "filterPh": "Keyword",
+  "wrap": "Wrap",
+  "follow": "Follow",
+  "download": "Download",
+  "nextError": "Next error",
+  "prevError": "Previous error",
+  "lines": "{{n}} lines",
+  "shown": "{{n}} shown",
+  "errors": "Err {{n}}",
+  "warnings": "Warn {{n}}",
+  "all": "All",
+  "empty": "No log lines",
+  "levels": "Levels"
 }

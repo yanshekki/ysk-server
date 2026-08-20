@@ -1597,6 +1597,7 @@ export function SystemPage() {
                       highlight={false}
                       linkIps={false}
                       maxHeight={480}
+                      toolbar={false}
                     />
                   ) : null}
                 </Modal>

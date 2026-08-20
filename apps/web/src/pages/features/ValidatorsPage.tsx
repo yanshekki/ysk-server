@@ -22,6 +22,7 @@ import {
   FormActions,
   FormLayout,
   LoadingBlock,
+  LogViewer,
   Modal,
   OpsResultPanel,
   PageGuide,
@@ -1638,13 +1639,14 @@ export function ValidatorsPage() {
             </CardSection>
 
             <CardSection title={t('validators.detail.logs')}>
-              <CheckboxField
-                id="val-follow-logs"
-                label={t('validators.logs.follow')}
-                checked={followLogs}
-                onChange={setFollowLogs}
+              <LogViewer
+                lines={logs}
+                emptyLabel={t('validators.logs.empty')}
+                follow={followLogs}
+                onFollowChange={setFollowLogs}
+                downloadName={`${detail.id}.log`}
+                maxHeight="min(52vh, 28rem)"
               />
-              <pre className="code-block">{logs.join('\n') || t('validators.logs.empty')}</pre>
             </CardSection>
           </div>
         ) : null}

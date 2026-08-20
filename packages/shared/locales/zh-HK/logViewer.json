@@ -1,3 +1,17 @@
 {
-  "banIpTitle": "到防護中心 封鎖 {{ip}}"
+  "banIpTitle": "到防護中心封鎖 {{ip}}",
+  "filter": "篩選",
+  "filterPh": "關鍵字",
+  "levels": "級別",
+  "wrap": "換行",
+  "follow": "跟隨",
+  "download": "下載",
+  "nextError": "下一則錯誤",
+  "prevError": "上一則錯誤",
+  "lines": "{{n}} 行",
+  "shown": "顯示 {{n}}",
+  "errors": "錯誤 {{n}}",
+  "warnings": "警告 {{n}}",
+  "all": "全部",
+  "empty": "沒有日誌行"
 }

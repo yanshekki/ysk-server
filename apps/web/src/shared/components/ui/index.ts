@@ -75,8 +75,10 @@ export type { InfoCardProps, InfoFact, InfoCardGridCols } from './InfoCard';
 export { ActionBar } from './ActionBar';
 export type { ActionBarProps, ActionBarAlign, ActionBarSize } from './ActionBar';
 
-export { CodeBlock, LogViewer } from './CodeBlock';
-export type { CodeBlockProps, LogViewerProps } from './CodeBlock';
+export { CodeBlock } from './CodeBlock';
+export type { CodeBlockProps } from './CodeBlock';
+export { LogViewer, classifyLine, isPublicIp } from './LogViewer';
+export type { LogViewerProps, LogViewerLine, LogLineLevel } from './LogViewer';
 
 export { JsonViewer, parseJsonInput, prettyJsonText, collectExpandablePaths } from './JsonViewer';
 export type { JsonViewerProps } from './JsonViewer';

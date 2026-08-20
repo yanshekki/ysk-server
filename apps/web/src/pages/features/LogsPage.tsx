@@ -358,7 +358,6 @@ export function LogsPage() {
   const [lines, setLines] = useState(300);
   const [follow, setFollow] = useState(false);
   const [useSse, setUseSse] = useState(false);
-  const [wrap, setWrap] = useState(true);
   const [text, setText] = useState('');
   const [lineCount, setLineCount] = useState(0);
   const [truncated, setTruncated] = useState(false);
@@ -1243,14 +1242,6 @@ export function LogsPage() {
                       />
                       <span>{t('logs.sseLabel')}</span>
                     </label>
-                    <label className={`lc-toggle ${wrap ? 'lc-toggle--on' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={wrap}
-                        onChange={bindCheck(setWrap)}
-                      />
-                      <span>{t('logs.wrap')}</span>
-                    </label>
                     <div className="lc-toolbar__more">
                       <Button
                         variant="secondary"
@@ -1320,7 +1311,7 @@ export function LogsPage() {
                   </Link>
                 </div>
 
-                <div className={`lc-viewer-shell ${wrap ? '' : 'lc-viewer-shell--nowrap'}`}>
+                <div className="lc-viewer-shell">
                   <LogViewer
                     text={text}
                     emptyLabel={
@@ -1331,6 +1322,9 @@ export function LogsPage() {
                           : t('logs.noRowsInWindow')
                     }
                     maxHeight="min(58vh, 620px)"
+                    follow={follow}
+                    showFollow={false}
+                    downloadName="ysk-logs.log"
                   />
                 </div>
               </div>

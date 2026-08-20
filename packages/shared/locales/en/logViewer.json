@@ -1,3 +1,17 @@
 {
-  "banIpTitle": "Ban {{ip}} in Protection"
+  "banIpTitle": "Ban {{ip}} in Protection",
+  "filter": "Filter",
+  "filterPh": "Keyword",
+  "levels": "Levels",
+  "wrap": "Wrap",
+  "follow": "Follow",
+  "download": "Download",
+  "nextError": "Next error",
+  "prevError": "Previous error",
+  "lines": "{{n}} lines",
+  "shown": "{{n}} shown",
+  "errors": "Err {{n}}",
+  "warnings": "Warn {{n}}",
+  "all": "All",
+  "empty": "No log lines"
 }

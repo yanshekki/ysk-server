@@ -40,7 +40,7 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ## What's new in 1.1.17
 
 - **Validators** — Cosmos uses official testnet genesis; Avalanche state-sync is C-Chain JSON; Hoodi checkpoint is beaconstate.info; Aptos raises nofile; NEAR defaults to 4g and ExitCode 137 is Out of memory.
-- **Panel** — JSON displays use a collapsible JsonViewer.
+- **Panel** — JSON displays use a collapsible JsonViewer. Log tails (validators, Docker, Logs, projects, PM2, Agents stderr, install stream) share one LogViewer.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.17** together.
 
 ## What's new in 1.1.16

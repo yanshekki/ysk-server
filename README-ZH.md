@@ -40,7 +40,7 @@
 ## 1.1.17 新內容
 
 - **驗證者** — Cosmos 使用官方測試網 genesis；Avalanche state-sync 寫入 C-Chain JSON；Hoodi checkpoint 改用 beaconstate.info；Aptos 提高 nofile；NEAR 預設 4g，ExitCode 137 標記憶體不足。
-- **面板** — JSON 顯示改用可摺疊 JsonViewer。
+- **面板** — JSON 顯示改用可摺疊 JsonViewer。日誌尾端（驗證者、Docker、日誌中心、專案、PM2、Agents 標準錯誤、安裝串流）共用同一個 LogViewer。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.17**。
 
 ## 1.1.16 新內容

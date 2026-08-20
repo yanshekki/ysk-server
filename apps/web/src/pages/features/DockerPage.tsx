@@ -26,6 +26,7 @@ import {
   InfoCardGrid,
   LoadingBlock,
   JsonViewer,
+  LogViewer,
   Modal,
   OpsResultPanel,
   PageGuide,
@@ -1686,19 +1687,18 @@ export function DockerPage() {
               >
                 {t('common.refresh')}
               </Button>
-              <CheckboxField
-                id="dock-log-follow"
-                label={t('docker.logs.follow')}
-                checked={logFollow}
-                onChange={setLogFollow}
-              />
             </ActionBar>
             {logs == null ? (
               <LoadingBlock label={t('common.loading')} />
             ) : (
-              <pre className="code-block">
-                {logs.length ? logs.join('\n') : t('docker.logs.empty')}
-              </pre>
+              <LogViewer
+                lines={logs}
+                emptyLabel={t('docker.logs.empty')}
+                follow={logFollow}
+                onFollowChange={setLogFollow}
+                downloadName={`${logId ?? 'container'}.log`}
+                maxHeight="min(52vh, 28rem)"
+              />
             )}
           </div>
         )}

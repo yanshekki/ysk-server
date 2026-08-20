@@ -152,35 +152,6 @@ export function ProjectLogsTab({
               {t('projects.logsRefreshFile')}
             </Button>
           ) : null}
-          {selectedFile && logTail ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                void navigator.clipboard?.writeText(logTail);
-              }}
-            >
-              {t('projects.logsCopy')}
-            </Button>
-          ) : null}
-          {selectedFile && logTail ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                const blob = new Blob([logTail], {
-                  type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = selectedFile.replace(/^~/, '') || 'log.txt';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              {t('projects.logsDownloadTail')}
-            </Button>
-          ) : null}
           <Button
             variant="ghost"
             size="sm"
@@ -270,6 +241,8 @@ export function ProjectLogsTab({
             text={logTail}
             emptyLabel={t('projects.logsEmpty', {
               defaultValue: t('projects.logsNoContent') })}
+            downloadName={(selectedFile ?? 'project').replace(/^~/, '') || 'log.txt'}
+            maxHeight="min(52vh, 28rem)"
           />
         </div>
       </Card>
