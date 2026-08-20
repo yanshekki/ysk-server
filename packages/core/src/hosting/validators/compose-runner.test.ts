@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyComposeTimezone,
   composeProjectName,
   composePsInfoFromStates,
   composePsInfoFromStdout,
   composePsStatesFromStdout,
+  hostTimezoneName,
   restartCountFromStatus,
   validatorIdFromContainerName,
 } from './compose-runner.js';
@@ -86,5 +88,17 @@ describe('validatorIdFromContainerName', () => {
     expect(validatorIdFromContainerName('yskval-avax-fuji-1-node-1', ids)).toBe('avax-fuji-1');
     expect(validatorIdFromContainerName('other', ids)).toBeNull();
     expect(composeProjectName('avax-fuji-1')).toBe('yskval-avax-fuji-1');
+  });
+});
+
+describe('applyComposeTimezone', () => {
+  it('injects TZ after restart so container logs follow the host zone', () => {
+    const y = applyComposeTimezone(
+      'services:\n  node:\n    restart: unless-stopped\n    volumes:\n      - /data:/data\n',
+      'Asia/Hong_Kong',
+    );
+    expect(y).toContain('environment:');
+    expect(y).toContain('TZ: Asia/Hong_Kong');
+    expect(hostTimezoneName()).toMatch(/^[A-Za-z0-9/_+-]+$/);
   });
 });

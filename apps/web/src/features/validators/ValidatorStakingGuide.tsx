@@ -9,6 +9,7 @@ import {
   stakingPlaybookAnchor,
   stakingPlaybookMeta,
   validatorChainLabel,
+  type CardanoProducerStatusDto,
   type ValidatorChainId,
 } from 'ysk-server-shared';
 import {
@@ -18,6 +19,7 @@ import {
   Card,
   CardSection,
   DataTable,
+  Field,
   FormLayout,
   StructuredFacts,
   buttonClassName,
@@ -167,6 +169,10 @@ export function ValidatorPlaybookCard({
   nodeId,
   blsPublicKey,
   blsProofOfPossession,
+  cardanoProducer,
+  producerMainnet,
+  onProducerApply,
+  onProducerDetach,
 }: {
   chain: string;
   compact?: boolean;
@@ -174,6 +180,10 @@ export function ValidatorPlaybookCard({
   nodeId?: string | null;
   blsPublicKey?: string | null;
   blsProofOfPossession?: string | null;
+  cardanoProducer?: CardanoProducerStatusDto | null;
+  producerMainnet?: boolean;
+  onProducerApply?: (files: { kes?: string; vrf?: string; opcert?: string }) => void;
+  onProducerDetach?: () => void;
 }) {
   const { t } = useTranslation();
   const meta = stakingPlaybookMeta(chain);
@@ -270,6 +280,14 @@ export function ValidatorPlaybookCard({
           ]}
         />
         <CredentialList items={avaxCredentials} />
+        {id === 'ada' && onProducerApply ? (
+          <CardanoProducerAttach
+            status={cardanoProducer}
+            mainnet={producerMainnet === true}
+            onApply={onProducerApply}
+            onDetach={onProducerDetach}
+          />
+        ) : null}
         {officialLinks}
       </CardSection>
     );
@@ -338,5 +356,99 @@ export function ValidatorPlaybookCard({
         </CardSection>
       </div>
     </Card>
+  );
+}
+
+async function fileToProducerPayload(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const text = new TextDecoder().decode(buf).trim();
+  if (text.startsWith('{') || text.startsWith('[')) return text;
+  let bin = '';
+  buf.forEach((b) => {
+    bin += String.fromCharCode(b);
+  });
+  return btoa(bin);
+}
+
+function CardanoProducerAttach({
+  status,
+  mainnet,
+  onApply,
+  onDetach,
+}: {
+  status?: CardanoProducerStatusDto | null;
+  mainnet: boolean;
+  onApply: (files: { kes?: string; vrf?: string; opcert?: string }) => void;
+  onDetach?: () => void;
+}) {
+  const { t } = useTranslation();
+  const [kes, setKes] = useState<string | undefined>();
+  const [vrf, setVrf] = useState<string | undefined>();
+  const [opcert, setOpcert] = useState<string | undefined>();
+
+  function slotLabel(present: boolean | undefined, fp: string | null | undefined): string {
+    return present && fp
+      ? t('validators.producer.present', { fp })
+      : t('validators.producer.missing');
+  }
+
+  return (
+    <div className="stack u-mt-3" data-testid="cardano-producer">
+      <Alert variant="warn">{t('validators.producer.warn')}</Alert>
+      <p className="muted u-text-sm">{t('validators.producer.hint')}</p>
+      <FormLayout>
+        <Field htmlFor="ada-kes" label={t('validators.producer.kes')} hint={slotLabel(status?.kesPresent, status?.kesFp)}>
+          <input
+            id="ada-kes"
+            type="file"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              void fileToProducerPayload(f).then(setKes);
+            }}
+          />
+        </Field>
+        <Field htmlFor="ada-vrf" label={t('validators.producer.vrf')} hint={slotLabel(status?.vrfPresent, status?.vrfFp)}>
+          <input
+            id="ada-vrf"
+            type="file"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              void fileToProducerPayload(f).then(setVrf);
+            }}
+          />
+        </Field>
+        <Field
+          htmlFor="ada-opcert"
+          label={t('validators.producer.opcert')}
+          hint={slotLabel(status?.opcertPresent, status?.opcertFp)}
+        >
+          <input
+            id="ada-opcert"
+            type="file"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              void fileToProducerPayload(f).then(setOpcert);
+            }}
+          />
+        </Field>
+      </FormLayout>
+      <ActionBar>
+        <Button
+          disabled={!kes && !vrf && !opcert}
+          onClick={() => onApply({ kes, vrf, opcert })}
+        >
+          {t('validators.producer.apply')}
+        </Button>
+        {status?.kesPresent || status?.vrfPresent || status?.opcertPresent ? (
+          <Button variant="secondary" onClick={() => onDetach?.()}>
+            {t('validators.producer.detach')}
+          </Button>
+        ) : null}
+      </ActionBar>
+      {mainnet ? <p className="muted u-text-sm">{t('validators.producer.mainnet')}</p> : null}
+    </div>
   );
 }

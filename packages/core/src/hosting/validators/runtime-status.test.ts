@@ -127,6 +127,16 @@ describe('pickValidatorContainerHint', () => {
     ).toMatch(/nil pointer|InitGenesis/i);
   });
 
+  it('prefers lighthouse clap unexpected argument over later EL info', () => {
+    expect(
+      pickValidatorContainerHint([
+        'el-1  | \u001b[2m2026-08-20T10:36:14Z\u001b[0m \u001b[32m INFO\u001b[0m Status',
+        "cl-1  | error: unexpected argument '--disable-deposit-contract-sync' found",
+        'el-1  | Status connected_peers=1',
+      ]),
+    ).toMatch(/unexpected argument '--disable-deposit-contract-sync'/);
+  });
+
   it('prefers lighthouse InvalidSsz over a later log line', () => {
     expect(
       pickValidatorContainerHint([

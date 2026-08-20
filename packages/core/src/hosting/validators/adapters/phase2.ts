@@ -515,20 +515,16 @@ export function buildSolComposeYaml(spec: ValidatorInstanceDto): string {
   return `# ysk-server validators sol — HEAVY (needs high IOPS / large disk)
 services:
   node:
-    image: ${img(spec, 'solanalabs/solana', 'v2.1.11')}
+    image: ${img(spec, 'anzaxyz/agave', 'v2.1.11')}
     restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - solana-validator
-      - --ledger
-      - /data
-      - --rpc-port
-      - "8899"
-      - --dynamic-port-range
-      - 8000-8020
-      - --entrypoint
-      - entrypoint.${net}.solana.com:8001
-      - --no-voting
-      - --limit-ledger-size
+      - |
+        set -e
+        if [ ! -f /data/identity.json ]; then
+          agave-keygen new --no-bip39-passphrase -o /data/identity.json
+        fi
+        exec agave-validator --identity /data/identity.json --ledger /data --rpc-port 8899 --dynamic-port-range 8000-8020 --entrypoint entrypoint.${net}.solana.com:8001 --no-voting --limit-ledger-size
     ports:
       - "127.0.0.1:${rpc}:8899"
       - "0.0.0.0:${gossip}-${gossipEnd}:8000-8020/tcp"
@@ -540,7 +536,7 @@ services:
 
 export function planSolInstall(spec: ValidatorInstanceDto): ValidatorHostPlan {
   return plan(spec, buildSolComposeYaml(spec), [
-    'solana-validator',
+    'agave-validator',
     'HEAVY: mainnet needs ~2 TiB and high IOPS',
     'rpc localhost only',
     'no voting identity',

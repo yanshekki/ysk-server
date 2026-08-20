@@ -16,24 +16,37 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem 0.45rem;
-  min-height: 2rem;
-  padding: 0.2rem 0.4rem;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  min-height: 2.2rem;
+  padding: 0.28rem 0.4rem;
   background: #111827;
   border-bottom: 1px solid #0b1220;
 }
 
-.log-viewer__filter {
+/* Beat global form.css input min-height 2.5rem so the filter does not cover line 1. */
+.log-viewer__toolbar input.log-viewer__filter:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']) {
   flex: 1 1 9rem;
   min-width: 7rem;
   max-width: 16rem;
+  width: auto;
   height: 1.7rem;
+  min-height: 1.7rem;
   margin: 0;
   padding: 0 0.45rem;
   border: 1px solid #334155;
   border-radius: 2px;
   background: #0b1220;
   color: #e2e8f0;
+  box-shadow: none;
   font: inherit;
+}
+
+.log-viewer__toolbar input.log-viewer__filter:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.35);
 }
 
 .log-viewer__filter::placeholder {

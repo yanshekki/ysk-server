@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.1.20 — 2026-08-20
+
+### Fix
+- Lighthouse v8: drop `--disable-deposit-contract-sync` (clap fatal on v8.2.2).
+- Nimbus: `--web3-url` → `--el`; checkpoint `--external-beacon-api-url`.
+- Solana pin: `solanalabs/solana:v2.1.11` does not exist; use `anzaxyz/agave:v2.1.11` + `agave-validator`.
+- Avalanche public-ip resolver `ifconfigMe` (opendns left Fuji at 0 peers). Compose injects host TZ so chain logs match the host clock.
+- LogViewer keyword field no longer covers the first log line (form.css min-height).
+- Validator wizard: RAM-short chains (NEAR 12g, Sui/Aptos/Sol 4g) showed a disabled Next with only a disk info banner. Warn in-body; do not freeze Next; Install still gates. Switching chain clears a stuck memory cap.
+
+### Improve
+- Cardano: attach KES / VRF / opcert on the instance page and restart as a block producer via official `CARDANO_BLOCK_PRODUCER` merge mode. Cold keys refused. Keys on disk under `keys/`, not in `instances.json`. Clear data keeps keys; delete instance removes them. Switch-network refused while attached. Wizard stays relay.
+- Official GitHub version list is newest-first with a `latest` field; wizard copy does not say the pin was tested.
+- Container last-error strips ANSI and matches `unexpected argument`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.20**.
+
 ## 1.1.19 — 2026-08-20
 
 ### Fix

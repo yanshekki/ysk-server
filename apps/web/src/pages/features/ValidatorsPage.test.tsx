@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { authStore } from '../../shared/stores/auth-store';
-import { ValidatorsPage } from './ValidatorsPage';
+import { officialLatestDockerTag, ValidatorsPage, versionOptionLabel } from './ValidatorsPage';
 
 describe('ValidatorsPage', () => {
   const fetchMock = vi.fn();
@@ -12,6 +12,27 @@ describe('ValidatorsPage', () => {
     authStore.setSession('tok', { username: 'admin', roles: ['admin'] });
     fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.includes('/clients/') && url.includes('/versions')) {
+        const clientId = url.match(/clients\/([^/?]+)/)?.[1] ?? 'client';
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            clientId,
+            image: 'ghcr.io/example/node',
+            pin: 'v1.0.0',
+            latest: 'v1.0.0',
+            github: 'example/node',
+            changelogUrl: null,
+            registryHost: 'ghcr.io',
+            at: null,
+            error: null,
+            versions: [
+              { gitTag: 'v1.0.0', dockerTag: 'v1.0.0', prerelease: false, htmlUrl: '' },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
       if (url.includes('/api/v1/validators/netio')) {
         return new Response(JSON.stringify({ ok: true, items: [] }), {
           status: 200,
@@ -341,5 +362,359 @@ describe('ValidatorsPage', () => {
     });
     expect(screen.getByText('Traffic')).toBeInTheDocument();
     expect(screen.getByText('↓ 1.0 KB/s · ↑ 512 B/s')).toBeInTheDocument();
+  });
+
+  it('labels official latest without saying the pin was tested', () => {
+    const t = (k: string) =>
+      ({
+        'validators.software.official': 'Official latest',
+        'validators.clients.pin': 'Panel pin',
+        'validators.clients.current': 'Running now',
+        'validators.clients.prerelease': 'Prerelease',
+      })[k] ?? k;
+    const latest = {
+      gitTag: '11.1.0',
+      dockerTag: '11.1.0',
+      prerelease: false,
+      htmlUrl: '',
+    };
+    const pin = {
+      gitTag: '11.0.1',
+      dockerTag: '11.0.1',
+      prerelease: false,
+      htmlUrl: '',
+    };
+    expect(versionOptionLabel(latest, '11.0.1', undefined, '11.1.0', t)).toBe(
+      '11.1.0 · Official latest',
+    );
+    expect(versionOptionLabel(pin, '11.0.1', undefined, '11.1.0', t)).toBe('11.0.1 · Panel pin');
+    expect(versionOptionLabel(pin, '11.0.1', undefined, '11.0.1', t)).toBe(
+      '11.0.1 · Official latest',
+    );
+    expect(
+      officialLatestDockerTag({
+        clientId: 'cardano-node',
+        image: 'ghcr.io/intersectmbo/cardano-node',
+        pin: '11.0.1',
+        latest: '11.1.0',
+        github: 'IntersectMBO/cardano-node',
+        changelogUrl: null,
+        registryHost: 'ghcr.io',
+        at: null,
+        error: null,
+        versions: [latest, pin],
+      }),
+    ).toBe('11.1.0');
+  });
+
+  it('lets the wizard pick the official latest Cardano tag', async () => {
+    const user = userEvent.setup();
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/clients/cardano-node/versions')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            clientId: 'cardano-node',
+            image: 'ghcr.io/intersectmbo/cardano-node',
+            pin: '11.0.1',
+            latest: '11.1.0',
+            github: 'IntersectMBO/cardano-node',
+            changelogUrl: 'https://github.com/IntersectMBO/cardano-node/releases',
+            registryHost: 'ghcr.io',
+            at: new Date().toISOString(),
+            error: null,
+            versions: [
+              { gitTag: '11.1.0', dockerTag: '11.1.0', prerelease: false, htmlUrl: '' },
+              { gitTag: '11.0.1', dockerTag: '11.0.1', prerelease: false, htmlUrl: '' },
+              { gitTag: '10.7.1', dockerTag: '10.7.1', prerelease: false, htmlUrl: '' },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/clients/') && url.includes('/versions')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            clientId: 'reth',
+            pin: 'v1.4.8',
+            latest: 'v1.4.8',
+            versions: [{ gitTag: 'v1.4.8', dockerTag: 'v1.4.8', prerelease: false, htmlUrl: '' }],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/netio')) {
+        return new Response(JSON.stringify({ ok: true, items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            chains: [
+              {
+                id: 'eth',
+                networks: [{ id: 'hoodi', kind: 'testnet', recommended: true }],
+                clients: [
+                  { id: 'reth', role: 'el' },
+                  { id: 'lighthouse', role: 'cl' },
+                ],
+              },
+              {
+                id: 'ada',
+                networks: [{ id: 'preview', kind: 'testnet', recommended: true }],
+                clients: [{ id: 'cardano-node', role: 'node' }],
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            disk: { instances: [], availBytes: 1e12, memAvailableBytes: 32e9 },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(JSON.stringify({ ok: true, instances: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create node/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /create node/i }));
+    await user.click(screen.getByRole('radio', { name: /cardano/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    const select = await screen.findByLabelText(/^version$/i);
+    await waitFor(() => {
+      expect(select).toHaveValue('11.1.0');
+    });
+    expect(screen.getByRole('option', { name: '11.1.0 · Official latest' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '11.0.1 · Panel pin' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '10.7.1' })).toBeInTheDocument();
+    expect(screen.queryByText(/tested/i)).toBeNull();
+    expect(fetchMock.mock.calls.some((c) => String(c[0]).includes('refresh=1'))).toBe(true);
+  });
+
+  it('opens Cardano details with KES / VRF / opcert file inputs and type-to-confirm, never a cold key field', async () => {
+    const user = userEvent.setup();
+    const ada = {
+      id: 'ada-preview-1',
+      chain: 'ada',
+      network: 'preview',
+      profile: 'minimal',
+      desiredState: 'stopped',
+      ports: { p2p: 3001, metrics: 12798 },
+      cardanoProducer: {
+        attached: false,
+        kesPresent: false,
+        vrfPresent: false,
+        opcertPresent: false,
+        kesFp: null,
+        vrfFp: null,
+        opcertFp: null,
+        attachedAt: null,
+      },
+    };
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            chains: [
+              {
+                id: 'ada',
+                networks: [
+                  { id: 'preview', kind: 'testnet', recommended: true },
+                  { id: 'mainnet', kind: 'mainnet' },
+                ],
+                clients: [{ id: 'cardano-node', role: 'node' }],
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(JSON.stringify({ ok: true, disk: { instances: [] } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/status')) {
+        return new Response(
+          JSON.stringify({ ok: true, status: 'stopped', running: false, lastError: null }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/logs')) {
+        return new Response(JSON.stringify({ ok: true, lines: [], notes: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/compose')) {
+        return new Response(
+          JSON.stringify({ ok: true, path: '/tmp/compose.yml', content: 'services: {}\n', notes: [] }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/stats')) {
+        return new Response(JSON.stringify({ ok: true, items: [], notes: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/checklist')) {
+        return new Response(
+          JSON.stringify({ ok: true, items: [], links: [], cardanoProducer: ada.cardanoProducer }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(JSON.stringify({ ok: true, instances: [ada] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('ada-preview-1')).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /^details$/i }));
+    expect(await screen.findByTestId('cardano-producer')).toBeInTheDocument();
+    expect(document.getElementById('ada-kes')).toHaveAttribute('type', 'file');
+    expect(document.getElementById('ada-vrf')).toHaveAttribute('type', 'file');
+    expect(document.getElementById('ada-opcert')).toHaveAttribute('type', 'file');
+    expect(document.getElementById('ada-cold')).toBeNull();
+    expect(screen.queryByLabelText(/cold\.skey/i)).toBeNull();
+    const apply = screen.getByRole('button', { name: /apply and restart as block producer/i });
+    expect(apply).toBeDisabled();
+    const kes = new File(
+      ['{"type":"KesSigningKey_ed25519_kes_2^6","cborHex":"aa"}'],
+      'kes.skey',
+      { type: 'application/json' },
+    );
+    await user.upload(document.getElementById('ada-kes') as HTMLInputElement, kes);
+    await waitFor(() => {
+      expect(apply).not.toBeDisabled();
+    });
+    await user.click(apply);
+    expect(await screen.findByRole('heading', { name: /attach hot keys to ada-preview-1/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('ada-preview-1')).toBeInTheDocument();
+    expect(document.querySelector('[data-confirm="ada-preview-1"]')).toBeTruthy();
+  });
+
+  it('shows a RAM short warning on NEAR without freezing Next, and clears the 12g cap when switching chain', async () => {
+    const user = userEvent.setup();
+    const GiB = 1024 ** 3;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            chains: [
+              {
+                id: 'eth',
+                networks: [{ id: 'hoodi', kind: 'testnet', recommended: true }],
+                clients: [
+                  { id: 'reth', role: 'el' },
+                  { id: 'lighthouse', role: 'cl' },
+                ],
+                minFreeBytes: { hoodi: { minimal: 40 * GiB } },
+              },
+              {
+                id: 'near',
+                networks: [
+                  { id: 'testnet', kind: 'testnet', recommended: true },
+                  { id: 'mainnet', kind: 'mainnet' },
+                ],
+                clients: [{ id: 'neard', role: 'node' }],
+                minFreeBytes: { testnet: { minimal: 50 * GiB } },
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            disk: {
+              instances: [],
+              availBytes: 58.6 * GiB,
+              memAvailableBytes: 4 * GiB,
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(JSON.stringify({ ok: true, instances: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create node/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /create node/i }));
+    await user.click(screen.getByRole('radio', { name: /near/i }));
+    expect(await screen.findByText(/not enough free ram/i)).toBeInTheDocument();
+    const next = screen.getByRole('button', { name: /^next$/i });
+    expect(next).not.toBeDisabled();
+    await user.click(next);
+    expect(await screen.findByText(/50\.0 GiB · free 58\.6 GiB/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough free ram/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^next$/i })).not.toBeDisabled();
+    await user.click(screen.getByRole('button', { name: /^back$/i }));
+    await user.click(screen.getByRole('radio', { name: /ethereum/i }));
+    await waitFor(() => {
+      expect(screen.queryByText(/not enough free ram/i)).toBeNull();
+    });
+    expect(screen.getByRole('button', { name: /^next$/i })).not.toBeDisabled();
   });
 });

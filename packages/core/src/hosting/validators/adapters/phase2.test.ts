@@ -180,6 +180,10 @@ describe('phase 2 compose + status parsers', () => {
     expect(buildDotComposeYaml(spec({ id: 'dot-westend-1', chain: 'dot', network: 'westend', ports: { rpc: 9933, p2p: 30333 } }))).toContain('--chain=westend');
     const sol = buildSolComposeYaml(spec({ id: 'sol-mainnet-1', chain: 'sol', network: 'mainnet', ports: { rpc: 8899 } }));
     expect(sol).toContain('HEAVY');
+    expect(sol).toContain('anzaxyz/agave:v2.1.11');
+    expect(sol).not.toContain('solanalabs/solana');
+    expect(sol).toContain('agave-validator');
+    expect(sol).not.toContain('solana-validator');
     expect(sol).toContain('--no-voting');
     expect(sol).toContain('8000-8020/udp');
     expect(sol).not.toContain('--expected-genesis-hash');

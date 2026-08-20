@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { applyComposeLimits, composeBind, composeStayWaits, writeComposeFile } from './compose-runner.js';
 import {
+  attachAdaProducerKeys,
   mergeValidatorNetIo,
   parseValidatorDockerStatsStdout,
   rankValidatorAutoClearCandidates,
   snapshotOffer,
   stakingChecklist,
+  switchValidatorNetwork,
 } from './extras.js';
+import { producerKeysDir } from './ada-producer.js';
+import { clearValidatorInstance } from './manager.js';
+import { buildValidatorInstance, getValidatorInstance, upsertValidatorInstance } from './store.js';
+import type { HostExecutor } from '../../host/executor.js';
 import { buildEthComposeYaml } from './adapters/eth.js';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -168,5 +174,122 @@ describe('validator extras', () => {
       rxRateBps: 1_000,
       txRateBps: 200,
     });
+  });
+
+  function stubHost(execute: boolean): HostExecutor {
+    return {
+      executeEnabled: () => execute,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({ exitCode: 0, stdout: '', stderr: '', argv: [], dryRun: false }),
+      runCommand: async (argv) => ({ exitCode: 0, stdout: '', stderr: '', argv, dryRun: false }),
+    };
+  }
+
+  it('dry-runs producer attach without writing keys', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-ada-prod-'));
+    const inst = buildValidatorInstance({
+      dataDir,
+      chain: 'ada',
+      network: 'preview',
+      profile: 'minimal',
+    });
+    upsertValidatorInstance(dataDir, inst);
+    const r = await attachAdaProducerKeys({
+      dataDir,
+      host: stubHost(false),
+      execute: false,
+      id: inst.id,
+      confirm: inst.id,
+      kes: '{"type":"KesSigningKey_ed25519_kes_2^6","cborHex":"aa"}',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.requiresExecute).toBe(true);
+    expect(existsSync(join(producerKeysDir(dataDir, inst.id), 'kes.skey'))).toBe(false);
+  });
+
+  it('refuses network switch while producer keys are attached', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-ada-sw-'));
+    const inst = buildValidatorInstance({
+      dataDir,
+      chain: 'ada',
+      network: 'preview',
+      profile: 'minimal',
+    });
+    upsertValidatorInstance(dataDir, inst);
+    await attachAdaProducerKeys({
+      dataDir,
+      host: stubHost(true),
+      execute: true,
+      id: inst.id,
+      confirm: inst.id,
+      kes: '{"type":"KesSigningKey_ed25519_kes_2^6","cborHex":"aa"}',
+      vrf: '{"type":"VrfSigningKey_PraosVRF","cborHex":"bb"}',
+      opcert: '{"type":"NodeOperationalCertificate","cborHex":"cc"}',
+    });
+    const compose = readFileSync(join(dataDir, 'validators', inst.id, 'compose.yml'), 'utf8');
+    expect(compose).toContain('CARDANO_BLOCK_PRODUCER: "true"');
+    expect(compose).toContain('CARDANO_SHELLEY_KES_KEY: /keys/kes.skey');
+    expect(compose).toContain(':/keys:ro');
+    const sw = await switchValidatorNetwork({
+      dataDir,
+      host: stubHost(true),
+      execute: true,
+      id: inst.id,
+      network: 'preprod',
+      confirm: inst.id,
+    });
+    expect(sw.ok).toBe(false);
+    expect(sw.notes?.join(' ')).toMatch(/Detach producer|卸下營運憑證/i);
+  });
+
+  it('clear chain data keeps producer keys; remove-unit deletes them', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-ada-clear-'));
+    const inst = buildValidatorInstance({
+      dataDir,
+      chain: 'ada',
+      network: 'preview',
+      profile: 'minimal',
+    });
+    upsertValidatorInstance(dataDir, inst);
+    await attachAdaProducerKeys({
+      dataDir,
+      host: stubHost(true),
+      execute: true,
+      id: inst.id,
+      confirm: inst.id,
+      kes: '{"type":"KesSigningKey_ed25519_kes_2^6","cborHex":"aa"}',
+      vrf: '{"type":"VrfSigningKey_PraosVRF","cborHex":"bb"}',
+      opcert: '{"type":"NodeOperationalCertificate","cborHex":"cc"}',
+    });
+    const kesPath = join(producerKeysDir(dataDir, inst.id), 'kes.skey');
+    expect(existsSync(kesPath)).toBe(true);
+    const cleared = await clearValidatorInstance({
+      dataDir,
+      host: stubHost(true),
+      execute: true,
+      id: inst.id,
+      confirm: inst.id,
+    });
+    expect(cleared.ok).toBe(true);
+    expect(existsSync(kesPath)).toBe(true);
+    expect(getValidatorInstance(dataDir, inst.id)?.cardanoProducer?.attached).toBe(true);
+    const removed = await clearValidatorInstance({
+      dataDir,
+      host: stubHost(true),
+      execute: true,
+      id: inst.id,
+      confirm: inst.id,
+      removeUnit: true,
+    });
+    expect(removed.ok).toBe(true);
+    expect(existsSync(kesPath)).toBe(false);
+    expect(getValidatorInstance(dataDir, inst.id)).toBeUndefined();
   });
 });

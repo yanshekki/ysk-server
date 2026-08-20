@@ -193,6 +193,22 @@ export function dockerTagFromGit(
   return normalizeGithubTag(raw, meta.tagPrefix);
 }
 
+export function compareOfficialVersions(
+  a: OfficialVersionItem,
+  b: OfficialVersionItem,
+): number {
+  if (a.prerelease !== b.prerelease) return a.prerelease ? 1 : -1;
+  if (tagIsNewer(a.dockerTag, b.dockerTag)) return 1;
+  if (tagIsNewer(b.dockerTag, a.dockerTag)) return -1;
+  return 0;
+}
+
+export function officialLatestDockerTag(items: OfficialVersionItem[], pin = ''): string {
+  const latest =
+    items.find((v) => !v.prerelease)?.dockerTag ?? items[0]?.dockerTag ?? '';
+  return latest || pin;
+}
+
 export function mergeOfficialVersions(input: {
   pin: string;
   extraTags?: string[];
@@ -226,7 +242,7 @@ export function mergeOfficialVersions(input: {
     byTag.set(item.dockerTag, item);
     fetched += 1;
   }
-  return [...byTag.values()];
+  return [...byTag.values()].sort(compareOfficialVersions);
 }
 
 type GithubReleaseRow = {
@@ -273,6 +289,28 @@ function parseFetchedVersions(
     });
   }
   return out;
+}
+
+/** Fetch GitHub tags for one client when missing, empty, stale, or forced. */
+export async function ensureClientOfficialReleases(input: {
+  dataDir: string;
+  clientId: string;
+  fetchFn?: typeof fetch;
+  force?: boolean;
+}): Promise<RemoteReleasesCache> {
+  const prev = loadRemoteReleases(input.dataDir);
+  const row = prev.clients[input.clientId];
+  const at = row?.at || prev.at;
+  const age = at ? Date.now() - Date.parse(at) : Number.POSITIVE_INFINITY;
+  const empty = !row || row.items.length === 0;
+  const stale = !Number.isFinite(age) || age < 0 || age >= OFFICIAL_CACHE_TTL_MS;
+  if (!input.force && !empty && !stale) return prev;
+  return refreshOfficialReleases({
+    dataDir: input.dataDir,
+    fetchFn: input.fetchFn,
+    clientIds: [input.clientId],
+    force: true,
+  });
 }
 
 export async function refreshOfficialReleases(input: {
@@ -328,6 +366,7 @@ export function listOfficialClientVersions(input: {
   clientId: string;
   image: string;
   pin: string;
+  latest: string | null;
   github: string | null;
   changelogUrl: string | null;
   registryHost: string;
@@ -352,10 +391,12 @@ export function listOfficialClientVersions(input: {
     fetched,
     pinHtmlUrl: meta ? `https://github.com/${meta.github}/releases/tag/${pin}` : '',
   });
+  const latest = officialLatestDockerTag(versions, pin) || null;
   return {
     clientId,
     image,
     pin,
+    latest,
     github: meta?.github ?? null,
     changelogUrl: meta?.changelog ?? null,
     registryHost: dockerRegistryHost(image),

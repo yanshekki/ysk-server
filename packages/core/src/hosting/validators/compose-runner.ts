@@ -2,7 +2,7 @@
  * Docker Compose runner for validator instances.
  * Host mutations go through HostExecutor (honesty / allowlist).
  */
-import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, readlinkSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
@@ -80,10 +80,52 @@ export function writeComposeFile(
 ): string {
   mkdirSync(dirname(path), { recursive: true });
   const limited = applyComposeLimits(yaml, limits);
-  const stamped = instanceId ? stampYskComposeLabels(limited, instanceId) : limited;
+  const zoned = applyComposeTimezone(limited);
+  const stamped = instanceId ? stampYskComposeLabels(zoned, instanceId) : zoned;
   const body = stamped.endsWith('\n') ? stamped : `${stamped}\n`;
   writeFileSync(path, body, 'utf8');
   return path;
+}
+
+/** Host IANA zone for container TZ. Fail closed to UTC if unreadable. */
+export function hostTimezoneName(): string {
+  try {
+    const tz = readFileSync('/etc/timezone', 'utf8').trim();
+    if (tz && tz.length < 64 && /^[A-Za-z0-9/_+-]+$/.test(tz)) return tz;
+  } catch {
+    /* no /etc/timezone */
+  }
+  const env = String(process.env.TZ ?? '').trim();
+  if (env && env.length < 64 && /^[A-Za-z0-9/_+-]+$/.test(env)) return env;
+  try {
+    const link = readlinkSync('/etc/localtime');
+    const m = String(link).match(/\/zoneinfo\/(.+)$/);
+    if (m?.[1] && m[1].length < 64 && /^[A-Za-z0-9/_+-]+$/.test(m[1])) return m[1];
+  } catch {
+    /* no localtime symlink */
+  }
+  return 'UTC';
+}
+
+/** Inject TZ (and /etc/localtime when present) so chain logs follow the host clock. */
+export function applyComposeTimezone(yaml: string, tz = hostTimezoneName()): string {
+  const zone = tz && tz.length < 64 && /^[A-Za-z0-9/_+-]+$/.test(tz) ? tz : 'UTC';
+  let out = String(yaml ?? '');
+  if (!/\n[ \t]+environment:/m.test(out)) {
+    out = out.replace(
+      /^([ \t]+restart:\s+unless-stopped)\s*$/gm,
+      `$1\n    environment:\n      TZ: ${zone}`,
+    );
+  } else if (!/\bTZ:\s*/m.test(out)) {
+    out = out.replace(/^([ \t]+environment:)\s*$/gm, `$1\n      TZ: ${zone}`);
+  }
+  if (existsSync('/etc/localtime') && !out.includes('/etc/localtime:')) {
+    out = out.replace(
+      /^([ \t]+volumes:)\s*$/gm,
+      `$1\n      - "/etc/localtime:/etc/localtime:ro"`,
+    );
+  }
+  return out;
 }
 
 /** Placeholder compose until a chain adapter supplies a real template. */

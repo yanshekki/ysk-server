@@ -236,9 +236,9 @@ ${p2pTcpUdp(p2pCl, 9000)}
     command:
       - --network=${net}
       - --data-dir=/data/nimbus
-      - --web3-url=http://el:8551
+      - --el=http://el:8551
       - --jwt-secret=${jwt}
-      - --trusted-node-url=${cp}
+      - --external-beacon-api-url=${cp}
       - --rest
       - --rest-address=0.0.0.0
       - --rest-port=5052
@@ -283,7 +283,6 @@ ${p2pTcpUdp(p2pCl, 9000)}
       - "9000"
       - --enr-tcp-port
       - "9000"
-      - --disable-deposit-contract-sync
     ports:
       - "127.0.0.1:${beacon}:5052"
 ${p2pTcpUdp(p2pCl, 9000)}

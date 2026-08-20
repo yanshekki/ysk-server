@@ -1,11 +1,13 @@
 /**
  * Cardano adapter — official cardano-node image, relay-first.
- * Block-producer keys are never written. Mithril restore is a one-click hook.
+ * Producer uses IntersectMBO CARDANO_BLOCK_PRODUCER env in merge mode.
+ * The panel never generates keys; cold keys are refused on attach.
  */
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
+import { adaProducerReady, producerKeysDirFromSpec } from '../ada-producer.js';
 
 export function cardanoNetworkEnv(network: string): 'preview' | 'preprod' | 'mainnet' {
   if (network === 'mainnet' || network === 'preprod') return network;
@@ -27,31 +29,51 @@ export function buildAdaComposeYaml(spec: ValidatorInstanceDto): string {
   const p2p = spec.ports.p2p ?? 3001;
   const metrics = spec.ports.metrics ?? 12798;
   const network = cardanoNetworkEnv(spec.network);
+  const producer = adaProducerReady(spec);
+  const keysDir = producerKeysDirFromSpec(spec);
+  // Official 11.0.1 entrypoint: NETWORK alone is scripts mode (run-network) and
+  // does not honour extra compose command flags. Merge mode (empty JSON merge)
+  // plus CARDANO_BLOCK_PRODUCER is what run-node uses to add --shelley-* keys.
+  const producerEnv = producer
+    ? `      CARDANO_CONFIG_JSON_MERGE: "{}"
+      CARDANO_BLOCK_PRODUCER: "true"
+      CARDANO_SHELLEY_KES_KEY: /keys/kes.skey
+      CARDANO_SHELLEY_VRF_KEY: /keys/vrf.skey
+      CARDANO_SHELLEY_OPERATIONAL_CERTIFICATE: /keys/node.cert
+`
+    : '';
+  const keysVol = producer ? `\n      - ${composeBind(keysDir, '/keys', 'ro')}` : '';
   return `# ysk-server validators ada — generated
-# Relay-first. No block-producer keys. Mithril is one-click from the panel.
+# ${producer ? 'Block producer: official CARDANO_BLOCK_PRODUCER env. Hot keys mounted read-only. Cold keys stay offline.' : 'Relay-first. No block-producer keys. Mithril is one-click from the panel.'}
 services:
   node:
     image: ${img}
     restart: unless-stopped
     environment:
       NETWORK: ${network}
-    ports:
+${producerEnv}    ports:
       - "0.0.0.0:${p2p}:3001"
       - "127.0.0.1:${metrics}:12798"
     volumes:
-      - ${composeBind(spec.dataPath, '/data')}
+      - ${composeBind(spec.dataPath, '/data')}${keysVol}
 `;
 }
 
 export function planAdaInstall(spec: ValidatorInstanceDto): ValidatorHostPlan {
   const clients = v1ValidatorClients('ada');
   return {
-    notes: [
-      'cardano-node relay',
-      'NETWORK env selects preview/preprod/mainnet',
-      'no block-producer keys',
-      'mithril one-click restore available',
-    ],
+    notes: adaProducerReady(spec)
+      ? [
+          'cardano-node block producer',
+          'NETWORK env selects preview/preprod/mainnet',
+          'hot keys kes/vrf/opcert only',
+        ]
+      : [
+          'cardano-node relay',
+          'NETWORK env selects preview/preprod/mainnet',
+          'no block-producer keys',
+          'mithril one-click restore available',
+        ],
     composeYaml: buildAdaComposeYaml(spec),
     dataPath: spec.dataPath,
     images: clients.map((c) => `${c.image}:${c.tag}`),

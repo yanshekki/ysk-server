@@ -23,3 +23,4 @@ export * from './software-catalog.js';
 export * from './adapters/eth-clients.js';
 export * from './snapshots.js';
 export * from './native-prune.js';
+export * from './ada-producer.js';

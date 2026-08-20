@@ -5,14 +5,20 @@
 import type { ValidatorRuntimeStatus } from 'ysk-server-shared';
 
 const FATAL_CONTAINER_RE =
-  /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found|dns error|no address associated with hostname|temporary failure in name resolution|initgenesis|nil pointer|invalid memory address|invalidssz|checkpoint state|failed to start beacon node|failed to connect to bootstrap|not connected to a minimum of 1 peer|not connected to enough stake/i;
+  /permission denied|unexpected token|unexpected argument|unknown argument|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|error: unexpected|address already in use|failed to bind|not found|dns error|no address associated with hostname|temporary failure in name resolution|initgenesis|nil pointer|invalid memory address|invalidssz|checkpoint state|failed to start beacon node|failed to connect to bootstrap|not connected to a minimum of 1 peer|not connected to enough stake/i;
+
+function stripAnsi(s: string): string {
+  return s
+    .replace(/\u001b\[[0-9;]*[A-Za-z]/g, '')
+    .replace(/\uFFFD\[[0-9;]*[A-Za-z]/g, '');
+}
 
 const OOM_RE = /\bkilled\b|out of memory|\booms?k?ill|cannot allocate memory|exit \(137\)/i;
 const NOFILE_RE = /too many open files|ensure_max_open_files_limit|RLIMIT_NOFILE/i;
 
 /** First compose-log line that explains why a node is not healthy. */
 export function pickValidatorContainerHint(lines: string[]): string | null {
-  const trimmed = lines.map((l) => l.trim()).filter(Boolean);
+  const trimmed = lines.map((l) => stripAnsi(l).trim()).filter(Boolean);
   const oom = trimmed.find((l) => OOM_RE.test(l));
   if (oom) return oom.slice(0, 280);
   const nofile = trimmed.find((l) => NOFILE_RE.test(l));

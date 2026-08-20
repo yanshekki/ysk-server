@@ -134,6 +134,7 @@ export const validatorsApi = {
       nodeId?: string | null;
       blsPublicKey?: string | null;
       blsProofOfPossession?: string | null;
+      cardanoProducer?: import('ysk-server-shared').CardanoProducerStatusDto;
     }>(`/api/v1/validators/${encodeURIComponent(id)}/checklist`),
   saveSettings: (autoClear: boolean) =>
     api.requestRaw<{ ok: boolean; settings: ValidatorSettingsDto }>('/api/v1/validators/settings', {
@@ -163,6 +164,26 @@ export const validatorsApi = {
       `/api/v1/validators/clients/${encodeURIComponent(clientId)}/versions${qs ? `?${qs}` : ''}`,
     );
   },
+  attachProducerKeys: (
+    id: string,
+    body: {
+      kes?: string;
+      vrf?: string;
+      opcert?: string;
+      confirm: string;
+      acceptMainnet?: boolean;
+      execute?: boolean;
+    },
+  ) =>
+    api.requestRaw<ValidatorOpsResponse>(
+      `/api/v1/validators/${encodeURIComponent(id)}/producer-keys`,
+      { method: 'POST', body: JSON.stringify({ execute: true, ...body }) },
+    ),
+  detachProducerKeys: (id: string, confirm: string, execute = true) =>
+    api.requestRaw<ValidatorOpsResponse>(
+      `/api/v1/validators/${encodeURIComponent(id)}/producer-keys/detach`,
+      { method: 'POST', body: JSON.stringify({ confirm, execute }) },
+    ),
   setVersion: (
     id: string,
     body: { clientId: string; tag: string; confirm: string; acceptMainnet?: boolean; execute?: boolean },

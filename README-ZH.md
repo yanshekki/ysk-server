@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.20 新內容
+
+- **驗證者** — Cardano 可掛 KES／VRF／opcert，以官方 `CARDANO_BLOCK_PRODUCER` 當 block producer（拒收 cold）。Lighthouse v8 旗標修正。Nimbus 改 `--el`。Solana 用 `anzaxyz/agave`。Avalanche 用 ifconfigMe 加主機 TZ。精靈記憶體不足會顯示警告，不再默默關掉「下一步」。
+- **面板** — LogViewer 關鍵字欄不再蓋住第一行日誌。官方 GitHub 版本最新在前，不寫「已測過」。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.20**。
+
 ## 1.1.19 新內容
 
 - **驗證者** — Hoodi 用 lighthouse v8.2.2 加 EthStaker checkpoint。Cosmos state-sync 只改 `[statesync]`。NEAR 預設 12g 並預檢 RAM。Avalanche 用 opendns 公網 IP。P2P 開 UDP／seed。列表即時 ↓／↑。官方 GitHub 版本可選。
@@ -47,12 +53,6 @@
 
 - **驗證者** — Cosmos Hub 測試網改 Gaia v28 加 state-sync；Hoodi checkpoint 用 Sigma Prime；Aptos nofile 1048576；NEAR 預設 8g 並設對等 swap 上限。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.18**。
-
-## 1.1.17 新內容
-
-- **驗證者** — Cosmos 使用官方測試網 genesis；Avalanche state-sync 寫入 C-Chain JSON；Hoodi checkpoint 改用 beaconstate.info；Aptos 提高 nofile；NEAR 預設 4g，ExitCode 137 標記憶體不足。
-- **面板** — JSON 顯示改用可摺疊 JsonViewer。日誌尾端（驗證者、Docker、日誌中心、專案、PM2、Agents 標準錯誤、安裝串流）共用同一個 LogViewer。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.17**。
 
 [完整變更紀錄](./CHANGELOG.md)
 

@@ -78,6 +78,8 @@ describe('validator registry', () => {
 
   it('finds catalog clients by id', () => {
     expect(findValidatorClient('lighthouse')?.tag).toBe('v8.2.2');
+    expect(findValidatorClient('agave')?.image).toBe('anzaxyz/agave');
+    expect(findValidatorClient('agave')?.tag).toBe('v2.1.11');
     expect(findValidatorClient('avalanchego')?.tag).toBe('v1.14.1');
     expect(findValidatorClient('sui-node')?.image).toBe('mysten/sui-node');
     expect(findValidatorClient('nope')).toBeUndefined();

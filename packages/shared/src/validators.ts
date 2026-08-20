@@ -73,6 +73,17 @@ export type ValidatorChainSpec = {
   minFreeBytes: Record<string, Partial<Record<ValidatorProfileId, number>>>;
 };
 
+export type CardanoProducerStatusDto = {
+  attached: boolean;
+  kesPresent: boolean;
+  vrfPresent: boolean;
+  opcertPresent: boolean;
+  kesFp: string | null;
+  vrfFp: string | null;
+  opcertFp: string | null;
+  attachedAt: string | null;
+};
+
 export type ValidatorInstanceClient = {
   id: string;
   image: string;
@@ -106,6 +117,8 @@ export type ValidatorInstanceDto = {
     network: string;
     digest?: string;
   };
+  /** Cardano SPO hot keys on disk — never the key material. */
+  cardanoProducer?: CardanoProducerStatusDto;
   limits?: {
     memory?: string;
     cpus?: string;
@@ -161,6 +174,7 @@ export type ValidatorClientVersionsDto = {
   clientId: string;
   image: string;
   pin: string;
+  latest: string | null;
   github: string | null;
   changelogUrl: string | null;
   registryHost: string;

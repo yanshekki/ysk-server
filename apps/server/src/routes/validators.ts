@@ -36,8 +36,12 @@ import {
   pullPinnedValidatorImage,
   listOfficialClientVersions,
   refreshOfficialReleases,
+  ensureClientOfficialReleases,
   setValidatorClientVersion,
   findValidatorClient,
+  attachAdaProducerKeys,
+  detachAdaProducerKeys,
+  enrichCardanoProducer,
 } from 'ysk-server-core';
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -92,7 +96,9 @@ export async function handleValidatorsRoutes(
       });
       sendJson(res, 200, {
         ok: true,
-        instances: listValidatorInstances(ctx.dataDir),
+        instances: listValidatorInstances(ctx.dataDir).map((i) =>
+          enrichCardanoProducer(i, ctx.dataDir),
+        ),
         summaries,
         settings: loadValidatorSettings(ctx.dataDir),
         executeEnabled: ctx.host.executeEnabled(),
@@ -159,16 +165,14 @@ export async function handleValidatorsRoutes(
           sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
           return true;
         }
-        if (url.searchParams.get('refresh') === '1') {
-          try {
-            await refreshOfficialReleases({
-              dataDir: ctx.dataDir,
-              force: true,
-              clientIds: [clientId],
-            });
-          } catch {
-            /* keep last cache */
-          }
+        try {
+          await ensureClientOfficialReleases({
+            dataDir: ctx.dataDir,
+            clientId,
+            force: url.searchParams.get('refresh') === '1',
+          });
+        } catch {
+          /* keep last cache */
         }
         const network = url.searchParams.get('network') || undefined;
         sendJson(res, 200, {
@@ -281,7 +285,7 @@ export async function handleValidatorsRoutes(
         });
         return true;
       }
-      sendJson(res, 200, { ok: true, instance });
+      sendJson(res, 200, { ok: true, instance: enrichCardanoProducer(instance, ctx.dataDir) });
       return true;
     }
 
@@ -292,6 +296,38 @@ export async function handleValidatorsRoutes(
         id,
       });
       sendJson(res, 200, { ok: true, ...status });
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'producer-keys' && method === 'POST') {
+      const detach = rest.split('/')[2] === 'detach';
+      const raw = await readBody(req);
+      const body = JSON.parse(raw || '{}') as Record<string, unknown>;
+      await sendMaybeStreamedOps({
+        req,
+        res,
+        url,
+        body,
+        run: async (hooks) => {
+          const hooked = {
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            execute: wantsExecute(ctx, body),
+            id,
+            confirm: body.confirm != null ? String(body.confirm) : undefined,
+            onLog: hooks.onLog,
+            signal: hooks.signal,
+          };
+          if (detach) return detachAdaProducerKeys(hooked);
+          return attachAdaProducerKeys({
+            ...hooked,
+            acceptMainnet: body.acceptMainnet === true,
+            kes: body.kes != null ? String(body.kes) : undefined,
+            vrf: body.vrf != null ? String(body.vrf) : undefined,
+            opcert: body.opcert != null ? String(body.opcert) : undefined,
+          });
+        },
+      });
       return true;
     }
 
@@ -341,7 +377,7 @@ export async function handleValidatorsRoutes(
       }
       sendJson(res, 200, {
         ok: true,
-        ...(await stakingChecklistForInstance(inst)),
+        ...(await stakingChecklistForInstance(inst, ctx.dataDir)),
         snapshot: snapshotOffer(inst.chain, inst.network),
       });
       return true;

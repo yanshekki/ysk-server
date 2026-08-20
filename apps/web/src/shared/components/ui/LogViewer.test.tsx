@@ -36,6 +36,17 @@ describe('LogViewer', () => {
     );
   });
 
+  it('keeps the keyword input in the toolbar, not inside the log body', () => {
+    const { container } = wrap(<LogViewer text={'first line\nsecond line'} />);
+    const toolbar = container.querySelector('.log-viewer__toolbar');
+    const body = container.querySelector('.log-viewer__body');
+    const filter = container.querySelector('.log-viewer__filter');
+    expect(toolbar).toContainElement(filter as HTMLElement);
+    expect(body).not.toContainElement(filter as HTMLElement);
+    expect(body?.textContent).toMatch(/first line/);
+    expect(toolbar?.nextElementSibling).toBe(body);
+  });
+
   it('filters by keyword', async () => {
     const user = userEvent.setup();
     wrap(<LogViewer text={'ERROR boom\ninfo ok\nwarn disk'} />);

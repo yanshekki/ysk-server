@@ -1,6 +1,7 @@
 /**
  * CLI: validators — L1 node manager.
  */
+import { readFileSync } from 'node:fs';
 import {
   clearValidatorInstance,
   removeValidatorInstance,
@@ -26,6 +27,9 @@ import {
   upgradeValidatorInstance,
   setValidatorClientVersion,
   listOfficialClientVersions,
+  ensureClientOfficialReleases,
+  attachAdaProducerKeys,
+  detachAdaProducerKeys,
 } from 'ysk-server-core';
 import { isValidatorInstanceId, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -152,6 +156,15 @@ export async function runValidatorsCommand(
     if (!clientId) {
       process.stderr.write(`${tl('validators.cli.usage')}\n`);
       return 2;
+    }
+    try {
+      await ensureClientOfficialReleases({
+        dataDir: ctx.dataDir,
+        clientId,
+        force: h.hasFlag(args, '--refresh'),
+      });
+    } catch {
+      /* pin-only fallback */
     }
     h.printJson({
       ok: true,
@@ -328,6 +341,51 @@ export async function runValidatorsCommand(
                 removeUnit: h.hasFlag(args, '--remove-unit'),
                 restoreSnapshot: h.hasFlag(args, '--restore-snapshot'),
               });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'producer-keys') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const readMaybe = (flag: string): string | undefined => {
+      const p = h.getOpt(args, flag);
+      if (!p) return undefined;
+      const buf = readFileSync(p);
+      const text = buf.toString('utf8').trim();
+      return text.startsWith('{') ? text : buf.toString('base64');
+    };
+    const result = await attachAdaProducerKeys({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      confirm: h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? id : undefined),
+      acceptMainnet: h.hasFlag(args, '--accept-mainnet'),
+      kes: readMaybe('--kes-file'),
+      vrf: readMaybe('--vrf-file'),
+      opcert: readMaybe('--opcert-file'),
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'producer-detach') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await detachAdaProducerKeys({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      confirm: h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? id : undefined),
+    });
     h.printJson(result);
     return h.exitFromResult(result);
   }

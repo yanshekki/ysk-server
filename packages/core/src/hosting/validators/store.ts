@@ -215,6 +215,10 @@ function normalizeInstance(raw: unknown): ValidatorInstanceDto | null {
       o.lastMithril && typeof o.lastMithril === 'object'
         ? (o.lastMithril as ValidatorInstanceDto['lastMithril'])
         : undefined,
+    cardanoProducer:
+      o.cardanoProducer && typeof o.cardanoProducer === 'object'
+        ? (o.cardanoProducer as ValidatorInstanceDto['cardanoProducer'])
+        : undefined,
     limits:
       o.limits && typeof o.limits === 'object'
         ? (o.limits as ValidatorInstanceDto['limits'])

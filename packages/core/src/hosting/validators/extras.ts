@@ -25,9 +25,11 @@ import {
   type ValidatorOpsResult,
 } from './honesty.js';
 import {
+  composeDown,
   composeFilePath,
   composeProjectName,
   composePsRunning,
+  composeUp,
   prepareValidatorDataDir,
   validatorIdFromContainerName,
   writeComposeFile,
@@ -48,6 +50,15 @@ import { restoreAdaMithril } from './mithril.js';
 import { loadValidatorSettings } from './settings.js';
 import { clearValidatorInstance } from './manager.js';
 import { nativePruneArgvOk, nativePrunePlan } from './native-prune.js';
+import {
+  type AdaProducerSlot,
+  decodeProducerPayload,
+  producerKeysDir,
+  readProducerStatus,
+  removeProducerKeys,
+  validateProducerFile,
+  writeProducerFile,
+} from './ada-producer.js';
 import { restoreEthSnapshot, restoreNearEpoch } from './snapshots.js';
 import { runOpts, type OpsLogFn } from '../ops-log.js';
 
@@ -182,6 +193,13 @@ export async function switchValidatorNetwork(input: {
   if (inst.network === input.network) {
     return writtenValidatorOp({ instanceId: inst.id, written: [], notes: [tl('validators.notes.sameNetwork')] });
   }
+  if (readProducerStatus(producerKeysDir(input.dataDir, inst.id), inst.cardanoProducer?.attachedAt).attached) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.switchNeedDetachProducer')],
+    });
+  }
   const running = await composePsRunning({
     host: input.host,
     file: composeFilePath(instanceDir(input.dataDir, inst.id)),
@@ -290,6 +308,214 @@ export function regenerateValidatorCompose(input: {
     instanceId: inst.id,
     written: [path],
     notes: [tl('validators.notes.composeWrote')],
+  });
+}
+
+export function isProducerConfirm(id: string, confirm: string | undefined): boolean {
+  const c = String(confirm ?? '').trim();
+  return c === id || c.toUpperCase() === 'PRODUCER';
+}
+
+async function rewriteAdaComposeAndRestart(input: {
+  dataDir: string;
+  host: HostExecutor;
+  inst: ValidatorInstanceDto;
+  execute: boolean;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
+}): Promise<{ ok: boolean; notes: string[]; written: string[] }> {
+  const path = composeFilePath(instanceDir(input.dataDir, input.inst.id));
+  const plan = planInstallFor(input.inst);
+  writeComposeFile(path, plan.composeYaml, input.inst.id, input.inst.limits);
+  if (!input.execute) return { ok: true, notes: [tl('validators.notes.dryCompose')], written: [path] };
+  const project = composeProjectName(input.inst.id);
+  await composeDown({
+    host: input.host,
+    file: path,
+    project,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
+  const up = await composeUp({
+    host: input.host,
+    file: path,
+    project,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
+  if (!up.ok) {
+    return { ok: false, notes: [tl('validators.errors.composeFailed'), up.stderr || up.stdout], written: [path] };
+  }
+  return { ok: true, notes: [tl('validators.notes.composeWrote')], written: [path] };
+}
+
+export async function attachAdaProducerKeys(input: {
+  dataDir: string;
+  host: HostExecutor;
+  execute: boolean;
+  id: string;
+  confirm?: string;
+  acceptMainnet?: boolean;
+  kes?: string;
+  vrf?: string;
+  opcert?: string;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
+}): Promise<ValidatorOpsResult> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  if (inst.chain !== 'ada') {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.producerAdaOnly')] });
+  }
+  if (!isProducerConfirm(inst.id, input.confirm)) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.needProducerConfirm')],
+    });
+  }
+  const net = getValidatorNetwork(inst.chain, inst.network);
+  if (net?.kind === 'mainnet' && input.acceptMainnet !== true) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.needMainnetProducerAck')],
+    });
+  }
+  const slots: Array<{ slot: AdaProducerSlot; raw?: string }> = [
+    { slot: 'kes', raw: input.kes },
+    { slot: 'vrf', raw: input.vrf },
+    { slot: 'opcert', raw: input.opcert },
+  ];
+  const provided = slots.filter((s) => String(s.raw ?? '').trim());
+  if (!provided.length) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.producerEmpty')],
+    });
+  }
+  const parsed: Array<{ slot: AdaProducerSlot; buf: Buffer }> = [];
+  for (const row of provided) {
+    const buf = decodeProducerPayload(String(row.raw));
+    const check = validateProducerFile(row.slot, buf);
+    if (!check.ok) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl(`validators.errors.${check.error}`)],
+      });
+    }
+    parsed.push({ slot: row.slot, buf });
+  }
+  const keysDir = producerKeysDir(input.dataDir, inst.id);
+  const written: string[] = [];
+  if (!input.execute || !input.host.executeEnabled()) {
+    return writtenValidatorOp({
+      instanceId: inst.id,
+      written,
+      notes: [tl('validators.notes.dryProducer')],
+    });
+  }
+  for (const row of parsed) {
+    written.push(writeProducerFile(keysDir, row.slot, row.buf));
+  }
+  const status = readProducerStatus(keysDir, inst.cardanoProducer?.attachedAt);
+  const next: ValidatorInstanceDto = {
+    ...inst,
+    cardanoProducer: {
+      ...status,
+      attachedAt: status.attached ? status.attachedAt || new Date().toISOString() : null,
+    },
+    updatedAt: new Date().toISOString(),
+  };
+  upsertValidatorInstance(input.dataDir, next);
+  if (!status.attached) {
+    return appliedValidatorOp({
+      instanceId: inst.id,
+      written,
+      notes: [tl('validators.notes.producerPartial')],
+    });
+  }
+  const restarted = await rewriteAdaComposeAndRestart({
+    dataDir: input.dataDir,
+    host: input.host,
+    inst: next,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
+  if (!restarted.ok) {
+    return failedValidatorOp({
+      instanceId: inst.id,
+      written: [...written, ...restarted.written],
+      notes: restarted.notes,
+    });
+  }
+  return appliedValidatorOp({
+    instanceId: inst.id,
+    written: [...written, ...restarted.written],
+    notes: [tl('validators.notes.producerAttached'), ...restarted.notes],
+  });
+}
+
+export async function detachAdaProducerKeys(input: {
+  dataDir: string;
+  host: HostExecutor;
+  execute: boolean;
+  id: string;
+  confirm?: string;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
+}): Promise<ValidatorOpsResult> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  if (inst.chain !== 'ada') {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.producerAdaOnly')] });
+  }
+  if (!isProducerConfirm(inst.id, input.confirm)) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.needProducerConfirm')],
+    });
+  }
+  const keysDir = producerKeysDir(input.dataDir, inst.id);
+  if (!input.execute || !input.host.executeEnabled()) {
+    return writtenValidatorOp({
+      instanceId: inst.id,
+      written: [keysDir],
+      notes: [tl('validators.notes.dryProducerDetach')],
+    });
+  }
+  removeProducerKeys(keysDir);
+  const next: ValidatorInstanceDto = {
+    ...inst,
+    cardanoProducer: readProducerStatus(keysDir, null),
+    updatedAt: new Date().toISOString(),
+  };
+  upsertValidatorInstance(input.dataDir, next);
+  const restarted = await rewriteAdaComposeAndRestart({
+    dataDir: input.dataDir,
+    host: input.host,
+    inst: next,
+    execute: true,
+    onLog: input.onLog,
+    signal: input.signal,
+  });
+  if (!restarted.ok) {
+    return failedValidatorOp({
+      instanceId: inst.id,
+      written: [keysDir, ...restarted.written],
+      notes: restarted.notes,
+    });
+  }
+  return appliedValidatorOp({
+    instanceId: inst.id,
+    written: [keysDir, ...restarted.written],
+    notes: [tl('validators.notes.producerDetached'), ...restarted.notes],
   });
 }
 
@@ -600,16 +826,29 @@ export async function runValidatorAutoClear(input: {
   };
 }
 
-export async function stakingChecklistForInstance(inst: ValidatorInstanceDto): Promise<{
+export async function stakingChecklistForInstance(
+  inst: ValidatorInstanceDto,
+  dataDir?: string,
+): Promise<{
   items: string[];
   links: Array<{ label: string; href: string }>;
   nodeId?: string | null;
   blsPublicKey?: string | null;
   blsProofOfPossession?: string | null;
+  cardanoProducer?: ValidatorInstanceDto['cardanoProducer'];
 }> {
   const base = stakingChecklist(inst.chain);
-  if (inst.chain !== 'avax') return base;
-  return { ...base, ...(await probeAvaxStakingIdentity(inst)) };
+  if (inst.chain === 'avax') return { ...base, ...(await probeAvaxStakingIdentity(inst)) };
+  if (inst.chain === 'ada' && dataDir) {
+    return {
+      ...base,
+      cardanoProducer: readProducerStatus(
+        producerKeysDir(dataDir, inst.id),
+        inst.cardanoProducer?.attachedAt,
+      ),
+    };
+  }
+  return base;
 }
 
 export function stakingChecklist(chain: string): { items: string[]; links: Array<{ label: string; href: string }> } {

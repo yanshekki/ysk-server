@@ -13646,13 +13646,13 @@
       "disk": "Disk"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--accept-low-disk] [--accept-mainnet] [--execute] [--json]"
+      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "Execution client",
       "cl": "Consensus client",
       "version": "Version",
-      "pin": "Panel pin (tested with this release)",
+      "pin": "Panel pin",
       "officialNewer": "Official newer",
       "olderThanPin": "Older than the panel pin",
       "prerelease": "Prerelease",
@@ -13699,7 +13699,15 @@
       "snapshotLookup": "Could not resolve the official snapshot pointer",
       "needSnapshotConfirm": "Snapshot restore requires confirm=instance id or SNAPSHOT",
       "snapshotBlocked": "Snapshot docker run was blocked by the allowlist",
-      "snapshotFailed": "Snapshot download or extract failed"
+      "snapshotFailed": "Snapshot download or extract failed",
+      "producerAdaOnly": "Producer keys are only for Cardano",
+      "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
+      "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
+      "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
+      "producerTooLarge": "That key file is larger than 64 KiB",
+      "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
+      "producerEmpty": "Provide at least one of kes, vrf, or opcert",
+      "switchNeedDetachProducer": "Detach producer keys before switching network"
     },
     "notes": {
       "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
@@ -13730,6 +13738,11 @@
       "snapshotEthCl": "Reset CL data for official checkpoint sync",
       "snapshotNear": "Wiped NEAR data; compose will re-init official genesis and epoch sync",
       "nativePrune": "Ran the client-native prune command",
+      "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
+      "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
+      "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
+      "producerAttached": "Hot keys attached; compose rewritten as block producer",
+      "producerDetached": "Hot keys removed; compose rewritten as relay",
       "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
       "deleted": "Node deleted",
       "leftoverRemoved": "Removed leftover {{path}}"
@@ -13838,6 +13851,28 @@
       "near": "Official free NEAR tarball snapshots were retired. Restore wipes data and uses official genesis plus epoch sync.",
       "none": "No snapshot source is configured for this chain."
     },
+    "producer": {
+      "title": "Block producer hot keys",
+      "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
+      "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
+      "kes": "KES",
+      "vrf": "VRF",
+      "opcert": "opcert",
+      "missing": "Not attached",
+      "present": "Attached {{fp}}",
+      "choose": "Choose file",
+      "apply": "Apply and restart as block producer",
+      "detach": "Detach and run as relay",
+      "applyTitle": "Attach hot keys to {{id}}?",
+      "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
+      "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
+      "applyC2": "The running node can sign blocks if these files are valid.",
+      "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
+      "detachTitle": "Detach producer keys from {{id}}?",
+      "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
+      "detachC1": "The node will no longer produce blocks.",
+      "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
+    },
     "stake": {
       "title": "Prepare for staking (you keep the keys)",
       "offlineKeys": "Generate keys offline. The panel never stores them.",
@@ -13933,7 +13968,7 @@
           "Read the official operate-a-stake-pool guide.",
           "Generate cold, KES, and VRF keys on an offline machine.",
           "Register the pool on-chain from those keys.",
-          "Point the running cardano-node at your operational certificates."
+          "On this instance page, attach KES, VRF, and the operational certificate. Do not upload cold keys."
         ],
         "never": [
           "Do not treat this as a MetaMask one-click stake.",

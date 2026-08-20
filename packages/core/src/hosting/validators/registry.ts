@@ -259,7 +259,7 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
     ],
     profiles: ['minimal', 'pruned', 'validator-ready', 'rpc'],
     clients: [
-      { id: 'agave', role: 'node', image: 'solanalabs/solana', tag: 'v2.1.11', v1: true },
+      { id: 'agave', role: 'node', image: 'anzaxyz/agave', tag: 'v2.1.11', v1: true },
     ],
     minFreeBytes: {
       testnet: { minimal: 200 * GiB, pruned: 300 * GiB, 'validator-ready': 400 * GiB, rpc: 200 * GiB },

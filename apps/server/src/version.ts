@@ -1,3 +1,3 @@
-export const VERSION = '1.1.19';
+export const VERSION = '1.1.20';
 export const PRODUCT = 'YSK Server';
 export const CLI = 'ysk-server';

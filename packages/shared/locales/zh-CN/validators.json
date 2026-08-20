@@ -110,7 +110,7 @@
     "el": "执行层客户端",
     "cl": "共识层客户端",
     "version": "Version",
-    "pin": "Panel pin (tested with this release)",
+    "pin": "Panel pin",
     "officialNewer": "Official newer",
     "olderThanPin": "Older than the panel pin",
     "prerelease": "Prerelease",
@@ -157,7 +157,15 @@
     "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
     "badTag": "That client version is not an official tag for this image",
     "needVersionConfirm": "Changing version requires confirm=instance id",
-    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet"
+    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet",
+    "producerAdaOnly": "Producer keys are only for Cardano",
+    "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
+    "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
+    "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
+    "producerTooLarge": "That key file is larger than 64 KiB",
+    "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
+    "producerEmpty": "Provide at least one of kes, vrf, or opcert",
+    "switchNeedDetachProducer": "Detach producer keys before switching network"
   },
   "notes": {
     "beta": "此功能属 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
@@ -190,7 +198,12 @@
     "nativePrune": "已执行客户端原生清理命令",
     "dryDelete": "删除属预演。真正套用须 --execute 与 YSK_EXECUTE=1。",
     "deleted": "已删除节点",
-    "leftoverRemoved": "Removed leftover {{path}}"
+    "leftoverRemoved": "Removed leftover {{path}}",
+    "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
+    "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
+    "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
+    "producerAttached": "Hot keys attached; compose rewritten as block producer",
+    "producerDetached": "Hot keys removed; compose rewritten as relay"
   },
   "create": "建立节点",
   "wizard": {
@@ -622,5 +635,27 @@
         "Do not look for a staking wallet on this page."
       ]
     }
+  },
+  "producer": {
+    "title": "Block producer hot keys",
+    "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
+    "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
+    "kes": "KES",
+    "vrf": "VRF",
+    "opcert": "opcert",
+    "missing": "Not attached",
+    "present": "Attached {{fp}}",
+    "choose": "Choose file",
+    "apply": "Apply and restart as block producer",
+    "detach": "Detach and run as relay",
+    "applyTitle": "Attach hot keys to {{id}}?",
+    "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
+    "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
+    "applyC2": "The running node can sign blocks if these files are valid.",
+    "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
+    "detachTitle": "Detach producer keys from {{id}}?",
+    "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
+    "detachC1": "The node will no longer produce blocks.",
+    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks."
   }
 }

@@ -129,14 +129,32 @@ function formatTraffic(s: ValidatorSummaryDto | undefined): string {
   return `↓ ${formatSpeed(s.rxRateBps)} · ↑ ${formatSpeed(s.txRateBps)}`;
 }
 
-function versionOptionLabel(
+export function officialLatestDockerTag(list?: ValidatorClientVersionsDto | null): string {
+  if (!list) return '';
+  const versions = list.versions ?? [];
+  return (
+    list.latest ||
+    versions.find((v) => !v.prerelease)?.dockerTag ||
+    versions[0]?.dockerTag ||
+    list.pin ||
+    ''
+  );
+}
+
+function wizardPickedTag(userTag: string, list?: ValidatorClientVersionsDto | null): string {
+  return userTag || officialLatestDockerTag(list);
+}
+
+export function versionOptionLabel(
   v: ValidatorOfficialVersionDto,
   pin: string,
   current: string | undefined,
+  latest: string | undefined,
   t: (k: string) => string,
 ): string {
   const marks: string[] = [];
-  if (v.dockerTag === pin) marks.push(t('validators.clients.pin'));
+  if (latest && v.dockerTag === latest) marks.push(t('validators.software.official'));
+  else if (v.dockerTag === pin) marks.push(t('validators.clients.pin'));
   if (current && v.dockerTag === current) marks.push(t('validators.clients.current'));
   if (v.prerelease) marks.push(t('validators.clients.prerelease'));
   return marks.length ? `${v.dockerTag} · ${marks.join(' · ')}` : v.dockerTag;
@@ -187,6 +205,7 @@ export function ValidatorsPage() {
     nodeId?: string | null;
     blsPublicKey?: string | null;
     blsProofOfPossession?: string | null;
+    cardanoProducer?: import('ysk-server-shared').CardanoProducerStatusDto;
   } | null>(null);
   const [switchNet, setSwitchNet] = useState('');
   const [removeUnit, setRemoveUnit] = useState(false);
@@ -199,6 +218,13 @@ export function ValidatorsPage() {
   const [pendingAutoClear, setPendingAutoClear] = useState(false);
   const [leftoverTarget, setLeftoverTarget] = useState<ValidatorDiskLeftover | null>(null);
   const [pendingRewrite, setPendingRewrite] = useState(false);
+  const [pendingProducer, setPendingProducer] = useState<{
+    kes?: string;
+    vrf?: string;
+    opcert?: string;
+  } | null>(null);
+  const [pendingProducerDetach, setPendingProducerDetach] = useState(false);
+  const [producerMainnetOk, setProducerMainnetOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
   const [detail, setDetail] = useState<ValidatorInstanceDto | null>(null);
@@ -270,7 +296,7 @@ export function ValidatorsPage() {
   useEffect(() => {
     if (!detail) return;
     for (const c of Object.values(detail.clients ?? {})) {
-      void loadClientVersions(c.id, detail.network);
+      void loadClientVersions(c.id, detail.network, true);
     }
   }, [detail, loadClientVersions]);
 
@@ -325,12 +351,12 @@ export function ValidatorsPage() {
   useEffect(() => {
     if (!wizard) return;
     if (chain === 'eth') {
-      void loadClientVersions(el, network);
-      void loadClientVersions(cl, network);
+      void loadClientVersions(el, network, true);
+      void loadClientVersions(cl, network, true);
       return;
     }
     const nodeId = chainSpec?.clients.find((c) => c.role === 'node')?.id;
-    if (nodeId) void loadClientVersions(nodeId, network);
+    if (nodeId) void loadClientVersions(nodeId, network, true);
   }, [wizard, chain, network, el, cl, chainSpec, loadClientVersions]);
   const needBytes =
     chainSpec?.minFreeBytes?.[network]?.[profile as 'minimal'] ??
@@ -402,8 +428,7 @@ export function ValidatorsPage() {
             : blockReason === 'path'
               ? t('validators.wizard.needCustomPath')
               : undefined;
-  const canAdvanceFromDisk =
-    (!diskShort || (netSpec?.kind === 'mainnet' && mainnetOk)) && !memShort;
+  const canAdvanceFromDisk = !diskShort || (netSpec?.kind === 'mainnet' && mainnetOk);
   const autoClearCandidates = [...instances]
     .map((i) => {
       const st = summaries[i.id]?.status ?? i.desiredState;
@@ -457,9 +482,15 @@ export function ValidatorsPage() {
           profile,
           el: chain === 'eth' ? el : undefined,
           cl: chain === 'eth' ? cl : undefined,
-          elTag: chain === 'eth' ? elTag || undefined : undefined,
-          clTag: chain === 'eth' ? clTag || undefined : undefined,
-          nodeTag: chain !== 'eth' ? nodeTag || undefined : undefined,
+          elTag: chain === 'eth' ? wizardPickedTag(elTag, versionMap[el]) || undefined : undefined,
+          clTag: chain === 'eth' ? wizardPickedTag(clTag, versionMap[cl]) || undefined : undefined,
+          nodeTag:
+            chain !== 'eth'
+              ? wizardPickedTag(
+                  nodeTag,
+                  versionMap[chainSpec?.clients.find((c) => c.role === 'node')?.id ?? ''],
+                ) || undefined
+              : undefined,
           mithril: chain === 'ada' ? mithril : undefined,
           memory: memory.trim() || undefined,
           cpus: cpus.trim() || undefined,
@@ -1161,10 +1192,8 @@ export function ValidatorsPage() {
                   (step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim()))
                 }
                 title={
-                  step >= 1 && memShort
-                    ? memShortTitle
-                    : step >= 1 && !canAdvanceFromDisk
-                      ? diskShortTitle
+                  step >= 1 && !canAdvanceFromDisk
+                    ? diskShortTitle
                     : step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim())
                       ? t('validators.wizard.needCustomPath')
                       : step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk
@@ -1191,6 +1220,11 @@ export function ValidatorsPage() {
       >
         <div className="stack val-wizard">
         {ops ? <OpsResultPanel title={t('validators.wizard.install')} result={ops} /> : null}
+        {memShort ? (
+          <Alert variant="error">
+            {t('validators.wizard.memShort')} {memShortTitle}
+          </Alert>
+        ) : null}
         {step === 0 ? (
           <>
             {loading && chains.length === 0 ? (
@@ -1204,8 +1238,7 @@ export function ValidatorsPage() {
                 setChain(v);
                 const c = chains.find((x) => x.id === v);
                 setNetwork(c?.networks.find((n) => n.recommended)?.id ?? c?.networks[0]?.id ?? '');
-                const defMem = defaultValidatorMemoryLimit(v);
-                if (defMem && !memory) setMemory(defMem);
+                setMemory(defaultValidatorMemoryLimit(v) ?? '');
               }}
               options={(chains.length ? chains : []).map((c) => {
                 const spec = chains.find((x) => x.id === c.id);
@@ -1315,11 +1348,6 @@ export function ValidatorsPage() {
                     })}
               </Alert>
             ) : null}
-            {memShort ? (
-              <Alert variant="error">
-                {t('validators.wizard.memShort')} {memShortTitle}
-              </Alert>
-            ) : null}
             {chain === 'eth' ? (
               <FormLayout>
                 <Field htmlFor="val-el" label={t('validators.clients.el')}>
@@ -1349,12 +1377,18 @@ export function ValidatorsPage() {
                 <Field htmlFor="val-el-tag" label={`${t('validators.clients.el')} · ${t('validators.clients.version')}`}>
                   <select
                     id="val-el-tag"
-                    value={elTag || versionMap[el]?.pin || ''}
+                    value={wizardPickedTag(elTag, versionMap[el])}
                     onChange={(e) => setElTag(e.target.value)}
                   >
                     {(versionMap[el]?.versions ?? [{ gitTag: '', dockerTag: versionMap[el]?.pin || '', prerelease: false, htmlUrl: '' }]).map((v) => (
                       <option key={v.dockerTag} value={v.dockerTag}>
-                        {versionOptionLabel(v, versionMap[el]?.pin || v.dockerTag, undefined, t)}
+                        {versionOptionLabel(
+                          v,
+                          versionMap[el]?.pin || v.dockerTag,
+                          undefined,
+                          officialLatestDockerTag(versionMap[el]),
+                          t,
+                        )}
                       </option>
                     ))}
                   </select>
@@ -1367,12 +1401,18 @@ export function ValidatorsPage() {
                 <Field htmlFor="val-cl-tag" label={`${t('validators.clients.cl')} · ${t('validators.clients.version')}`}>
                   <select
                     id="val-cl-tag"
-                    value={clTag || versionMap[cl]?.pin || ''}
+                    value={wizardPickedTag(clTag, versionMap[cl])}
                     onChange={(e) => setClTag(e.target.value)}
                   >
                     {(versionMap[cl]?.versions ?? [{ gitTag: '', dockerTag: versionMap[cl]?.pin || '', prerelease: false, htmlUrl: '' }]).map((v) => (
                       <option key={v.dockerTag} value={v.dockerTag}>
-                        {versionOptionLabel(v, versionMap[cl]?.pin || v.dockerTag, undefined, t)}
+                        {versionOptionLabel(
+                          v,
+                          versionMap[cl]?.pin || v.dockerTag,
+                          undefined,
+                          officialLatestDockerTag(versionMap[cl]),
+                          t,
+                        )}
                       </option>
                     ))}
                   </select>
@@ -1382,7 +1422,10 @@ export function ValidatorsPage() {
               <Field htmlFor="val-node-tag" label={t('validators.clients.version')}>
                 <select
                   id="val-node-tag"
-                  value={nodeTag || versionMap[chainSpec?.clients.find((c) => c.role === 'node')?.id ?? '']?.pin || ''}
+                  value={wizardPickedTag(
+                    nodeTag,
+                    versionMap[chainSpec?.clients.find((c) => c.role === 'node')?.id ?? ''],
+                  )}
                   onChange={(e) => setNodeTag(e.target.value)}
                 >
                   {(() => {
@@ -1391,9 +1434,10 @@ export function ValidatorsPage() {
                     const rows = list?.versions ?? [
                       { gitTag: '', dockerTag: list?.pin || '', prerelease: false, htmlUrl: '' },
                     ];
+                    const latest = officialLatestDockerTag(list);
                     return rows.filter((v) => v.dockerTag).map((v) => (
                       <option key={v.dockerTag} value={v.dockerTag}>
-                        {versionOptionLabel(v, list?.pin || v.dockerTag, undefined, t)}
+                        {versionOptionLabel(v, list?.pin || v.dockerTag, undefined, latest, t)}
                       </option>
                     ));
                   })()}
@@ -1434,6 +1478,7 @@ export function ValidatorsPage() {
                     { value: '2g', label: '2g' },
                     { value: '4g', label: '4g' },
                     { value: '8g', label: '8g' },
+                    { value: '12g', label: '12g' },
                     { value: '16g', label: '16g' },
                   ]}
                 />
@@ -1764,7 +1809,13 @@ export function ValidatorsPage() {
                         : [{ gitTag: c.tag, dockerTag: c.tag, prerelease: false, htmlUrl: '' }]
                       ).map((v) => (
                         <option key={v.dockerTag} value={v.dockerTag}>
-                          {versionOptionLabel(v, list?.pin || c.tag, c.tag, t)}
+                          {versionOptionLabel(
+                            v,
+                            list?.pin || c.tag,
+                            c.tag,
+                            officialLatestDockerTag(list),
+                            t,
+                          )}
                         </option>
                       ))}
                     </select>
@@ -1915,6 +1966,16 @@ export function ValidatorsPage() {
               nodeId={checklist?.nodeId}
               blsPublicKey={checklist?.blsPublicKey}
               blsProofOfPossession={checklist?.blsProofOfPossession}
+              cardanoProducer={detail.cardanoProducer ?? checklist?.cardanoProducer}
+              producerMainnet={
+                chains.find((c) => c.id === detail.chain)?.networks.find((n) => n.id === detail.network)
+                  ?.kind === 'mainnet'
+              }
+              onProducerApply={(files) => {
+                setProducerMainnetOk(false);
+                setPendingProducer(files);
+              }}
+              onProducerDetach={() => setPendingProducerDetach(true)}
             />
             {checklist?.snapshot?.notes?.length ? (
               <Alert variant="info">{checklist.snapshot.notes.join(' ')}</Alert>
@@ -2184,6 +2245,84 @@ export function ValidatorsPage() {
           </label>
         ) : null}
       </ConfirmDialog>
+      <ConfirmDialog
+        open={Boolean(pendingProducer && detail)}
+        onClose={() => setPendingProducer(null)}
+        title={t('validators.producer.applyTitle', { id: detail?.id ?? '' })}
+        description={t('validators.producer.applyDesc')}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.producer.apply')}
+        severity="critical"
+        busy={busy}
+        consequences={[
+          t('validators.producer.applyC1'),
+          t('validators.producer.applyC2'),
+          ...(chains.find((c) => c.id === detail?.chain)?.networks.find((n) => n.id === detail?.network)
+            ?.kind === 'mainnet'
+            ? [t('validators.producer.applyC3')]
+            : []),
+        ]}
+        onConfirm={() => {
+          if (!detail || !pendingProducer) return;
+          const isMainnet =
+            chains.find((c) => c.id === detail.chain)?.networks.find((n) => n.id === detail.network)
+              ?.kind === 'mainnet';
+          if (isMainnet && !producerMainnetOk) return;
+          const files = pendingProducer;
+          const body = {
+            ...files,
+            confirm: detail.id,
+            acceptMainnet: isMainnet,
+            execute: true,
+          };
+          setPendingProducer(null);
+          void runAction(
+            () => validatorsApi.attachProducerKeys(detail.id, body),
+            t('validators.producer.apply'),
+            { id: detail.id, action: 'producer-keys', body },
+          ).then(() => {
+            void openDetail(detail);
+          });
+        }}
+      >
+        {chains.find((c) => c.id === detail?.chain)?.networks.find((n) => n.id === detail?.network)
+          ?.kind === 'mainnet' ? (
+          <label className="u-flex u-gap-2 u-items-center">
+            <input
+              type="checkbox"
+              checked={producerMainnetOk}
+              onChange={(e) => setProducerMainnetOk(e.target.checked)}
+            />
+            <span>{t('validators.producer.mainnet')}</span>
+          </label>
+        ) : null}
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={pendingProducerDetach && Boolean(detail)}
+        onClose={() => setPendingProducerDetach(false)}
+        title={t('validators.producer.detachTitle', { id: detail?.id ?? '' })}
+        description={t('validators.producer.detachDesc')}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.producer.detach')}
+        severity="critical"
+        busy={busy}
+        consequences={[t('validators.producer.detachC1')]}
+        onConfirm={() => {
+          if (!detail) return;
+          setPendingProducerDetach(false);
+          void runAction(
+            () => validatorsApi.detachProducerKeys(detail.id, detail.id),
+            t('validators.producer.detach'),
+            {
+              id: detail.id,
+              action: 'producer-keys/detach',
+              body: { confirm: detail.id, execute: true },
+            },
+          ).then(() => {
+            void openDetail(detail);
+          });
+        }}
+      />
     </FeaturePageLayout>
   );
 }

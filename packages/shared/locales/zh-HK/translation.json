@@ -13646,13 +13646,13 @@
       "disk": "磁碟"
     },
     "cli": {
-      "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--accept-low-disk] [--accept-mainnet] [--execute] [--json]"
+      "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "執行層客戶端",
       "cl": "共識層客戶端",
       "version": "版本",
-      "pin": "本面板釘選（此版本已測過）",
+      "pin": "本面板釘選",
       "officialNewer": "官方較新",
       "olderThanPin": "舊於本面板釘選",
       "prerelease": "預發佈",
@@ -13699,7 +13699,15 @@
       "snapshotLookup": "無法解析官方快照指標",
       "needSnapshotConfirm": "還原快照須 confirm=實例識別碼 或 SNAPSHOT",
       "snapshotBlocked": "快照的 docker run 被允許清單拒絕",
-      "snapshotFailed": "快照下載或解壓失敗"
+      "snapshotFailed": "快照下載或解壓失敗",
+      "producerAdaOnly": "營運憑證只適用於 Cardano",
+      "needProducerConfirm": "掛上營運憑證須 confirm=實例識別碼 或 PRODUCER",
+      "needMainnetProducerAck": "主網掛上營運憑證須 acceptMainnet",
+      "producerColdRejected": "拒絕 cold 或 pool 擁有者簽名金鑰。cold 金鑰須保持離線。",
+      "producerTooLarge": "金鑰檔大於 64 KiB",
+      "producerBadType": "此檔不是 KES 金鑰、VRF 金鑰或 operational certificate",
+      "producerEmpty": "請至少提供 kes、vrf 或 opcert 其中一份",
+      "switchNeedDetachProducer": "轉網絡前請先卸下營運憑證"
     },
     "notes": {
       "beta": "此功能屬 Beta。變更主機須 root 及 YSK_EXECUTE=1。",
@@ -13730,6 +13738,11 @@
       "snapshotEthCl": "已重設共識層資料，使用官方 checkpoint sync",
       "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
       "nativePrune": "已執行客戶端原生清理指令",
+      "dryProducer": "掛上營運憑證為試行。請加 --execute 及 YSK_EXECUTE=1。",
+      "dryProducerDetach": "卸下營運憑證為試行。請加 --execute 及 YSK_EXECUTE=1。",
+      "producerPartial": "已寫入熱金鑰。KES、VRF、opcert 齊了才會以 block producer 啟動。",
+      "producerAttached": "已掛上熱金鑰，compose 改為 block producer",
+      "producerDetached": "已卸下熱金鑰，compose 改回 relay",
       "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
       "deleted": "已刪除節點",
       "leftoverRemoved": "已刪除殘留 {{path}}"
@@ -13838,6 +13851,28 @@
       "near": "官方免費 NEAR tar 快照已停用。還原會清空資料，再用官方 genesis 與 epoch sync。",
       "none": "此鏈未設定快照來源。"
     },
+    "producer": {
+      "title": "Block producer 熱金鑰",
+      "hint": "不是填 IP。請上傳離線機產生的 KES、VRF 與 operational certificate。cold 金鑰不要放在此主機。",
+      "warn": "此節點已公開 P2P，掛上後會出塊。官方拓撲把 producer 放在內網。這三份檔是熱金鑰。",
+      "kes": "KES",
+      "vrf": "VRF",
+      "opcert": "opcert",
+      "missing": "未掛上",
+      "present": "已掛上 {{fp}}",
+      "choose": "選擇檔案",
+      "apply": "套用並以 block producer 重啟",
+      "detach": "卸下並改回 relay",
+      "applyTitle": "將熱金鑰掛到 {{id}}？",
+      "applyDesc": "KES、VRF、opcert 會寫入實例 keys 目錄，並重寫 compose。容器會以 block producer 重啟。",
+      "applyC1": "cold 金鑰須保持離線。不要上傳 cold.skey。",
+      "applyC2": "檔案有效時，運行中的節點可以出塊。",
+      "applyC3": "主網：離線或設定錯誤會錯過出塊。",
+      "detachTitle": "從 {{id}} 卸下營運憑證？",
+      "detachDesc": "會從此主機刪除熱金鑰，compose 改回 relay。",
+      "detachC1": "節點將不再出塊。",
+      "mainnet": "主網：我明白此主機會保存熱金鑰並出塊。"
+    },
     "stake": {
       "title": "準備質押（私鑰由你保管）",
       "offlineKeys": "離線產生金鑰。面板永不保存。",
@@ -13933,7 +13968,7 @@
           "閱讀官方 operate-a-stake-pool 指南。",
           "在離線機器產生 cold、KES、VRF 金鑰。",
           "用該等金鑰在鏈上登記 stake pool。",
-          "把運行中的 cardano-node 指向你的營運憑證。"
+          "在此實例頁掛上 KES、VRF 與 operational certificate。不要上傳 cold 金鑰。"
         ],
         "never": [
           "不要當成 MetaMask 一鍵質押。",

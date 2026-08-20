@@ -45,7 +45,7 @@ describe('eth adapter', () => {
     expect(y).not.toContain('eth,net,web3,engine');
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
-    expect(y).toContain('--disable-deposit-contract-sync');
+    expect(y).not.toContain('--disable-deposit-contract-sync');
     expect(y).toContain('hoodi.beaconstate.ethstaker.cc');
     expect(y).toContain('v8.2.2');
     expect(y).not.toContain('checkpoint-sync.hoodi.ethpandaops.io');
@@ -59,6 +59,20 @@ describe('eth adapter', () => {
     expect(y).toContain('9000/udp');
     expect(y).toContain('publicip');
     expect(y).toContain('--discovery-port');
+  });
+
+  it('nimbus uses --el and --external-beacon-api-url, not removed trustedNodeSync flags', () => {
+    const y = buildEthComposeYaml({
+      ...ethSpec,
+      clients: {
+        el: { id: 'reth', image: 'ghcr.io/paradigmxyz/reth', tag: 'v1.4.8' },
+        cl: { id: 'nimbus', image: 'statusim/nimbus-eth2', tag: 'multiarch-v25.4.1' },
+      },
+    });
+    expect(y).toContain('--el=http://el:8551');
+    expect(y).toContain('--external-beacon-api-url=');
+    expect(y).not.toContain('--web3-url=');
+    expect(y).not.toContain('--trusted-node-url=');
   });
 
   it('covers EL×CL combinations with jwt and localhost rpc', () => {
@@ -117,7 +131,8 @@ describe('avax adapter', () => {
     expect(y).not.toMatch(/command:\n\s+- avalanchego\n/);
     expect(y).toContain('--network-id=fuji');
     expect(y).toContain('fuji');
-    expect(y).toContain('--public-ip-resolution-service=opendns');
+    expect(y).toContain('--public-ip-resolution-service=ifconfigMe');
+    expect(y).toContain('0.0.0.0:9651:9651/tcp');
     expect(y).toContain('--chain-config-dir=/data/configs/chains');
     expect(y).not.toContain('--state-sync-enabled');
     expect(avaxCChainConfig(true)).toContain('"state-sync-enabled": true');
@@ -128,10 +143,19 @@ describe('avax adapter', () => {
       parseAvaxHealth({
         healthy: false,
         checks: {
-          network: { error: 'network layer is unhealthy reason: not connected to a minimum of 1 peer(s) only 0' },
+          network: {
+            error: 'network layer is unhealthy reason: not connected to a minimum of 1 peer(s) only 0',
+            message: { connectedPeers: 0 },
+          },
         },
       }).lastError,
     ).toMatch(/not connected to a minimum of 1 peer/i);
+    expect(
+      parseAvaxHealth({
+        healthy: false,
+        checks: { network: { message: { connectedPeers: 0 } } },
+      }).peers,
+    ).toBe(0);
   });
 
   it('writes C-Chain state-sync into config.json', () => {
@@ -218,7 +242,7 @@ describe('near + ada adapters', () => {
     expect(y).not.toContain('inputoutput/cardano-node');
     expect(y).toContain('cardano-node');
     expect(y).toContain('127.0.0.1:12798:12798');
-    expect(y).not.toMatch(/mnemonic|kes|vrf|cold.key/i);
+    expect(y).not.toMatch(/mnemonic|--shelley-kes-key|cold\.skey|CARDANO_BLOCK_PRODUCER|CARDANO_SHELLEY_/i);
     expect(
       parseAdaMetrics('cardano_node_metrics_connectedPeers_int 8\ncardano_node_metrics_slotNum_int 99\n'),
     ).toEqual({ peers: 8, syncProgress: 1 });

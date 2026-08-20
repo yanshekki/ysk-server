@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   dockerTagFromGit,
+  ensureClientOfficialReleases,
   listOfficialClientVersions,
   loadRemoteClientTags,
   mergeOfficialVersions,
@@ -98,10 +99,9 @@ describe('validator release tags', () => {
         extraTags: ['v1.13.5'],
       });
       expect(listed.pin).toBe('v1.14.1');
+      expect(listed.latest).toBe('v1.15.0');
       expect(listed.github).toBe('ava-labs/avalanchego');
-      expect(listed.versions.map((v) => v.dockerTag)).toEqual(
-        expect.arrayContaining(['v1.14.1', 'v1.13.5', 'v1.15.0']),
-      );
+      expect(listed.versions.map((v) => v.dockerTag)).toEqual(['v1.15.0', 'v1.14.1', 'v1.13.5']);
     } finally {
       rmSync(dataDir, { recursive: true, force: true });
     }
@@ -118,5 +118,37 @@ describe('validator release tags', () => {
     expect(merged.some((v) => v.dockerTag === 'v1.4.8')).toBe(true);
     expect(merged.some((v) => v.dockerTag === 'v1.0.0')).toBe(true);
     expect(merged.length).toBeLessThanOrEqual(14);
+    expect(merged[0]?.dockerTag).toBe('v1.12.0');
+    expect(merged.some((v) => v.prerelease)).toBe(false);
+  });
+
+  it('ensureClientOfficialReleases fetches when the client cache is empty', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-rel-ensure-'));
+    try {
+      const fetchFn = (async (url: string) => {
+        if (String(url).includes('IntersectMBO/cardano-node')) {
+          return {
+            ok: true,
+            json: async () => [
+              { tag_name: '11.1.0', html_url: 'https://github.com/IntersectMBO/cardano-node/releases/tag/11.1.0' },
+              { tag_name: '11.0.1', html_url: 'https://github.com/IntersectMBO/cardano-node/releases/tag/11.0.1' },
+              { tag_name: '10.7.1' },
+            ],
+          };
+        }
+        return { ok: true, json: async () => [] };
+      }) as typeof fetch;
+      await ensureClientOfficialReleases({
+        dataDir,
+        clientId: 'cardano-node',
+        fetchFn,
+      });
+      const listed = listOfficialClientVersions({ clientId: 'cardano-node', dataDir });
+      expect(listed.pin).toBe('11.0.1');
+      expect(listed.latest).toBe('11.1.0');
+      expect(listed.versions.map((v) => v.dockerTag)).toEqual(['11.1.0', '11.0.1', '10.7.1']);
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
   });
 });

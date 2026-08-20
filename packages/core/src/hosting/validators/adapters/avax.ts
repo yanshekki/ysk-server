@@ -37,12 +37,12 @@ services:
       - --http-host=0.0.0.0
       - --http-port=9650
       - --staking-port=9651
-      - --public-ip-resolution-service=opendns
+      - --public-ip-resolution-service=ifconfigMe
       - --db-dir=/data
       - --chain-config-dir=/data/configs/chains
     ports:
       - "127.0.0.1:${rpc}:9650"
-      - "0.0.0.0:${p2p}:9651"
+      - "0.0.0.0:${p2p}:9651/tcp"
     volumes:
       - ${composeBind(spec.dataPath, '/data')}
 `;
@@ -63,20 +63,29 @@ function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
 }
 
-export function parseAvaxHealth(body: unknown): { healthy: boolean; lastError: string | null } {
+export function parseAvaxHealth(body: unknown): {
+  healthy: boolean;
+  lastError: string | null;
+  peers: number | null;
+} {
   const top = asRecord(body);
   const result = asRecord(top?.result) ?? top;
-  if (!result) return { healthy: false, lastError: 'bad health' };
-  const healthy = result.healthy === true;
-  if (healthy) return { healthy: true, lastError: null };
+  if (!result) return { healthy: false, lastError: 'bad health', peers: null };
   const checks = asRecord(result.checks) ?? asRecord(result.reason) ?? result;
   const network = asRecord(checks.network);
+  const netMsg = asRecord(network?.message);
+  const peers =
+    typeof netMsg?.connectedPeers === 'number' && Number.isFinite(netMsg.connectedPeers)
+      ? netMsg.connectedPeers
+      : null;
+  const healthy = result.healthy === true;
+  if (healthy) return { healthy: true, lastError: null, peers };
   const boot = asRecord(checks.bootstrapped);
   const err =
     (typeof network?.error === 'string' && network.error) ||
     (typeof boot?.error === 'string' && boot.error) ||
     'unhealthy';
-  return { healthy: false, lastError: err.slice(0, 280) };
+  return { healthy: false, lastError: err.slice(0, 280), peers };
 }
 
 export async function probeAvaxStatus(
@@ -94,7 +103,7 @@ export async function probeAvaxStatus(
     const health = parseAvaxHealth(await readRpcJson(res));
     return {
       syncProgress: health.healthy ? 1 : null,
-      peers: null,
+      peers: health.peers,
       version: 'avalanchego',
       lastError: health.lastError,
     };
