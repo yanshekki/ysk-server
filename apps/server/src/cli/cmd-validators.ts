@@ -24,6 +24,8 @@ import {
   loadValidatorSettings,
   saveValidatorSettings,
   upgradeValidatorInstance,
+  setValidatorClientVersion,
+  listOfficialClientVersions,
 } from 'ysk-server-core';
 import { isValidatorInstanceId, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -145,6 +147,43 @@ export async function runValidatorsCommand(
     return h.exitFromResult(result);
   }
 
+  if (sub === 'versions') {
+    const clientId = h.getOpt(args, '--client') ?? tokens[2] ?? '';
+    if (!clientId) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    h.printJson({
+      ok: true,
+      ...listOfficialClientVersions({
+        dataDir: ctx.dataDir,
+        clientId,
+        network: h.getOpt(args, '--network') ?? undefined,
+      }),
+    });
+    return 0;
+  }
+
+  if (sub === 'set-version') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await setValidatorClientVersion({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      clientId: h.getOpt(args, '--client') ?? '',
+      tag: h.getOpt(args, '--tag') ?? '',
+      confirm: h.getOpt(args, '--confirm') ?? '',
+      acceptMainnet: h.hasFlag(args, '--accept-mainnet'),
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
   if (sub === 'create') {
     const chain = h.getOpt(args, '--chain') ?? '';
     const network = h.getOpt(args, '--network') ?? '';
@@ -160,6 +199,9 @@ export async function runValidatorsCommand(
       slug,
       el: h.getOpt(args, '--el') ?? undefined,
       cl: h.getOpt(args, '--cl') ?? undefined,
+      elTag: h.getOpt(args, '--el-tag') ?? undefined,
+      clTag: h.getOpt(args, '--cl-tag') ?? undefined,
+      nodeTag: h.getOpt(args, '--node-tag') ?? undefined,
       memory: h.getOpt(args, '--memory') ?? undefined,
       cpus: h.getOpt(args, '--cpus') ?? undefined,
       dataPath: h.getOpt(args, '--data-path') ?? undefined,

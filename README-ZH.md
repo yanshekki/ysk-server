@@ -37,6 +37,12 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.19 新內容
+
+- **驗證者** — Hoodi 用 lighthouse v8.2.2 加 EthStaker checkpoint。Cosmos state-sync 只改 `[statesync]`。NEAR 預設 12g 並預檢 RAM。Avalanche 用 opendns 公網 IP。P2P 開 UDP／seed。列表即時 ↓／↑。官方 GitHub 版本可選。
+- **面板** — 操作串流可放大、compose YAML 編輯器、質押憑證卡片、Docker inspect／log 用滿寬。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.19**。
+
 ## 1.1.18 新內容
 
 - **驗證者** — Cosmos Hub 測試網改 Gaia v28 加 state-sync；Hoodi checkpoint 用 Sigma Prime；Aptos nofile 1048576；NEAR 預設 8g 並設對等 swap 上限。
@@ -47,65 +53,6 @@
 - **驗證者** — Cosmos 使用官方測試網 genesis；Avalanche state-sync 寫入 C-Chain JSON；Hoodi checkpoint 改用 beaconstate.info；Aptos 提高 nofile；NEAR 預設 4g，ExitCode 137 標記憶體不足。
 - **面板** — JSON 顯示改用可摺疊 JsonViewer。日誌尾端（驗證者、Docker、日誌中心、專案、PM2、Agents 標準錯誤、安裝串流）共用同一個 LogViewer。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.17**。
-
-## 1.1.16 新內容
-
-- **驗證者** — 運行中但 RPC 未就緒不再標「錯誤」；Created／無容器不再標「已停止」。Avalanche 用映像真實路徑。Cosmos 設定最低 gas。reth HTTP API 不含 `engine`。重鏈預設 8g 記憶體。Sui 測試網用真正 testnet tag。Aptos RPC 避開主機 8080。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.16**。
-
-## 1.1.15 新內容
-
-- **面板套用** — 確認框目標版本對齊卡片「最新」，不再複製目前版本。
-- **驗證者** — 安裝確認關掉後精靈仍可按；compose `ps` JSON 解析正確，`up` 成功不再誤報容器已停。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.15**。
-
-## 1.1.14 新內容
-
-- **FTP／Galera** — 非法用戶名與無效 IP 有行內錯誤；儲存／產生計劃保持停用。家目錄不會用非法 FTP 名靜默改寫。
-- **更新** — 每個套件「套用」帶 `data-confirm`，確認框點名套件。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.14**。
-
-## 1.1.13 新內容
-
-- **驗證者／Docker** — compose 指令對齊映像 ENTRYPOINT；Cardano 用 GHCR 11.0.1；執行映像會先探測被佔埠，不會把 bind 失敗殘留當已啟動。
-- **Nginx 443** — 有憑證時受管 vhost 保留 `listen 443`；其後同步不會用 :80 範本蓋掉 Let's Encrypt。
-- **面板誠實** — 搜尋無命中不是首次安裝空狀態；KPI 用全量；確認框點名目標；名稱規則前後端同一套。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.13**。
-
-## 1.1.12 新內容
-
-- **內嵌面板** — 已發布的網頁含質押說明（1.1.11 npm 因 Vite 建置失敗而打進舊畫面）。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.12**。
-
-## 1.1.11 新內容
-
-- **驗證者質押說明** — 說明分頁寫明各鏈如何登記質押（只連官方網站）。面板永不保管金鑰。
-- **Avalanche** — 實例頁在 RPC 回應後可顯示 NodeID 與 BLS 憑證。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.11**。
-
-## 1.1.10 新內容
-
-- **DNS 啟動卡** — PowerDNS 啟動失敗時，結果卡帶綁定／journal 原因，不只寫「失敗」。
-- **驗證者** — 勾選主網確認後可按安裝並再確認。說明分頁對照四個設定檔。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.10**。
-
-## 1.1.9 新內容
-
-- **叢集總覽** — `/cluster` 留在 `/cluster`（已計劃／已套用表＋四個引擎入口）。不再 302 到 Redis。
-- **誠實 overlay** — `install.sh` 複製 dest `package.json`，官方 CLI 升級與 tarball 版本一致。
-- **E2E-1118** — 破壞性鍵加上 `data-confirm`、sshd 未自啟時停止控制面文案、矩陣不啟停 UFW、代理「無上線」與逾時分開、leftover／孤立表。
-
-## 1.1.8 新內容
-
-- **誠實 overlay** — dest `package.json` 與 CLI 版本一致。leftover 句子不會說已在運行的 vsftpd／Dovecot 無法啟動。
-- **首屏** — 備份、驗證者、Docker 不再先閃空／0。刪容器即刻更新列表。
-- **E2E-1117** — 確認鍵 title、Nginx 清 cache 確認、卡住的 agent 運行時、時鐘帶 `UTC±n`、驗證者精靈磁碟文案、`/cluster` 引擎切換。
-
-## 1.1.7 新內容
-
-- **驗證者** — 磁碟用量為驗證者目錄 `du`、啟動中與錯誤分開、軟件分頁拉取釘選映像、Avalanche compose 只傳旗標。
-- **時鐘**跟主機時區。**FTP** 預設僅本機，公開明文需打字 `PLAINTEXT`。
-- **面板自我更新**可串流 overlay 步驟；殘留探測與頻道檢查不會當成套用失敗。E2E-1116：遷移盤點、VNC 寫 hosts、DNS 啟動結果、公開檔生效／草稿。
 
 [完整變更紀錄](./CHANGELOG.md)
 

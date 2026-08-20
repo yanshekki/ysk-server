@@ -11,10 +11,10 @@ const NEAR_BASE = { rpc: 3030, p2p: 24567 };
 const ADA_BASE = { p2p: 3001, metrics: 12798 };
 const BTC_BASE = { rpc: 8332, p2p: 8333 };
 const COSMOS_BASE = { rpc: 26657, p2p: 26656 };
-const SUI_BASE = { rpc: 9002 };
+const SUI_BASE = { rpc: 9002, p2p: 8084 };
 const APTOS_BASE = { rpc: 18080, p2p: 6180 };
 const DOT_BASE = { rpc: 9933, p2p: 30333 };
-const SOL_BASE = { rpc: 8899 };
+const SOL_BASE = { rpc: 8899, p2p: 8000 };
 
 export function usedValidatorPorts(dataDir: string): Set<number> {
   const used = new Set<number>();
@@ -88,7 +88,7 @@ export function allocateValidatorPorts(
     return { rpc: nextFree(used, COSMOS_BASE.rpc), p2p: nextFree(used, COSMOS_BASE.p2p) };
   }
   if (chain === 'sui') {
-    return { rpc: nextFree(used, SUI_BASE.rpc) };
+    return { rpc: nextFree(used, SUI_BASE.rpc), p2p: nextFree(used, SUI_BASE.p2p) };
   }
   if (chain === 'aptos') {
     return { rpc: nextFree(used, APTOS_BASE.rpc), p2p: nextFree(used, APTOS_BASE.p2p) };
@@ -97,7 +97,7 @@ export function allocateValidatorPorts(
     return { rpc: nextFree(used, DOT_BASE.rpc), p2p: nextFree(used, DOT_BASE.p2p) };
   }
   if (chain === 'sol') {
-    return { rpc: nextFree(used, SOL_BASE.rpc) };
+    return { rpc: nextFree(used, SOL_BASE.rpc), p2p: nextFree(used, SOL_BASE.p2p) };
   }
   return {
     rpc: nextFree(used, ETH_BASE.rpc),

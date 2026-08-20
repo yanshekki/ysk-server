@@ -125,6 +125,18 @@ export type ValidatorSettingsDto = {
   autoClear: boolean;
 };
 
+export type ValidatorOfficialVersionDto = {
+  gitTag: string;
+  dockerTag: string;
+  prerelease: boolean;
+  htmlUrl: string;
+};
+
+export type ValidatorStaleInstanceDto = {
+  id: string;
+  tag: string;
+};
+
 export type ValidatorSoftwareImageDto = {
   chain: string;
   clientId: string;
@@ -135,6 +147,26 @@ export type ValidatorSoftwareImageDto = {
   present: boolean | null;
   size?: string | null;
   usedBy: string[];
+  registryHost: string;
+  sourceGithub: string | null;
+  changelogUrl: string | null;
+  officialTag: string | null;
+  officialDockerTag: string | null;
+  officialAt: string | null;
+  officialError: string | null;
+  staleInstances: ValidatorStaleInstanceDto[];
+};
+
+export type ValidatorClientVersionsDto = {
+  clientId: string;
+  image: string;
+  pin: string;
+  github: string | null;
+  changelogUrl: string | null;
+  registryHost: string;
+  at: string | null;
+  error: string | null;
+  versions: ValidatorOfficialVersionDto[];
 };
 
 export type ValidatorSoftwareReportDto = {
@@ -144,6 +176,7 @@ export type ValidatorSoftwareReportDto = {
   dockerVersion: string | null;
   composeVersion: string | null;
   images: ValidatorSoftwareImageDto[];
+  officialAt: string | null;
   executeEnabled: boolean;
   isRoot: boolean;
 };
@@ -156,10 +189,24 @@ export function isSafeValidatorLimitMemory(value: string): boolean {
 
 /** Heavy chains OOM the host when the wizard leaves memory unlimited. */
 export function defaultValidatorMemoryLimit(chain: string): string | undefined {
-  if (chain === 'near') return '8g';
+  if (chain === 'near') return '12g';
   if (chain === 'sui' || chain === 'aptos' || chain === 'sol') return '4g';
   return undefined;
 }
+
+/** Parse compose-style `12g` / `512m` into bytes. */
+export function parseValidatorMemoryBytes(value: string | undefined): number | undefined {
+  const m = /^(\d+)([mMgGkK])$/.exec(String(value ?? '').trim());
+  if (!m) return undefined;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  const u = m[2]!.toLowerCase();
+  const mul = u === 'k' ? 1024 : u === 'm' ? 1024 ** 2 : 1024 ** 3;
+  return n * mul;
+}
+
+/** Keep this much RAM for the host when a chain sets a memory cap. */
+export const VALIDATOR_MEMORY_HEADROOM_BYTES = 1024 ** 3;
 
 export function isSafeValidatorLimitCpus(value: string): boolean {
   return /^\d+(\.\d+)?$/.test(String(value ?? '').trim());
@@ -179,6 +226,14 @@ export function isSafeValidatorDataPath(value: string): boolean {
   return p !== '/';
 }
 
+export type ValidatorNetIoDto = {
+  id: string;
+  rxBytes: number | null;
+  txBytes: number | null;
+  rxRateBps: number | null;
+  txRateBps: number | null;
+};
+
 export type ValidatorSummaryDto = {
   id: string;
   status: ValidatorRuntimeStatus;
@@ -194,6 +249,10 @@ export type ValidatorSummaryDto = {
     breaking: boolean;
     changelogUrl?: string;
   } | null;
+  rxBytes: number | null;
+  txBytes: number | null;
+  rxRateBps: number | null;
+  txRateBps: number | null;
 };
 
 export type ValidatorDiskTone = 'ok' | 'warn' | 'danger';
@@ -223,6 +282,8 @@ export type ValidatorDiskReport = {
   fsUsePct: number | null;
   /** Alias of fsAvailBytes (wizard / KPI free space). */
   availBytes: number | null;
+  /** Host MemAvailable from /proc/meminfo (create-gate for capped chains). */
+  memAvailableBytes: number | null;
   totalBytes: number | null;
   usePct: number | null;
   tone: ValidatorDiskTone;

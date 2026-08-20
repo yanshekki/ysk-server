@@ -457,6 +457,20 @@ pre.code--spaced {
   overflow: hidden;
   background: var(--bg-elevated, var(--bg-subtle));
 }
+.install-stream-panel--fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.install-stream-panel--fill .log-viewer {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.install-stream-panel--fill .log-viewer__body {
+  flex: 1 1 auto;
+  max-height: none;
+}
 .install-stream-panel__head {
   display: flex;
   align-items: center;

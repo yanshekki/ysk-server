@@ -5,6 +5,8 @@
   "dockFail": "Gagal · {{title}}",
   "dockDone": "Selesai · {{title}}",
   "minimize": "Memperkecil",
+  "maximize": "Perbesar",
+  "restore": "Pulihkan",
   "liveLog": "Catatan langsung",
   "uninstall": "Copot pemasangan…",
   "uninstallTitle": "Copot pemasangan {{name}}",

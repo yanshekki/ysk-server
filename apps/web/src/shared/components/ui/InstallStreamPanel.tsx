@@ -13,10 +13,15 @@ export type InstallStreamLine = {
 export function InstallStreamPanel({
   lines,
   busy,
-  title }: {
+  title,
+  fill = false,
+  defaultWrap = false,
+}: {
   lines: InstallStreamLine[];
   busy?: boolean;
   title?: string;
+  fill?: boolean;
+  defaultWrap?: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -29,7 +34,7 @@ export function InstallStreamPanel({
 
   return (
     <section
-      className="install-stream-panel"
+      className={`install-stream-panel${fill ? ' install-stream-panel--fill' : ''}`}
       aria-live="polite"
       aria-busy={busy || undefined}
       data-testid="install-stream-panel"
@@ -53,7 +58,8 @@ export function InstallStreamPanel({
         follow={Boolean(busy)}
         showFollow={false}
         emptyLabel={busy ? t('runtime.installLogWaiting') : t('logViewer.empty')}
-        maxHeight="min(42vh, 360px)"
+        maxHeight={fill ? 'none' : 'min(42vh, 360px)'}
+        defaultWrap={defaultWrap}
         downloadName="install.log"
       />
     </section>

@@ -12,6 +12,12 @@ describe('ValidatorsPage', () => {
     authStore.setSession('tok', { username: 'admin', roles: ['admin'] });
     fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
       const url = String(input);
+      if (url.includes('/api/v1/validators/netio')) {
+        return new Response(JSON.stringify({ ok: true, items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
       if (url.includes('/api/v1/validators/chains')) {
         return new Response(
           JSON.stringify({
@@ -251,5 +257,89 @@ describe('ValidatorsPage', () => {
     expect(screen.getByText('Hoodi')).toBeInTheDocument();
     expect(screen.getAllByText('Stopped').length).toBeGreaterThan(0);
     expect(screen.queryByText('stopped')).toBeNull();
+  });
+
+  it('shows live ↓ / ↑ traffic like the BT library', async () => {
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/validators/netio')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            items: [
+              {
+                id: 'avax-fuji-1',
+                rxBytes: 5000,
+                txBytes: 1000,
+                rxRateBps: 1024,
+                txRateBps: 512,
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/v1/validators/chains')) {
+        return new Response(JSON.stringify({ ok: true, chains: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators/disk')) {
+        return new Response(JSON.stringify({ ok: true, disk: { instances: [] } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (url.includes('/api/v1/validators')) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            instances: [
+              {
+                id: 'avax-fuji-1',
+                chain: 'avax',
+                network: 'fuji',
+                profile: 'minimal',
+                desiredState: 'running',
+                lastStatus: { status: 'rpc_wait', running: true, lastError: null },
+                ports: {},
+              },
+            ],
+            summaries: [
+              {
+                id: 'avax-fuji-1',
+                status: 'rpc_wait',
+                running: true,
+                syncProgress: null,
+                peers: 0,
+                diskUsedBytes: 18432,
+                lastError: null,
+                upgrade: null,
+                rxBytes: 5000,
+                txBytes: 1000,
+                rxRateBps: 1024,
+                txRateBps: 512,
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    render(
+      <MemoryRouter>
+        <ValidatorsPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('avax-fuji-1')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Traffic')).toBeInTheDocument();
+    expect(screen.getByText('↓ 1.0 KB/s · ↑ 512 B/s')).toBeInTheDocument();
   });
 });

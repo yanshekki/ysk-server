@@ -14,6 +14,10 @@ describe('classifyDockerArgv', () => {
     expect(classifyDockerArgv(['docker', 'volume', 'ls'])).toBe('read');
     expect(classifyDockerArgv(['docker', 'network', 'ls'])).toBe('read');
     expect(classifyDockerArgv(['docker', 'stats', '--no-stream'])).toBe('read');
+    expect(
+      classifyDockerArgv(['docker', 'stats', '--no-stream', '--format', '{{json .}}', 'abc123def456']),
+    ).toBe('read');
+    expect(classifyDockerArgv(['docker', 'ps', '-q', '--filter', 'name=yskval-'])).toBe('read');
   });
 
   it('treats lifecycle as mutate', () => {

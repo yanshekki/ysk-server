@@ -62,6 +62,10 @@ import {
   syntaxLangFromName,
 } from '../shared/lib/simple-syntax';
 import {
+  cursorFromOffset,
+  editorLanguageLabel,
+} from '../shared/lib/code-editor-model';
+import {
   bindSet,
   bindInput,
   bindVoid,
@@ -74,6 +78,8 @@ import {
   bindFilesSide,
   bindCloseVersions,
   bindCloseIfIdle } from './bind-handlers';
+
+export { cursorFromOffset, editorLanguageLabel };
 
 type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
@@ -307,75 +313,6 @@ export function previewKind(
 }
 
 /** Resolve share expiry ISO string from preset / custom datetime-local. */
-/** VS Code–style language label from filename. */
-export function editorLanguageLabel(name: string): string {
-  const base = name.split('/').pop() || name;
-  const lower = base.toLowerCase();
-  if (lower === 'dockerfile') return 'Dockerfile';
-  if (lower === 'makefile') return 'Makefile';
-  const ext = lower.includes('.') ? lower.slice(lower.lastIndexOf('.') + 1) : '';
-  const map: Record<string, string> = {
-    html: 'HTML',
-    htm: 'HTML',
-    css: 'CSS',
-    scss: 'SCSS',
-    less: 'Less',
-    js: 'JavaScript',
-    mjs: 'JavaScript',
-    cjs: 'JavaScript',
-    jsx: 'JavaScript React',
-    ts: 'TypeScript',
-    tsx: 'TypeScript React',
-    json: 'JSON',
-    md: 'Markdown',
-    markdown: 'Markdown',
-    php: 'PHP',
-    phtml: 'PHP',
-    py: 'Python',
-    rb: 'Ruby',
-    go: 'Go',
-    rs: 'Rust',
-    java: 'Java',
-    kt: 'Kotlin',
-    c: 'C',
-    h: 'C',
-    cpp: 'C++',
-    hpp: 'C++',
-    cs: 'C#',
-    sh: 'Shell Script',
-    bash: 'Shell Script',
-    zsh: 'Shell Script',
-    sql: 'SQL',
-    yml: 'YAML',
-    yaml: 'YAML',
-    toml: 'TOML',
-    xml: 'XML',
-    svg: 'XML',
-    env: 'Properties',
-    conf: 'Properties',
-    ini: 'Properties',
-    log: 'Log',
-    txt: 'Plain Text',
-    vue: 'Vue',
-    svelte: 'Svelte',
-  };
-  return map[ext] || 'Plain Text';
-}
-
-export function cursorFromOffset(text: string, offset: number): { line: number; col: number } {
-  const pos = Math.max(0, Math.min(offset, text.length));
-  let line = 1;
-  let col = 1;
-  for (let i = 0; i < pos; i++) {
-    if (text.charCodeAt(i) === 10) {
-      line += 1;
-      col = 1;
-    } else {
-      col += 1;
-    }
-  }
-  return { line, col };
-}
 
 export function resolveShareExpiresAt(
   preset: string,

@@ -964,6 +964,19 @@
     monospace;
 }
 
+.fm-vscode--embed {
+  height: min(42vh, 26rem);
+  max-height: min(48vh, 28rem);
+  min-height: 16rem;
+  border: 1px solid #2b2b2b;
+  border-radius: var(--radius-md, 0.5rem);
+  overflow: hidden;
+}
+
+.field__control > .fm-vscode {
+  width: 100%;
+}
+
 .fm-vscode__tabbar {
   display: flex;
   align-items: stretch;

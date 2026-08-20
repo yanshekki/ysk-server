@@ -13,6 +13,25 @@ export function composeProjectName(id: string): string {
   return `yskval-${id}`.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 48);
 }
 
+/** Match `yskval-{id}-{service}-{n}` (and the 48-char compose project cap). */
+export function validatorIdFromContainerName(
+  name: string,
+  ids: readonly string[],
+): string | null {
+  const n = String(name ?? '').replace(/^\//, '').toLowerCase();
+  if (!n.startsWith('yskval-')) return null;
+  let best: string | null = null;
+  let bestLen = -1;
+  for (const id of ids) {
+    const p = composeProjectName(id);
+    if (p.length > bestLen && (n === p || n.startsWith(`${p}-`))) {
+      best = id;
+      bestLen = p.length;
+    }
+  }
+  return best;
+}
+
 export function composeFilePath(instanceDirPath: string): string {
   return `${instanceDirPath.replace(/\/+$/, '')}/compose.yml`;
 }
@@ -112,6 +131,14 @@ export function applyComposeLimits(
       extra.push(`    memswap_limit: ${limits.memory}`);
       extra.push(`    pids_limit: 4096`);
     }
+    if (!/\n[ \t]+deploy:\s*\n/.test(out)) {
+      extra.push(`    deploy:`);
+      extra.push(`      resources:`);
+      extra.push(`        limits:`);
+      extra.push(`          memory: ${limits.memory}`);
+    } else {
+      out = out.replace(/(\n[ \t]+memory:\s*)\S+/g, `$1${limits.memory}`);
+    }
   }
   if (limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus)) extra.push(`    cpus: ${JSON.stringify(limits.cpus)}`);
   if (!extra.length) return out;
@@ -143,6 +170,14 @@ export async function composePull(input: {
     stdout: r.stdout,
     stderr: r.stderr,
   };
+}
+
+/** Longer watches for chains that panic after compose up -d looks healthy. */
+export function composeStayWaits(chain: string): number[] {
+  if (chain === 'cosmos' || chain === 'eth' || chain === 'near') {
+    return [3_000, 5_000, 8_000, 12_000, 15_000];
+  }
+  return [2_000, 3_000, 5_000];
 }
 
 export async function composeUp(input: {

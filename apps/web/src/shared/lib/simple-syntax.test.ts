@@ -40,6 +40,16 @@ describe('simple-syntax', () => {
     expect(html).not.toContain('<script>');
   });
 
+  it('colors YAML keys and booleans', () => {
+    const html = highlightToHtml(
+      'services:\n  node:\n    labels:\n      com.ysk-server.managed: "true"\n    image: x\n',
+      'yaml',
+    );
+    expect(html).toContain('tok-attr');
+    expect(html).toContain('tok-string');
+    expect(html).toContain('services');
+  });
+
   it('escapes markup inside strings and tags', () => {
     const html = highlightToHtml('const x = "<script>alert(1)</script>";', 'js');
     expect(html).toContain('&lt;script&gt;');

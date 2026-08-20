@@ -100,10 +100,12 @@ export function shouldAutoApply(
   return false;
 }
 
-export async function applyValidatorUpgrade(input: {
+export async function applyValidatorClientTag(input: {
   dataDir: string;
   host: HostExecutor;
   spec: ValidatorInstanceDto;
+  clientId: string;
+  nextTag: string;
   execute: boolean;
   health?: (spec: ValidatorInstanceDto) => Promise<boolean>;
   healthTimeoutMs?: number;
@@ -116,8 +118,20 @@ export async function applyValidatorUpgrade(input: {
   notes: string[];
   spec: ValidatorInstanceDto;
 }> {
-  const offer = detectUpgradeForInstance(input.spec, loadRemoteClientTags(input.dataDir));
-  if (!offer) return { ok: true, rolledBack: false, notes: ['no upgrade'], spec: input.spec };
+  const have = Object.values(input.spec.clients).find((c) => c.id === input.clientId);
+  if (!have) {
+    return { ok: false, rolledBack: false, notes: ['client not on instance'], spec: input.spec };
+  }
+  if (have.tag === input.nextTag) {
+    return { ok: true, rolledBack: false, notes: ['already on tag'], spec: input.spec };
+  }
+  const offer: ValidatorUpgradeOffer = {
+    clientId: input.clientId,
+    currentTag: have.tag,
+    nextTag: input.nextTag,
+    breaking: tagIsBreaking(have.tag, input.nextTag),
+    changelogUrl: changelogForClient(input.clientId),
+  };
   const prev = input.spec;
   const nextClients = { ...input.spec.clients };
   for (const [k, c] of Object.entries(nextClients)) {
@@ -270,6 +284,31 @@ async function rollbackUpgrade(input: {
     ],
     spec: restored,
   };
+}
+
+export async function applyValidatorUpgrade(input: {
+  dataDir: string;
+  host: HostExecutor;
+  spec: ValidatorInstanceDto;
+  execute: boolean;
+  health?: (spec: ValidatorInstanceDto) => Promise<boolean>;
+  healthTimeoutMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+  onLog?: OpsLogFn;
+  signal?: AbortSignal;
+}): Promise<{
+  ok: boolean;
+  rolledBack: boolean;
+  notes: string[];
+  spec: ValidatorInstanceDto;
+}> {
+  const offer = detectUpgradeForInstance(input.spec, loadRemoteClientTags(input.dataDir));
+  if (!offer) return { ok: true, rolledBack: false, notes: ['no upgrade'], spec: input.spec };
+  return applyValidatorClientTag({
+    ...input,
+    clientId: offer.clientId,
+    nextTag: offer.nextTag,
+  });
 }
 
 export async function runValidatorUpgradeScan(input: {

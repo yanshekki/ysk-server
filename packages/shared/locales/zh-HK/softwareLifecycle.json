@@ -5,6 +5,8 @@
   "dockFail": "失敗 · {{title}}",
   "dockDone": "完成 · {{title}}",
   "minimize": "縮小",
+  "maximize": "放大",
+  "restore": "還原",
   "liveLog": "即時日誌",
   "uninstall": "解除安裝…",
   "uninstallTitle": "解除安裝「{{name}}」",

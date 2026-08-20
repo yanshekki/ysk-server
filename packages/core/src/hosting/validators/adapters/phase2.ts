@@ -9,6 +9,7 @@ import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { SUI_NODE_IMAGE, suiNodeTag, v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
 import { readRpcJson } from '../rpc-json.js';
+import { RESOLVE_PUBLIC_IP_SH } from './p2p-public-ip.js';
 
 type Probe = Pick<ValidatorNodeStatus, 'syncProgress' | 'peers' | 'version' | 'lastError'>;
 
@@ -208,12 +209,30 @@ services:
           . /data/statesync.env
           set +a
           if [ -n "$TRUST_HEIGHT" ] && [ -n "$TRUST_HASH" ] && [ -n "$RPC_SERVERS" ]; then
-            sed -i -e '/enable =/ s/= .*/= true/' /data/config/config.toml || true
-            sed -i -e '/trust_period =/ s/= .*/= "8h0m0s"/' /data/config/config.toml || true
-            sed -i -e "/trust_height =/ s/= .*/= $TRUST_HEIGHT/" /data/config/config.toml || true
-            sed -i -e "/trust_hash =/ s/= .*/= \\"$TRUST_HASH\\"/" /data/config/config.toml || true
-            sed -i -e "/rpc_servers =/ s^= .*^= \\"$RPC_SERVERS\\"^" /data/config/config.toml || true
+            gaiad config set config statesync.enable true --home /data 2>/dev/null || true
+            gaiad config set config statesync.trust_height "$TRUST_HEIGHT" --home /data 2>/dev/null || true
+            gaiad config set config statesync.trust_hash "$TRUST_HASH" --home /data 2>/dev/null || true
+            gaiad config set config statesync.trust_period "8h0m0s" --home /data 2>/dev/null || true
+            gaiad config set config statesync.rpc_servers "$RPC_SERVERS" --home /data 2>/dev/null || true
+            sed -i -e '/^\\[statesync\\]/,/^\\[/{
+              s/^enable = .*/enable = true/
+              s/^trust_period = .*/trust_period = "8h0m0s"/
+              s/^trust_height = .*/trust_height = '"$TRUST_HEIGHT"'/
+              s/^trust_hash = .*/trust_hash = "'"$TRUST_HASH"'"/
+              s/^rpc_servers = .*/rpc_servers = "'"$RPC_SERVERS"'"/
+            }' /data/config/config.toml || true
           fi
+        fi
+        if [ "${chainId}" = "provider" ]; then
+          if ! awk '/^\\[statesync\\]/{p=1;next} /^\\[/{p=0} p && /^enable = true/{ok=1} END{exit ok?0:1}' /data/config/config.toml; then
+            echo "cosmos state-sync not enabled in [statesync]; refusing InitChain" >&2
+            exit 1
+          fi
+        fi
+        ${RESOLVE_PUBLIC_IP_SH.split('\n').join('\n        ')}
+        if [ -n "$PUB" ]; then
+          gaiad config set config p2p.external_address "tcp://$PUB:26656" --home /data 2>/dev/null || true
+          sed -i -e '/^\\[p2p\\]/,/^\\[/{s|^external_address = .*|external_address = "tcp://'"$PUB"':26656"|}' /data/config/config.toml || true
         fi
         gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom
     ports:
@@ -247,8 +266,43 @@ export function suiGenesisUrl(network: string): string {
   return `https://github.com/MystenLabs/sui-genesis/raw/main/${net}/genesis.blob`;
 }
 
+const SUI_TESTNET_SEEDS = `
+p2p-config:
+  listen-address: "0.0.0.0:8084"
+  seed-peers:
+    - address: /dns/yto-tnt-ssfn-01.testnet.sui.io/udp/8084
+      peer-id: 2ed53564d5581ded9b6773970ac2f1c84d39f9edf01308ff5a1ffe09b1add7b3
+    - address: /dns/yto-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: 6563732e5ab33b4ae09c73a98fd37499b71b8f03c27b5cc51acc26934974aff2
+    - address: /dns/nrt-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: 23a1f7cd901b6277cbedaa986b3fc183f171d800cabba863d48f698f518967e1
+    - address: /dns/ewr-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: df8a8d128051c249e224f95fcc463f518a0ebed8986bbdcc11ed751181fecd38
+    - address: /dns/lax-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: f9a72a0a6c17eed09c27898eab389add704777c03e135846da2428f516a0c11d
+    - address: /dns/lhr-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: 9393d6056bb9c9d8475a3cf3525c747257f17c6a698a7062cbbd1875bc6ef71e
+    - address: /dns/mel-tnt-ssfn-00.testnet.sui.io/udp/8084
+      peer-id: c88742f46e66a11cb8c84aca488065661401ef66f726cb9afeb8a5786d83456e
+`;
+
+const SUI_MAINNET_SEEDS = `
+p2p-config:
+  listen-address: "0.0.0.0:8084"
+  seed-peers:
+    - address: /dns/mel-00.mainnet.sui.io/udp/8084
+      peer-id: d32b55bdf1737ec415df8c88b3bf91e194b59ee3127e3f38ea46fd88ba2e7849
+    - address: /dns/ewr-00.mainnet.sui.io/udp/8084
+      peer-id: c7bf6cb93ca8fdda655c47ebb85ace28e6931464564332bf63e27e90199c50ee
+    - address: /dns/ewr-01.mainnet.sui.io/udp/8084
+      peer-id: 3227f8a05f0faa1a197c075d31135a366a1c6f3d4872cb8af66c14dea3e0eb66
+    - address: /dns/lhr-00.mainnet.sui.io/udp/8084
+      peer-id: c619a5e0f8f36eac45118c1f8bda28f0f508e2839042781f1d4a9818043f732c
+`;
+
 export function suiFullnodeYaml(network: string): string {
   const net = network === 'mainnet' ? 'mainnet' : 'testnet';
+  const p2p = net === 'mainnet' ? SUI_MAINNET_SEEDS : SUI_TESTNET_SEEDS;
   return `# ysk-server generated Sui ${net} fullnode
 db-path: /data/suidb
 network-address: /ip4/0.0.0.0/tcp/8080/http
@@ -257,7 +311,7 @@ json-rpc-address: 0.0.0.0:9000
 enable-index-processing: false
 genesis:
   genesis-file-location: /data/genesis.blob
-`;
+${p2p}`;
 }
 
 export async function ensureSuiFullnodeFiles(
@@ -285,6 +339,7 @@ export async function ensureSuiFullnodeFiles(
 
 export function buildSuiComposeYaml(spec: ValidatorInstanceDto): string {
   const rpc = spec.ports.rpc ?? 9002;
+  const p2p = spec.ports.p2p ?? 8084;
   const net = spec.network === 'mainnet' ? 'mainnet' : 'testnet';
   const tag = suiNodeTag(spec.network);
   const image = spec.clients.node?.image || SUI_NODE_IMAGE;
@@ -301,6 +356,7 @@ services:
       SUI_NETWORK: ${net}
     ports:
       - "127.0.0.1:${rpc}:9000"
+      - "0.0.0.0:${p2p}:8084/udp"
     volumes:
       - ${composeBind(spec.dataPath, '/data')}
 `;
@@ -327,7 +383,8 @@ base:
 execution:
   genesis_file_location: "/data/genesis.blob"
 full_node_networks:
-  - discovery_method: "onchain"
+  - network_id: "public"
+    discovery_method: "onchain"
     listen_address: "/ip4/0.0.0.0/tcp/6180"
 api:
   enabled: true
@@ -452,6 +509,8 @@ export function parseDotSync(body: unknown): Probe {
 
 export function buildSolComposeYaml(spec: ValidatorInstanceDto): string {
   const rpc = spec.ports.rpc ?? 8899;
+  const gossip = spec.ports.p2p ?? 8000;
+  const gossipEnd = gossip + 20;
   const net = spec.network === 'mainnet' ? 'mainnet-beta' : 'testnet';
   return `# ysk-server validators sol — HEAVY (needs high IOPS / large disk)
 services:
@@ -468,12 +527,12 @@ services:
       - 8000-8020
       - --entrypoint
       - entrypoint.${net}.solana.com:8001
-      - --expected-genesis-hash
-      - auto
       - --no-voting
       - --limit-ledger-size
     ports:
       - "127.0.0.1:${rpc}:8899"
+      - "0.0.0.0:${gossip}-${gossipEnd}:8000-8020/tcp"
+      - "0.0.0.0:${gossip}-${gossipEnd}:8000-8020/udp"
     volumes:
       - ${composeBind(spec.dataPath, '/data')}
 `;

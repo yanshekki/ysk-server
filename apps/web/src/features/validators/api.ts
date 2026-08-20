@@ -8,6 +8,8 @@ import type {
   ValidatorInstanceDto,
   ValidatorSettingsDto,
   ValidatorSoftwareReportDto,
+  ValidatorClientVersionsDto,
+  ValidatorNetIoDto,
   ValidatorSummaryDto,
 } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
@@ -42,6 +44,8 @@ export const validatorsApi = {
   list: () => api.requestRaw<ValidatorsListResponse>('/api/v1/validators'),
   chains: () => api.requestRaw<ValidatorChainsResponse>('/api/v1/validators/chains'),
   disk: () => api.requestRaw<ValidatorDiskResponse>('/api/v1/validators/disk'),
+  netio: () =>
+    api.requestRaw<{ ok: boolean; items: ValidatorNetIoDto[] }>('/api/v1/validators/netio'),
   get: (id: string) =>
     api.requestRaw<ValidatorGetResponse>(`/api/v1/validators/${encodeURIComponent(id)}`),
   create: (
@@ -52,6 +56,9 @@ export const validatorsApi = {
       slug?: string;
       el?: string;
       cl?: string;
+      elTag?: string;
+      clTag?: string;
+      nodeTag?: string;
       mithril?: boolean;
       memory?: string;
       cpus?: string;
@@ -143,8 +150,27 @@ export const validatorsApi = {
       `/api/v1/validators/${encodeURIComponent(id)}/rewrite-compose`,
       { method: 'POST', body: JSON.stringify({ execute }) },
     ),
-  software: () =>
-    api.requestRaw<{ ok: boolean } & ValidatorSoftwareReportDto>('/api/v1/validators/software'),
+  software: (refresh = false) =>
+    api.requestRaw<{ ok: boolean } & ValidatorSoftwareReportDto>(
+      `/api/v1/validators/software${refresh ? '?refresh=1' : ''}`,
+    ),
+  clientVersions: (clientId: string, opts?: { network?: string; refresh?: boolean }) => {
+    const q = new URLSearchParams();
+    if (opts?.network) q.set('network', opts.network);
+    if (opts?.refresh) q.set('refresh', '1');
+    const qs = q.toString();
+    return api.requestRaw<{ ok: boolean } & ValidatorClientVersionsDto>(
+      `/api/v1/validators/clients/${encodeURIComponent(clientId)}/versions${qs ? `?${qs}` : ''}`,
+    );
+  },
+  setVersion: (
+    id: string,
+    body: { clientId: string; tag: string; confirm: string; acceptMainnet?: boolean; execute?: boolean },
+  ) =>
+    api.requestRaw<ValidatorOpsResponse>(
+      `/api/v1/validators/${encodeURIComponent(id)}/set-version`,
+      { method: 'POST', body: JSON.stringify({ execute: true, ...body }) },
+    ),
   pullSoftware: (
     image: string,
     tag: string,

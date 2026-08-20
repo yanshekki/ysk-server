@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.1.19 — 2026-08-20
+
+### Fix
+- Cosmos Hub testnet: `[statesync]`-scoped enable (not `[blocksync]`), refuse InitChain if state-sync is off.
+- Ethereum Hoodi: Lighthouse `v8.2.2` and EthStaker checkpoint `https://hoodi.beaconstate.ethstaker.cc/` (v7 InvalidSsz).
+- NEAR: default memory 12g plus deploy memory limit; create-gate vs MemAvailable.
+- Avalanche: `--public-ip-resolution-service=opendns`, image `v1.14.1` (Docker UPnP does not work).
+- Ethereum / Sui / Solana: publish P2P UDP; Sui seed-peers + 8084/udp; EL/CL NAT without UPnP.
+
+### Improve
+- Validator list shows live ↓/↑ from docker stats NetIO deltas (same pattern as BT).
+- Official GitHub version picker on install and running instances; software tab shows image source and stale tags.
+- Ops-stream dock maximize; compose YAML editor; staking NodeID/BLS cards; Docker inspect/log modals use full width.
+- README What's new keeps at most three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.19**.
+
 ## 1.1.18 — 2026-08-20
 
 ### Fix

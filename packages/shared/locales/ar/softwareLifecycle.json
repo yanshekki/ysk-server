@@ -5,6 +5,8 @@
   "dockFail": "فشل · {{title}}",
   "dockDone": "تم · {{title}}",
   "minimize": "تصغير",
+  "maximize": "تكبير",
+  "restore": "استعادة",
   "liveLog": "سجل مباشر",
   "uninstall": "إلغاء التثبيت...",
   "uninstallTitle": "إلغاء التثبيت {{name}}",

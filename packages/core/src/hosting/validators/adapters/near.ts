@@ -7,6 +7,7 @@ import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
 import { readRpcJson } from '../rpc-json.js';
+import { RESOLVE_PUBLIC_IP_SH } from './p2p-public-ip.js';
 
 export function buildNearComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('near')[0];
@@ -19,8 +20,8 @@ services:
   node:
     image: ${img}
     restart: unless-stopped
-    mem_limit: 8g
-    memswap_limit: 8g
+    mem_limit: 12g
+    memswap_limit: 12g
     pids_limit: 4096
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -28,6 +29,14 @@ services:
         set -e
         if [ ! -f /data/config.json ]; then
           neard --home /data init --chain-id ${chainId} --download-genesis --download-config
+        fi
+        ${RESOLVE_PUBLIC_IP_SH.split('\n').join('\n        ')}
+        if [ -n "$PUB" ] && [ -f /data/config.json ]; then
+          if grep -q '"public_addr"' /data/config.json; then
+            sed -i "s/\\"public_addr\\": \\"[^\\"]*\\"/\\"public_addr\\": \\"$PUB:24567\\"/" /data/config.json || true
+          else
+            sed -i "s/\\"addr\\": \\"0.0.0.0:24567\\"/\\"addr\\": \\"0.0.0.0:24567\\",\\n    \\"public_addr\\": \\"$PUB:24567\\"/" /data/config.json || true
+          fi
         fi
         neard --home /data run
     ports:

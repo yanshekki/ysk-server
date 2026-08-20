@@ -5,6 +5,8 @@
   "dockFail": "Fallido · {{title}}",
   "dockDone": "Listo · {{title}}",
   "minimize": "Minimizar",
+  "maximize": "Ampliar",
+  "restore": "Restaurar",
   "liveLog": "Registro en vivo",
   "uninstall": "Desinstalar…",
   "uninstallTitle": "Desinstalar {{name}}",

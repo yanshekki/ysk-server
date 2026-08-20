@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { applyComposeLimits, composeBind, writeComposeFile } from './compose-runner.js';
-import { rankValidatorAutoClearCandidates, snapshotOffer, stakingChecklist } from './extras.js';
+import { applyComposeLimits, composeBind, composeStayWaits, writeComposeFile } from './compose-runner.js';
+import {
+  mergeValidatorNetIo,
+  parseValidatorDockerStatsStdout,
+  rankValidatorAutoClearCandidates,
+  snapshotOffer,
+  stakingChecklist,
+} from './extras.js';
 import { buildEthComposeYaml } from './adapters/eth.js';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -16,6 +22,8 @@ describe('validator extras', () => {
     expect(y).toContain('mem_limit: 4g');
     expect(y).toContain('memswap_limit: 4g');
     expect(y).toContain('pids_limit: 4096');
+    expect(y).toContain('deploy:');
+    expect(y).toContain('memory: 4g');
     expect(y).toContain('cpus: "2.0"');
   });
 
@@ -27,6 +35,12 @@ describe('validator extras', () => {
     expect(y).toContain('mem_limit: 4g');
     expect(y).toContain('memswap_limit: 4g');
     expect(y).not.toContain('mem_limit: 8g');
+    expect(y).toContain('memory: 4g');
+  });
+
+  it('watches cosmos/eth/near longer after compose up', () => {
+    expect(composeStayWaits('btc').reduce((a, b) => a + b, 0)).toBe(10_000);
+    expect(composeStayWaits('cosmos').reduce((a, b) => a + b, 0)).toBeGreaterThan(30_000);
   });
 
   it('quotes the full bind so YAML does not split on host-path quotes', () => {
@@ -103,5 +117,56 @@ describe('validator extras', () => {
     const c = stakingChecklist('avax');
     expect(c.links.some((l) => l.href === 'https://core.app')).toBe(true);
     expect(c.links.some((l) => l.href.includes('build.avax.network'))).toBe(true);
+  });
+
+  it('sums docker stats NetIO per validator instance', () => {
+    const rows = parseValidatorDockerStatsStdout(
+      [
+        JSON.stringify({
+          Name: 'yskval-eth-hoodi-1-el-1',
+          NetIO: '1.0MB / 200kB',
+        }),
+        JSON.stringify({
+          Name: 'yskval-eth-hoodi-1-cl-1',
+          NetIO: '500kB / 100kB',
+        }),
+        JSON.stringify({
+          Name: 'yskval-avax-fuji-1-node-1',
+          NetIO: '10kB / 2kB',
+        }),
+      ].join('\n'),
+      ['eth-hoodi-1', 'avax-fuji-1'],
+    );
+    const eth = rows.find((r) => r.id === 'eth-hoodi-1');
+    const avax = rows.find((r) => r.id === 'avax-fuji-1');
+    expect(eth?.rxBytes).toBe(1.5e6);
+    expect(eth?.txBytes).toBe(3e5);
+    expect(avax?.rxBytes).toBe(10_000);
+    expect(avax?.txBytes).toBe(2_000);
+  });
+
+  it('turns consecutive NetIO samples into B/s', () => {
+    const first = mergeValidatorNetIo({
+      ids: ['avax-fuji-1'],
+      samples: [{ id: 'avax-fuji-1', rxBytes: 1_000, txBytes: 200 }],
+      prev: new Map(),
+      at: 1_000,
+    });
+    expect(first.items[0]).toMatchObject({
+      rxBytes: 1_000,
+      txBytes: 200,
+      rxRateBps: null,
+      txRateBps: null,
+    });
+    const second = mergeValidatorNetIo({
+      ids: ['avax-fuji-1'],
+      samples: [{ id: 'avax-fuji-1', rxBytes: 6_000, txBytes: 1_200 }],
+      prev: first.next,
+      at: 6_000,
+    });
+    expect(second.items[0]).toMatchObject({
+      rxRateBps: 1_000,
+      txRateBps: 200,
+    });
   });
 });

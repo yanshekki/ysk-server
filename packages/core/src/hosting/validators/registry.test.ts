@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   defaultValidatorNetwork,
+  findValidatorClient,
   getValidatorChain,
   getValidatorNetwork,
   listValidatorChains,
@@ -73,5 +74,12 @@ describe('validator registry', () => {
     expect(suiNodeTag('testnet')).toBe('testnet-v1.78.0');
     expect(suiNodeTag('mainnet')).toBe('mainnet-v1.77.2');
     expect(suiNodeImagePins().some((r) => r.includes('mainnet-v1.44.2'))).toBe(false);
+  });
+
+  it('finds catalog clients by id', () => {
+    expect(findValidatorClient('lighthouse')?.tag).toBe('v8.2.2');
+    expect(findValidatorClient('avalanchego')?.tag).toBe('v1.14.1');
+    expect(findValidatorClient('sui-node')?.image).toBe('mysten/sui-node');
+    expect(findValidatorClient('nope')).toBeUndefined();
   });
 });

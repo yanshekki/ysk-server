@@ -25,6 +25,7 @@ import {
   switchValidatorNetwork,
   summarizeValidatorInstances,
   stakingChecklistForInstance,
+  collectValidatorNetIo,
   validatorContainerStats,
   writeValidatorCompose,
   loadValidatorSettings,
@@ -33,6 +34,10 @@ import {
   upgradeValidatorInstance,
   collectValidatorSoftware,
   pullPinnedValidatorImage,
+  listOfficialClientVersions,
+  refreshOfficialReleases,
+  setValidatorClientVersion,
+  findValidatorClient,
 } from 'ysk-server-core';
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -121,13 +126,61 @@ export async function handleValidatorsRoutes(
       return true;
     }
 
+    if (method === 'GET' && url.pathname === `${BASE}/netio`) {
+      const items = await collectValidatorNetIo({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+      });
+      sendJson(res, 200, { ok: true, items });
+      return true;
+    }
+
     if (method === 'GET' && url.pathname === `${BASE}/software`) {
+      if (url.searchParams.get('refresh') === '1') {
+        try {
+          await refreshOfficialReleases({ dataDir: ctx.dataDir, force: true });
+        } catch {
+          /* keep last cache */
+        }
+      }
       const software = await collectValidatorSoftware({
         dataDir: ctx.dataDir,
         host: ctx.host,
       });
       sendJson(res, 200, { ok: true, ...software });
       return true;
+    }
+
+    {
+      const ver = url.pathname.match(/^\/api\/v1\/validators\/clients\/([a-z0-9-]+)\/versions$/);
+      if (method === 'GET' && ver) {
+        const clientId = ver[1] ?? '';
+        if (!findValidatorClient(clientId)) {
+          sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
+          return true;
+        }
+        if (url.searchParams.get('refresh') === '1') {
+          try {
+            await refreshOfficialReleases({
+              dataDir: ctx.dataDir,
+              force: true,
+              clientIds: [clientId],
+            });
+          } catch {
+            /* keep last cache */
+          }
+        }
+        const network = url.searchParams.get('network') || undefined;
+        sendJson(res, 200, {
+          ok: true,
+          ...listOfficialClientVersions({
+            dataDir: ctx.dataDir,
+            clientId,
+            network,
+          }),
+        });
+        return true;
+      }
     }
 
     if (method === 'POST' && url.pathname === `${BASE}/software/pull`) {
@@ -192,6 +245,9 @@ export async function handleValidatorsRoutes(
             slug: body.slug != null ? String(body.slug) : undefined,
             el: body.el != null ? String(body.el) : undefined,
             cl: body.cl != null ? String(body.cl) : undefined,
+            elTag: body.elTag != null ? String(body.elTag) : undefined,
+            clTag: body.clTag != null ? String(body.clTag) : undefined,
+            nodeTag: body.nodeTag != null ? String(body.nodeTag) : undefined,
             mithril: body.mithril === true,
             dataPath: body.dataPath != null ? String(body.dataPath) : undefined,
             memory: body.memory != null ? String(body.memory) : undefined,
@@ -354,6 +410,7 @@ export async function handleValidatorsRoutes(
         'mithril',
         'clear',
         'delete',
+        'set-version',
       ]);
       if (!known.has(action)) {
         sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND, message: 'not found' });
@@ -372,6 +429,14 @@ export async function handleValidatorsRoutes(
           else if (action === 'restart') result = await restartValidatorInstance(hooked);
           else if (action === 'update' || action === 'upgrade') {
             result = await upgradeValidatorInstance(hooked);
+          } else if (action === 'set-version') {
+            result = await setValidatorClientVersion({
+              ...hooked,
+              clientId: String(body.clientId ?? ''),
+              tag: String(body.tag ?? ''),
+              confirm: String(body.confirm ?? ''),
+              acceptMainnet: body.acceptMainnet === true,
+            });
           } else if (action === 'prune') {
             result = await pruneValidatorInstance(hooked);
           } else if (action === 'switch-network') {

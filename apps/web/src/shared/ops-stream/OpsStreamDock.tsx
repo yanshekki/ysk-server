@@ -83,13 +83,14 @@ export function OpsStreamDock() {
     requestCancel,
     isCancelRequested,
   } = useOpsStream();
+  const [maximized, setMaximized] = useState(false);
 
   if (!jobs.length) return null;
 
   const pills = minimized || !job ? jobs : jobs.filter((j) => j.id !== job.id);
 
   return (
-    <div className="ops-stream-dock-stack">
+    <div className={`ops-stream-dock-stack${maximized && !minimized ? ' is-max' : ''}`}>
       {pills.map((j) => (
         <JobPill
           key={j.id}
@@ -103,9 +104,11 @@ export function OpsStreamDock() {
       ))}
       {!minimized && job ? (
         <div
-          className={`ops-stream-dock ops-stream-dock--panel${statusClass(job)}`}
+          className={`ops-stream-dock ops-stream-dock--panel${statusClass(job)}${maximized ? ' is-max' : ''}`}
           role="dialog"
           aria-label={job.title}
+          data-testid="ops-stream-dock-panel"
+          data-maximized={maximized ? 'true' : 'false'}
         >
           <header className="ops-stream-dock__head">
             <div className="ops-stream-dock__titles">
@@ -128,6 +131,16 @@ export function OpsStreamDock() {
               <button
                 type="button"
                 className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                aria-pressed={maximized}
+                data-testid="ops-stream-maximize"
+                onClick={() => setMaximized((v) => !v)}
+              >
+                {maximized ? t('softwareLifecycle.restore') : t('softwareLifecycle.maximize')}
+              </button>
+              <button
+                type="button"
+                className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                data-testid="ops-stream-minimize"
                 onClick={() => setMinimized(true)}
               >
                 {t('softwareLifecycle.minimize')}
@@ -147,6 +160,8 @@ export function OpsStreamDock() {
             lines={job.lines}
             busy={job.busy}
             title={t('softwareLifecycle.liveLog')}
+            fill={maximized}
+            defaultWrap
           />
           {job.error ? (
             <p className="ops-stream-dock__error" role="alert">

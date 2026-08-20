@@ -3,10 +3,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  dockerTagFromGit,
+  listOfficialClientVersions,
   loadRemoteClientTags,
+  mergeOfficialVersions,
   normalizeGithubTag,
   pickAllowedNextTag,
   refreshRemoteClientTags,
+  saveRemoteReleases,
 } from './releases.js';
 import { parseVersionParts, tagIsNewer } from './versions.js';
 
@@ -42,12 +46,15 @@ describe('validator release tags', () => {
     try {
       const fetchFn = (async (url: string) => {
         if (String(url).includes('paradigmxyz/reth')) {
-          return { ok: true, json: async () => ({ tag_name: 'v1.5.1' }) };
+          return {
+            ok: true,
+            json: async () => [{ tag_name: 'v1.5.1', html_url: 'https://github.com/paradigmxyz/reth/releases/tag/v1.5.1' }],
+          };
         }
         if (String(url).includes('nimbus-eth2')) {
-          return { ok: true, json: async () => ({ tag_name: 'v25.5.0' }) };
+          return { ok: true, json: async () => [{ tag_name: 'v25.5.0' }] };
         }
-        return { ok: false, json: async () => ({}) };
+        return { ok: true, json: async () => [] };
       }) as typeof fetch;
       const cache = await refreshRemoteClientTags({ dataDir, fetchFn });
       expect(cache.tags.reth).toBe('v1.5.1');
@@ -56,5 +63,60 @@ describe('validator release tags', () => {
     } finally {
       rmSync(dataDir, { recursive: true, force: true });
     }
+  });
+
+  it('maps GitHub tags onto Docker tags for sui/aptos/nimbus', () => {
+    expect(dockerTagFromGit('nimbus', 'v25.5.0')).toBe('multiarch-v25.5.0');
+    expect(dockerTagFromGit('sui-node', 'v1.79.0', 'testnet')).toBe('testnet-v1.79.0');
+    expect(dockerTagFromGit('sui-node', 'mainnet-v1.77.2', 'testnet')).toBeNull();
+    expect(dockerTagFromGit('aptos-node', 'v1.28.0')).toBe('aptos-node-v1.28.0');
+    expect(dockerTagFromGit('reth', 'latest')).toBeNull();
+  });
+
+  it('always includes the panel pin in the official list', () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-rel-pin-'));
+    try {
+      saveRemoteReleases(dataDir, {
+        at: new Date().toISOString(),
+        clients: {
+          avalanchego: {
+            at: new Date().toISOString(),
+            items: [
+              {
+                gitTag: 'v1.15.0',
+                dockerTag: 'v1.15.0',
+                prerelease: false,
+                htmlUrl: 'https://github.com/ava-labs/avalanchego/releases/tag/v1.15.0',
+              },
+            ],
+          },
+        },
+      });
+      const listed = listOfficialClientVersions({
+        clientId: 'avalanchego',
+        dataDir,
+        extraTags: ['v1.13.5'],
+      });
+      expect(listed.pin).toBe('v1.14.1');
+      expect(listed.github).toBe('ava-labs/avalanchego');
+      expect(listed.versions.map((v) => v.dockerTag)).toEqual(
+        expect.arrayContaining(['v1.14.1', 'v1.13.5', 'v1.15.0']),
+      );
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  });
+
+  it('caps merged fetched tags and keeps extras', () => {
+    const fetched = Array.from({ length: 20 }, (_, i) => ({
+      gitTag: `v1.${i}.0`,
+      dockerTag: `v1.${i}.0`,
+      prerelease: false,
+      htmlUrl: '',
+    }));
+    const merged = mergeOfficialVersions({ pin: 'v1.4.8', extraTags: ['v1.0.0'], fetched });
+    expect(merged.some((v) => v.dockerTag === 'v1.4.8')).toBe(true);
+    expect(merged.some((v) => v.dockerTag === 'v1.0.0')).toBe(true);
+    expect(merged.length).toBeLessThanOrEqual(14);
   });
 });

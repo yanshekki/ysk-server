@@ -1670,12 +1670,12 @@ export function DockerPage() {
           setLogFollow(false);
         }}
         title={logTitle}
-        size="lg"
+        size="full"
       >
         {inspectValue != null ? (
           <div className="stack">
             {inspectSummary ? <p className="muted u-text-sm u-m-0">{inspectSummary}</p> : null}
-            <JsonViewer value={inspectValue} />
+            <JsonViewer value={inspectValue} maxHeight="none" />
           </div>
         ) : (
           <div className="stack">
@@ -1697,7 +1697,7 @@ export function DockerPage() {
                 follow={logFollow}
                 onFollowChange={setLogFollow}
                 downloadName={`${logId ?? 'container'}.log`}
-                maxHeight="min(52vh, 28rem)"
+                maxHeight="none"
               />
             )}
           </div>

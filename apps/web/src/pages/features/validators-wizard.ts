@@ -8,13 +8,14 @@ export function validatorWizardCanInstall(input: {
   isMainnet: boolean;
   mainnetAck: boolean;
   diskShort: boolean;
+  memShort?: boolean;
   customPath?: boolean;
   dataPath?: string;
 }): boolean {
   return validatorWizardBlockReason(input) == null;
 }
 
-export type WizardBlockReason = 'docker' | 'spec' | 'mainnet' | 'disk' | 'path';
+export type WizardBlockReason = 'docker' | 'spec' | 'mainnet' | 'disk' | 'memory' | 'path';
 
 export function validatorWizardBlockReason(input: {
   dockerInstalled: boolean | null;
@@ -22,12 +23,14 @@ export function validatorWizardBlockReason(input: {
   isMainnet: boolean;
   mainnetAck: boolean;
   diskShort: boolean;
+  memShort?: boolean;
   customPath?: boolean;
   dataPath?: string;
 }): WizardBlockReason | null {
   if (!input.hasSpec) return 'spec';
   if (input.isMainnet && !input.mainnetAck) return 'mainnet';
   if (input.diskShort && !(input.isMainnet && input.mainnetAck)) return 'disk';
+  if (input.memShort) return 'memory';
   if (input.customPath && !isSafeValidatorDataPath(String(input.dataPath ?? '').trim())) {
     return 'path';
   }

@@ -5,6 +5,8 @@
   "dockFail": "失敗しました · {{title}}",
   "dockDone": "完了 · {{title}}",
   "minimize": "しまう",
+  "maximize": "拡大",
+  "restore": "戻す",
   "liveLog": "ライブログ",
   "uninstall": "アンインストール…",
   "uninstallTitle": "{{name}}をアンインストールする",

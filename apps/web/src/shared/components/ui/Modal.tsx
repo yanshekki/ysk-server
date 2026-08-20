@@ -35,7 +35,7 @@ export interface ModalProps {
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   /** Extra class on the panel (e.g. feature-specific layouts) */
   className?: string;
   /** Named target for confirm honesty / tests */
@@ -163,7 +163,9 @@ export function Modal({
         ? 'modal--lg'
         : size === 'xl'
           ? 'modal--xl'
-          : '';
+          : size === 'full'
+            ? 'modal--full'
+            : '';
 
   const tree = (
     <div

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultUpgradePolicyForNetworkKind,
   defaultValidatorMemoryLimit,
+  parseValidatorMemoryBytes,
   isLiveValidatorStatus,
   isValidatorChainId,
   isValidatorInstanceId,
@@ -67,7 +68,8 @@ describe('validators DTO helpers', () => {
   });
 
   it('defaults memory for heavy chains', () => {
-    expect(defaultValidatorMemoryLimit('near')).toBe('8g');
+    expect(defaultValidatorMemoryLimit('near')).toBe('12g');
+    expect(parseValidatorMemoryBytes('12g')).toBe(12 * 1024 ** 3);
     expect(defaultValidatorMemoryLimit('sui')).toBe('4g');
     expect(defaultValidatorMemoryLimit('aptos')).toBe('4g');
     expect(defaultValidatorMemoryLimit('sol')).toBe('4g');

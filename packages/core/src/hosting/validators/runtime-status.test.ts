@@ -116,6 +116,37 @@ describe('pickValidatorContainerHint', () => {
     expect(isValidatorOomHint('exit (137)')).toBe(true);
   });
 
+  it('prefers InitGenesis panic over a later log line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        'panic: runtime error: invalid memory address or nil pointer dereference',
+        'cosmos-sdk gov InitGenesis',
+        'restarting',
+      ]),
+    ).toMatch(/nil pointer|InitGenesis/i);
+  });
+
+  it('prefers lighthouse InvalidSsz over a later log line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        'Error loading checkpoint state from remote: InvalidSsz(OffsetSkipsVariableBytes(2737225))',
+        'restarting',
+      ]),
+    ).toMatch(/InvalidSsz/i);
+  });
+
+  it('prefers bootstrap/0-peer over a later log line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        'failed to connect to bootstrap nodes',
+        'restarting',
+      ]),
+    ).toMatch(/bootstrap/i);
+  });
+
   it('prefers a DNS failure over a later log line', () => {
     expect(
       pickValidatorContainerHint([
@@ -133,6 +164,7 @@ describe('isTransientValidatorProbeError', () => {
     expect(isTransientValidatorProbeError('ECONNREFUSED')).toBe(true);
     expect(isTransientValidatorProbeError('Unexpected end of JSON input')).toBe(true);
     expect(isTransientValidatorProbeError('rpc unauthorized')).toBe(true);
+    expect(isTransientValidatorProbeError('0 peers')).toBe(true);
     expect(isTransientValidatorProbeError('disk full')).toBe(false);
   });
 });

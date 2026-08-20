@@ -77,14 +77,22 @@
     "network": "Rede",
     "profile": "Perfil",
     "status": "Estado",
-    "disk": "Disco"
+    "disk": "Disco",
+    "traffic": "Traffic"
   },
   "cli": {
     "usage": "Utilização: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
     "el": "Cliente de execução",
-    "cl": "Cliente de consenso"
+    "cl": "Cliente de consenso",
+    "version": "Version",
+    "pin": "Panel pin (tested with this release)",
+    "officialNewer": "Official newer",
+    "olderThanPin": "Older than the panel pin",
+    "prerelease": "Prerelease",
+    "current": "Running now",
+    "source": "Image source"
   },
   "mithril": {
     "label": "Restaurar primeiro a partir de um instantâneo Mithril (recomendado em testnet)",
@@ -122,7 +130,11 @@
     "restarting": "Container is restarting. Check logs on this page.",
     "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
     "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart."
+    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
+    "memLow": "Not enough free RAM for this chain's memory cap",
+    "badTag": "That client version is not an official tag for this image",
+    "needVersionConfirm": "Changing version requires confirm=instance id",
+    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet"
   },
   "notes": {
     "beta": "Esta funcionalidade é Beta. Alterações no anfitrião precisam de root e YSK_EXECUTE=1.",
@@ -205,7 +217,9 @@
       "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
       "rpc": "Public RPC node — not a staking validator."
     },
-    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm."
+    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
+    "memShort": "Not enough free RAM for this chain's memory cap",
+    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}"
   },
   "actions": {
     "detail": "Detalhes",
@@ -232,7 +246,8 @@
     "clearC1": "Chain data on disk is deleted.",
     "clearC2": "The instance stays in the panel, stopped and empty.",
     "switchTitle": "Switch network",
-    "switchC1": "The node is stopped and chain data is wiped before the new network is written."
+    "switchC1": "The node is stopped and chain data is wiped before the new network is written.",
+    "setVersion": "Change version"
   },
   "policy": {
     "label": "Política de atualização",
@@ -297,7 +312,16 @@
     "danger": "Clear data",
     "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
     "compose": "Compose",
-    "logs": "Logs"
+    "logs": "Logs",
+    "traffic": "Traffic",
+    "setVersion": "Change version",
+    "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
+    "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
+    "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
+    "setVersionC1": "The running container is replaced with the selected tag.",
+    "setVersionC2": "Type the instance id to confirm.",
+    "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
+    "releaseNotes": "Release notes"
   },
   "state": {
     "unknown": "Unknown",
@@ -348,7 +372,16 @@
     "pulling": "Pull {{ref}}",
     "empty": "No pinned client images",
     "emptyDesc": "The catalog is empty. This should not happen.",
-    "daemonDown": "Docker Engine is not running"
+    "daemonDown": "Docker Engine is not running",
+    "pulled": "On this host",
+    "source": "Source",
+    "official": "Official latest",
+    "officialNewer": "Official newer",
+    "stale": "Behind pin",
+    "staleItem": "{{id}} ({{tag}})",
+    "pin": "Panel pin",
+    "openRelease": "Release notes",
+    "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
   },
   "playbook": {
     "overviewTitle": "How staking works on each chain",
@@ -586,6 +619,8 @@
       "never": [
         "Do not look for a staking wallet on this page."
       ]
-    }
+    },
+    "copyAll": "Copy all",
+    "copyNamed": "Copy {{label}}"
   }
 }

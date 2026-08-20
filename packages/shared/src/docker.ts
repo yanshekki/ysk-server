@@ -225,3 +225,62 @@ export function validatorIdFromComposeProject(name: string): string | null {
   const id = n.slice('yskval-'.length);
   return id || null;
 }
+
+const DOCKER_STATS_SIZE_RE = /^([\d.]+)\s*([kKmMgGtTpP]i?[Bb]|[Bb])$/;
+
+/** Docker stats sizes: NetIO is SI (kB/MB), MemUsage is binary (MiB/GiB). */
+export function parseDockerStatsSize(raw: string): number | null {
+  const s = String(raw ?? '').trim();
+  if (!s || s === '--' || s === '-') return null;
+  const m = DOCKER_STATS_SIZE_RE.exec(s);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n) || n < 0) return null;
+  const u = m[2]!.toLowerCase();
+  const mul =
+    u === 'b'
+      ? 1
+      : u === 'kb'
+        ? 1e3
+        : u === 'mb'
+          ? 1e6
+          : u === 'gb'
+            ? 1e9
+            : u === 'tb'
+              ? 1e12
+              : u === 'kib'
+                ? 1024
+                : u === 'mib'
+                  ? 1024 ** 2
+                  : u === 'gib'
+                    ? 1024 ** 3
+                    : u === 'tib'
+                      ? 1024 ** 4
+                      : null;
+  return mul == null ? null : n * mul;
+}
+
+/** Docker stats NetIO field: `"rx / tx"`. */
+export function parseDockerNetIo(raw: string): { rxBytes: number; txBytes: number } | null {
+  const parts = String(raw ?? '').split(/\s*\/\s*/);
+  if (parts.length !== 2) return null;
+  const rxBytes = parseDockerStatsSize(parts[0] ?? '');
+  const txBytes = parseDockerStatsSize(parts[1] ?? '');
+  if (rxBytes == null || txBytes == null) return null;
+  return { rxBytes, txBytes };
+}
+
+export function dockerNetIoRate(input: {
+  prevRx: number;
+  prevTx: number;
+  prevAt: number;
+  rx: number;
+  tx: number;
+  at: number;
+}): { rxRateBps: number; txRateBps: number } | null {
+  const dt = (input.at - input.prevAt) / 1000;
+  if (!(dt >= 0.2)) return null;
+  const dRx = input.rx >= input.prevRx ? input.rx - input.prevRx : input.rx;
+  const dTx = input.tx >= input.prevTx ? input.tx - input.prevTx : input.tx;
+  return { rxRateBps: dRx / dt, txRateBps: dTx / dt };
+}

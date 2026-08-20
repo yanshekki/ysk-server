@@ -25,7 +25,7 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
       { id: 'reth', role: 'el', image: 'ghcr.io/paradigmxyz/reth', tag: 'v1.4.8', v1: true },
       { id: 'geth', role: 'el', image: 'ethereum/client-go', tag: 'v1.15.11', v1: true },
       { id: 'nethermind', role: 'el', image: 'nethermind/nethermind', tag: '1.31.11', v1: true },
-      { id: 'lighthouse', role: 'cl', image: 'sigp/lighthouse', tag: 'v7.1.0', v1: true },
+      { id: 'lighthouse', role: 'cl', image: 'sigp/lighthouse', tag: 'v8.2.2', v1: true },
       {
         id: 'prysm',
         role: 'cl',
@@ -71,7 +71,7 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
         id: 'avalanchego',
         role: 'node',
         image: 'avaplatform/avalanchego',
-        tag: 'v1.13.5',
+        tag: 'v1.14.1',
         v1: true,
       },
     ],
@@ -308,6 +308,21 @@ export function defaultValidatorNetwork(chainId: string): string | undefined {
 
 export function v1ValidatorClients(chainId: string) {
   return (getValidatorChain(chainId)?.clients ?? []).filter((c) => c.v1);
+}
+
+export function findValidatorClient(clientId: string): {
+  chainId: ValidatorChainId;
+  role: string;
+  image: string;
+  tag: string;
+} | undefined {
+  const id = String(clientId ?? '').trim();
+  if (!id) return undefined;
+  for (const chain of VALIDATOR_CHAIN_CATALOG) {
+    const c = chain.clients.find((x) => x.id === id);
+    if (c) return { chainId: chain.id, role: c.role, image: c.image, tag: c.tag };
+  }
+  return undefined;
 }
 
 export const SUI_NODE_IMAGE = 'mysten/sui-node';

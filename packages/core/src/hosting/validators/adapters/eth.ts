@@ -4,7 +4,7 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ChainAdapter, ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { v1ValidatorClients } from '../registry.js';
-import { buildClService, buildElService, jwtHost } from './eth-clients.js';
+import { buildClService, buildElService, ETH_CHECKPOINT_FALLBACKS, jwtHost } from './eth-clients.js';
 import { readRpcJson } from '../rpc-json.js';
 
 export function ethJwtPath(spec: ValidatorInstanceDto): string {
@@ -36,8 +36,11 @@ export function parseEthPeerCount(body: unknown): number | null {
 
 export function buildEthComposeYaml(spec: ValidatorInstanceDto): string {
   const jwt = '/jwt/jwt.hex';
+  const net = spec.network === 'mainnet' || spec.network === 'sepolia' ? spec.network : 'hoodi';
+  const fallbacks = ETH_CHECKPOINT_FALLBACKS[net] ?? [];
   return `# ysk-server validators eth — generated
 # EL=${spec.clients.el?.id ?? 'reth'} CL=${spec.clients.cl?.id ?? 'lighthouse'}
+# checkpoint fallbacks: ${fallbacks.slice(1).join(' ')}
 # RPC localhost only. No staking keys.
 services:
 ${buildElService(spec, jwt)}
@@ -103,7 +106,7 @@ export async function probeEthStatus(
       syncProgress: sync.syncing ? sync.progress : 1,
       peers,
       version: typeof verBody.result === 'string' ? verBody.result : null,
-      lastError: null,
+      lastError: peers === 0 ? '0 peers' : null,
     };
   } catch (e) {
     return {

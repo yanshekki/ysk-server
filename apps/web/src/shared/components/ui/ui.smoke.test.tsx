@@ -251,6 +251,14 @@ describe('UI primitives smoke', () => {
     expect(screen.getByText('body')).toBeInTheDocument();
     modal.unmount();
 
+    const full = render(
+      <Modal open title="Inspect" onClose={onClose} size="full">
+        <p>wide</p>
+      </Modal>,
+    );
+    expect(screen.getByRole('dialog', { name: 'Inspect' })).toHaveClass('modal--full');
+    full.unmount();
+
     const confirm = render(
       <ConfirmDialog
         open

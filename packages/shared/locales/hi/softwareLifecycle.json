@@ -5,6 +5,8 @@
   "dockFail": "विफल · {{title}}",
   "dockDone": "हो गया · {{title}}",
   "minimize": "छोटा करना",
+  "maximize": "बड़ा करें",
+  "restore": "पुनर्स्थापित",
   "liveLog": "लाइव लॉग",
   "uninstall": "अनइंस्टॉल करें...",
   "uninstallTitle": "अनइंस्टॉल करें {{name}}",

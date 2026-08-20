@@ -5,7 +5,7 @@
 import type { ValidatorRuntimeStatus } from 'ysk-server-shared';
 
 const FATAL_CONTAINER_RE =
-  /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found|dns error|no address associated with hostname|temporary failure in name resolution/i;
+  /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found|dns error|no address associated with hostname|temporary failure in name resolution|initgenesis|nil pointer|invalid memory address|invalidssz|checkpoint state|failed to start beacon node|failed to connect to bootstrap|not connected to a minimum of 1 peer|not connected to enough stake/i;
 
 const OOM_RE = /\bkilled\b|out of memory|\booms?k?ill|cannot allocate memory|exit \(137\)/i;
 const NOFILE_RE = /too many open files|ensure_max_open_files_limit|RLIMIT_NOFILE/i;
@@ -34,7 +34,7 @@ export function isValidatorNofileHint(err: string | null | undefined): boolean {
 export function isTransientValidatorProbeError(err: string | null | undefined): boolean {
   const s = String(err || '').trim();
   if (!s) return false;
-  return /rpc unreachable|unhealthy|econnrefused|econnreset|fetch failed|failed to fetch|networkerror|bad rpc|bad status|metrics unreachable|not ready|connection refused|socket hang up|timed? ?out|aborted|eai_again|unexpected end of json|unexpected token.*json|not valid json|unauthorized|forbidden|\b401\b|\b403\b|rpc auth|empty (rpc )?body/i.test(
+  return /rpc unreachable|unhealthy|econnrefused|econnreset|fetch failed|failed to fetch|networkerror|bad rpc|bad status|metrics unreachable|not ready|connection refused|socket hang up|timed? ?out|aborted|eai_again|unexpected end of json|unexpected token.*json|not valid json|unauthorized|forbidden|\b401\b|\b403\b|rpc auth|empty (rpc )?body|0 peers|not connected to a minimum of 1 peer|failed to connect to bootstrap/i.test(
     s,
   );
 }

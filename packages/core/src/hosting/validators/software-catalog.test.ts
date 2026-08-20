@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isAllowedValidatorImage,
   isPinnedValidatorImage,
   listPinnedValidatorImages,
   parseValidatorImageRef,
   pinnedValidatorImageRefs,
 } from './software-catalog.js';
+import { saveRemoteReleases } from './releases.js';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 describe('validator software catalog', () => {
   it('lists unique pinned client images from the registry', () => {
@@ -28,5 +33,33 @@ describe('validator software catalog', () => {
       image: 'ghcr.io/foo/bar',
       tag: 'v1',
     });
+  });
+
+  it('allowlists cached official tags for the same image repo only', () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'ysk-sw-'));
+    try {
+      saveRemoteReleases(dataDir, {
+        at: new Date().toISOString(),
+        clients: {
+          avalanchego: {
+            at: new Date().toISOString(),
+            items: [
+              {
+                gitTag: 'v1.15.0',
+                dockerTag: 'v1.15.0',
+                prerelease: false,
+                htmlUrl: '',
+              },
+            ],
+          },
+        },
+      });
+      expect(isAllowedValidatorImage('avaplatform/avalanchego:v1.15.0', dataDir)).toBe(true);
+      expect(isAllowedValidatorImage('avaplatform/avalanchego:latest', dataDir)).toBe(false);
+      expect(isAllowedValidatorImage('evil/avalanchego:v1.14.1', dataDir)).toBe(false);
+      expect(listPinnedValidatorImages().every((p) => p.registryHost && p.staleInstances)).toBe(true);
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
   });
 });

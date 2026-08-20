@@ -396,7 +396,8 @@ function tokenizeInlineMd(line: string): Tok[] {
   return out;
 }
 
-function isWordChar(c: string): boolean {
+function isWordChar(c: string, lang?: SyntaxLang): boolean {
+  if (lang === 'yaml') return /[a-zA-Z0-9_.-]/.test(c);
   return /[a-zA-Z0-9_$]/.test(c);
 }
 
@@ -529,14 +530,18 @@ function tokenizeCodey(code: string, lang: SyntaxLang): Tok[] {
     // identifiers / keywords
     if (/[a-zA-Z_@]/.test(c)) {
       let j = i + 1;
-      while (j < code.length && isWordChar(code[j]!)) j++;
+      while (j < code.length && isWordChar(code[j]!, lang)) j++;
       const w = code.slice(i, j);
       let k = j;
       while (k < code.length && /[ \t]/.test(code[k]!)) k++;
       const next = code[k] ?? '';
 
       let cls = 'plain';
-      if (prevWasClassKw) {
+      if (lang === 'yaml' && next === ':') {
+        cls = 'attr';
+      } else if (lang === 'yaml' && /^(true|false|null|yes|no|on|off)$/i.test(w)) {
+        cls = 'keyword';
+      } else if (prevWasClassKw) {
         cls = 'class';
       } else if (prevWasFnKw) {
         cls = 'function';

@@ -13,6 +13,7 @@ import {
   Card,
   CardSection,
   CheckboxField,
+  CodeEditor,
   ConfirmDialog,
   DataTable,
   DescriptionList,
@@ -37,6 +38,8 @@ import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
   defaultValidatorMemoryLimit,
+  parseValidatorMemoryBytes,
+  VALIDATOR_MEMORY_HEADROOM_BYTES,
   isLiveValidatorStatus,
   isSafeValidatorDataPath,
   isValidatorUpgradePolicy,
@@ -71,6 +74,7 @@ import {
   type ValidatorStatusResponse,
   type ValidatorSummaryDto,
 } from '../../features/validators';
+import type { ValidatorClientVersionsDto, ValidatorOfficialVersionDto } from 'ysk-server-shared';
 
 const TABS = ['nodes', 'disk', 'stack', 'about'] as const;
 
@@ -112,6 +116,32 @@ function formatBytes(n: number | null | undefined): string {
   return `${(n / 1024 ** 3).toFixed(1)} GiB`;
 }
 
+function formatSpeed(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n) || n < 0) return '—';
+  if (n < 1024) return `${Math.round(n)} B/s`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB/s`;
+  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB/s`;
+  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB/s`;
+}
+
+function formatTraffic(s: ValidatorSummaryDto | undefined): string {
+  if (!s || (s.rxRateBps == null && s.txRateBps == null)) return '—';
+  return `↓ ${formatSpeed(s.rxRateBps)} · ↑ ${formatSpeed(s.txRateBps)}`;
+}
+
+function versionOptionLabel(
+  v: ValidatorOfficialVersionDto,
+  pin: string,
+  current: string | undefined,
+  t: (k: string) => string,
+): string {
+  const marks: string[] = [];
+  if (v.dockerTag === pin) marks.push(t('validators.clients.pin'));
+  if (current && v.dockerTag === current) marks.push(t('validators.clients.current'));
+  if (v.prerelease) marks.push(t('validators.clients.prerelease'));
+  return marks.length ? `${v.dockerTag} · ${marks.join(' · ')}` : v.dockerTag;
+}
+
 export function ValidatorsPage() {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'nodes');
@@ -128,6 +158,16 @@ export function ValidatorsPage() {
   const [mainnetOk, setMainnetOk] = useState(false);
   const [el, setEl] = useState('reth');
   const [cl, setCl] = useState('lighthouse');
+  const [elTag, setElTag] = useState('');
+  const [clTag, setClTag] = useState('');
+  const [nodeTag, setNodeTag] = useState('');
+  const [versionMap, setVersionMap] = useState<Record<string, ValidatorClientVersionsDto>>({});
+  const [pendingVersion, setPendingVersion] = useState<{
+    clientId: string;
+    tag: string;
+    ref: string;
+  } | null>(null);
+  const [versionMainnetOk, setVersionMainnetOk] = useState(false);
   const [mithril, setMithril] = useState(false);
   const [memory, setMemory] = useState('');
   const [cpus, setCpus] = useState('');
@@ -202,10 +242,10 @@ export function ValidatorsPage() {
     void load();
   }, [load]);
 
-  const loadSoftware = useCallback(async () => {
+  const loadSoftware = useCallback(async (refresh = false) => {
     setSoftwareErr(null);
     try {
-      const r = await validatorsApi.software();
+      const r = await validatorsApi.software(refresh);
       setSoftware(r);
       if (typeof r.dockerInstalled === 'boolean') setDockerInstalled(r.dockerInstalled);
     } catch (e) {
@@ -213,9 +253,26 @@ export function ValidatorsPage() {
     }
   }, []);
 
+  const loadClientVersions = useCallback(async (clientId: string, net?: string, refresh = false) => {
+    if (!clientId) return;
+    try {
+      const r = await validatorsApi.clientVersions(clientId, { network: net, refresh });
+      setVersionMap((prev) => ({ ...prev, [clientId]: r }));
+    } catch {
+      /* pin-only fallback */
+    }
+  }, []);
+
   useEffect(() => {
     if (tab === 'stack') void loadSoftware();
   }, [tab, loadSoftware]);
+
+  useEffect(() => {
+    if (!detail) return;
+    for (const c of Object.values(detail.clients ?? {})) {
+      void loadClientVersions(c.id, detail.network);
+    }
+  }, [detail, loadClientVersions]);
 
   useEffect(() => {
     if (!followLogs || !detail) return;
@@ -225,8 +282,56 @@ export function ValidatorsPage() {
     return () => window.clearInterval(tmr);
   }, [followLogs, detail]);
 
+  useEffect(() => {
+    if (tab !== 'nodes') return;
+    let inflight = false;
+    const tick = async () => {
+      if (inflight) return;
+      inflight = true;
+      try {
+        const r = await validatorsApi.netio();
+        setSummaries((prev) => {
+          const next = { ...prev };
+          for (const item of r.items ?? []) {
+            const cur = next[item.id];
+            if (!cur) continue;
+            next[item.id] = {
+              ...cur,
+              rxBytes: item.rxBytes,
+              txBytes: item.txBytes,
+              rxRateBps: item.rxRateBps,
+              txRateBps: item.txRateBps,
+            };
+          }
+          return next;
+        });
+      } catch {
+        /* keep last rates */
+      } finally {
+        inflight = false;
+      }
+    };
+    const tmr = window.setInterval(() => void tick(), 5_000);
+    const first = window.setTimeout(() => void tick(), 2_000);
+    return () => {
+      window.clearInterval(tmr);
+      window.clearTimeout(first);
+    };
+  }, [tab]);
+
   const chainSpec = useMemo(() => chains.find((c) => c.id === chain), [chains, chain]);
   const netSpec = chainSpec?.networks.find((n) => n.id === network);
+
+  useEffect(() => {
+    if (!wizard) return;
+    if (chain === 'eth') {
+      void loadClientVersions(el, network);
+      void loadClientVersions(cl, network);
+      return;
+    }
+    const nodeId = chainSpec?.clients.find((c) => c.role === 'node')?.id;
+    if (nodeId) void loadClientVersions(nodeId, network);
+  }, [wizard, chain, network, el, cl, chainSpec, loadClientVersions]);
   const needBytes =
     chainSpec?.minFreeBytes?.[network]?.[profile as 'minimal'] ??
     chainSpec?.minFreeBytes?.[network]?.minimal ??
@@ -234,12 +339,18 @@ export function ValidatorsPage() {
   const networkNeedBytes = chainSpec?.minFreeBytes?.[network]?.minimal ?? null;
   const diskShort =
     needBytes != null && disk?.availBytes != null && disk.availBytes < needBytes;
+  const memNeedBytes = parseValidatorMemoryBytes(memory || defaultValidatorMemoryLimit(chain));
+  const memShort =
+    memNeedBytes != null &&
+    disk?.memAvailableBytes != null &&
+    disk.memAvailableBytes < memNeedBytes + VALIDATOR_MEMORY_HEADROOM_BYTES;
   const canCreate = validatorWizardCanInstall({
     dockerInstalled,
     hasSpec: Boolean(chainSpec && netSpec),
     isMainnet: netSpec?.kind === 'mainnet',
     mainnetAck: mainnetOk,
     diskShort,
+    memShort,
     customPath,
     dataPath,
   });
@@ -249,6 +360,7 @@ export function ValidatorsPage() {
     isMainnet: netSpec?.kind === 'mainnet',
     mainnetAck: mainnetOk,
     diskShort,
+    memShort,
     customPath,
     dataPath,
   });
@@ -268,18 +380,30 @@ export function ValidatorsPage() {
           short: formatBytes(Math.max(0, needBytes - (disk?.availBytes ?? 0))),
         })
       : t('validators.wizard.diskShort');
+  const memShortTitle =
+    memShort && memNeedBytes != null
+      ? t('validators.wizard.memShortDetail', {
+          need: formatBytes(memNeedBytes + VALIDATOR_MEMORY_HEADROOM_BYTES),
+          free: formatBytes(disk?.memAvailableBytes),
+          short: formatBytes(
+            Math.max(0, memNeedBytes + VALIDATOR_MEMORY_HEADROOM_BYTES - (disk?.memAvailableBytes ?? 0)),
+          ),
+        })
+      : t('validators.wizard.memShort');
   const installDisabledTitle =
     blockReason === 'docker'
       ? t('validators.wizard.needDocker')
       : blockReason === 'disk'
         ? diskShortTitle
-        : blockReason === 'mainnet'
-          ? t('validators.wizard.mainnetAck')
-          : blockReason === 'path'
-            ? t('validators.wizard.needCustomPath')
-            : undefined;
+        : blockReason === 'memory'
+          ? memShortTitle
+          : blockReason === 'mainnet'
+            ? t('validators.wizard.mainnetAck')
+            : blockReason === 'path'
+              ? t('validators.wizard.needCustomPath')
+              : undefined;
   const canAdvanceFromDisk =
-    !diskShort || (netSpec?.kind === 'mainnet' && mainnetOk);
+    (!diskShort || (netSpec?.kind === 'mainnet' && mainnetOk)) && !memShort;
   const autoClearCandidates = [...instances]
     .map((i) => {
       const st = summaries[i.id]?.status ?? i.desiredState;
@@ -307,6 +431,9 @@ export function ValidatorsPage() {
     setMainnetOk(false);
     setEl('reth');
     setCl('lighthouse');
+    setElTag('');
+    setClTag('');
+    setNodeTag('');
     setMithril(false);
     setMemory('');
     setCpus('');
@@ -330,6 +457,9 @@ export function ValidatorsPage() {
           profile,
           el: chain === 'eth' ? el : undefined,
           cl: chain === 'eth' ? cl : undefined,
+          elTag: chain === 'eth' ? elTag || undefined : undefined,
+          clTag: chain === 'eth' ? clTag || undefined : undefined,
+          nodeTag: chain !== 'eth' ? nodeTag || undefined : undefined,
           mithril: chain === 'ada' ? mithril : undefined,
           memory: memory.trim() || undefined,
           cpus: cpus.trim() || undefined,
@@ -594,6 +724,13 @@ export function ValidatorsPage() {
                 },
               },
               {
+                key: 'traffic',
+                header: t('validators.col.traffic'),
+                render: (row) => (
+                  <span className="val-traffic">{formatTraffic(summaries[row.id])}</span>
+                ),
+              },
+              {
                 key: 'disk',
                 header: t('validators.col.disk'),
                 render: (row) => formatBytes(summaries[row.id]?.diskUsedBytes ?? row.lastStatus?.diskUsedBytes),
@@ -789,7 +926,7 @@ export function ValidatorsPage() {
                   >
                     Docker
                   </Link>
-                  <Button size="sm" onClick={() => void loadSoftware()}>
+                  <Button size="sm" onClick={() => void loadSoftware(true)}>
                     {t('common.refresh')}
                   </Button>
                 </ActionBar>
@@ -817,7 +954,40 @@ export function ValidatorsPage() {
                 {
                   key: 'ref',
                   header: t('validators.software.image'),
-                  render: (row) => <code className="inline">{row.ref}</code>,
+                  render: (row) => (
+                    <div>
+                      <code className="inline">{row.ref}</code>
+                      {row.sourceGithub ? (
+                        <p className="muted u-text-sm u-mb-0">
+                          {t('validators.software.source')}: {row.registryHost} ·{' '}
+                          <a href={`https://github.com/${row.sourceGithub}`} target="_blank" rel="noreferrer">
+                            github.com/{row.sourceGithub}
+                          </a>
+                          {row.changelogUrl ? (
+                            <>
+                              {' '}
+                              ·{' '}
+                              <a href={row.changelogUrl} target="_blank" rel="noreferrer">
+                                {t('validators.software.openRelease')}
+                              </a>
+                            </>
+                          ) : null}
+                        </p>
+                      ) : null}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'official',
+                  header: t('validators.software.official'),
+                  render: (row) =>
+                    row.officialDockerTag && row.officialDockerTag !== row.tag ? (
+                      <Badge tone="info">{row.officialDockerTag}</Badge>
+                    ) : row.officialError ? (
+                      <span className="muted u-text-sm">{row.officialError}</span>
+                    ) : (
+                      <span className="muted">{row.officialDockerTag || '—'}</span>
+                    ),
                 },
                 {
                   key: 'present',
@@ -842,6 +1012,16 @@ export function ValidatorsPage() {
                   render: (row) =>
                     row.usedBy.length ? row.usedBy.join(', ') : t('validators.software.unused'),
                 },
+                {
+                  key: 'stale',
+                  header: t('validators.software.stale'),
+                  render: (row) =>
+                    row.staleInstances?.length
+                      ? row.staleInstances
+                          .map((s) => t('validators.software.staleItem', { id: s.id, tag: s.tag }))
+                          .join(', ')
+                      : '—',
+                },
               ]}
               rows={software?.images ?? []}
               rowActions={(row) => (
@@ -862,7 +1042,7 @@ export function ValidatorsPage() {
                   }
                   onClick={() => void pullImage(row.image, row.tag)}
                 >
-                  {t('validators.software.pull')}
+                  {row.present ? t('validators.software.pulled') : t('validators.software.pull')}
                 </Button>
               )}
             />
@@ -981,8 +1161,10 @@ export function ValidatorsPage() {
                   (step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim()))
                 }
                 title={
-                  step >= 1 && !canAdvanceFromDisk
-                    ? diskShortTitle
+                  step >= 1 && memShort
+                    ? memShortTitle
+                    : step >= 1 && !canAdvanceFromDisk
+                      ? diskShortTitle
                     : step === 2 && customPath && !isSafeValidatorDataPath(dataPath.trim())
                       ? t('validators.wizard.needCustomPath')
                       : step === 1 && netSpec?.kind === 'mainnet' && !mainnetOk
@@ -1133,6 +1315,11 @@ export function ValidatorsPage() {
                     })}
               </Alert>
             ) : null}
+            {memShort ? (
+              <Alert variant="error">
+                {t('validators.wizard.memShort')} {memShortTitle}
+              </Alert>
+            ) : null}
             {chain === 'eth' ? (
               <FormLayout>
                 <Field htmlFor="val-el" label={t('validators.clients.el')}>
@@ -1159,8 +1346,69 @@ export function ValidatorsPage() {
                     }))}
                   />
                 </Field>
+                <Field htmlFor="val-el-tag" label={`${t('validators.clients.el')} · ${t('validators.clients.version')}`}>
+                  <select
+                    id="val-el-tag"
+                    value={elTag || versionMap[el]?.pin || ''}
+                    onChange={(e) => setElTag(e.target.value)}
+                  >
+                    {(versionMap[el]?.versions ?? [{ gitTag: '', dockerTag: versionMap[el]?.pin || '', prerelease: false, htmlUrl: '' }]).map((v) => (
+                      <option key={v.dockerTag} value={v.dockerTag}>
+                        {versionOptionLabel(v, versionMap[el]?.pin || v.dockerTag, undefined, t)}
+                      </option>
+                    ))}
+                  </select>
+                  {versionMap[el]?.github ? (
+                    <p className="muted u-text-sm u-mb-0">
+                      {t('validators.clients.source')}: {versionMap[el]?.registryHost} · github.com/{versionMap[el]?.github}
+                    </p>
+                  ) : null}
+                </Field>
+                <Field htmlFor="val-cl-tag" label={`${t('validators.clients.cl')} · ${t('validators.clients.version')}`}>
+                  <select
+                    id="val-cl-tag"
+                    value={clTag || versionMap[cl]?.pin || ''}
+                    onChange={(e) => setClTag(e.target.value)}
+                  >
+                    {(versionMap[cl]?.versions ?? [{ gitTag: '', dockerTag: versionMap[cl]?.pin || '', prerelease: false, htmlUrl: '' }]).map((v) => (
+                      <option key={v.dockerTag} value={v.dockerTag}>
+                        {versionOptionLabel(v, versionMap[cl]?.pin || v.dockerTag, undefined, t)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </FormLayout>
-            ) : null}
+            ) : (
+              <Field htmlFor="val-node-tag" label={t('validators.clients.version')}>
+                <select
+                  id="val-node-tag"
+                  value={nodeTag || versionMap[chainSpec?.clients.find((c) => c.role === 'node')?.id ?? '']?.pin || ''}
+                  onChange={(e) => setNodeTag(e.target.value)}
+                >
+                  {(() => {
+                    const nid = chainSpec?.clients.find((c) => c.role === 'node')?.id ?? '';
+                    const list = versionMap[nid];
+                    const rows = list?.versions ?? [
+                      { gitTag: '', dockerTag: list?.pin || '', prerelease: false, htmlUrl: '' },
+                    ];
+                    return rows.filter((v) => v.dockerTag).map((v) => (
+                      <option key={v.dockerTag} value={v.dockerTag}>
+                        {versionOptionLabel(v, list?.pin || v.dockerTag, undefined, t)}
+                      </option>
+                    ));
+                  })()}
+                </select>
+                {(() => {
+                  const nid = chainSpec?.clients.find((c) => c.role === 'node')?.id ?? '';
+                  const list = versionMap[nid];
+                  return list?.github ? (
+                    <p className="muted u-text-sm u-mb-0">
+                      {t('validators.clients.source')}: {list.registryHost} · github.com/{list.github}
+                    </p>
+                  ) : null;
+                })()}
+              </Field>
+            )}
             {chain === 'ada' ? (
               <div>
                 <label className="u-flex u-gap-2 u-items-center">
@@ -1419,6 +1667,10 @@ export function ValidatorsPage() {
                     label: t('validators.detail.peers'),
                     value: status?.peers != null ? String(status.peers) : '—',
                   },
+                  {
+                    label: t('validators.detail.traffic'),
+                    value: formatTraffic(detail ? summaries[detail.id] : undefined),
+                  },
                   { label: t('validators.detail.version'), value: status?.version ?? '—' },
                 ]}
               />
@@ -1440,7 +1692,13 @@ export function ValidatorsPage() {
                   columns={1}
                   items={stats.map((s) => ({
                     label: String(s.Name ?? s.ID ?? t('validators.col.id')),
-                    value: `CPU ${s.CPUPerc ?? '—'} · MEM ${s.MemUsage ?? '—'}`,
+                    value: [
+                      `CPU ${s.CPUPerc ?? '—'}`,
+                      `MEM ${s.MemUsage ?? '—'}`,
+                      s.NetIO ? `NET ${s.NetIO}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · '),
                   }))}
                 />
               ) : null}
@@ -1479,6 +1737,54 @@ export function ValidatorsPage() {
                   ) : null}
                 </Alert>
               ) : null}
+              <p className="muted u-text-sm">{t('validators.detail.setVersionHint')}</p>
+              {Object.values(detail.clients ?? {}).map((c) => {
+                const list = versionMap[c.id];
+                return (
+                  <Field key={c.id} htmlFor={`val-set-${c.id}`} label={`${c.id} · ${c.tag}`}>
+                    <select
+                      id={`val-set-${c.id}`}
+                      value={pendingVersion?.clientId === c.id ? pendingVersion.tag : c.tag}
+                      onChange={(e) => {
+                        const tag = e.target.value;
+                        if (!tag || tag === c.tag) {
+                          setPendingVersion(null);
+                          return;
+                        }
+                        setVersionMainnetOk(false);
+                        setPendingVersion({
+                          clientId: c.id,
+                          tag,
+                          ref: `${c.image}:${tag}`,
+                        });
+                      }}
+                    >
+                      {(list?.versions?.length
+                        ? list.versions
+                        : [{ gitTag: c.tag, dockerTag: c.tag, prerelease: false, htmlUrl: '' }]
+                      ).map((v) => (
+                        <option key={v.dockerTag} value={v.dockerTag}>
+                          {versionOptionLabel(v, list?.pin || c.tag, c.tag, t)}
+                        </option>
+                      ))}
+                    </select>
+                    {list?.github ? (
+                      <p className="muted u-text-sm u-mb-0">
+                        {t('validators.clients.source')}: {list.registryHost} · github.com/{list.github}
+                        {list.changelogUrl ? (
+                          <>
+                            {' '}
+                            ·{' '}
+                            <a href={list.changelogUrl} target="_blank" rel="noreferrer">
+                              {t('validators.detail.releaseNotes')}
+                            </a>
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
+                  </Field>
+                );
+              })}
               <Field htmlFor="val-policy" label={t('validators.policy.label')}>
                 <SegRadio
                   name="val-policy"
@@ -1616,12 +1922,15 @@ export function ValidatorsPage() {
 
             <CardSection title={t('validators.detail.compose')}>
               <Field htmlFor="val-compose" label={t('validators.compose.label')}>
-                <textarea
+                <CodeEditor
                   id="val-compose"
-                  rows={8}
                   value={composeText}
-                  onChange={(e) => setComposeText(e.target.value)}
-                  spellCheck={false}
+                  filename="compose.yml"
+                  ariaLabel={t('validators.compose.label')}
+                  onChange={setComposeText}
+                  onSave={() =>
+                    void runAction(() => validatorsApi.saveCompose(detail.id, composeText))
+                  }
                 />
               </Field>
               <ActionBar>
@@ -1826,6 +2135,55 @@ export function ValidatorsPage() {
           });
         }}
       />
+      <ConfirmDialog
+        open={Boolean(pendingVersion && detail)}
+        onClose={() => setPendingVersion(null)}
+        title={t('validators.detail.setVersionConfirmTitle', {
+          id: detail?.id ?? '',
+          tag: pendingVersion?.tag ?? '',
+        })}
+        description={t('validators.detail.setVersionConfirmDesc', { ref: pendingVersion?.ref ?? '' })}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.actions.setVersion')}
+        dataConfirm={detail?.id}
+        consequences={[t('validators.detail.setVersionC1'), t('validators.detail.setVersionC2')]}
+        busy={busy}
+        onConfirm={() => {
+          if (!detail || !pendingVersion) return;
+          const isMainnet =
+            chains.find((c) => c.id === detail.chain)?.networks.find((n) => n.id === detail.network)
+              ?.kind === 'mainnet';
+          if (isMainnet && !versionMainnetOk) return;
+          const req = pendingVersion;
+          const body = {
+            clientId: req.clientId,
+            tag: req.tag,
+            confirm: detail.id,
+            acceptMainnet: isMainnet,
+            execute: true,
+          };
+          setPendingVersion(null);
+          void runAction(
+            () => validatorsApi.setVersion(detail.id, body),
+            t('validators.actions.setVersion'),
+            { id: detail.id, action: 'set-version', body },
+          ).then(() => {
+            void openDetail(detail);
+          });
+        }}
+      >
+        {chains.find((c) => c.id === detail?.chain)?.networks.find((n) => n.id === detail?.network)
+          ?.kind === 'mainnet' ? (
+          <label className="u-flex u-gap-2 u-items-center">
+            <input
+              type="checkbox"
+              checked={versionMainnetOk}
+              onChange={(e) => setVersionMainnetOk(e.target.checked)}
+            />
+            <span>{t('validators.detail.setVersionMainnet')}</span>
+          </label>
+        ) : null}
+      </ConfirmDialog>
     </FeaturePageLayout>
   );
 }

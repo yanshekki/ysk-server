@@ -23,6 +23,7 @@ const RESERVED_ROOT_NAMES = new Set([
   'instances.json',
   'upgrade-offers.json',
   'remote-tags.json',
+  'remote-releases.json',
   'settings.json',
 ]);
 
@@ -83,6 +84,15 @@ export function parseDuBytes(stdout: string): number {
   const first = stdout.trim().split(/\s+/)[0];
   const n = Number(first);
   return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+/** Parse `MemAvailable` kB from /proc/meminfo. */
+export function parseMeminfoAvailableBytes(stdout: string): number | null {
+  const m = /MemAvailable:\s+(\d+)/i.exec(stdout);
+  if (!m) return null;
+  const kb = Number(m[1]);
+  if (!Number.isFinite(kb) || kb <= 0) return null;
+  return kb * 1024;
 }
 
 export async function collectValidatorDisk(input: {
@@ -157,6 +167,15 @@ export async function collectValidatorDisk(input: {
     }
   }
 
+  let memAvailableBytes: number | null = null;
+  try {
+    const mem = await input.host.runCommand(['cat', '/proc/meminfo'], { timeoutMs: 3_000 });
+    if (mem.exitCode === 0) memAvailableBytes = parseMeminfoAvailableBytes(mem.stdout);
+    else notes.push('meminfo failed; RAM totals unavailable');
+  } catch {
+    notes.push('meminfo unavailable; RAM totals missing');
+  }
+
   const usePct = mount ? mount.usePct : null;
   return {
     rootPath,
@@ -168,6 +187,7 @@ export async function collectValidatorDisk(input: {
     fsTotalBytes: mount?.totalBytes ?? null,
     fsUsePct: usePct,
     availBytes: mount?.availBytes ?? null,
+    memAvailableBytes,
     totalBytes: mount?.totalBytes ?? null,
     usePct,
     tone: validatorDiskTone(usePct),

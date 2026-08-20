@@ -22,7 +22,7 @@ export function ensureAvaxChainConfig(dataPath: string, stateSync = true): void 
 
 export function buildAvaxComposeYaml(spec: ValidatorInstanceDto): string {
   const node = spec.clients.node ?? v1ValidatorClients('avax')[0];
-  const img = `${node?.image ?? 'avaplatform/avalanchego'}:${node?.tag ?? 'v1.13.5'}`;
+  const img = `${node?.image ?? 'avaplatform/avalanchego'}:${node?.tag ?? 'v1.14.1'}`;
   const rpc = spec.ports.rpc ?? 9650;
   const p2p = spec.ports.p2p ?? 9651;
   const netId = spec.network === 'mainnet' ? 'mainnet' : 'fuji';
@@ -37,6 +37,7 @@ services:
       - --http-host=0.0.0.0
       - --http-port=9650
       - --staking-port=9651
+      - --public-ip-resolution-service=opendns
       - --db-dir=/data
       - --chain-config-dir=/data/configs/chains
     ports:
@@ -58,11 +59,24 @@ export function planAvaxInstall(spec: ValidatorInstanceDto): ValidatorHostPlan {
   };
 }
 
-export function parseAvaxHealth(body: unknown): { healthy: boolean } {
-  if (body && typeof body === 'object' && 'healthy' in body) {
-    return { healthy: Boolean((body as { healthy: unknown }).healthy) };
-  }
-  return { healthy: false };
+function asRecord(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+}
+
+export function parseAvaxHealth(body: unknown): { healthy: boolean; lastError: string | null } {
+  const top = asRecord(body);
+  const result = asRecord(top?.result) ?? top;
+  if (!result) return { healthy: false, lastError: 'bad health' };
+  const healthy = result.healthy === true;
+  if (healthy) return { healthy: true, lastError: null };
+  const checks = asRecord(result.checks) ?? asRecord(result.reason) ?? result;
+  const network = asRecord(checks.network);
+  const boot = asRecord(checks.bootstrapped);
+  const err =
+    (typeof network?.error === 'string' && network.error) ||
+    (typeof boot?.error === 'string' && boot.error) ||
+    'unhealthy';
+  return { healthy: false, lastError: err.slice(0, 280) };
 }
 
 export async function probeAvaxStatus(
@@ -77,12 +91,12 @@ export async function probeAvaxStatus(
   const url = `http://127.0.0.1:${spec.ports.rpc ?? 9650}/ext/health`;
   try {
     const res = await fetchFn(url);
-    const healthy = parseAvaxHealth(await readRpcJson(res)).healthy;
+    const health = parseAvaxHealth(await readRpcJson(res));
     return {
-      syncProgress: healthy ? 1 : null,
+      syncProgress: health.healthy ? 1 : null,
       peers: null,
       version: 'avalanchego',
-      lastError: healthy ? null : 'unhealthy',
+      lastError: health.lastError,
     };
   } catch (e) {
     return {

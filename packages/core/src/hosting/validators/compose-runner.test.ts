@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  composeProjectName,
   composePsInfoFromStates,
   composePsInfoFromStdout,
   composePsStatesFromStdout,
   restartCountFromStatus,
+  validatorIdFromContainerName,
 } from './compose-runner.js';
 
 describe('composePsStatesFromStdout', () => {
@@ -73,5 +75,16 @@ describe('composePsInfoFromStates', () => {
         ]),
       ),
     ).toMatchObject({ exited: true, running: false, exitCode: 137 });
+  });
+});
+
+describe('validatorIdFromContainerName', () => {
+  it('matches compose project prefix and does not collapse 1 vs 10', () => {
+    const ids = ['eth-hoodi-1', 'eth-hoodi-10', 'avax-fuji-1'];
+    expect(validatorIdFromContainerName('yskval-eth-hoodi-1-el-1', ids)).toBe('eth-hoodi-1');
+    expect(validatorIdFromContainerName('/yskval-eth-hoodi-10-cl-1', ids)).toBe('eth-hoodi-10');
+    expect(validatorIdFromContainerName('yskval-avax-fuji-1-node-1', ids)).toBe('avax-fuji-1');
+    expect(validatorIdFromContainerName('other', ids)).toBeNull();
+    expect(composeProjectName('avax-fuji-1')).toBe('yskval-avax-fuji-1');
   });
 });

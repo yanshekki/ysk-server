@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import {
   btcCookiePaths,
+  aptosFullnodeYaml,
   buildAptosComposeYaml,
   buildBtcComposeYaml,
   buildCosmosComposeYaml,
@@ -107,7 +108,12 @@ describe('phase 2 compose + status parsers', () => {
     expect(y).toContain('--p2p.seeds=');
     expect(y).toContain('v28.0.0-rc0');
     expect(y).toContain('statesync.env');
-    expect(y).toContain("s/= .*/= true/");
+    expect(y).toContain('[statesync]');
+    expect(y).toContain('s/^enable = .*/enable = true/');
+    expect(y).not.toContain("'/enable =/");
+    expect(y).toContain('refusing InitChain');
+    expect(y).toContain('ifconfig.me');
+    expect(y).toContain('external_address');
     expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
     expect(cosmosChainId('testnet')).toBe('provider');
@@ -155,6 +161,7 @@ describe('phase 2 compose + status parsers', () => {
   it('Sui / Aptos / Polkadot / Solana heavy', () => {
     const sui = buildSuiComposeYaml(spec({ id: 'sui-testnet-1', chain: 'sui', network: 'testnet', ports: { rpc: 9002 } }));
     expect(sui).toContain('sui-node');
+    expect(sui).toContain('8084/udp');
     expect(sui).toContain('testnet-v1.78.0');
     expect(sui).not.toContain('mainnet-v1.44.2');
     expect(
@@ -164,6 +171,7 @@ describe('phase 2 compose + status parsers', () => {
       spec({ id: 'aptos-testnet-1', chain: 'aptos', network: 'testnet', ports: { rpc: 18080, p2p: 6180 } }),
     );
     expect(aptos).toContain('aptos-node');
+    expect(aptosFullnodeYaml()).toContain('network_id: "public"');
     expect(aptos).toContain('127.0.0.1:18080:8080');
     expect(aptos).not.toContain('127.0.0.1:8080:8080');
     expect(aptos).toContain('nofile:');
@@ -173,6 +181,8 @@ describe('phase 2 compose + status parsers', () => {
     const sol = buildSolComposeYaml(spec({ id: 'sol-mainnet-1', chain: 'sol', network: 'mainnet', ports: { rpc: 8899 } }));
     expect(sol).toContain('HEAVY');
     expect(sol).toContain('--no-voting');
+    expect(sol).toContain('8000-8020/udp');
+    expect(sol).not.toContain('--expected-genesis-hash');
     expect(parseSuiHealth({ result: 1 }).syncProgress).toBe(1);
     expect(parseAptosLedger({ chain_id: 1, ledger_version: '9' }).syncProgress).toBe(1);
     expect(parseDotSync({ result: { currentBlock: 5, highestBlock: 10, isSyncing: true } }).syncProgress).toBe(0.5);
@@ -186,6 +196,8 @@ describe('phase 2 compose + status parsers', () => {
     expect(r.ok).toBe(true);
     expect(readFileSync(join(dir, 'fullnode.yaml'), 'utf8')).toContain('genesis-file-location');
     expect(suiFullnodeYaml('testnet')).toContain('testnet');
+    expect(suiFullnodeYaml('testnet')).toContain('ewr-tnt-ssfn');
+    expect(suiFullnodeYaml('testnet')).toContain('seed-peers');
     rmSync(dir, { recursive: true, force: true });
   });
 });

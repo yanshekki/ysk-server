@@ -1,6 +1,7 @@
 /**
  * About-tab staking playbooks — official links only, no wallet connect.
  */
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +14,7 @@ import {
 import {
   ActionBar,
   Alert,
+  Button,
   Card,
   CardSection,
   DataTable,
@@ -20,6 +22,86 @@ import {
   StructuredFacts,
   buttonClassName,
 } from '../../shared/components/ui';
+import { credentialCopyText, formatHexForDisplay } from './credentials-display';
+
+type CredItem = { label: string; value?: string | null; pending: string };
+
+async function writeClipboard(text: string): Promise<boolean> {
+  if (!text.trim()) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function CredentialList({ items }: { items: CredItem[] }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState<string | null>(null);
+  const ready = items.filter((row) => row.value?.trim());
+
+  function flash(id: string) {
+    setCopied(id);
+    window.setTimeout(() => setCopied((cur) => (cur === id ? null : cur)), 1500);
+  }
+
+  async function copyOne(row: CredItem) {
+    const raw = row.value?.trim();
+    if (!raw) return;
+    if (await writeClipboard(raw)) flash(row.label);
+  }
+
+  async function copyAll() {
+    const body = credentialCopyText(ready);
+    if (await writeClipboard(body)) flash('all');
+  }
+
+  if (!items.length) return null;
+
+  return (
+    <div className="cred-list" data-testid="staking-credentials">
+      {items.map((row) => {
+        const raw = row.value?.trim() ?? '';
+        const grouped = raw ? formatHexForDisplay(raw) : null;
+        return (
+          <div key={row.label} className="cred-row">
+            <div className="cred-row__head">
+              <span className="cred-row__label">{row.label}</span>
+              {raw ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void copyOne(row)}
+                  aria-label={t('validators.playbook.copyNamed', { label: row.label })}
+                >
+                  {copied === row.label ? t('common.copied') : t('common.copy')}
+                </Button>
+              ) : null}
+            </div>
+            {raw ? (
+              <pre
+                className={`cred-row__body${grouped ? ' cred-row__body--hex' : ' cred-row__body--plain'}`}
+              >
+                {grouped ?? raw}
+              </pre>
+            ) : (
+              <p className="cred-row__body cred-row__body--pending">{row.pending}</p>
+            )}
+          </div>
+        );
+      })}
+      {ready.length > 1 ? (
+        <div className="cred-list__foot">
+          <Button type="button" variant="secondary" size="sm" onClick={() => void copyAll()}>
+            {copied === 'all' ? t('common.copied') : t('validators.playbook.copyAll')}
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function playbookList(
   t: (key: string, opts?: { returnObjects?: boolean }) => unknown,
@@ -124,28 +206,23 @@ export function ValidatorPlaybookCard({
     );
   }
 
-  const avaxFacts =
+  const avaxCredentials =
     id === 'avax'
       ? [
           {
             label: t('validators.playbook.nodeIdReady'),
-            value: nodeId ? <code>{nodeId}</code> : t('validators.playbook.nodeIdPending'),
+            value: nodeId,
+            pending: t('validators.playbook.nodeIdPending'),
           },
           {
             label: t('validators.playbook.blsReady'),
-            value: blsPublicKey ? (
-              <code>{blsPublicKey}</code>
-            ) : (
-              t('validators.playbook.blsPending')
-            ),
+            value: blsPublicKey,
+            pending: t('validators.playbook.blsPending'),
           },
           {
             label: t('validators.playbook.blsProof'),
-            value: blsProofOfPossession ? (
-              <code>{blsProofOfPossession}</code>
-            ) : (
-              t('validators.playbook.blsPending')
-            ),
+            value: blsProofOfPossession,
+            pending: t('validators.playbook.blsPending'),
           },
         ]
       : [];
@@ -190,9 +267,9 @@ export function ValidatorPlaybookCard({
               label: t('validators.playbook.colWallet'),
               value: t(`validators.playbook.${id}.wallets`),
             },
-            ...avaxFacts,
           ]}
         />
+        <CredentialList items={avaxCredentials} />
         {officialLinks}
       </CardSection>
     );
@@ -219,9 +296,9 @@ export function ValidatorPlaybookCard({
                 label: t('validators.playbook.colPanel'),
                 value: t(`validators.playbook.${id}.panel`),
               },
-              ...avaxFacts,
             ]}
           />
+          <CredentialList items={avaxCredentials} />
           <FormLayout columns={2}>
             <div>
               <h3 className="u-text-sm">{t('validators.playbook.yskDoes')}</h3>

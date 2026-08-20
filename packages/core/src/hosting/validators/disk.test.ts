@@ -8,6 +8,7 @@ import {
   isSafeValidatorLeftoverPath,
   parseDfBytes,
   parseDuBytes,
+  parseMeminfoAvailableBytes,
   pickMountForPath,
 } from './disk.js';
 import { buildValidatorInstance, upsertValidatorInstance } from './store.js';
@@ -38,6 +39,13 @@ describe('validator disk helpers', () => {
   it('parses du -sb', () => {
     expect(parseDuBytes('12345\t/data')).toBe(12345);
     expect(parseDuBytes('bad')).toBe(0);
+  });
+
+  it('parses MemAvailable from meminfo', () => {
+    expect(parseMeminfoAvailableBytes('MemTotal: 16000000 kB\nMemAvailable: 8192000 kB\n')).toBe(
+      8192000 * 1024,
+    );
+    expect(parseMeminfoAvailableBytes('MemTotal: 1 kB\n')).toBeNull();
   });
 });
 

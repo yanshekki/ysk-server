@@ -5,6 +5,8 @@
   "dockFail": "ناکام · {{title}}",
   "dockDone": "ہو گیا · {{title}}",
   "minimize": "کم سے کم کرنا",
+  "maximize": "بڑا کریں",
+  "restore": "بحال",
   "liveLog": "لائیو لاگ",
   "uninstall": "ان انسٹال کریں…",
   "uninstallTitle": "اَن انسٹال کریں {{name}}",

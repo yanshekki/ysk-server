@@ -4,10 +4,22 @@
 import type { ValidatorInstanceDto } from 'ysk-server-shared';
 import { composeBind } from '../compose-runner.js';
 
+/** Community checkpoint-sync endpoints (eth-clients list). First URL is used. */
+export const ETH_CHECKPOINT_FALLBACKS: Record<string, readonly string[]> = {
+  hoodi: [
+    'https://hoodi.beaconstate.ethstaker.cc/',
+    'https://beaconstate-hoodi.chainsafe.io',
+    'https://hoodi-checkpoint-sync.attestant.io',
+    'https://hoodi.checkpoint.sigp.io',
+  ],
+  sepolia: ['https://checkpoint-sync.sepolia.ethpandaops.io'],
+  mainnet: ['https://beaconstate.info'],
+};
+
 export const ETH_CHECKPOINT: Record<string, string> = {
-  hoodi: 'https://hoodi.checkpoint.sigp.io',
-  sepolia: 'https://checkpoint-sync.sepolia.ethpandaops.io',
-  mainnet: 'https://beaconstate.info',
+  hoodi: ETH_CHECKPOINT_FALLBACKS.hoodi![0]!,
+  sepolia: ETH_CHECKPOINT_FALLBACKS.sepolia![0]!,
+  mainnet: ETH_CHECKPOINT_FALLBACKS.mainnet![0]!,
 };
 
 export const ETH_EL_IDS = ['reth', 'geth', 'nethermind'] as const;
@@ -33,7 +45,12 @@ function elImage(spec: ValidatorInstanceDto): { id: string; image: string } {
 }
 function clImage(spec: ValidatorInstanceDto): { id: string; image: string } {
   const c = spec.clients.cl;
-  return { id: c?.id ?? 'lighthouse', image: `${c?.image ?? 'sigp/lighthouse'}:${c?.tag ?? 'v7.1.0'}` };
+  return { id: c?.id ?? 'lighthouse', image: `${c?.image ?? 'sigp/lighthouse'}:${c?.tag ?? 'v8.2.2'}` };
+}
+
+function p2pTcpUdp(hostPort: number, containerPort: number): string {
+  return `      - "0.0.0.0:${hostPort}:${containerPort}/tcp"
+      - "0.0.0.0:${hostPort}:${containerPort}/udp"`;
 }
 
 export function buildElService(spec: ValidatorInstanceDto, jwt: string): string {
@@ -65,10 +82,11 @@ export function buildElService(spec: ValidatorInstanceDto, jwt: string): string 
       - ${jwt}
       - --port
       - "30303"
+      - --nat=stun
 ${netFlag.join('\n')}
     ports:
       - "127.0.0.1:${rpc}:8545"
-      - "0.0.0.0:${p2p}:30303"
+${p2pTcpUdp(p2p, 30303)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/geth')}
       - ${jwtVol}`;
@@ -94,9 +112,13 @@ ${netFlag.join('\n')}
       - "8551"
       - --JsonRpc.JwtSecretFile
       - ${jwt}
+      - --Network.DiscoveryPort
+      - "30303"
+      - --Network.P2PPort
+      - "30303"
     ports:
       - "127.0.0.1:${rpc}:8545"
-      - "0.0.0.0:${p2p}:30303"
+${p2pTcpUdp(p2p, 30303)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/nethermind')}
       - ${jwtVol}`;
@@ -125,9 +147,11 @@ ${netFlag.join('\n')}
       - ${jwt}
       - --port
       - "30303"
+      - --nat
+      - publicip
     ports:
       - "127.0.0.1:${rpc}:8545"
-      - "0.0.0.0:${p2p}:30303"
+${p2pTcpUdp(p2p, 30303)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/reth')}
       - ${jwtVol}`;
@@ -170,9 +194,11 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "3500"
       - --p2p-tcp-port
       - "9000"
+      - --p2p-udp-port
+      - "9000"
     ports:
       - "127.0.0.1:${beacon}:3500"
-      - "0.0.0.0:${p2pCl}:9000"
+${p2pTcpUdp(p2pCl, 9000)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/prysm')}
       - ${jwtVol}`;
@@ -193,9 +219,10 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - --rest-api-interface=0.0.0.0
       - --rest-api-port=5051
       - --p2p-port=9000
+      - --p2p-advertised-port=9000
     ports:
       - "127.0.0.1:${beacon}:5051"
-      - "0.0.0.0:${p2pCl}:9000"
+${p2pTcpUdp(p2pCl, 9000)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/teku')}
       - ${jwtVol}`;
@@ -216,10 +243,11 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - --rest-address=0.0.0.0
       - --rest-port=5052
       - --tcp-port=9000
+      - --udp-port=9000
       - --non-interactive
     ports:
       - "127.0.0.1:${beacon}:5052"
-      - "0.0.0.0:${p2pCl}:9000"
+${p2pTcpUdp(p2pCl, 9000)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/nimbus')}
       - ${jwtVol}`;
@@ -249,10 +277,16 @@ export function buildClService(spec: ValidatorInstanceDto, jwt: string): string 
       - "5052"
       - --port
       - "9000"
+      - --discovery-port
+      - "9000"
+      - --enr-udp-port
+      - "9000"
+      - --enr-tcp-port
+      - "9000"
       - --disable-deposit-contract-sync
     ports:
       - "127.0.0.1:${beacon}:5052"
-      - "0.0.0.0:${p2pCl}:9000"
+${p2pTcpUdp(p2pCl, 9000)}
     volumes:
       - ${composeBind(`${spec.dataPath}/${id}`, '/data/lighthouse')}
       - ${jwtVol}`;

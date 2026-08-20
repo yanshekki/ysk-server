@@ -37,6 +37,12 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.19
+
+- **Validators** — Hoodi uses lighthouse v8.2.2 + EthStaker checkpoint. Cosmos state-sync is section-scoped. NEAR 12g with RAM preflight. Avalanche opendns public-ip. P2P UDP/seeds. Live ↓/↑ traffic. Official GitHub version picker.
+- **Panel** — ops-stream maximize, compose YAML editor, staking credential cards, full Docker inspect/log modals.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.19** together.
+
 ## What's new in 1.1.18
 
 - **Validators** — Cosmos Hub testnet uses Gaia v28 + state-sync. Hoodi checkpoint is Sigma Prime. Aptos nofile is 1048576. NEAR defaults to 8g with a matching swap cap.
@@ -47,65 +53,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - **Validators** — Cosmos uses official testnet genesis; Avalanche state-sync is C-Chain JSON; Hoodi checkpoint is beaconstate.info; Aptos raises nofile; NEAR defaults to 4g and ExitCode 137 is Out of memory.
 - **Panel** — JSON displays use a collapsible JsonViewer. Log tails (validators, Docker, Logs, projects, PM2, Agents stderr, install stream) share one LogViewer.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.17** together.
-
-## What's new in 1.1.16
-
-- **Validators** — running + RPC miss is not Error; Created/missing are not Stopped. Avalanche uses the image binary path. Cosmos sets min gas prices. reth HTTP API no longer includes `engine`. Heavy chains default to 8g RAM. Sui testnet uses a real testnet tag. Aptos RPC avoids host 8080.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.16** together.
-
-## What's new in 1.1.15
-
-- **Panel apply** — ConfirmDialog dest is the card’s latest version, not a stale copy of current.
-- **Validators** — install confirm no longer freezes the page; compose `ps` JSON is parsed so a successful `up` is not reported as failed.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.15** together.
-
-## What's new in 1.1.14
-
-- **FTP / Galera** — invalid usernames and garbage IPs get inline errors; Save / Generate plan stay disabled. Home path is not rewritten from an illegal FTP name.
-- **Updates** — each apt package Apply has `data-confirm` and names the package in the confirm dialog.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.14** together.
-
-## What's new in 1.1.13
-
-- **Validators / Docker** — compose argv matches image ENTRYPOINT; Cardano uses GHCR 11.0.1; Docker run probes busy ports and does not toast a leftover as started.
-- **Nginx 443** — managed vhost keeps `listen 443` when a cert exists; later sync does not wipe Let's Encrypt.
-- **Panel honesty** — search-empty ≠ first install; KPI chips are unfiltered; confirms name the target; identifier rules are shared front and back.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.13** together.
-
-## What's new in 1.1.12
-
-- **Embedded panel** — staking playbooks are in the published web UI (1.1.11 npm packed a stale build after Vite failed).
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.12** together.
-
-## What's new in 1.1.11
-
-- **Validator staking playbooks** — About tab explains how each chain registers stake (official links only). The panel never holds keys.
-- **Avalanche** — instance page can show NodeID and BLS credentials after RPC answers.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.11** together.
-
-## What's new in 1.1.10
-
-- **DNS start card** — a failed PowerDNS start shows the bind/journal reason on the result card, not only “failed”.
-- **Validators** — after the mainnet ack, Install is enabled and opens a confirm dialog. About tab compares the four profiles.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.10** together.
-
-## What's new in 1.1.9
-
-- **Cluster overview** — `/cluster` stays on `/cluster` (planned/applied table + four engine links). No 302 to Redis.
-- **Honest overlay** — `install.sh` copies dest `package.json` so official CLI upgrade matches the tarball version.
-- **E2E-1118** — `data-confirm` on destructive triggers, sshd-off panel-stop copy, UFW not start/stopped from the matrix, agents “no online” vs timeout, leftover/orphan tables.
-
-## What's new in 1.1.8
-
-- **Honest overlay** — dest `package.json` matches the CLI version. Leftover notes no longer claim vsftpd/Dovecot cannot start when they are active.
-- **First paint** — backups, validators, and Docker do not flash empty/`0` before data arrives. Docker delete updates the list immediately.
-- **E2E-1117** — confirm titles, Nginx cache purge confirm, stuck agent runtimes, host-zone timestamps with `UTC±n`, validator wizard disk copy, `/cluster` engine switcher.
-
-## What's new in 1.1.7
-
-- **Validators** — honest disk (`du` of the validators root), starting vs error, Software tab for pinned images, Avalanche compose flags only.
-- **Clocks** follow the host timezone. **FTP** defaults to localhost until FTPS or a typed `PLAINTEXT` public start.
-- **Panel self-update** can stream overlay steps; leftover / channel-check notes are not apply errors. E2E-1116: migrate inventory, VNC hosts write, DNS start result, public-files live/draft.
 
 [Full changelog](./CHANGELOG.md)
 

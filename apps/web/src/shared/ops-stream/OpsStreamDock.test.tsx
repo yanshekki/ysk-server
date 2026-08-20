@@ -36,4 +36,28 @@ describe('OpsStreamDock', () => {
     expect(toastStore.getToasts().some((x) => /Finished|完成/.test(x.message))).toBe(true);
     expect(document.body.textContent).toMatch(/copy dest|即時日誌|Live log/);
   });
+
+  it('maximizes and restores the live log panel', async () => {
+    render(
+      <OpsStreamProvider>
+        <OpsStreamDock />
+        <Starter />
+      </OpsStreamProvider>,
+    );
+    await act(async () => {
+      screen.getByText('start').click();
+    });
+    const panel = screen.getByTestId('ops-stream-dock-panel');
+    expect(panel.getAttribute('data-maximized')).toBe('false');
+    await act(async () => {
+      screen.getByTestId('ops-stream-maximize').click();
+    });
+    expect(panel.getAttribute('data-maximized')).toBe('true');
+    expect(panel.className).toMatch(/is-max/);
+    await act(async () => {
+      screen.getByTestId('ops-stream-maximize').click();
+    });
+    expect(panel.getAttribute('data-maximized')).toBe('false');
+    expect(panel.className).not.toMatch(/is-max/);
+  });
 });

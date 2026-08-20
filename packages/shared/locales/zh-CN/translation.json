@@ -12180,6 +12180,8 @@
     "dockFail": "失败 · {{title}}",
     "dockDone": "完成 · {{title}}",
     "minimize": "最小化",
+    "maximize": "放大",
+    "restore": "还原",
     "liveLog": "实时日志",
     "uninstall": "卸载…",
     "uninstallTitle": "卸载「{{name}}」",
@@ -13614,14 +13616,22 @@
       "network": "网络",
       "profile": "配置档",
       "status": "状态",
-      "disk": "磁盘"
+      "disk": "磁盘",
+      "traffic": "流量"
     },
     "cli": {
       "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
     },
     "clients": {
       "el": "执行层客户端",
-      "cl": "共识层客户端"
+      "cl": "共识层客户端",
+      "version": "Version",
+      "pin": "Panel pin (tested with this release)",
+      "officialNewer": "Official newer",
+      "olderThanPin": "Older than the panel pin",
+      "prerelease": "Prerelease",
+      "current": "Running now",
+      "source": "Image source"
     },
     "mithril": {
       "label": "先用 Mithril 快照还原（测试网建议）",
@@ -13632,6 +13642,7 @@
       "notFound": "找不到验证者节点实例",
       "invalidId": "实例标识无效",
       "diskLow": "此链、网络与配置档所需的可用磁盘空间不足",
+      "memLow": "可用内存不足以满足此链的内存上限",
       "diskUnknownMainnet": "无法测量可用磁盘，拒绝建立主网节点",
       "needDocker": "需要 Docker Compose，但找不到",
       "composeFailed": "docker compose 失败",
@@ -13659,7 +13670,10 @@
       "restarting": "Container is restarting. Check logs on this page.",
       "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
       "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-      "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart."
+      "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
+      "badTag": "That client version is not an official tag for this image",
+      "needVersionConfirm": "Changing version requires confirm=instance id",
+      "needMainnetVersionAck": "Mainnet version changes require acceptMainnet"
     },
     "notes": {
       "beta": "此功能属 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
@@ -13726,6 +13740,8 @@
       "installC3": "主网会占用很多磁盘。若当验证者，离线或设置错误，质押的币可能被罚走。请输入节点识别码以确认。",
       "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
       "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
+      "memShort": "可用内存不足以满足此链的内存上限",
+      "memShortDetail": "需要 {{need}} · 可用 {{free}} · 还差 {{short}}",
       "needCustomPath": "Enter an absolute data path",
       "previewId": "Node id",
       "previewCompose": "Compose project",
@@ -13769,7 +13785,8 @@
       "clearC1": "会删除磁盘上的链数据。",
       "clearC2": "实例仍留在面板，状态为已停止、无数据。",
       "switchTitle": "转网络",
-      "switchC1": "会先停机并清空链数据，再写入新网络。"
+      "switchC1": "会先停机并清空链数据，再写入新网络。",
+      "setVersion": "Change version"
     },
     "policy": {
       "label": "升级策略",
@@ -13834,7 +13851,16 @@
       "danger": "清空数据",
       "dangerHint": "输入实例标识或 CLEAR。此操作会删除磁盘上的链数据。",
       "compose": "Compose",
-      "logs": "日志"
+      "logs": "日志",
+      "traffic": "流量",
+      "setVersion": "Change version",
+      "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
+      "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
+      "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
+      "setVersionC1": "The running container is replaced with the selected tag.",
+      "setVersionC2": "Type the instance id to confirm.",
+      "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
+      "releaseNotes": "Release notes"
     },
     "state": {
       "unknown": "未知",
@@ -13862,7 +13888,16 @@
       "pulling": "Pull {{ref}}",
       "empty": "No pinned client images",
       "emptyDesc": "The catalog is empty. This should not happen.",
-      "daemonDown": "Docker Engine is not running"
+      "daemonDown": "Docker Engine is not running",
+      "pulled": "On this host",
+      "source": "Source",
+      "official": "Official latest",
+      "officialNewer": "Official newer",
+      "stale": "Behind pin",
+      "staleItem": "{{id}} ({{tag}})",
+      "pin": "Panel pin",
+      "openRelease": "Release notes",
+      "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
     },
     "playbook": {
       "overviewTitle": "How staking works on each chain",
@@ -13881,8 +13916,10 @@
       "nodeIdReady": "NodeID (from this node)",
       "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
       "blsReady": "BLS public key",
-      "blsProof": "BLS proof of possession",
-      "blsPending": "BLS credentials appear after the node answers RPC.",
+      "blsProof": "BLS 持有证明",
+      "blsPending": "节点回应 RPC 后，才会显示 BLS 凭证。",
+      "copyAll": "全部复制",
+      "copyNamed": "复制「{{label}}」",
       "notPosTitle": "Not proof-of-stake",
       "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
       "eth": {

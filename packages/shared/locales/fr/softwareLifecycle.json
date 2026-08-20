@@ -5,6 +5,8 @@
   "dockFail": "Échec · {{title}}",
   "dockDone": "Terminé · {{title}}",
   "minimize": "Minimiser",
+  "maximize": "Agrandir",
+  "restore": "Restaurer",
   "liveLog": "Journal en direct",
   "uninstall": "Désinstaller…",
   "uninstallTitle": "Désinstaller {{name}}",

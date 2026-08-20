@@ -5,6 +5,8 @@
   "dockFail": "Failed · {{title}}",
   "dockDone": "Done · {{title}}",
   "minimize": "Minimize",
+  "maximize": "Maximize",
+  "restore": "Restore",
   "liveLog": "Live log",
   "uninstall": "Uninstall…",
   "uninstallTitle": "Uninstall {{name}}",

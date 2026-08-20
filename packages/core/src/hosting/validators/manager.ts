@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import {
   defaultValidatorMemoryLimit,
+  parseValidatorMemoryBytes,
+  VALIDATOR_MEMORY_HEADROOM_BYTES,
   isSafeValidatorDataPath,
   isSafeValidatorLimitCpus,
   isSafeValidatorLimitMemory,
@@ -34,6 +36,7 @@ import {
   composeProjectName,
   composePsInfo,
   composePsRunning,
+  composeStayWaits,
   composeUp,
   prepareValidatorDataDir,
   probeDockerCompose,
@@ -74,7 +77,8 @@ import {
 import { allocateValidatorPorts, parseSsListenPortSet, usedValidatorPorts } from './ports.js';
 import { syncServiceExposure } from '../service-exposure/sync.js';
 import type { ValidatorNodeStatus } from './adapters/base.js';
-import { applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
+import { applyValidatorClientTag, applyValidatorUpgrade, detectUpgradeForInstance } from './upgrade.js';
+import { isAllowedClientTag } from './software-catalog.js';
 import {
   deriveValidatorRuntimeStatus,
   isValidatorNofileHint,
@@ -86,6 +90,42 @@ import type { OpsLogFn } from '../ops-log.js';
 /** State-sync for pruned/minimal/validator-ready. Full rpc keeps the full state. */
 export function specProfileStateSync(profile: string): boolean {
   return profile !== 'rpc';
+}
+
+function applyRequestedClientTags(
+  clients: ValidatorInstanceDto['clients'],
+  input: {
+    dataDir: string;
+    network: string;
+    elTag?: string;
+    clTag?: string;
+    nodeTag?: string;
+  },
+): string | null {
+  const jobs: Array<{ key: string; tag?: string }> = [
+    { key: 'el', tag: input.elTag },
+    { key: 'cl', tag: input.clTag },
+    { key: 'node', tag: input.nodeTag },
+  ];
+  for (const job of jobs) {
+    const tag = job.tag?.trim();
+    if (!tag) continue;
+    const cur = clients[job.key];
+    if (!cur) return job.key;
+    if (
+      !isAllowedClientTag({
+        clientId: cur.id,
+        tag,
+        dataDir: input.dataDir,
+        extraTags: [cur.tag],
+        network: input.network,
+      })
+    ) {
+      return `${cur.id}:${tag}`;
+    }
+    clients[job.key] = { ...cur, tag };
+  }
+  return null;
 }
 
 export type ValidatorMutateOpts = {
@@ -104,6 +144,9 @@ export async function createValidatorInstance(
     slug?: string;
     el?: string;
     cl?: string;
+    elTag?: string;
+    clTag?: string;
+    nodeTag?: string;
     mithril?: boolean;
     dataPath?: string;
     memory?: string;
@@ -156,6 +199,22 @@ export async function createValidatorInstance(
   if (input.cpus && !isSafeValidatorLimitCpus(input.cpus)) {
     return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
   }
+  const memory = input.memory || defaultValidatorMemoryLimit(chain);
+  const memNeed = parseValidatorMemoryBytes(memory);
+  if (
+    memNeed &&
+    disk.memAvailableBytes != null &&
+    disk.memAvailableBytes < memNeed + VALIDATOR_MEMORY_HEADROOM_BYTES
+  ) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      notes: [
+        tl('validators.errors.memLow'),
+        `need>=${memNeed}`,
+        `avail=${disk.memAvailableBytes}`,
+      ],
+    });
+  }
 
   const clients: ValidatorInstanceDto['clients'] = resolveValidatorClients(chain, {
     el: input.el,
@@ -163,6 +222,16 @@ export async function createValidatorInstance(
   });
   if (chain === 'sui' && clients.node) {
     clients.node = { ...clients.node, image: SUI_NODE_IMAGE, tag: suiNodeTag(input.network) };
+  }
+  const tagErr = applyRequestedClientTags(clients, {
+    dataDir: input.dataDir,
+    network: input.network,
+    elTag: input.elTag,
+    clTag: input.clTag,
+    nodeTag: input.nodeTag,
+  });
+  if (tagErr) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.badTag'), tagErr] });
   }
   const extraUsed = new Set<number>();
   try {
@@ -184,7 +253,6 @@ export async function createValidatorInstance(
     }
     ports.rpc = n;
   }
-  const memory = input.memory || defaultValidatorMemoryLimit(chain);
   const limits =
     memory || input.cpus
       ? { memory, cpus: input.cpus }
@@ -306,6 +374,7 @@ export async function createValidatorInstance(
     host: input.host,
     file: composePath,
     project: composeProjectName(inst.id),
+    waits: composeStayWaits(inst.chain),
   });
   if (!live.ok) {
     return failedValidatorOp({
@@ -348,8 +417,9 @@ async function verifyComposeStayedUp(input: {
   host: HostExecutor;
   file: string;
   project: string;
+  waits?: number[];
 }): Promise<{ ok: boolean; hint: string | null }> {
-  const waits = [2_000, 3_000, 5_000];
+  const waits = input.waits ?? [2_000, 3_000, 5_000];
   for (const ms of waits) {
     await new Promise((r) => setTimeout(r, ms));
     const ps = await composePsInfo(input);
@@ -431,6 +501,7 @@ export async function startValidatorInstance(
       host: input.host,
       file: composePath,
       project: composeProjectName(inst.id),
+      waits: composeStayWaits(inst.chain),
     });
     if (!live.ok) {
       return failedValidatorOp({
@@ -689,6 +760,93 @@ export function setValidatorPolicy(
   if (!inst) return { ok: false, notes: [tl('validators.errors.notFound')] };
   const next = upsertValidatorInstance(dataDir, { ...inst, upgradePolicy: policy });
   return { ok: true, instance: next, notes: [] };
+}
+
+export async function setValidatorClientVersion(
+  input: ValidatorMutateOpts & {
+    id: string;
+    clientId: string;
+    tag: string;
+    confirm: string;
+    acceptMainnet?: boolean;
+  },
+): Promise<ValidatorOpsResult> {
+  return withInstance(input, async (inst) => {
+    const tag = String(input.tag ?? '').trim();
+    const clientId = String(input.clientId ?? '').trim();
+    if (!clientId || !tag) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl('validators.errors.badTag')],
+      });
+    }
+    const have = Object.values(inst.clients).find((c) => c.id === clientId);
+    if (!have) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl('validators.errors.badTag')],
+      });
+    }
+    if (input.confirm !== inst.id) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl('validators.errors.needVersionConfirm')],
+      });
+    }
+    const kind = getValidatorNetwork(inst.chain, inst.network)?.kind;
+    if (kind === 'mainnet' && !input.acceptMainnet) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl('validators.errors.needMainnetVersionAck')],
+      });
+    }
+    if (
+      !isAllowedClientTag({
+        clientId,
+        tag,
+        dataDir: input.dataDir,
+        extraTags: [have.tag],
+        network: inst.network,
+      })
+    ) {
+      return blockedValidatorOp({
+        reason: 'validation',
+        instanceId: inst.id,
+        notes: [tl('validators.errors.badTag')],
+      });
+    }
+    if (!input.execute || !input.host.executeEnabled()) {
+      const dry = await applyValidatorClientTag({
+        dataDir: input.dataDir,
+        host: input.host,
+        spec: inst,
+        clientId,
+        nextTag: tag,
+        execute: false,
+      });
+      return writtenValidatorOp({
+        instanceId: inst.id,
+        written: [],
+        notes: dry.notes,
+      });
+    }
+    const r = await applyValidatorClientTag({
+      dataDir: input.dataDir,
+      host: input.host,
+      spec: inst,
+      clientId,
+      nextTag: tag,
+      execute: true,
+      onLog: input.onLog,
+      signal: input.signal,
+    });
+    if (!r.ok) return failedValidatorOp({ instanceId: inst.id, notes: r.notes });
+    return appliedValidatorOp({ instanceId: inst.id, notes: r.notes });
+  });
 }
 
 export async function upgradeValidatorInstance(

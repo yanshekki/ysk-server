@@ -38,6 +38,19 @@ describe('validatorWizardCanInstall', () => {
     ).toBe(false);
   });
 
+  it('blocks testnet when RAM is short', () => {
+    expect(
+      validatorWizardCanInstall({
+        dockerInstalled: true,
+        hasSpec: true,
+        isMainnet: false,
+        mainnetAck: false,
+        diskShort: false,
+        memShort: true,
+      }),
+    ).toBe(false);
+  });
+
   it('still blocks testnet when disk is short', () => {
     expect(
       validatorWizardCanInstall({

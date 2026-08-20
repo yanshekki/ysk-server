@@ -5,6 +5,8 @@
   "dockFail": "실패 · {{title}}",
   "dockDone": "완료 · {{title}}",
   "minimize": "최소화",
+  "maximize": "확대",
+  "restore": "복원",
   "liveLog": "라이브 로그",
   "uninstall": "제거…",
   "uninstallTitle": "제거 {{name}}",

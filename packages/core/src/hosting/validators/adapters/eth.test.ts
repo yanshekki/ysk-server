@@ -27,7 +27,7 @@ const ethSpec = {
   updatedAt: '',
   clients: {
     el: { id: 'reth', image: 'ghcr.io/paradigmxyz/reth', tag: 'v1.4.8' },
-    cl: { id: 'lighthouse', image: 'sigp/lighthouse', tag: 'v7.1.0' },
+    cl: { id: 'lighthouse', image: 'sigp/lighthouse', tag: 'v8.2.2' },
   },
   ports: { rpc: 8545, p2p: 30303, p2pCl: 9000, beacon: 5052 },
 } as ValidatorInstanceDto;
@@ -46,13 +46,19 @@ describe('eth adapter', () => {
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(y).toContain('--disable-deposit-contract-sync');
-    expect(y).toContain('hoodi.checkpoint.sigp.io');
+    expect(y).toContain('hoodi.beaconstate.ethstaker.cc');
+    expect(y).toContain('v8.2.2');
     expect(y).not.toContain('checkpoint-sync.hoodi.ethpandaops.io');
     expect(y).not.toContain('hoodi.beaconstate.info');
-    expect(ETH_CHECKPOINT.hoodi).toBe('https://hoodi.checkpoint.sigp.io');
+    expect(ETH_CHECKPOINT.hoodi).toContain('hoodi.beaconstate.ethstaker.cc');
     expect(y).not.toMatch(/":\//);
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/data/reth:/data/reth"');
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/jwt.hex:/jwt/jwt.hex:ro"');
+    expect(y).toContain('30303/tcp');
+    expect(y).toContain('30303/udp');
+    expect(y).toContain('9000/udp');
+    expect(y).toContain('publicip');
+    expect(y).toContain('--discovery-port');
   });
 
   it('covers EL×CL combinations with jwt and localhost rpc', () => {
@@ -62,7 +68,7 @@ describe('eth adapter', () => {
       { id: 'nethermind', image: 'nethermind/nethermind', tag: '1.31.11' },
     ];
     const cls = [
-      { id: 'lighthouse', image: 'sigp/lighthouse', tag: 'v7.1.0' },
+      { id: 'lighthouse', image: 'sigp/lighthouse', tag: 'v8.2.2' },
       { id: 'prysm', image: 'gcr.io/prysmaticlabs/prysm/beacon-chain', tag: 'v6.0.4' },
       { id: 'teku', image: 'consensys/teku', tag: '25.4.1' },
       { id: 'nimbus', image: 'statusim/nimbus-eth2', tag: 'multiarch-v25.4.1' },
@@ -74,6 +80,8 @@ describe('eth adapter', () => {
         expect(y).toContain(el.image);
         expect(y).toContain(cl.image);
         expect(y).toContain('127.0.0.1:8545:8545');
+        expect(y).toContain('30303/udp');
+        expect(y).toContain('9000/udp');
         expect(y).toContain('jwt.hex');
         expect(y).not.toMatch(/mnemonic|private.?key|keystore/i);
         expect(y).not.toMatch(/":\//);
@@ -100,7 +108,7 @@ describe('avax adapter', () => {
       chain: 'avax',
       network: 'fuji',
       clients: {
-        node: { id: 'avalanchego', image: 'avaplatform/avalanchego', tag: 'v1.13.5' },
+        node: { id: 'avalanchego', image: 'avaplatform/avalanchego', tag: 'v1.14.1' },
       },
       ports: { rpc: 9650, p2p: 9651 },
     });
@@ -109,11 +117,21 @@ describe('avax adapter', () => {
     expect(y).not.toMatch(/command:\n\s+- avalanchego\n/);
     expect(y).toContain('--network-id=fuji');
     expect(y).toContain('fuji');
+    expect(y).toContain('--public-ip-resolution-service=opendns');
     expect(y).toContain('--chain-config-dir=/data/configs/chains');
     expect(y).not.toContain('--state-sync-enabled');
     expect(avaxCChainConfig(true)).toContain('"state-sync-enabled": true');
     expect(y).toContain('127.0.0.1:9650:9650');
     expect(parseAvaxHealth({ healthy: true }).healthy).toBe(true);
+    expect(parseAvaxHealth({ healthy: true }).lastError).toBeNull();
+    expect(
+      parseAvaxHealth({
+        healthy: false,
+        checks: {
+          network: { error: 'network layer is unhealthy reason: not connected to a minimum of 1 peer(s) only 0' },
+        },
+      }).lastError,
+    ).toMatch(/not connected to a minimum of 1 peer/i);
   });
 
   it('writes C-Chain state-sync into config.json', () => {
@@ -169,10 +187,12 @@ describe('near + ada adapters', () => {
     });
     expect(y).toContain('neard');
     expect(y).toContain('--chain-id testnet');
-    expect(y).toContain('mem_limit: 8g');
-    expect(y).toContain('memswap_limit: 8g');
+    expect(y).toContain('mem_limit: 12g');
+    expect(y).toContain('memswap_limit: 12g');
     expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('127.0.0.1:3030:3030');
+    expect(y).toContain('ifconfig.me');
+    expect(y).toContain('public_addr');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(parseNearStatus({ sync_info: { syncing: false }, version: { version: '2.5.0' }, peers: [1, 2] })).toEqual({
       syncProgress: 1,

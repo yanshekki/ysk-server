@@ -83,6 +83,9 @@ export type { LogViewerProps, LogViewerLine, LogLineLevel } from './LogViewer';
 export { JsonViewer, parseJsonInput, prettyJsonText, collectExpandablePaths } from './JsonViewer';
 export type { JsonViewerProps } from './JsonViewer';
 
+export { CodeEditor, editorLanguageLabel, cursorFromOffset } from './CodeEditor';
+export type { CodeEditorProps } from './CodeEditor';
+
 export { OpsResultPanel } from './OpsResultPanel';
 export type { OpsResultPanelProps, OpsResultLike } from './OpsResultPanel';
 

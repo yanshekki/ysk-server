@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.19
+
+- E2E-11118 leftover: Cosmos section-scoped state-sync, Hoodi lighthouse v8.2.2 + EthStaker checkpoint, NEAR 12g. Avalanche opendns public-ip. P2P UDP/seeds. Live traffic. Official version picker. Panel: ops-stream maximize, YAML editor, staking cards, full inspect/log modals.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.19**.
+
 ## What's new in 1.1.18
 
 - E2E-11117 leftover: Cosmos v28 + state-sync, Hoodi Sigma Prime checkpoint, Aptos nofile 1048576, NEAR 8g with memswap cap.
@@ -40,46 +45,7 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 - E2E-11116 leftover: Cosmos official genesis, Avalanche C-Chain state-sync, Hoodi checkpoint, Aptos nofile, NEAR 4g/OOM. Panel JSON uses JsonViewer. Log tails share a unified LogViewer.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.17**.
 
-## What's new in 1.1.16
-
-- E2E-11115 leftover: validator RPC wait vs error, compose Created/missing, Avalanche entrypoint, Cosmos min-gas, reth `--http.api`, NEAR memory cap, Sui testnet tag, Aptos host port.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.16**.
-
-## What's new in 1.1.15
-
-- E2E-11114 leftover: panel apply ConfirmDialog dest is latestVersion. Validator install no longer freezes the page; compose `ps` JSON array is parsed.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.15**.
-
-## What's new in 1.1.14
-
-- E2E-11113 leftover: FTP live username validation (no silent home rewrite), Galera host validation, updates package Apply `data-confirm`.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.14**.
-
-## What's new in 1.1.13
-
-- E2E-11110: validator compose ENTRYPOINT, Docker port preflight, nginx 443 kept with certs, shared identifier rules, panel empty-search / KPI / named confirms.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.13**.
-
-## What's new in 1.1.12
-
-- Published panel includes staking playbooks (1.1.11 npm packed a stale UI after Vite failed).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.12**.
-
-## What's new in 1.1.9
-
-- `/cluster` is a real overview (no 302 to Redis). `install.sh` overlay copies dest `package.json`.
-- E2E-1118: `data-confirm` on destructive triggers, sshd-off panel-stop copy, UFW no matrix lifecycle.
-
-## What's new in 1.1.8
-
-- Overlay copies dest `package.json` so the installed version matches the CLI.
-- First paint: backups / validators / Docker do not flash empty before load. E2E-1117 UX polish.
-
-## What's new in 1.1.7
-
-- Validators: honest disk usage, starting vs error, Software tab, Avalanche compose flags only.
-- Host-timezone clocks. FTP localhost until FTPS or typed `PLAINTEXT`. Self-update streams overlay steps.
-- E2E-1116: migrate inventory, VNC hosts write, DNS start result, public-files live/draft.
+[Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
 ## Panel
 
@@ -146,8 +112,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.18) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.18) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.19) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.19) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 
