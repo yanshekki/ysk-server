@@ -46,9 +46,10 @@ describe('eth adapter', () => {
     expect(y).toContain('jwt.hex');
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(y).toContain('--disable-deposit-contract-sync');
-    expect(y).toContain('hoodi.beaconstate.info');
+    expect(y).toContain('hoodi.checkpoint.sigp.io');
     expect(y).not.toContain('checkpoint-sync.hoodi.ethpandaops.io');
-    expect(ETH_CHECKPOINT.hoodi).toBe('https://hoodi.beaconstate.info');
+    expect(y).not.toContain('hoodi.beaconstate.info');
+    expect(ETH_CHECKPOINT.hoodi).toBe('https://hoodi.checkpoint.sigp.io');
     expect(y).not.toMatch(/":\//);
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/data/reth:/data/reth"');
     expect(y).toContain('"/var/lib/ysk/validators/eth-hoodi-1/jwt.hex:/jwt/jwt.hex:ro"');
@@ -168,8 +169,8 @@ describe('near + ada adapters', () => {
     });
     expect(y).toContain('neard');
     expect(y).toContain('--chain-id testnet');
-    expect(y).toContain('mem_limit: 4g');
-    expect(y).toContain('memswap_limit: 4g');
+    expect(y).toContain('mem_limit: 8g');
+    expect(y).toContain('memswap_limit: 8g');
     expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('127.0.0.1:3030:3030');
     expect(y).not.toMatch(/mnemonic|private.?key/i);

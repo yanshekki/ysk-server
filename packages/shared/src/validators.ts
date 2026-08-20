@@ -156,7 +156,8 @@ export function isSafeValidatorLimitMemory(value: string): boolean {
 
 /** Heavy chains OOM the host when the wizard leaves memory unlimited. */
 export function defaultValidatorMemoryLimit(chain: string): string | undefined {
-  if (chain === 'near' || chain === 'sui' || chain === 'aptos' || chain === 'sol') return '4g';
+  if (chain === 'near') return '8g';
+  if (chain === 'sui' || chain === 'aptos' || chain === 'sol') return '4g';
   return undefined;
 }
 

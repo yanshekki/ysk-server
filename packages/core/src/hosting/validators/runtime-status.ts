@@ -5,7 +5,7 @@
 import type { ValidatorRuntimeStatus } from 'ysk-server-shared';
 
 const FATAL_CONTAINER_RE =
-  /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found/i;
+  /permission denied|unexpected token|executable file not found|pull access denied|no such file|cannot allocate|fatal|error: command line|address already in use|failed to bind|not found|dns error|no address associated with hostname|temporary failure in name resolution/i;
 
 const OOM_RE = /\bkilled\b|out of memory|\booms?k?ill|cannot allocate memory|exit \(137\)/i;
 const NOFILE_RE = /too many open files|ensure_max_open_files_limit|RLIMIT_NOFILE/i;

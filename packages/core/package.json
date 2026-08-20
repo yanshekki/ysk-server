@@ -1,6 +1,6 @@
 {
   "name": "ysk-server-core",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "description": "YSK Server core business logic — security, hosting, LLM, update, email",
   "type": "module",
   "main": "./dist/index.js",

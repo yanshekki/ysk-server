@@ -14,7 +14,9 @@ import {
   cosmosChainId,
   cosmosGenesisUrl,
   cosmosSeeds,
+  cosmosStateSyncRpcs,
   ensureCosmosGenesisFile,
+  ensureCosmosStateSyncFile,
   ensureSuiFullnodeFiles,
   suiFullnodeYaml,
   parseAptosLedger,
@@ -103,11 +105,16 @@ describe('phase 2 compose + status parsers', () => {
     expect(y).toContain('--chain-id provider');
     expect(y).toContain('provider-seed-01');
     expect(y).toContain('--p2p.seeds=');
+    expect(y).toContain('v28.0.0-rc0');
+    expect(y).toContain('statesync.env');
+    expect(y).toContain("s/= .*/= true/");
     expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
     expect(cosmosChainId('testnet')).toBe('provider');
     expect(cosmosGenesisUrl('testnet')).toContain('provider-genesis.json');
     expect(cosmosSeeds('testnet')).toContain('provider-seed-01');
+    expect(cosmosStateSyncRpcs('testnet')[0]).toContain('provider-state-sync-01');
+    expect(cosmosStateSyncRpcs('mainnet')).toEqual([]);
     expect(parseCosmosStatus({ result: { sync_info: { catching_up: false }, node_info: { version: '23' } } }).syncProgress).toBe(1);
   });
 
@@ -120,6 +127,28 @@ describe('phase 2 compose + status parsers', () => {
     const r = await ensureCosmosGenesisFile(dir, 'testnet', fetchFn);
     expect(r.ok).toBe(true);
     expect(readFileSync(join(dir, 'official-genesis.json'), 'utf8')).toContain('provider');
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('writes Cosmos state-sync trust height from official RPC', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cosmos-ss-'));
+    const fetchFn = (async (url: string) => {
+      const u = String(url);
+      if (u.includes('height=')) {
+        return new Response(JSON.stringify({ result: { block_id: { hash: 'A'.repeat(64) } } }), {
+          status: 200,
+        });
+      }
+      return new Response(JSON.stringify({ result: { block: { header: { height: '18547000' } } } }), {
+        status: 200,
+      });
+    }) as unknown as typeof fetch;
+    const r = await ensureCosmosStateSyncFile(dir, 'testnet', fetchFn);
+    expect(r.ok).toBe(true);
+    const env = readFileSync(join(dir, 'statesync.env'), 'utf8');
+    expect(env).toContain('TRUST_HEIGHT=18546000');
+    expect(env).toContain(`TRUST_HASH=${'A'.repeat(64)}`);
+    expect(env).toContain('provider-state-sync-01');
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -138,7 +167,8 @@ describe('phase 2 compose + status parsers', () => {
     expect(aptos).toContain('127.0.0.1:18080:8080');
     expect(aptos).not.toContain('127.0.0.1:8080:8080');
     expect(aptos).toContain('nofile:');
-    expect(aptos).toContain('65536');
+    expect(aptos).toContain('1048576');
+    expect(aptos).not.toContain('65536');
     expect(buildDotComposeYaml(spec({ id: 'dot-westend-1', chain: 'dot', network: 'westend', ports: { rpc: 9933, p2p: 30333 } }))).toContain('--chain=westend');
     const sol = buildSolComposeYaml(spec({ id: 'sol-mainnet-1', chain: 'sol', network: 'mainnet', ports: { rpc: 8899 } }));
     expect(sol).toContain('HEAVY');

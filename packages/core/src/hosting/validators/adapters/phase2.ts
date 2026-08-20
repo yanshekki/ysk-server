@@ -91,6 +91,62 @@ export function cosmosSeeds(network: string): string {
   return '08ec17e86dac67b9da70deb20177655495a55407@provider-seed-01.hub-testnet.polypore.xyz:26656,4ea6e56300a2f37b90e58de5ee27d1c9065cf871@provider-seed-02.hub-testnet.polypore.xyz:26656';
 }
 
+/** Official provider join uses state-sync; launch genesis cannot InitChain on current Gaia. */
+export function cosmosStateSyncRpcs(network: string): string[] {
+  if (network === 'mainnet') return [];
+  return [
+    'https://rpc.provider-state-sync-01.hub-testnet.polypore.xyz:443',
+    'https://rpc.provider-state-sync-02.hub-testnet.polypore.xyz:443',
+  ];
+}
+
+export async function ensureCosmosStateSyncFile(
+  dataPath: string,
+  network: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const rpcs = cosmosStateSyncRpcs(network);
+  if (!rpcs.length) return { ok: true, notes: [] };
+  const dir = String(dataPath ?? '').replace(/\/+$/, '');
+  mkdirSync(dir, { recursive: true });
+  const dest = join(dir, 'statesync.env');
+  const rpc = rpcs[0]!;
+  try {
+    const latestRes = await fetchFn(`${rpc}/block`);
+    if (!latestRes.ok) return { ok: false, notes: [`cosmos state-sync http ${latestRes.status}`] };
+    const latest = (await latestRes.json()) as {
+      result?: { block?: { header?: { height?: string } } };
+    };
+    const height = Number(latest.result?.block?.header?.height);
+    if (!Number.isFinite(height) || height < 1001) {
+      return { ok: false, notes: ['cosmos state-sync height missing'] };
+    }
+    const trustHeight = height - 1000;
+    const trustedRes = await fetchFn(`${rpc}/block?height=${trustHeight}`);
+    if (!trustedRes.ok) return { ok: false, notes: [`cosmos state-sync trust http ${trustedRes.status}`] };
+    const trusted = (await trustedRes.json()) as { result?: { block_id?: { hash?: string } } };
+    const hash = String(trusted.result?.block_id?.hash ?? '').trim();
+    if (!/^[0-9A-Fa-f]{64}$/.test(hash)) return { ok: false, notes: ['cosmos state-sync hash missing'] };
+    writeFileSync(
+      dest,
+      [`TRUST_HEIGHT=${trustHeight}`, `TRUST_HASH=${hash}`, `RPC_SERVERS=${rpcs.join(',')}`, ''].join('\n'),
+    );
+    return { ok: true, notes: [] };
+  } catch (e) {
+    return { ok: false, notes: [e instanceof Error ? e.message : 'cosmos state-sync fetch failed'] };
+  }
+}
+
+export async function ensureCosmosNodeFiles(
+  dataPath: string,
+  network: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ ok: boolean; notes: string[] }> {
+  const genesis = await ensureCosmosGenesisFile(dataPath, network, fetchFn);
+  const sync = await ensureCosmosStateSyncFile(dataPath, network, fetchFn);
+  return { ok: genesis.ok && sync.ok, notes: [...genesis.notes, ...sync.notes] };
+}
+
 export async function ensureCosmosGenesisFile(
   dataPath: string,
   network: string,
@@ -121,7 +177,7 @@ export function buildCosmosComposeYaml(spec: ValidatorInstanceDto): string {
   return `# ysk-server validators cosmos — generated (official genesis)
 services:
   node:
-    image: ${img(spec, 'ghcr.io/cosmos/gaia', 'v23.3.0')}
+    image: ${img(spec, 'ghcr.io/cosmos/gaia', 'v28.0.0-rc0')}
     restart: unless-stopped
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -135,6 +191,10 @@ services:
           echo "official genesis missing: /data/official-genesis.json" >&2
           exit 1
         fi
+        if [ "${chainId}" = "provider" ] && [ ! -f /data/statesync.env ]; then
+          echo "cosmos state-sync params missing: /data/statesync.env" >&2
+          exit 1
+        fi
         if [ ! -f /data/config/config.toml ]; then
           gaiad init ysk --home /data --chain-id ${chainId}
         fi
@@ -142,6 +202,18 @@ services:
         if [ -f /data/config/config.toml ]; then
           sed -i -e '/minimum-gas-prices =/ s^= .*^= "0.005uatom"^' /data/config/app.toml || true
           sed -i -e '/seeds =/ s^= .*^= "${seeds}"^' /data/config/config.toml || true
+        fi
+        if [ -f /data/statesync.env ]; then
+          set -a
+          . /data/statesync.env
+          set +a
+          if [ -n "$TRUST_HEIGHT" ] && [ -n "$TRUST_HASH" ] && [ -n "$RPC_SERVERS" ]; then
+            sed -i -e '/enable =/ s/= .*/= true/' /data/config/config.toml || true
+            sed -i -e '/trust_period =/ s/= .*/= "8h0m0s"/' /data/config/config.toml || true
+            sed -i -e "/trust_height =/ s/= .*/= $TRUST_HEIGHT/" /data/config/config.toml || true
+            sed -i -e "/trust_hash =/ s/= .*/= \\"$TRUST_HASH\\"/" /data/config/config.toml || true
+            sed -i -e "/rpc_servers =/ s^= .*^= \\"$RPC_SERVERS\\"^" /data/config/config.toml || true
+          fi
         fi
         gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom
     ports:
@@ -312,8 +384,8 @@ services:
       APTOS_NETWORK: ${net}
     ulimits:
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: 1048576
+        hard: 1048576
     ports:
       - "127.0.0.1:${rpc}:8080"
       - "0.0.0.0:${p2p}:6180"

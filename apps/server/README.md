@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.18
+
+- E2E-11117 leftover: Cosmos v28 + state-sync, Hoodi Sigma Prime checkpoint, Aptos nofile 1048576, NEAR 8g with memswap cap.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.18**.
+
 ## What's new in 1.1.17
 
 - E2E-11116 leftover: Cosmos official genesis, Avalanche C-Chain state-sync, Hoodi checkpoint, Aptos nofile, NEAR 4g/OOM. Panel JSON uses JsonViewer. Log tails share a unified LogViewer.
@@ -141,8 +146,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.17) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.17) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.18) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.18) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

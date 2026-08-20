@@ -67,7 +67,7 @@ describe('validators DTO helpers', () => {
   });
 
   it('defaults memory for heavy chains', () => {
-    expect(defaultValidatorMemoryLimit('near')).toBe('4g');
+    expect(defaultValidatorMemoryLimit('near')).toBe('8g');
     expect(defaultValidatorMemoryLimit('sui')).toBe('4g');
     expect(defaultValidatorMemoryLimit('aptos')).toBe('4g');
     expect(defaultValidatorMemoryLimit('sol')).toBe('4g');

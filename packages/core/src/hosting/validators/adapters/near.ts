@@ -19,8 +19,8 @@ services:
   node:
     image: ${img}
     restart: unless-stopped
-    mem_limit: 4g
-    memswap_limit: 4g
+    mem_limit: 8g
+    memswap_limit: 8g
     pids_limit: 4096
     entrypoint: ["/bin/sh", "-c"]
     command:

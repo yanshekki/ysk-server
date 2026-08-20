@@ -62,7 +62,7 @@ import { probeNearStatus } from './adapters/near.js';
 import { probeAdaStatus } from './adapters/ada.js';
 import {
   ensureAptosFullnodeFiles,
-  ensureCosmosGenesisFile,
+  ensureCosmosNodeFiles,
   ensureSuiFullnodeFiles,
   probeAptosStatus,
   probeBtcStatus,
@@ -233,7 +233,7 @@ export async function createValidatorInstance(
     await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
   }
   if (inst.chain === 'cosmos') {
-    const cosmos = await ensureCosmosGenesisFile(inst.dataPath, inst.network);
+    const cosmos = await ensureCosmosNodeFiles(inst.dataPath, inst.network);
     if (!cosmos.ok && input.execute) {
       return failedValidatorOp({
         instanceId: inst.id,
@@ -399,7 +399,7 @@ export async function startValidatorInstance(
     if (inst.chain === 'sui') await ensureSuiFullnodeFiles(inst.dataPath, inst.network);
     if (inst.chain === 'aptos') await ensureAptosFullnodeFiles(inst.dataPath, inst.network);
     if (inst.chain === 'cosmos') {
-      const cosmos = await ensureCosmosGenesisFile(inst.dataPath, inst.network);
+      const cosmos = await ensureCosmosNodeFiles(inst.dataPath, inst.network);
       if (!cosmos.ok) {
         return failedValidatorOp({
           instanceId: inst.id,

@@ -37,6 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.18 新內容
+
+- **驗證者** — Cosmos Hub 測試網改 Gaia v28 加 state-sync；Hoodi checkpoint 用 Sigma Prime；Aptos nofile 1048576；NEAR 預設 8g 並設對等 swap 上限。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.18**。
+
 ## 1.1.17 新內容
 
 - **驗證者** — Cosmos 使用官方測試網 genesis；Avalanche state-sync 寫入 C-Chain JSON；Hoodi checkpoint 改用 beaconstate.info；Aptos 提高 nofile；NEAR 預設 4g，ExitCode 137 標記憶體不足。

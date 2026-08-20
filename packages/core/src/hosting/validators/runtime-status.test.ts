@@ -115,6 +115,16 @@ describe('pickValidatorContainerHint', () => {
     expect(isValidatorNofileHint('ensure_max_open_files_limit')).toBe(true);
     expect(isValidatorOomHint('exit (137)')).toBe(true);
   });
+
+  it('prefers a DNS failure over a later log line', () => {
+    expect(
+      pickValidatorContainerHint([
+        'Starting…',
+        'Failed to start beacon node reason: dns error: No address associated with hostname',
+        'restarting',
+      ]),
+    ).toMatch(/dns error/i);
+  });
 });
 
 describe('isTransientValidatorProbeError', () => {

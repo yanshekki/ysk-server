@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.1.18 — 2026-08-20
+
+### Fix
+- Cosmos Hub testnet: Gaia `v28.0.0-rc0` plus official provider state-sync (launch genesis cannot InitChain on v23).
+- Ethereum Hoodi: CL checkpoint `https://hoodi.checkpoint.sigp.io`. DNS failures show as last-error.
+- Aptos: `ulimits.nofile` 1048576 (node requires 999999).
+- NEAR: default and baked memory 8g with matching `memswap_limit` so the host cgroup still caps the container.
+
+### Improve
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.18**.
+
 ## 1.1.17 — 2026-08-20
 
 ### Fix

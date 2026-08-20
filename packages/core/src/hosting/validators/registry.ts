@@ -190,7 +190,7 @@ export const VALIDATOR_CHAIN_CATALOG: readonly ValidatorChainSpec[] = [
     ],
     profiles: ['minimal', 'pruned', 'validator-ready', 'rpc'],
     clients: [
-      { id: 'gaiad', role: 'node', image: 'ghcr.io/cosmos/gaia', tag: 'v23.3.0', v1: true },
+      { id: 'gaiad', role: 'node', image: 'ghcr.io/cosmos/gaia', tag: 'v28.0.0-rc0', v1: true },
     ],
     minFreeBytes: {
       testnet: { minimal: 20 * GiB, pruned: 30 * GiB, 'validator-ready': 40 * GiB, rpc: 20 * GiB },
