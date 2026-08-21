@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.23 — 2026-08-21
+
+### Fix
+- NEAR (and Cosmos) compose: escape `$` so Docker Compose does not interpolate `$PUB` / `$TRUST_*` before the container shell runs. Match `pids_limit` with `deploy.resources.limits.pids`. RAM+CPU overlay also matches `deploy.resources.limits.cpus`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.23**.
+
 ## 1.1.22 — 2026-08-20
 
 ### Improve

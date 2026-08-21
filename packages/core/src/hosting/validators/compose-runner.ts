@@ -164,25 +164,40 @@ export function applyComposeLimits(
   if (!limits?.memory && !limits?.cpus) return yaml;
   const extra: string[] = [];
   let out = yaml;
-  if (limits.memory && /^\d+[mMgGkK]$/.test(limits.memory)) {
+  const memory = limits.memory && /^\d+[mMgGkK]$/.test(limits.memory) ? limits.memory : undefined;
+  const cpus = limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus) ? limits.cpus : undefined;
+  // Compose rejects distinct legacy vs deploy.resources.limits for memory, pids, and cpus.
+  const pids = out.match(/pids_limit:\s*(\d+)/i)?.[1] ?? '4096';
+  const hasDeploy = /\n[ \t]+deploy:\s*\n/.test(out);
+  if (memory) {
     if (/mem_limit:/i.test(out)) {
-      out = out.replace(/mem_limit:\s*\S+/g, `mem_limit: ${limits.memory}`);
-      out = out.replace(/memswap_limit:\s*\S+/g, `memswap_limit: ${limits.memory}`);
+      out = out.replace(/mem_limit:\s*\S+/g, `mem_limit: ${memory}`);
+      out = out.replace(/memswap_limit:\s*\S+/g, `memswap_limit: ${memory}`);
     } else {
-      extra.push(`    mem_limit: ${limits.memory}`);
-      extra.push(`    memswap_limit: ${limits.memory}`);
-      extra.push(`    pids_limit: 4096`);
+      extra.push(`    mem_limit: ${memory}`);
+      extra.push(`    memswap_limit: ${memory}`);
     }
-    if (!/\n[ \t]+deploy:\s*\n/.test(out)) {
-      extra.push(`    deploy:`);
-      extra.push(`      resources:`);
-      extra.push(`        limits:`);
-      extra.push(`          memory: ${limits.memory}`);
-    } else {
-      out = out.replace(/(\n[ \t]+memory:\s*)\S+/g, `$1${limits.memory}`);
+    if (!/pids_limit:/i.test(out)) extra.push(`    pids_limit: ${pids}`);
+  }
+  if (cpus) extra.push(`    cpus: ${JSON.stringify(cpus)}`);
+  if (memory && !hasDeploy) {
+    extra.push(`    deploy:`);
+    extra.push(`      resources:`);
+    extra.push(`        limits:`);
+    extra.push(`          memory: ${memory}`);
+    extra.push(`          pids: ${pids}`);
+    if (cpus) extra.push(`          cpus: ${JSON.stringify(cpus)}`);
+  } else if (hasDeploy) {
+    if (memory) {
+      out = out.replace(/(\n[ \t]+memory:\s*)\S+/g, `$1${memory}`);
+      if (!/\n[ \t]+pids:\s*\d+/.test(out)) {
+        out = out.replace(/(\n[ \t]+memory:\s*\S+)/, `$1\n          pids: ${pids}`);
+      }
+    }
+    if (cpus && !/\n[ \t]{6,}cpus:\s/.test(out)) {
+      out = out.replace(/(\n[ \t]+memory:\s*\S+)/, `$1\n          cpus: ${JSON.stringify(cpus)}`);
     }
   }
-  if (limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus)) extra.push(`    cpus: ${JSON.stringify(limits.cpus)}`);
   if (!extra.length) return out;
   return out.replace(/^([ \t]+restart:\s+unless-stopped)\s*$/gm, `$1\n${extra.join('\n')}`);
 }

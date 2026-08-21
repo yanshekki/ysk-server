@@ -9,7 +9,7 @@ import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { SUI_NODE_IMAGE, suiNodeTag, v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
 import { readRpcJson } from '../rpc-json.js';
-import { RESOLVE_PUBLIC_IP_SH } from './p2p-public-ip.js';
+import { composeCommandScript, RESOLVE_PUBLIC_IP_SH } from './p2p-public-ip.js';
 
 type Probe = Pick<ValidatorNodeStatus, 'syncProgress' | 'peers' | 'version' | 'lastError'>;
 
@@ -183,58 +183,58 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        set -e
-        if [ ! -w /data ]; then
-          echo "data dir not writable: /data" >&2
-          exit 1
-        fi
-        if [ ! -f /data/official-genesis.json ]; then
-          echo "official genesis missing: /data/official-genesis.json" >&2
-          exit 1
-        fi
-        if [ "${chainId}" = "provider" ] && [ ! -f /data/statesync.env ]; then
-          echo "cosmos state-sync params missing: /data/statesync.env" >&2
-          exit 1
-        fi
-        if [ ! -f /data/config/config.toml ]; then
-          gaiad init ysk --home /data --chain-id ${chainId}
-        fi
-        cp /data/official-genesis.json /data/config/genesis.json
-        if [ -f /data/config/config.toml ]; then
-          sed -i -e '/minimum-gas-prices =/ s^= .*^= "0.005uatom"^' /data/config/app.toml || true
-          sed -i -e '/seeds =/ s^= .*^= "${seeds}"^' /data/config/config.toml || true
-        fi
-        if [ -f /data/statesync.env ]; then
-          set -a
-          . /data/statesync.env
-          set +a
-          if [ -n "$TRUST_HEIGHT" ] && [ -n "$TRUST_HASH" ] && [ -n "$RPC_SERVERS" ]; then
-            gaiad config set config statesync.enable true --home /data 2>/dev/null || true
-            gaiad config set config statesync.trust_height "$TRUST_HEIGHT" --home /data 2>/dev/null || true
-            gaiad config set config statesync.trust_hash "$TRUST_HASH" --home /data 2>/dev/null || true
-            gaiad config set config statesync.trust_period "8h0m0s" --home /data 2>/dev/null || true
-            gaiad config set config statesync.rpc_servers "$RPC_SERVERS" --home /data 2>/dev/null || true
-            sed -i -e '/^\\[statesync\\]/,/^\\[/{
-              s/^enable = .*/enable = true/
-              s/^trust_period = .*/trust_period = "8h0m0s"/
-              s/^trust_height = .*/trust_height = '"$TRUST_HEIGHT"'/
-              s/^trust_hash = .*/trust_hash = "'"$TRUST_HASH"'"/
-              s/^rpc_servers = .*/rpc_servers = "'"$RPC_SERVERS"'"/
-            }' /data/config/config.toml || true
-          fi
-        fi
-        if [ "${chainId}" = "provider" ]; then
-          if ! awk '/^\\[statesync\\]/{p=1;next} /^\\[/{p=0} p && /^enable = true/{ok=1} END{exit ok?0:1}' /data/config/config.toml; then
-            echo "cosmos state-sync not enabled in [statesync]; refusing InitChain" >&2
-            exit 1
-          fi
-        fi
-        ${RESOLVE_PUBLIC_IP_SH.split('\n').join('\n        ')}
-        if [ -n "$PUB" ]; then
-          gaiad config set config p2p.external_address "tcp://$PUB:26656" --home /data 2>/dev/null || true
-          sed -i -e '/^\\[p2p\\]/,/^\\[/{s|^external_address = .*|external_address = "tcp://'"$PUB"':26656"|}' /data/config/config.toml || true
-        fi
-        gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom
+${composeCommandScript(`set -e
+if [ ! -w /data ]; then
+  echo "data dir not writable: /data" >&2
+  exit 1
+fi
+if [ ! -f /data/official-genesis.json ]; then
+  echo "official genesis missing: /data/official-genesis.json" >&2
+  exit 1
+fi
+if [ "${chainId}" = "provider" ] && [ ! -f /data/statesync.env ]; then
+  echo "cosmos state-sync params missing: /data/statesync.env" >&2
+  exit 1
+fi
+if [ ! -f /data/config/config.toml ]; then
+  gaiad init ysk --home /data --chain-id ${chainId}
+fi
+cp /data/official-genesis.json /data/config/genesis.json
+if [ -f /data/config/config.toml ]; then
+  sed -i -e '/minimum-gas-prices =/ s^= .*^= "0.005uatom"^' /data/config/app.toml || true
+  sed -i -e '/seeds =/ s^= .*^= "${seeds}"^' /data/config/config.toml || true
+fi
+if [ -f /data/statesync.env ]; then
+  set -a
+  . /data/statesync.env
+  set +a
+  if [ -n "$TRUST_HEIGHT" ] && [ -n "$TRUST_HASH" ] && [ -n "$RPC_SERVERS" ]; then
+    gaiad config set config statesync.enable true --home /data 2>/dev/null || true
+    gaiad config set config statesync.trust_height "$TRUST_HEIGHT" --home /data 2>/dev/null || true
+    gaiad config set config statesync.trust_hash "$TRUST_HASH" --home /data 2>/dev/null || true
+    gaiad config set config statesync.trust_period "8h0m0s" --home /data 2>/dev/null || true
+    gaiad config set config statesync.rpc_servers "$RPC_SERVERS" --home /data 2>/dev/null || true
+    sed -i -e '/^\\[statesync\\]/,/^\\[/{
+      s/^enable = .*/enable = true/
+      s/^trust_period = .*/trust_period = "8h0m0s"/
+      s/^trust_height = .*/trust_height = '"$TRUST_HEIGHT"'/
+      s/^trust_hash = .*/trust_hash = "'"$TRUST_HASH"'"/
+      s/^rpc_servers = .*/rpc_servers = "'"$RPC_SERVERS"'"/
+    }' /data/config/config.toml || true
+  fi
+fi
+if [ "${chainId}" = "provider" ]; then
+  if ! awk '/^\\[statesync\\]/{p=1;next} /^\\[/{p=0} p && /^enable = true/{ok=1} END{exit ok?0:1}' /data/config/config.toml; then
+    echo "cosmos state-sync not enabled in [statesync]; refusing InitChain" >&2
+    exit 1
+  fi
+fi
+${RESOLVE_PUBLIC_IP_SH}
+if [ -n "$PUB" ]; then
+  gaiad config set config p2p.external_address "tcp://$PUB:26656" --home /data 2>/dev/null || true
+  sed -i -e '/^\\[p2p\\]/,/^\\[/{s|^external_address = .*|external_address = "tcp://'"$PUB"':26656"|}' /data/config/config.toml || true
+fi
+gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom`)}
     ports:
       - "127.0.0.1:${rpc}:26657"
       - "0.0.0.0:${p2p}:26656"
@@ -520,11 +520,11 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        set -e
-        if [ ! -f /data/identity.json ]; then
-          agave-keygen new --no-bip39-passphrase -o /data/identity.json
-        fi
-        exec agave-validator --identity /data/identity.json --ledger /data --rpc-port 8899 --dynamic-port-range 8000-8020 --entrypoint entrypoint.${net}.solana.com:8001 --no-voting --limit-ledger-size
+${composeCommandScript(`set -e
+if [ ! -f /data/identity.json ]; then
+  agave-keygen new --no-bip39-passphrase -o /data/identity.json
+fi
+exec agave-validator --identity /data/identity.json --ledger /data --rpc-port 8899 --dynamic-port-range 8000-8020 --entrypoint entrypoint.${net}.solana.com:8001 --no-voting --limit-ledger-size`)}
     ports:
       - "127.0.0.1:${rpc}:8899"
       - "0.0.0.0:${gossip}-${gossipEnd}:8000-8020/tcp"

@@ -37,6 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.23 新內容
+
+- **驗證者** — NEAR compose 不再在建立容器前失敗（Compose 吃掉 `$PUB`；`pids_limit` 與 deploy pids 不一致）。Cosmos 的 `$TRUST_*` 同樣跳脫。RAM+CPU 限制與 deploy `cpus` 對齊。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.23**。
+
 ## 1.1.22 新內容
 
 - **驗證者** — 記憶體低於鏈上限時仍可安裝，須輸入節點識別碼確認。警告會留在畫面上。
@@ -47,12 +52,6 @@
 - **法律文件** — 公開 `/legal` 使用條款、私隱政策、免責聲明（正式英文 + 香港書面中文；如有歧義以英文為準）。登入頁腳與 Support 有連結。MIT `LICENSE`。
 - **面板** — 自行更新成功後需確認才 reload UI。Cardano producer 改拖放上傳。FTP 總覽按鈕不再走位。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.21**。
-
-## 1.1.20 新內容
-
-- **驗證者** — Cardano 可掛 KES／VRF／opcert，以官方 `CARDANO_BLOCK_PRODUCER` 當 block producer（拒收 cold）。Lighthouse v8 旗標修正。Nimbus 改 `--el`。Solana 用 `anzaxyz/agave`。Avalanche 用 ifconfigMe 加主機 TZ。精靈記憶體不足會顯示警告，不再默默關掉「下一步」。
-- **面板** — LogViewer 關鍵字欄不再蓋住第一行日誌。官方 GitHub 版本最新在前，不寫「已測過」。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.20**。
 
 [完整變更紀錄](./CHANGELOG.md)
 

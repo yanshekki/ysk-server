@@ -217,6 +217,9 @@ describe('near + ada adapters', () => {
     expect(y).toContain('127.0.0.1:3030:3030');
     expect(y).toContain('ifconfig.me');
     expect(y).toContain('public_addr');
+    expect(y).toContain('$$PUB');
+    expect(y).toContain('$$(wget');
+    expect(y).not.toMatch(/(^|[^$])\$PUB\b/);
     expect(y).not.toMatch(/mnemonic|private.?key/i);
     expect(parseNearStatus({ sync_info: { syncing: false }, version: { version: '2.5.0' }, peers: [1, 2] })).toEqual({
       syncProgress: 1,

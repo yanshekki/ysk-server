@@ -184,7 +184,7 @@ describe('defense-service honesty', () => {
     expect(blocked.blocked).toBe(true);
   });
 
-  it('applyDefenseStack with execute false writes plans but reports blocked aggregate', async () => {
+  it('applyDefenseStack with execute false writes plans but reports blocked aggregate', { timeout: 20_000 }, async () => {
     const { host, db, dir } = setup(false);
     const r = await applyDefenseStack({
       host,

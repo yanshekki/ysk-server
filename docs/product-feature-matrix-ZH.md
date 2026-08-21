@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-20 — 對齊 **1.1.22**（驗證者精靈記憶體不足仍可安裝，須輸入節點識別碼確認）。只連官方網站，不接錢包。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。    
+**重計：** 2026-08-21 — 對齊 **1.1.23**（NEAR compose 跳脫 `$PUB`，pids／cpus 與 deploy limits 對齊）。只連官方網站，不接錢包。shared／core／產品同一版本。標記對齊已交付程式（面板 + CLI + API），不是行銷。    
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

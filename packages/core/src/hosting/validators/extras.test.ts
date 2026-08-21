@@ -14,6 +14,7 @@ import { clearValidatorInstance } from './manager.js';
 import { buildValidatorInstance, getValidatorInstance, upsertValidatorInstance } from './store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import { buildEthComposeYaml } from './adapters/eth.js';
+import { buildNearComposeYaml } from './adapters/near.js';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -30,7 +31,15 @@ describe('validator extras', () => {
     expect(y).toContain('pids_limit: 4096');
     expect(y).toContain('deploy:');
     expect(y).toContain('memory: 4g');
-    expect(y).toContain('cpus: "2.0"');
+    expect(y).toContain('pids: 4096');
+    expect(y).toMatch(/^    cpus: "2\.0"$/m);
+    expect(y).toMatch(/^          cpus: "2\.0"$/m);
+  });
+
+  it('CPU-only overlay does not invent a deploy block', () => {
+    const y = applyComposeLimits('services:\n  el:\n    restart: unless-stopped\n', { cpus: '2.0' });
+    expect(y).toMatch(/^    cpus: "2\.0"$/m);
+    expect(y).not.toContain('deploy:');
   });
 
   it('replaces existing mem_limit instead of stacking a second one', () => {
@@ -42,6 +51,52 @@ describe('validator extras', () => {
     expect(y).toContain('memswap_limit: 4g');
     expect(y).not.toContain('mem_limit: 8g');
     expect(y).toContain('memory: 4g');
+    expect(y).toContain('pids: 4096');
+  });
+
+  it('keeps deploy pids in lockstep with an existing pids_limit', () => {
+    const y = applyComposeLimits(
+      [
+        'services:',
+        '  node:',
+        '    restart: unless-stopped',
+        '    mem_limit: 12g',
+        '    memswap_limit: 12g',
+        '    pids_limit: 4096',
+        '',
+      ].join('\n'),
+      { memory: '12g' },
+    );
+    expect(y).toContain('pids_limit: 4096');
+    expect(y).toMatch(/^\s+pids: 4096\s*$/m);
+    expect(y.match(/pids_limit:\s*4096/g)?.length).toBe(1);
+  });
+
+  it('NEAR adapter yaml plus RAM overlay keeps pids_limit and deploy pids equal', () => {
+    const y = applyComposeLimits(
+      buildNearComposeYaml({
+        id: 'near-testnet-1',
+        chain: 'near',
+        network: 'testnet',
+        profile: 'pruned',
+        slug: '1',
+        dataPath: '/var/lib/ysk-server/validators/near-testnet-1/data',
+        rpcHost: '127.0.0.1',
+        upgradePolicy: 'notify',
+        desiredState: 'stopped',
+        createdAt: '',
+        updatedAt: '',
+        clients: { node: { id: 'neard', image: 'nearprotocol/nearcore', tag: '2.5.0' } },
+        ports: { rpc: 3030, p2p: 24567 },
+      } as never),
+      { memory: '12g' },
+    );
+    expect(y).toContain('$$PUB');
+    expect(y).not.toMatch(/(^|[^$])\$PUB\b/);
+    expect(y).toContain('pids_limit: 4096');
+    expect(y).toMatch(/^\s+pids: 4096\s*$/m);
+    expect(y.match(/pids_limit:\s*\d+/g)).toEqual(['pids_limit: 4096']);
+    expect(y.match(/^\s+pids:\s*\d+\s*$/gm)).toEqual(['          pids: 4096']);
   });
 
   it('watches cosmos/eth/near longer after compose up', () => {

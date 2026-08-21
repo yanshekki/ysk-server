@@ -114,6 +114,11 @@ describe('phase 2 compose + status parsers', () => {
     expect(y).toContain('refusing InitChain');
     expect(y).toContain('ifconfig.me');
     expect(y).toContain('external_address');
+    expect(y).toContain('$$PUB');
+    expect(y).toContain('$$TRUST_HEIGHT');
+    expect(y).toContain('$$TRUST_HASH');
+    expect(y).toContain('$$RPC_SERVERS');
+    expect(y).not.toMatch(/(^|[^$])\$(PUB|TRUST_HEIGHT|TRUST_HASH|RPC_SERVERS)\b/);
     expect(y).toContain('data dir not writable');
     expect(y).toContain('127.0.0.1:26657:26657');
     expect(cosmosChainId('testnet')).toBe('provider');

@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.23
+
+- **Validators** — NEAR compose no longer fails before any container exists (`$PUB` eaten by Compose; `pids_limit` vs deploy pids). Cosmos `$TRUST_*` escaped the same way. RAM+CPU overlay keeps `cpus` in lockstep with deploy limits.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.23** together.
+
 ## What's new in 1.1.22
 
 - **Validators** — RAM below the chain cap still lets you Install after typing the node id. The short-RAM warning stays on screen.
@@ -47,12 +52,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - **Legal** — public `/legal` Terms of Use, Privacy Policy, and Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. MIT `LICENSE`.
 - **Panel** — after a successful self-update, confirm to reload the UI. Cardano producer attach is drag-and-drop. FTP overview actions stay on one row.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.21** together.
-
-## What's new in 1.1.20
-
-- **Validators** — Cardano can attach KES/VRF/opcert and run as a block producer (official `CARDANO_BLOCK_PRODUCER`; cold keys refused). Lighthouse v8 flag fix. Nimbus `--el`. Solana `anzaxyz/agave`. Avalanche ifconfigMe + host TZ. Wizard shows a RAM-short warning instead of a silent Next disable.
-- **Panel** — LogViewer filter no longer covers the first log line. Official GitHub versions are newest-first without “tested” copy.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.20** together.
 
 [Full changelog](./CHANGELOG.md)
 
