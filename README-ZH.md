@@ -37,6 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.22 新內容
+
+- **驗證者** — 記憶體低於鏈上限時仍可安裝，須輸入節點識別碼確認。警告會留在畫面上。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.22**。
+
 ## 1.1.21 新內容
 
 - **法律文件** — 公開 `/legal` 使用條款、私隱政策、免責聲明（正式英文 + 香港書面中文；如有歧義以英文為準）。登入頁腳與 Support 有連結。MIT `LICENSE`。
@@ -48,12 +53,6 @@
 - **驗證者** — Cardano 可掛 KES／VRF／opcert，以官方 `CARDANO_BLOCK_PRODUCER` 當 block producer（拒收 cold）。Lighthouse v8 旗標修正。Nimbus 改 `--el`。Solana 用 `anzaxyz/agave`。Avalanche 用 ifconfigMe 加主機 TZ。精靈記憶體不足會顯示警告，不再默默關掉「下一步」。
 - **面板** — LogViewer 關鍵字欄不再蓋住第一行日誌。官方 GitHub 版本最新在前，不寫「已測過」。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.20**。
-
-## 1.1.19 新內容
-
-- **驗證者** — Hoodi 用 lighthouse v8.2.2 加 EthStaker checkpoint。Cosmos state-sync 只改 `[statesync]`。NEAR 預設 12g 並預檢 RAM。Avalanche 用 opendns 公網 IP。P2P 開 UDP／seed。列表即時 ↓／↑。官方 GitHub 版本可選。
-- **面板** — 操作串流可放大、compose YAML 編輯器、質押憑證卡片、Docker inspect／log 用滿寬。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.19**。
 
 [完整變更紀錄](./CHANGELOG.md)
 

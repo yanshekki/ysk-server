@@ -421,13 +421,11 @@ export function ValidatorsPage() {
       ? t('validators.wizard.needDocker')
       : blockReason === 'disk'
         ? diskShortTitle
-        : blockReason === 'memory'
-          ? memShortTitle
-          : blockReason === 'mainnet'
-            ? t('validators.wizard.mainnetAck')
-            : blockReason === 'path'
-              ? t('validators.wizard.needCustomPath')
-              : undefined;
+        : blockReason === 'mainnet'
+          ? t('validators.wizard.mainnetAck')
+          : blockReason === 'path'
+            ? t('validators.wizard.needCustomPath')
+            : undefined;
   const canAdvanceFromDisk = !diskShort || (netSpec?.kind === 'mainnet' && mainnetOk);
   const autoClearCandidates = [...instances]
     .map((i) => {
@@ -497,6 +495,7 @@ export function ValidatorsPage() {
           dataPath: customPath ? dataPath.trim() || undefined : undefined,
           rpcPort: rpcPort.trim() ? Number(rpcPort) : undefined,
           acceptLowDisk: netSpec?.kind === 'mainnet' && mainnetOk,
+          acceptLowMem: memShort,
           execute,
         },
         {
@@ -2113,14 +2112,16 @@ export function ValidatorsPage() {
           disk: needBytes != null ? formatBytes(needBytes) : '—',
         })}
         confirmLabel={t('validators.wizard.install')}
-        confirmText={netSpec?.kind === 'mainnet' ? previewId : undefined}
-        severity={netSpec?.kind === 'mainnet' ? 'critical' : 'destructive'}
+        confirmText={netSpec?.kind === 'mainnet' || memShort ? previewId : undefined}
+        severity={netSpec?.kind === 'mainnet' || memShort ? 'critical' : 'destructive'}
+        dataConfirm="install"
         busy={busy}
         consequences={[
           t('validators.wizard.installC1'),
           t('validators.wizard.installC2'),
           ...(netSpec?.kind === 'mainnet' ? [t('validators.wizard.installC3')] : []),
           ...(diskShort ? [t('validators.wizard.lowDiskAcked')] : []),
+          ...(memShort ? [t('validators.wizard.lowMemAcked')] : []),
           ...(dockerInstalled === false ? [t('validators.wizard.needDocker')] : []),
         ]}
         onConfirm={() => {

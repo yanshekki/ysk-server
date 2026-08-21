@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.22 — 2026-08-20
+
+### Improve
+- Validator wizard: RAM below the chain cap no longer disables Install. Confirm by typing the node id (`acceptLowMem` / `--accept-low-mem`). The warning stays visible.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.22**.
+
 ## 1.1.21 — 2026-08-20
 
 ### Add

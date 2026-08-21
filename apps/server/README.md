@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.22
+
+- Validator wizard: RAM below the chain cap still lets you Install after typing the node id.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.22**.
+
 ## What's new in 1.1.21
 
 - Public `/legal` Terms, Privacy, Disclaimer (EN + Hong Kong written Chinese; English controls). After panel self-update, confirm to reload the UI. Cardano producer drag-drop. FTP overview actions stay aligned.
@@ -39,11 +44,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
 - Cardano block-producer attach (KES/VRF/opcert, official `CARDANO_BLOCK_PRODUCER`, cold keys refused). Lighthouse v8 / Nimbus / Agave / Avalanche ifconfigMe + TZ. Wizard RAM-short warning. LogViewer filter no longer covers line 1.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.20**.
-
-## What's new in 1.1.19
-
-- E2E-11118 leftover: Cosmos section-scoped state-sync, Hoodi lighthouse v8.2.2 + EthStaker checkpoint, NEAR 12g. Avalanche opendns public-ip. P2P UDP/seeds. Live traffic. Official version picker. Panel: ops-stream maximize, YAML editor, staking cards, full inspect/log modals.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.19**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -112,8 +112,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.21) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.21) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.22) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.22) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

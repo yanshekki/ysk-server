@@ -65,6 +65,7 @@ export const validatorsApi = {
       dataPath?: string;
       rpcPort?: number;
       acceptLowDisk?: boolean;
+      acceptLowMem?: boolean;
       execute?: boolean;
     },
     opts?: { onLog?: (line: InstallLogLine) => void; signal?: AbortSignal },

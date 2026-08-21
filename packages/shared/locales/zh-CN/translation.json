@@ -13790,7 +13790,8 @@
         "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
         "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
         "rpc": "Public RPC node — not a staking validator."
-      }
+      },
+      "lowMemAcked": "可用内存低于此链的内存上限加 1 GiB 预留。你已确认仍要建立；节点可能因内存不足而中止。"
     },
     "actions": {
       "detail": "详情",

@@ -17,6 +17,7 @@ import { getValidatorInstance } from './store.js';
 function mockHost(opts: {
   execute?: boolean;
   dfAvail?: number;
+  memAvail?: number;
   docker?: boolean;
   composeFail?: boolean;
 }): HostExecutor {
@@ -39,6 +40,10 @@ function mockHost(opts: {
             `/dev/sda1 ext4 3000000000000 1000000000000 ${avail} 10% /`,
           ].join('\n'),
         );
+      }
+      if (argv[0] === 'cat' && argv[1] === '/proc/meminfo') {
+        const kb = Math.max(1, Math.floor((opts.memAvail ?? 64 * 1024 ** 3) / 1024));
+        return r(`MemTotal: ${kb} kB\nMemAvailable: ${kb} kB\n`);
       }
       if (argv[0] === 'du') return r('1\t/x');
       if (argv[0] === 'docker' && argv[1] === 'compose' && argv[2] === 'version') {
@@ -158,6 +163,34 @@ describe('validator manager', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.blocked).toBe(true);
+  });
+
+  it('refuses create when free RAM is below the chain cap unless accepted', async () => {
+    const dataDir = tmp();
+    const low = await createValidatorInstance({
+      dataDir,
+      host: mockHost({ execute: false, memAvail: 4 * 1024 ** 3 }),
+      execute: false,
+      chain: 'near',
+      network: 'testnet',
+      profile: 'minimal',
+    });
+    expect(low.ok).toBe(false);
+    expect(low.blocked).toBe(true);
+    expect(String(low.notes?.join(' '))).toMatch(/memLow|RAM|memory|記憶體/i);
+
+    const accepted = await createValidatorInstance({
+      dataDir,
+      host: mockHost({ execute: false, memAvail: 4 * 1024 ** 3 }),
+      execute: false,
+      chain: 'near',
+      network: 'testnet',
+      profile: 'minimal',
+      acceptLowMem: true,
+    });
+    expect(accepted.blocked).not.toBe(true);
+    expect(accepted.instanceId).toBe('near-testnet-1');
+    expect(String(accepted.notes?.join(' '))).toMatch(/lowMemAcked|memory cap|記憶體/i);
   });
 
   it('allows mainnet below minimum when operator accepts low disk', async () => {

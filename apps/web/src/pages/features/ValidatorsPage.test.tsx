@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { authStore } from '../../shared/stores/auth-store';
@@ -710,6 +710,21 @@ describe('ValidatorsPage', () => {
     expect(await screen.findByText(/50\.0 GiB · free 58\.6 GiB/i)).toBeInTheDocument();
     expect(screen.getByText(/not enough free ram/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^next$/i })).not.toBeDisabled();
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    await user.click(screen.getByRole('button', { name: /^next$/i }));
+    const install = screen.getByRole('button', { name: /^install$/i });
+    expect(install).not.toBeDisabled();
+    expect(install).toHaveAttribute('data-confirm', 'dialog');
+    await user.click(install);
+    expect(await screen.findByRole('heading', { name: /install this node/i })).toBeInTheDocument();
+    const confirmDlg = screen.getByRole('heading', { name: /install this node/i }).closest(
+      '[role="dialog"]',
+    ) as HTMLElement;
+    expect(within(confirmDlg).getByText(/memory cap plus 1 gib headroom/i)).toBeInTheDocument();
+    expect(within(confirmDlg).getByLabelText(/near-testnet-1/i)).toBeInTheDocument();
+    await user.click(within(confirmDlg).getByRole('button', { name: /^cancel$/i }));
+    await user.click(screen.getByRole('button', { name: /^back$/i }));
+    await user.click(screen.getByRole('button', { name: /^back$/i }));
     await user.click(screen.getByRole('button', { name: /^back$/i }));
     await user.click(screen.getByRole('radio', { name: /ethereum/i }));
     await waitFor(() => {

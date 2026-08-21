@@ -232,7 +232,8 @@
     },
     "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
     "memShort": "Not enough free RAM for this chain's memory cap",
-    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}"
+    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
+    "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall."
   },
   "actions": {
     "detail": "Rincian",

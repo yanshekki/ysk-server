@@ -258,6 +258,7 @@ export async function handleValidatorsRoutes(
             cpus: body.cpus != null ? String(body.cpus) : undefined,
             rpcPort: body.rpcPort != null ? Number(body.rpcPort) : undefined,
             acceptLowDisk: body.acceptLowDisk === true,
+            acceptLowMem: body.acceptLowMem === true,
             onLog: hooks.onLog,
             signal: hooks.signal,
           });

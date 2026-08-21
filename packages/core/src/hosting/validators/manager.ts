@@ -153,6 +153,7 @@ export async function createValidatorInstance(
     cpus?: string;
     rpcPort?: number;
     acceptLowDisk?: boolean;
+    acceptLowMem?: boolean;
   },
 ): Promise<ValidatorOpsResult> {
   if (!isValidatorChainId(input.chain)) {
@@ -201,11 +202,12 @@ export async function createValidatorInstance(
   }
   const memory = input.memory || defaultValidatorMemoryLimit(chain);
   const memNeed = parseValidatorMemoryBytes(memory);
-  if (
+  const lowMem = Boolean(
     memNeed &&
-    disk.memAvailableBytes != null &&
-    disk.memAvailableBytes < memNeed + VALIDATOR_MEMORY_HEADROOM_BYTES
-  ) {
+      disk.memAvailableBytes != null &&
+      disk.memAvailableBytes < memNeed + VALIDATOR_MEMORY_HEADROOM_BYTES,
+  );
+  if (lowMem && !input.acceptLowMem) {
     return blockedValidatorOp({
       reason: 'validation',
       notes: [
@@ -319,6 +321,8 @@ export async function createValidatorInstance(
 
   const diskAckNotes =
     lowDisk && input.acceptLowDisk ? [tl('validators.wizard.lowDiskAcked')] : [];
+  const memAckNotes =
+    lowMem && input.acceptLowMem ? [tl('validators.wizard.lowMemAcked')] : [];
 
   if (!input.execute || !input.host.executeEnabled()) {
     return writtenValidatorOp({
@@ -326,6 +330,7 @@ export async function createValidatorInstance(
       written,
       notes: [
         ...diskAckNotes,
+        ...memAckNotes,
         tl('validators.notes.dryCreate'),
         tl('validators.notes.beta'),
       ],
@@ -385,7 +390,7 @@ export async function createValidatorInstance(
   }
   upsertValidatorInstance(input.dataDir, { ...inst, desiredState: 'running' });
   await maybeSyncExposure(input, inst, 'start');
-  const notes = [...diskAckNotes, tl('validators.notes.created')];
+  const notes = [...diskAckNotes, ...memAckNotes, tl('validators.notes.created')];
   if (input.mithril && inst.chain === 'ada') {
     const { restoreAdaMithril } = await import('./mithril.js');
     const m = await restoreAdaMithril({

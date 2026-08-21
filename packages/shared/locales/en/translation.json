@@ -13665,7 +13665,7 @@
       "disk": "Disk"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "Execution client",
@@ -13797,6 +13797,7 @@
       "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
       "mainnetAck": "Create the mainnet node. I understand it needs a lot of disk, and a staking validator can lose stake if it is offline or misconfigured.",
       "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
+      "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall.",
       "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
       "memory": "Memory limit",
       "cpus": "CPU limit",

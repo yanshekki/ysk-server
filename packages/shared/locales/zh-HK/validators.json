@@ -130,7 +130,7 @@
     "disk": "磁碟"
   },
   "cli": {
-    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-mainnet] [--refresh] [--execute] [--json]"
+    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "執行層客戶端",
@@ -262,6 +262,7 @@
     "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
     "mainnetAck": "我明白：主網會用很多磁碟空間。若把這台機器當驗證者，離線或設定錯誤，質押的幣可能被罰走。我仍要建立主網節點。",
     "lowDiskAcked": "可用磁碟低於建議值。你已確認仍要建立；空間不足時同步可能中斷。",
+    "lowMemAcked": "可用記憶體低於此鏈的記憶體上限加 1 GiB 預留。你已確認仍要建立；節點可能因記憶體不足而中止。",
     "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
     "memory": "記憶體上限",
     "cpus": "CPU 上限",

@@ -220,6 +220,7 @@ export async function runValidatorsCommand(
       dataPath: h.getOpt(args, '--data-path') ?? undefined,
       rpcPort: h.getOpt(args, '--rpc-port') != null ? Number(h.getOpt(args, '--rpc-port')) : undefined,
       acceptLowDisk: h.hasFlag(args, '--accept-low-disk'),
+      acceptLowMem: h.hasFlag(args, '--accept-low-mem'),
     });
     h.printJson(result);
     return h.exitFromResult(result);

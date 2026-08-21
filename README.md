@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.22
+
+- **Validators** — RAM below the chain cap still lets you Install after typing the node id. The short-RAM warning stays on screen.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.22** together.
+
 ## What's new in 1.1.21
 
 - **Legal** — public `/legal` Terms of Use, Privacy Policy, and Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. MIT `LICENSE`.
@@ -48,12 +53,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - **Validators** — Cardano can attach KES/VRF/opcert and run as a block producer (official `CARDANO_BLOCK_PRODUCER`; cold keys refused). Lighthouse v8 flag fix. Nimbus `--el`. Solana `anzaxyz/agave`. Avalanche ifconfigMe + host TZ. Wizard shows a RAM-short warning instead of a silent Next disable.
 - **Panel** — LogViewer filter no longer covers the first log line. Official GitHub versions are newest-first without “tested” copy.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.20** together.
-
-## What's new in 1.1.19
-
-- **Validators** — Hoodi uses lighthouse v8.2.2 + EthStaker checkpoint. Cosmos state-sync is section-scoped. NEAR 12g with RAM preflight. Avalanche opendns public-ip. P2P UDP/seeds. Live ↓/↑ traffic. Official GitHub version picker.
-- **Panel** — ops-stream maximize, compose YAML editor, staking credential cards, full Docker inspect/log modals.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.19** together.
 
 [Full changelog](./CHANGELOG.md)
 
