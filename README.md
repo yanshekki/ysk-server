@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.24
+
+- **DNS** — Host WAN DDNS upserts named A/AAAA when this host’s public address changes (Cloudflare, RFC 2136, local PowerDNS). Probe is detect-only. Orange-cloud VPN hostnames stay DNS-only unless you confirm. VPN Endpoint can fill the DDNS hostname without rewriting peers.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.24** together.
+
 ## What's new in 1.1.23
 
 - **Validators** — NEAR compose no longer fails before any container exists (`$PUB` eaten by Compose; `pids_limit` vs deploy pids). Cosmos `$TRUST_*` escaped the same way. RAM+CPU overlay keeps `cpus` in lockstep with deploy limits.

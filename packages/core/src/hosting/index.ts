@@ -41,6 +41,7 @@ export * from './php-ini.js';
 export * from './runtime-tuning.js';
 export * from './quota.js';
 export * from './cloudflare-dns.js';
+export * from './ddns/index.js';
 export * from './app-templates.js';
 export * from './redis-provision.js';
 export * from './wordpress-download.js';

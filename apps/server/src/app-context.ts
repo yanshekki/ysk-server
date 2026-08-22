@@ -40,6 +40,9 @@ import {
   runValidatorUpgradeScan,
   runValidatorAutoClear,
   checkIpDnsbl,
+  loadDdnsSettings,
+  loadDdnsRecords,
+  runDdnsTick,
   createTerminalTicketStore,
   createVncSessionTicketStore,
   HostBrowseService,
@@ -628,6 +631,35 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           audit.append({
             actor: 'system',
             action: 'logs.journal.auto_vacuum',
+            detail: { error: e instanceof Error ? e.message : String(e) },
+            ok: false,
+          });
+        }
+      },
+    );
+
+    scheduler.everyDynamic(
+      'ddns-wan',
+      () => {
+        const sec = loadDdnsSettings(dataDir).intervalSeconds || 300;
+        return Math.max(60_000, Math.min(86_400_000, sec * 1000));
+      },
+      async () => {
+        try {
+          const settings = loadDdnsSettings(dataDir);
+          if (!settings.enabled) return;
+          const recs = loadDdnsRecords(dataDir);
+          if (!recs.some((r) => r.enabled)) return;
+          await runDdnsTick({
+            dataDir,
+            host,
+            db,
+            execute: host.executeEnabled(),
+          });
+        } catch (e) {
+          audit.append({
+            actor: 'system',
+            action: 'dns.ddns.scheduled',
             detail: { error: e instanceof Error ? e.message : String(e) },
             ok: false,
           });

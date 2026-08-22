@@ -37,6 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.24 新內容
+
+- **DNS** — 主機 WAN DDNS：本機公網位址變更時 upsert 指定 A／AAAA（Cloudflare、RFC 2136、本機 PowerDNS）。探測只偵測。VPN 主機名稱預設 DNS only（orange cloud 須確認）。VPN Endpoint 可填入 DDNS 主機名稱，不會改寫現有 peers。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.24**。
+
 ## 1.1.23 新內容
 
 - **驗證者** — NEAR compose 不再在建立容器前失敗（Compose 吃掉 `$PUB`；`pids_limit` 與 deploy pids 不一致）。Cosmos 的 `$TRUST_*` 同樣跳脫。RAM+CPU 限制與 deploy `cpus` 對齊。

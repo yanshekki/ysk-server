@@ -156,5 +156,8 @@
   "portRequired": "Listen port is required.",
   "importInvalid": "Could not detect a WireGuard or OpenVPN client conf.",
   "qrFailed": "Could not generate a QR code for this config. Download or copy the text instead.",
-  "cfgTitle": "Config — {{name}}"
+  "cfgTitle": "Config — {{name}}",
+  "ddnsFill": "Use DDNS hostname",
+  "ddnsFilled": "Filled endpoint host from DDNS. Peers are unchanged.",
+  "ddnsFillEmpty": "No DDNS primary hostname yet. Add one on the DNS DDNS tab."
 }

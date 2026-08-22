@@ -156,5 +156,8 @@
   "portRequired": "请填写监听端口。",
   "importInvalid": "未能识别为 WireGuard 或 OpenVPN 客户端配置。",
   "qrFailed": "未能生成此配置的二维码。请改为下载或复制文本。",
-  "cfgTitle": "配置 — {{name}}"
+  "cfgTitle": "配置 — {{name}}",
+  "ddnsFill": "Use DDNS hostname",
+  "ddnsFilled": "Filled endpoint host from DDNS. Peers are unchanged.",
+  "ddnsFillEmpty": "No DDNS primary hostname yet. Add one on the DNS DDNS tab."
 }

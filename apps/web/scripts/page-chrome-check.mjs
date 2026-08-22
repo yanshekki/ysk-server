@@ -21,6 +21,7 @@ const SKIP = new Set([
   'SoftwareHubPage.tsx', // Navigate redirect only
   'FirewallServicesPanel.tsx', // embedded tab panel under Firewall
   'FtpServicePanel.tsx', // embedded panel under FtpPage
+  'DnsDdnsPanel.tsx', // embedded tab panel under DnsPage
   'CronScheduleBuilder.tsx',
   'MariadbPage.tsx',
   'MariadbServicePage.tsx',

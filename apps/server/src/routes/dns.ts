@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import { handleDnsClusterRoutes } from './dns-cluster.js';
 import { handleDnsToolsRoutes } from './dns-tools.js';
+import { handleDnsDdnsRoutes } from './dns-ddns.js';
 
 export async function handleDnsRoutes(
   ctx: AppContext,
@@ -14,6 +15,7 @@ export async function handleDnsRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+  if (await handleDnsDdnsRoutes(ctx, req, res, url, method)) return true;
   if (await handleDnsClusterRoutes(ctx, req, res, url, method)) return true;
   if (await handleDnsToolsRoutes(ctx, req, res, url, method)) return true;
   return false;

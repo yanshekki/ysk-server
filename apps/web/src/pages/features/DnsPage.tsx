@@ -27,8 +27,6 @@ import {
   ServerListFilters,
   buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-
-const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools', 'stack', 'about'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
@@ -38,8 +36,11 @@ import { authStore } from '../../shared/stores/auth-store';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { pickDnsStartFailureNotes } from './dns-start-notes';
+import { DnsDdnsPanel } from './DnsDdnsPanel';
 import { toast } from '../../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
+
+const DNS_TABS = ['zones', 'records', 'ddns', 'cluster', 'dnssec', 'tools', 'stack', 'about'] as const;
 
 type DnsHealth = {
   ok: boolean;
@@ -245,6 +246,7 @@ export function DnsPage() {
       );
     }
     tabs.push(
+      { id: 'ddns', label: t('dns.tabs.ddns') },
       { id: 'tools', label: t('dns.tabs.tools') },
       { id: 'stack', label: t('tabs.stack') },
       { id: 'about', label: t('dns.tabs.about') },
@@ -1165,7 +1167,15 @@ export function DnsPage() {
                           key: 'name',
                           header: t('dns.colName'),
                           render: (r) => (
-                            <span className="dns-zone__rec-name">{String(r.name)}</span>
+                            <span className="dns-zone__rec-name">
+                              {String(r.name)}
+                              {String(r.managedBy ?? '') === 'ddns' ? (
+                                <Badge className="u-ml-2">DDNS</Badge>
+                              ) : null}
+                              {String(r.managedBy ?? '') === 'cdn' ? (
+                                <Badge className="u-ml-2">CDN</Badge>
+                              ) : null}
+                            </span>
                           ) },
                         {
                           key: 'value',
@@ -1539,6 +1549,8 @@ export function DnsPage() {
           </div>
         ) : null}
 
+        {tab === 'ddns' ? <DnsDdnsPanel /> : null}
+
         {tab === 'tools' ? (
           <div className="tab-panel stack">
             {health ? (
@@ -1895,6 +1907,15 @@ export function DnsPage() {
                   <div className="dns-about__body">
                     <div className="dns-about__item-title">{t('dns.aboutStackTitle')}</div>
                     <p className="dns-about__text">{t('dns.aboutStackBody')}</p>
+                  </div>
+                </li>
+                <li className="dns-about__item">
+                  <span className="dns-about__n" aria-hidden>
+                    5
+                  </span>
+                  <div className="dns-about__body">
+                    <div className="dns-about__item-title">{t('dns.aboutDdnsTitle')}</div>
+                    <p className="dns-about__text">{t('dns.aboutDdnsBody')}</p>
                   </div>
                 </li>
               </ol>

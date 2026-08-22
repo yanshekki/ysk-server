@@ -4103,6 +4103,111 @@ async function mainInner(
     } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
+      if (sub === 'ddns') {
+        const act = cliPositionals(args).slice(2)[0] ?? 'status';
+        const {
+          getDdnsStatus,
+          runDdnsTick,
+          upsertDdnsRecord,
+          deleteDdnsRecord,
+          patchDdnsSettings,
+          mergeDdnsSecrets,
+        } = await import('ysk-server-core');
+        if (act === 'status' || act === 'list') {
+          printJson({
+            ok: true,
+            ...(await getDdnsStatus({
+              dataDir: ctx.dataDir,
+              executeEnabled: ctx.host.executeEnabled(),
+              nextRunAt: ctx.scheduler.get('ddns-wan')?.nextRunAt ?? null,
+            })),
+          });
+          return 0;
+        }
+        if (act === 'probe') {
+          printJson({
+            ok: true,
+            ...(await getDdnsStatus({
+              dataDir: ctx.dataDir,
+              executeEnabled: ctx.host.executeEnabled(),
+              probe: true,
+              nextRunAt: ctx.scheduler.get('ddns-wan')?.nextRunAt ?? null,
+            })),
+          });
+          return 0;
+        }
+        if (act === 'enable' || act === 'disable') {
+          const settings = patchDdnsSettings(ctx.dataDir, { enabled: act === 'enable' });
+          printJson({ ok: true, settings });
+          return 0;
+        }
+        if (act === 'settings') {
+          const interval = getOpt(args, '--interval');
+          const settings = patchDdnsSettings(ctx.dataDir, {
+            intervalSeconds: interval ? Number(interval) : undefined,
+            updateIdentity: hasFlag(args, '--identity')
+              ? true
+              : hasFlag(args, '--no-identity')
+                ? false
+                : undefined,
+            primaryFqdn: getOpt(args, '--primary') ?? undefined,
+            enabled: hasFlag(args, '--enable')
+              ? true
+              : hasFlag(args, '--disable')
+                ? false
+                : undefined,
+          });
+          const token = getOpt(args, '--cf-token');
+          const rfcServer = getOpt(args, '--rfc-server');
+          const rfcKey = getOpt(args, '--rfc-key-file');
+          if (token || rfcServer || rfcKey) {
+            mergeDdnsSecrets(ctx.dataDir, {
+              cloudflareToken: token ?? undefined,
+              rfc2136:
+                rfcServer || rfcKey
+                  ? { server: rfcServer ?? '127.0.0.1', keyFile: rfcKey ?? undefined }
+                  : undefined,
+            });
+          }
+          printJson({ ok: true, settings });
+          return 0;
+        }
+        if (act === 'update') {
+          const st = await runDdnsTick({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            db: ctx.db,
+            execute: wantsHostExecute(args),
+            force: hasFlag(args, '--force'),
+          });
+          printJson({ ok: !st.detected.error, ...st });
+          return st.detected.error ? 4 : 0;
+        }
+        if (act === 'add' || act === 'record') {
+          const fqdn = getOpt(args, '--fqdn') ?? cliPositionals(args).slice(3)[0];
+          const r = upsertDdnsRecord(ctx.dataDir, {
+            fqdn: String(fqdn ?? ''),
+            type: (getOpt(args, '--type') === 'AAAA' ? 'AAAA' : 'A'),
+            provider: (getOpt(args, '--provider') as 'cloudflare' | 'rfc2136' | 'local') || 'cloudflare',
+            zone: getOpt(args, '--zone') ?? undefined,
+            ttl: getOpt(args, '--ttl') ? Number(getOpt(args, '--ttl')) : undefined,
+            proxied: hasFlag(args, '--proxied'),
+          });
+          printJson(r);
+          return r.ok ? 0 : 2;
+        }
+        if (act === 'delete') {
+          const id = getOpt(args, '--id') ?? '';
+          const confirm = getOpt(args, '--confirm') ?? getOpt(args, '--fqdn') ?? '';
+          const r = deleteDdnsRecord(ctx.dataDir, id, confirm);
+          printJson(r);
+          return r.ok ? 0 : 2;
+        }
+        process.stderr.write(
+          'Usage: ysk-server dns ddns status|probe|update|add|delete|enable|disable|settings [--fqdn FQDN] [--provider cloudflare|rfc2136|local] [--force] [--execute]\n',
+        );
+        return 2;
+      }
       if (sub === 'zones' || sub === 'list') {
         printJson({ ok: true, items: listManagedDnsZones(ctx.dataDir) });
         return 0;

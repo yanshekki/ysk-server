@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-21 — **1.1.23** (NEAR compose `$PUB` escape + pids/cpus lockstep with deploy limits). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-22 — **1.1.24** (host WAN DDNS: Cloudflare / RFC2136 / local `managedBy=ddns`). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 
@@ -104,6 +104,7 @@
 | C10 | Zone → SSL LE preset deep-link | — | — | ✓ | Better |
 | C11 | dig / DNS lookup tool (UI + API) | — | D | ✓ | P1 |
 | C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✓ | P1 |
+| C13 | Host WAN DDNS (A/AAAA upsert; Cloudflare / RFC2136 / local `managedBy=ddns`) | H | D | ✓ | P1 |
 
 > DNS + multi-node CDN 產品設計：[`docs/product/dns-cdn-design.md`](./product/dns-cdn-design.md)
 

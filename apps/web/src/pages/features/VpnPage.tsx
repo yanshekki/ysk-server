@@ -26,7 +26,7 @@ import {
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { isCidr } from 'ysk-server-shared';
+import { isCidr, type DdnsStatusDto } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 import { notifyError, notifyOk, notifyWarn } from '../../shared/lib/notify';
 import { formatDateTime } from '../../shared/lib/datetime';
@@ -249,6 +249,21 @@ export function VpnPage() {
     if (proto) setOvpnProto(proto);
     setEndpoint((prev) => syncEndpointPort(prev, port, hintHost));
   };
+
+  const fillEndpointFromDdns = useCallback(async () => {
+    try {
+      const r = await api.requestRaw<DdnsStatusDto>('/api/v1/dns/ddns');
+      const host = (r.settings.primaryFqdn || r.records.find((x) => x.enabled)?.fqdn || '').trim();
+      if (!host) {
+        notifyWarn(t('vpn.ddnsFillEmpty'));
+        return;
+      }
+      setEndpoint(buildEndpoint(host, listenPort) || host);
+      notifyOk(t('vpn.ddnsFilled'));
+    } catch (e) {
+      notifyError(e instanceof Error ? e.message : t('vpn.ddnsFillEmpty'));
+    }
+  }, [listenPort, t]);
 
   const peers: VpnServerPeer[] = useMemo(
     () =>
@@ -571,6 +586,15 @@ export function VpnPage() {
               placeholder={`vpn.example.com:${listenPort}`}
               autoComplete="off"
             />
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => void fillEndpointFromDdns()}
+            >
+              {t('vpn.ddnsFill')}
+            </Button>
           </Field>
         </FormLayout>
 

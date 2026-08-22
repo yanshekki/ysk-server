@@ -231,6 +231,86 @@ export async function applyCloudflareDns(input: {
     dryRun: false };
 }
 
+export type CloudflareUpsertResult = {
+  ok: boolean;
+  action: 'created' | 'updated' | 'skipped' | 'failed';
+  recordId?: string;
+  code?: string;
+  error?: string;
+};
+
+/**
+ * Upsert a single A/AAAA. Do not use applyCloudflareDns for DDNS ticks (that POSTs the whole template).
+ */
+export async function upsertCloudflareAddressRecord(input: {
+  zone: string;
+  fqdn: string;
+  type: 'A' | 'AAAA';
+  content: string;
+  ttl?: number;
+  proxied?: boolean;
+  token: string;
+  fetchImpl?: CfFetch;
+}): Promise<CloudflareUpsertResult> {
+  const token = input.token.trim();
+  if (!token) return { ok: false, action: 'failed', error: 'missing Cloudflare API token' };
+  const zone = input.zone.trim().toLowerCase();
+  const fqdn = input.fqdn.trim().toLowerCase().replace(/\.$/, '');
+  const fetchImpl = input.fetchImpl ?? defaultFetch;
+  const zoneId = await resolveCloudflareZoneId(zone, token, fetchImpl);
+  if (!zoneId) {
+    return { ok: false, action: 'failed', error: `Could not resolve Cloudflare zone id for ${zone}` };
+  }
+  const listUrl = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=${input.type}&name=${encodeURIComponent(fqdn)}`;
+  const listed = await fetchImpl(listUrl, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const listJson = (await listed.json()) as {
+    success?: boolean;
+    result?: Array<{ id: string; content?: string; proxied?: boolean; ttl?: number }>;
+  };
+  const existing = listJson.result?.[0];
+  const ttl = input.ttl && input.ttl > 0 ? input.ttl : 300;
+  const proxied = input.proxied === true;
+  const body = JSON.stringify({
+    type: input.type,
+    name: fqdn,
+    content: input.content,
+    ttl,
+    proxied,
+  });
+  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+  if (
+    existing &&
+    existing.content === input.content &&
+    Boolean(existing.proxied) === proxied &&
+    (existing.ttl == null || existing.ttl === ttl || ttl === 1)
+  ) {
+    return { ok: true, action: 'skipped', recordId: existing.id, code: 'unchanged' };
+  }
+  const url = existing
+    ? `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${existing.id}`
+    : `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`;
+  const method = existing ? 'PATCH' : 'POST';
+  const res = await fetchImpl(url, { method, headers, body });
+  const json = (await res.json()) as {
+    success?: boolean;
+    result?: { id?: string };
+    errors?: Array<{ message?: string; code?: number }>;
+  };
+  if (json.success && json.result?.id) {
+    return {
+      ok: true,
+      action: existing ? 'updated' : 'created',
+      recordId: json.result.id,
+      code: String(res.status),
+    };
+  }
+  const msg = json.errors?.map((e) => e.message).filter(Boolean).join('; ') || `HTTP ${res.status}`;
+  return { ok: false, action: 'failed', error: msg, code: String(res.status) };
+}
+
 /**
  * Persist last apply result under dns_zones store.
  */

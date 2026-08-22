@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.24 — 2026-08-22
+
+### Add
+- Host WAN DDNS: panel DNS tab, `ysk-server dns ddns`, `/api/v1/dns/ddns`. Cloudflare upsert, RFC 2136 nsupdate (remote needs a TSIG key file under the data directory; secret never on argv), local PowerDNS `managedBy=ddns`. Probe is detect-only. Update now can force republish. Scheduler is in-process (not crontab). Empty or private IPs are never published. Publish needs root + `YSK_EXECUTE=1`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.24**.
+
 ## 1.1.23 — 2026-08-21
 
 ### Fix

@@ -171,7 +171,7 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
-    pattern: /^\/api\/v1\/dns\/(zones|records)/,
+    pattern: /^\/api\/v1\/dns\/(zones|records|ddns)/,
     cap: 'dns.apply',
   },
   {

@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.24
+
+- Host WAN DDNS: Cloudflare / RFC 2136 / local PowerDNS upsert when the host public address changes. Probe is detect-only. Publish needs execute.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.24**.
+
 ## What's new in 1.1.23
 
 - NEAR compose: escape `$PUB` for Compose; keep `pids_limit` in lockstep with deploy pids. Cosmos `$TRUST_*` and RAM+CPU `cpus` overlay match the same rules.
@@ -112,8 +117,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.23) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.23) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.24) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.24) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

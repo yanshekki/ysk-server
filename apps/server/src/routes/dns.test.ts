@@ -21,6 +21,25 @@ describe('dns routes (HTTP)', () => {
     expect(res.status).toBeGreaterThanOrEqual(401);
   });
 
+  it('returns empty DDNS status when authenticated', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/dns/ddns');
+    expect(res.status).toBe(200);
+    const body = res.body as {
+      records?: unknown[];
+      settings?: { intervalSeconds?: number; enabled?: boolean };
+      hasCloudflareToken?: boolean;
+      hasRfc2136Key?: boolean;
+      nextRunAt?: string | null;
+    };
+    expect(Array.isArray(body.records)).toBe(true);
+    expect(body.settings?.intervalSeconds).toBeGreaterThanOrEqual(60);
+    expect(body.settings?.enabled).not.toBe(false);
+    expect(body.hasCloudflareToken).toBe(false);
+    expect(body.hasRfc2136Key).toBe(false);
+    expect(body.nextRunAt === null || typeof body.nextRunAt === 'string').toBe(true);
+  });
+
   it('lists dns cluster peers when authenticated', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'GET', '/api/v1/dns/cluster/peers');

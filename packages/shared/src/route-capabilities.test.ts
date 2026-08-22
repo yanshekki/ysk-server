@@ -38,6 +38,8 @@ describe('matchMutatingRouteCap', () => {
     expect(matchMutatingRouteCap('POST', '/api/v1/system/firewall/enable')).toBe(
       'firewall.flush',
     );
+    expect(matchMutatingRouteCap('POST', '/api/v1/dns/ddns/update')).toBe('dns.apply');
+    expect(matchMutatingRouteCap('DELETE', '/api/v1/dns/ddns/records/abc')).toBe('dns.apply');
   });
 
   it('gates impersonate separately from users.manage', () => {
