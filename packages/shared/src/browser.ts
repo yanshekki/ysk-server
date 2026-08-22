@@ -28,6 +28,7 @@ export * from './service-ports.js';
 export * from './list-query.js';
 export * from './ident.js';
 export * from './docker.js';
+export * from './ddns.js';
 
 /** Locale helpers only (no server t()/tl() loaders) */
 export {
