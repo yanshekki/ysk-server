@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "Confirmar a purga? Os caminhos de dados registrados (bancos de dados/correio) serão excluídos permanentemente.",
   "installedCount": "Instalado {{installed}} · Ausente {{missing}}",
+  "countHint": "Essas contagens são pacotes de sistema operacional no plano de software — e não as unidades de matriz de serviços na outra guia.",
+  "executeRoot": "Mudanças no sistema {{execute}} · administrador {{root}}",
+  "manifestPlan": "Plano {{plan}} ({{bundles}})",
+  "manifestHint": "Último plano de software e pacotes escolhidos",
   "needRootExecute": "A instalação/remoção ao vivo precisa de direitos de administrador e permissão de alteração do sistema. Você ainda pode fazer o teste.",
   "modeInstall": "Instalar plano",
   "modeUninstall": "Desinstalar",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "Selecione pelo menos um pacote. A seleção vazia não significa mais remover tudo.",
   "uninstallConfirmTitle": "Remover pacotes selecionados?",
   "uninstallConfirmDesc": "{{count}} pacote(s) serão removidos. Digite REMOVER para confirmar.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "Plano de controle",
+    "web": "Hospedagem na web",
+    "database": "Bancos de dados",
+    "email": "Pilha de correio",
     "dns": "DNS",
     "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "defense": "Defesa do anfitrião",
+    "runtimes": "Tempos de execução de linguagem"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "Somente plano de controle",
+    "recommended": "Hospedagem recomendada",
+    "full": "Todos os softwares"
   }
 }

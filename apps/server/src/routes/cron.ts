@@ -10,6 +10,7 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+import { tl, YskError } from 'ysk-server-shared';
 
 export async function handleCronRoutes(
   ctx: AppContext,
@@ -86,6 +87,84 @@ export async function handleCronRoutes(
         });
         sendJson(res, 201, { job });
         return true;
+      }
+      const hostMut = url.pathname.match(
+        /^\/api\/v1\/cron\/host\/(replace|disable|enable|delete|run|adopt)$/,
+      );
+      if (method === 'POST' && hostMut) {
+        const actor = ctx.auth.authenticate(getBearer(req));
+        const action = hostMut[1] ?? '';
+        const data = JSON.parse((await readBody(req)) || '{}') as {
+          user?: string;
+          oldRaw?: string;
+          schedule?: string;
+          command?: string;
+          confirm?: string;
+        };
+        const hostUser = String(data.user ?? '').trim();
+        const oldRaw = String(data.oldRaw ?? '');
+        try {
+          if (action === 'run') {
+            const r = await ctx.cron.runHostLine(hostUser, String(data.command ?? ''));
+            ctx.audit.append({
+              actor: actor.username,
+              action: 'cron.host.run',
+              detail: { user: hostUser, ok: r.ok },
+              ok: r.ok,
+            });
+            sendOpsResult(res, r);
+            return true;
+          }
+          if (action === 'adopt') {
+            const r = await ctx.cron.adoptHostLine({
+              user: hostUser,
+              oldRaw,
+              actor: actor.username,
+            });
+            ctx.audit.append({
+              actor: actor.username,
+              action: 'cron.host.adopt',
+              detail: { user: hostUser, jobId: r.jobId, ok: r.ok },
+              ok: r.ok,
+            });
+            sendOpsResult(res, r);
+            return true;
+          }
+          if (action === 'delete') {
+            const cmd = String(data.command ?? '').trim();
+            if (!cmd || String(data.confirm ?? '').trim() !== cmd) {
+              sendOpsResult(res, { ok: false, notes: [tl('notes.cron.hostConfirmMismatch')] });
+              return true;
+            }
+          }
+          const next =
+            action === 'replace'
+              ? {
+                  type: 'replace' as const,
+                  schedule: String(data.schedule ?? ''),
+                  command: String(data.command ?? ''),
+                }
+              : action === 'disable'
+                ? { type: 'comment' as const }
+                : action === 'enable'
+                  ? { type: 'uncomment' as const }
+                  : { type: 'delete' as const };
+          const r = await ctx.cron.rewriteHostLine({ user: hostUser, oldRaw, next });
+          ctx.audit.append({
+            actor: actor.username,
+            action: `cron.host.${action}`,
+            detail: { user: hostUser, ok: r.ok },
+            ok: r.ok,
+          });
+          sendOpsResult(res, r);
+          return true;
+        } catch (e) {
+          if (e instanceof YskError) {
+            sendOpsResult(res, { ok: false, notes: [e.message] });
+            return true;
+          }
+          throw e;
+        }
       }
       if (method === 'POST' && url.pathname === '/api/v1/cron/install') {
         const user = ctx.auth.authenticate(getBearer(req));

@@ -70,6 +70,8 @@
   "policyNotEqualFull": "写入范本 ≠ 服务已启用 ≠ 已在监听端口",
   "controlPlaneUnit": "控制面服务单元",
   "kpiRuntime": "运行状态",
+  "rawStateHint": "原始 unit 状态见提示",
+  "bootHint": "是否开机自启",
   "kpiBoot": "开机自启",
   "kpiCaps": "套用能力",
   "capsReady": "可安装到系统",
@@ -83,14 +85,12 @@
   "managedPathHint": "dataDir/systemd/ysk-server.service",
   "fragmentPath": "systemd 片段路径",
   "fromSystemd": "systemd 回报",
-  "pid": "PID {{pid}}",
+  "pid": "PID{{pid}}",
   "nextAction": "建议下一步",
   "controlRunningHint": "systemctl is-active = 活动",
   "aboutPolicyTitle": "套用政策",
   "aboutPolicySub": "写模板与安装到系统是两步；装完仍可重跑，不代表未完成。",
   "policyInstallFull": "安装并启用：复制到 /etc/systemd/system、daemon-reload、enable --now。需 root + EXECUTE。",
   "policyBlockedTitle": "无权限时封锁",
-  "policyNotEqualTitle": "状态不等同",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "状态不等同"
 }

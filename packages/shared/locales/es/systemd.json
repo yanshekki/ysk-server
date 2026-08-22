@@ -70,6 +70,8 @@
   "policyNotEqualFull": "Plantilla de escritura ≠ servicio habilitado ≠ escucha",
   "controlPlaneUnit": "Unidad de plano de control",
   "kpiRuntime": "Tiempo de ejecución",
+  "rawStateHint": "Estado de la unidad sin procesar en la información sobre herramientas",
+  "bootHint": "Si la unidad se inicia en el arranque",
   "kpiBoot": "Habilitar arranque",
   "kpiCaps": "Aplicar capacidad",
   "capsReady": "Se puede instalar en el sistema",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "La escritura de la plantilla y la instalación del sistema son pasos separados. Volver a ejecutar después de la instalación es una operación normal, no es un paso que falta.",
   "policyInstallFull": "Instalar y habilitar: copiar a /etc/systemd/system, daemon-reload, habilitar --now. Necesita root + EJECUTAR.",
   "policyBlockedTitle": "Bloqueado sin privilegios",
-  "policyNotEqualTitle": "Los estados no son equivalentes.",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "Los estados no son equivalentes."
 }

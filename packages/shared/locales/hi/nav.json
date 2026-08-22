@@ -21,6 +21,7 @@
   "postgresService": "पोस्टग्रेएसक्यूएल सेवा",
   "redis": "Redis",
   "redisService": "रेडिस सेवा",
+  "cluster": "कलस्टरों",
   "dns": "DNS",
   "ssl": "एसएसएल प्रमाणपत्र",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "आपकी भूमिका इस पृष्ठ को नहीं खोल सकती। आवश्यकता हो तो व्यवस्थापक से पूछें।",
   "backToDashboard": "डैशबोर्ड पर वापस",
   "validators": "वैलिडेटर (Beta)",
-  "docker": "डाक में काम करनेवाला मज़दूर",
-  "cluster": "Clusters"
+  "docker": "डाक में काम करनेवाला मज़दूर"
 }

@@ -36,6 +36,10 @@
   "emptyBansDesc": "অথবা fail2ban-ক্লায়েন্ট পড়ার অনুমতি নেই",
   "ignoreipTitle": "উপেক্ষা সাদা তালিকা",
   "ignoreipDesc": "আইপি কখনই নিষিদ্ধ করা হয়নি (প্যানেল ফাইল + ঐচ্ছিক লাইভ ফেইল২ব্যান-ক্লায়েন্ট)",
+  "whitelistEmptyWarn": "হোয়াইটলিস্ট খালি; jail আপনাকে নিষেধ করতে পারে। ignoreip প্রয়োগের আগে লগইন IP যোগ করুন।",
+  "suggestIgnoreLogin": "আপনার লগইন IP {{ip}}",
+  "applyIgnoreEmptyWarn": "খালি হোয়াইটলিস্টে প্রয়োগ করলে ignoreip খালি হবে",
+  "applyIgnoreNeedConfirm": "jail ignoreip আবার লিখে fail2ban রিলোড করে",
   "addIp": "আইপি যোগ করুন",
   "addWhitelist": "সাদা তালিকায় যোগ করুন",
   "applyPolicyIgnoreip": "নীতি প্রয়োগ করুন (অজ্ঞান সহ)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "এটি হোস্ট বা আপনার লগইন আইপি - এটি ব্যান করার পরিবর্তে ignoreip এ যোগ করুন",
   "suggestIgnoreHint": "প্রস্তাবিত অ্যাডমিন আইপি (আপনি নীতি প্রয়োগ না করা পর্যন্ত শুধুমাত্র প্যানেল ফাইল):",
-  "suggestIgnoreAdd": "যোগ করুন {{ip}}",
-  "whitelistEmptyWarn": "হোয়াইটলিস্ট খালি; jail আপনাকে নিষেধ করতে পারে। ignoreip প্রয়োগের আগে লগইন IP যোগ করুন।",
-  "suggestIgnoreLogin": "আপনার লগইন IP {{ip}}",
-  "applyIgnoreEmptyWarn": "খালি হোয়াইটলিস্টে প্রয়োগ করলে ignoreip খালি হবে",
-  "applyIgnoreNeedConfirm": "jail ignoreip আবার লিখে fail2ban রিলোড করে"
+  "suggestIgnoreAdd": "যোগ করুন {{ip}}"
 }

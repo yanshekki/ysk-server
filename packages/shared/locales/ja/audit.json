@@ -23,8 +23,8 @@
     "project.suspend": "プロジェクトを一時停止する",
     "software.install": "ソフトウェアのインストール",
     "software.update": "ソフトウェアをアップデートする",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "バックアップ復元",
+    "backup.run": "バックアップの実行",
+    "backup.delete": "バックアップが削除されました"
   }
 }

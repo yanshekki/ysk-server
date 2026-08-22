@@ -39,6 +39,7 @@ describe('matchMutatingRouteCap', () => {
       'firewall.flush',
     );
     expect(matchMutatingRouteCap('POST', '/api/v1/dns/ddns/update')).toBe('dns.apply');
+    expect(matchMutatingRouteCap('POST', '/api/v1/cron/host/replace')).toBe('cron.manage');
     expect(matchMutatingRouteCap('DELETE', '/api/v1/dns/ddns/records/abc')).toBe('dns.apply');
   });
 

@@ -5,38 +5,64 @@
   "tab": {
     "nodes": "ノード",
     "disk": "ディスク",
-    "about": "説明",
-    "stack": "Software"
+    "stack": "ソフトウェア",
+    "about": "説明"
   },
   "empty": {
     "title": "バリデーターノードはまだありません",
     "desc": "ウィザードでテストネットノードを作成できます。"
   },
   "refresh": "更新",
+  "software": {
+    "engine": "ドッカーエンジン",
+    "engineDesc": "Validator ノードは Compose プロジェクトとして実行されます。 Docker が存在しない場合は、ここでインストールします。イメージのプルーンは Docker ページに残ります。",
+    "client": "クライアント",
+    "image": "画像",
+    "present": "地元",
+    "local": "引っ張られた",
+    "missing": "引かれていない",
+    "size": "サイズ",
+    "usedBy": "使用者",
+    "unused": "インスタンスがありません",
+    "pull": "Pull",
+    "pulled": "このホスト上で",
+    "pulling": "{{ref}}を引く",
+    "empty": "固定されたクライアントイメージはありません",
+    "emptyDesc": "カタログが空です。こんなことはあってはならないことです。",
+    "daemonDown": "Docker エンジンが実行されていません",
+    "source": "ソース",
+    "official": "公式最新",
+    "officialNewer": "公式の新しい",
+    "stale": "ビハインドピン",
+    "staleItem": "{{id}} ({{tag}})",
+    "pin": "パネルピン",
+    "openRelease": "リリースノート",
+    "chooseOnInstance": "インスタンスページでバージョンを変更します。イメージをプルしても、実行中のノードは再タグ付けされません。"
+  },
   "disk": {
     "title": "バリデーターディスク",
     "root": "データディレクトリ",
     "free": "空き",
     "used": "使用中",
+    "fsUsed": "使用されるファイルシステム",
+    "leftoverTitle": "残ったデータ ({{count}})",
+    "leftoverEmpty": "インスタンス ディレクトリが残らない",
+    "leftoverDesc": "ストア インスタンスではないバリデーター ルートの下のディレクトリ。未使用であることを確認してから取り外してください。",
+    "leftoverRemove": "取り除く",
+    "leftoverRemoveTitle": "残ったバリデーターデータを削除しますか?",
+    "leftoverRemoveDesc": "{{path}} をディスクから完全に削除します。これはリストされたノードではありません。",
+    "browseRoot": "ファイルブラウザで開く",
     "none": "インスタンスデータはまだありません",
     "warn": "ディスク使用率が高い（70% 以上）",
     "danger": "ディスク使用率が危険（85% 以上）",
     "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
-    "autoClearConfirmTitle": "Enable auto-clear?",
-    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
-    "fsUsed": "Filesystem used",
-    "leftoverTitle": "Leftover data ({{count}})",
-    "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
-    "leftoverRemove": "Remove",
-    "leftoverRemoveTitle": "Delete leftover validator data?",
-    "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
-    "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
-    "autoClearCandidate": "Current candidate: {{id}}",
-    "autoClearNone": "No stopped instance is a candidate right now.",
-    "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories",
-    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
+    "autoClearRisk": "破壊的: 最大の停止インスタンスが、追加のプロンプトを表示せずに削除されます。デフォルトはオフです。起動後に監査/ログを確認します。",
+    "autoClearConfirmTitle": "自動クリアを有効にしますか?",
+    "autoClearC1": "ディスクがクリティカルな場合、停止されている最大のインスタンスが再度要求されることなく削除されます。",
+    "autoClearThreshold": "トリガー: ファイルシステムの使用率が 85% 以上。",
+    "autoClearCandidate": "現在の候補者: {{id}}",
+    "autoClearCandidates": "停止された候補 (データが最初の最大): {{list}}",
+    "autoClearNone": "現時点では候補となる停止インスタンスはありません。"
   },
   "chain": {
     "eth": "Ethereum",
@@ -63,7 +89,7 @@
   "networkKind": {
     "testnet": "テストネット",
     "mainnet": "メインネット",
-    "mixed": "Mainnet + testnet"
+    "mixed": "メインネット + テストネット"
   },
   "profile": {
     "minimal": "最小",
@@ -71,41 +97,72 @@
     "validator-ready": "バリデーター準備",
     "rpc": "RPC"
   },
+  "profileHelp": {
+    "title": "Profiles",
+    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
+    "colName": "プロフィール",
+    "colUse": "用途",
+    "colDisk": "ディスク",
+    "colStake": "ステーキングバリデーター",
+    "useMinimal": "テストネットまたは最初のインストール。完全な履歴ではありません。",
+    "usePruned": "チェーンチップを長期間追跡します。最近のデータのみを保持します (プルーニング)。",
+    "useValidatorReady": "後で証明したり提案したりできるサイズです。オフラインで鍵を自分で生成します。",
+    "useRpc": "このホストまたは他のサービスがチェーンにクエリを実行できるようにします。デフォルトでは 127.0.0.1 でリッスンします。",
+    "diskMinimal": "最小",
+    "diskPruned": "中（最小以上）",
+    "diskValidatorReady": "4つの中で一番大きい",
+    "diskRpc": "チェーンによります",
+    "stakeNo": "不適切",
+    "stakeYes": "はい - オフラインまたは設定が間違っていると利権を失う可能性があります",
+    "stakeRpc": "バリデーターではありません",
+    "minimal": "最小のディスク。テストネットまたは最初のインストールに使用します。完全な歴史ではなく、ライブステーキングバリデーター向けでもありません。",
+    "pruned": "最新のチェーン状態を維持し、古いブロックを削除します (プルーニング)。 Minimal よりもディスクが多く、フル ノードよりも少ない。ヒントを長期的に追跡するために使用します。",
+    "validatorReady": "後で検証または検証者として提案できるように、より多くのディスクを予約します。オフラインで鍵を自分で生成します。オフラインになったり、設定が間違っていると、ステークを失う可能性があります。",
+    "rpc": "このホストまたは他のサービスがチェーンをクエリするため。 RPC はデフォルトで 127.0.0.1 をリッスンし、インターネットには公開されません。"
+  },
   "col": {
     "id": "ID",
     "chain": "チェーン",
     "network": "ネットワーク",
     "profile": "プロファイル",
     "status": "状態",
-    "disk": "ディスク",
-    "traffic": "Traffic"
+    "traffic": "渋滞",
+    "disk": "ディスク"
   },
   "cli": {
-    "usage": "使い方: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "使い方: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "実行クライアント",
     "cl": "コンセンサスクライアント",
-    "version": "Version",
-    "pin": "Panel pin",
-    "officialNewer": "Official newer",
-    "olderThanPin": "Older than the panel pin",
-    "prerelease": "Prerelease",
-    "current": "Running now",
-    "source": "Image source"
+    "version": "バージョン",
+    "pin": "パネルピン",
+    "officialNewer": "公式の新しい",
+    "olderThanPin": "パネルピンより古い",
+    "prerelease": "プレリリース",
+    "current": "現在実行中",
+    "source": "画像ソース"
   },
   "mithril": {
     "label": "先に Mithril スナップショットから復元（テストネット推奨）",
-    "action": "Mithril で復元",
-    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
+    "hint": "これは、インストール後に 1 回限りの復元です。 Compose には書き込まれません。後でインスタンス ページから実行することもできます。",
+    "action": "Mithril で復元"
   },
   "errors": {
     "notFound": "バリデーターインスタンスが見つかりません",
     "invalidId": "インスタンス ID が無効です",
     "diskLow": "このチェーン・ネットワーク・プロファイルに必要な空きディスクが不足しています",
+    "memLow": "このチェーンのメモリ上限に対して十分な空き RAM がありません",
     "diskUnknownMainnet": "空きディスクを測定できないため、メインネット作成を拒否しました",
     "needDocker": "Docker Compose が必要ですが見つかりません",
     "composeFailed": "docker compose に失敗しました",
+    "containerNotUp": "Compose は開始されましたが、コンテナーは実行を継続しませんでした",
+    "probeFailed": "ノードはまだ RPC に応答していません。このページのログを確認してください。",
+    "oom": "メモリ不足です。メモリ制限を設定するか、RAM を追加してから再起動します。",
+    "nofile": "プロセスがオープンファイル (nofile) 制限に達しました。 ulimits.nofile を上げて再起動します。",
+    "noContainer": "このインスタンスには作成コンテナが存在しません。",
+    "restarting": "コンテナが再起動中です。このページのログを確認してください。",
+    "restartingCount": "コンテナが再起動中です ({{n}})。このページのログを確認してください。",
     "needConfirm": "消去には confirm=インスタンス ID または CLEAR が必要です",
     "mithrilAdaOnly": "Mithril 復元は Cardano のみです",
     "needMithrilConfirm": "Mithril には confirm=インスタンス ID または MITHRIL が必要です",
@@ -119,35 +176,27 @@
     "composeNotManaged": "YSK 管理外の Compose ファイルは書き込みません",
     "badDataPath": "データパスはシステムパス以外の絶対ディレクトリである必要があります",
     "portInUse": "その RPC ポートは別のバリデーターインスタンスが使用中です",
+    "badTag": "そのクライアント バージョンはこのイメージの公式タグではありません",
+    "needVersionConfirm": "バージョンを変更するには、confirm=インスタンス ID が必要です",
+    "needMainnetVersionAck": "メインネットのバージョン変更には acceptMainnet が必要です",
     "snapshotUnsupported": "このチェーンに許可されたスナップショット源はありません",
     "snapshotLookup": "公式スナップショットポインタを解決できませんでした",
     "needSnapshotConfirm": "スナップショット復元には confirm=インスタンス ID または SNAPSHOT が必要です",
     "snapshotBlocked": "スナップショットの docker run は許可リストで拒否されました",
     "snapshotFailed": "スナップショットのダウンロードまたは展開に失敗しました",
-    "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
-    "noContainer": "No compose container exists for this instance.",
-    "restarting": "Container is restarting. Check logs on this page.",
-    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
-    "memLow": "Not enough free RAM for this chain's memory cap",
-    "badTag": "That client version is not an official tag for this image",
-    "needVersionConfirm": "Changing version requires confirm=instance id",
-    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet",
-    "producerAdaOnly": "Producer keys are only for Cardano",
-    "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
-    "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
-    "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
-    "producerTooLarge": "That key file is larger than 64 KiB",
-    "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
-    "producerEmpty": "Provide at least one of kes, vrf, or opcert",
-    "switchNeedDetachProducer": "Detach producer keys before switching network"
+    "producerAdaOnly": "プロデューサーキーはCardano専用です",
+    "needProducerConfirm": "プロデューサー キーをアタッチするには、confirm=instance id または PRODUCER が必要です",
+    "needMainnetProducerAck": "メインネットプロデューサーの接続には acceptMainnet が必要です",
+    "producerColdRejected": "コールド署名キーまたはプール所有者署名キーは拒否されます。コールドキーをオフラインに保ちます。",
+    "producerTooLarge": "そのキー ファイルは 64 KiB より大きいです",
+    "producerBadType": "そのファイルは KES キー、VRF キー、または運用証明書ではありません",
+    "producerEmpty": "kes、vrf、または opcert の少なくとも 1 つを提供します",
+    "switchNeedDetachProducer": "ネットワークを切り替える前にプロデューサー キーを切り離す"
   },
   "notes": {
     "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",
     "noKeys": "YSK Server はステーキング鍵を生成も保存もしません。",
-    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
+    "dockerSoon": "インストールして、このページのウィザードから開始します。ホストの変更には root と YSK_EXECUTE=1 が必要です。",
     "dryCreate": "インスタンス仕様と compose を書き込みました（dry-run）。コンテナ起動には --execute と YSK_EXECUTE=1 を付けてください。",
     "dryStart": "起動は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
     "dryStop": "停止は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
@@ -173,67 +222,67 @@
     "snapshotEthCl": "CL データをリセットし、公式 checkpoint sync を使います",
     "snapshotNear": "NEAR データを消去しました。compose は公式 genesis と epoch sync で再初期化します",
     "nativePrune": "クライアントネイティブのプルーニングを実行しました",
-    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "deleted": "Node deleted",
-    "leftoverRemoved": "Removed leftover {{path}}",
-    "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
-    "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
-    "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
-    "producerAttached": "Hot keys attached; compose rewritten as block producer",
-    "producerDetached": "Hot keys removed; compose rewritten as relay"
+    "dryProducer": "プロデューサー キーは予行演習されます。 --execute と YSK_EXECUTE=1 を追加します。",
+    "dryProducerDetach": "プロデューサーのデタッチは予行演習です。 --execute と YSK_EXECUTE=1 を追加します。",
+    "producerPartial": "ホットキーを書きました。ノードがブロックプロデューサーとして開始する前に、KES、VRF、および opcert を接続します。",
+    "producerAttached": "ホットキーが付属。ブロックプロデューサーとして書き換えられた構成",
+    "producerDetached": "ホットキーが削除されました。リレーとして書き換えられた構成",
+    "dryDelete": "削除は予行演習です。 --execute と YSK_EXECUTE=1 を渡します。",
+    "deleted": "ノードが削除されました",
+    "leftoverRemoved": "残り物を削除しました {{path}}"
   },
   "create": "ノードを作成",
   "wizard": {
     "title": "ノードを作成",
+    "stepOf": "ステップ {{n}} / {{total}}",
+    "stepChain": "鎖",
+    "stepNetwork": "ネットワーク",
+    "stepProfile": "プロフィール",
+    "stepSummary": "まとめ",
+    "needDocker": "Docker エンジンがインストールされていません。最初にインストールしてください。このボタンは無効のままです。",
+    "diskNeed": "このプロフィールには約 {{need}} · 無料 {{free}} が必要です",
+    "diskNeedNetwork": "このネットワークのデフォルト (最小) には、約 {{need}} · 無料 {{free}} が必要です",
+    "profileHint": {
+      "minimal": "最小の同期 — ライトディスク、ステーキング用ではありません。",
+      "pruned": "最近の履歴のみを保持します (プルーニング)。アーカイブよりも小さいですが、RPC には引き続き使用できます。",
+      "validator-ready": "ステーキングバリデーター用のサイズ。 Minimal よりも多くのディスクが必要です。",
+      "rpc": "パブリック RPC ノード — ステーキングバリデータではありません。"
+    },
+    "diskShort": "このチェーン/ネットワーク/プロファイルに十分な空きディスクがありません",
+    "diskShortDetail": "必要 {{need}} · 無料 {{free}} · 短い {{short}}",
+    "memShort": "このチェーンのメモリ上限に対して十分な空き RAM がありません",
+    "memShortDetail": "必要 {{need}} · 無料 {{free}} · 短い {{short}}",
+    "needCustomPath": "絶対データパスを入力してください",
+    "previewId": "ノードID",
+    "previewCompose": "プロジェクトの作成",
+    "profileSeeAbout": "What each profile means is on the About tab.",
     "back": "戻る",
     "next": "次へ",
     "install": "導入",
     "mainnetWarn": "メインネットは大量の空きディスクが必要です（ETH はしばしば 800 GiB 以上）。テストネットを推奨します。",
     "mainnetAck": "ディスクとスラッシングのリスクを理解したうえで、メインネットを続行します。",
+    "lowDiskAcked": "空きディスクが推奨サイズを下回っています。とにかく作成することを確認しました。ディスクがいっぱいになると同期が停止する場合があります。",
+    "lowMemAcked": "空き RAM は、このチェーンのメモリ上限に 1 GiB のヘッドルームを加えた値を下回っています。とにかく作成することを確認しました。ノードが OOM または停止する可能性があります。",
     "heavyWarn": "このチェーンは負荷が大きいです（大容量ディスクと高い IOPS）。Solana メインネットは通常 2 TiB 以上必要です。",
     "memory": "メモリ上限（例: 4g）",
     "cpus": "CPU 上限（例: 2.0）",
     "dataPath": "データパス（任意）",
     "rpcPort": "RPC ポート（任意）",
-    "stepOf": "Step {{n}} / {{total}}",
-    "stepChain": "Chain",
-    "stepNetwork": "Network",
-    "stepProfile": "Profile",
-    "stepSummary": "Summary",
-    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
-    "diskNeed": "This profile needs about {{need}} · free {{free}}",
-    "diskShort": "Not enough free disk for this chain / network / profile",
-    "limitNone": "No limit",
-    "rpcDefault": "Default",
-    "customPath": "Use a custom data path",
-    "installConfirmTitle": "Install this node?",
-    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
-    "installC1": "Several gigabytes of images may be downloaded.",
-    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
-    "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
-    "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
-    "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "needCustomPath": "Enter an absolute data path",
-    "previewId": "Node id",
-    "previewCompose": "Compose project",
-    "profileSeeAbout": "What each profile means is on the About tab.",
-    "dockerAbout": "Docker Engine is required to install and start nodes.",
-    "dockerAboutOk": "Docker Engine is installed.",
-    "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
-    "rewriteCompose": "Rewrite compose",
-    "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
-    "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-    "chainMeta": "{{disk}} min · {{clients}} clients",
-    "profileHint": {
-      "minimal": "Smallest sync — light disk, not for staking.",
-      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
-      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
-      "rpc": "Public RPC node — not a staking validator."
-    },
-    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
-    "memShort": "Not enough free RAM for this chain's memory cap",
-    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall."
+    "limitNone": "制限なし",
+    "rpcDefault": "デフォルト",
+    "customPath": "カスタム データ パスを使用する",
+    "installConfirmTitle": "このノードをインストールしますか?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}。ディスクの{{disk}}くらい。イメージの取得には時間がかかる場合があります。",
+    "installC1": "数ギガバイトの画像がダウンロードされる場合があります。",
+    "installC2": "パネルタスクはキャンセルできます。すでに取得されているイメージは自動的には削除されません。",
+    "installC3": "メインネットは大量のディスクを使用します。ステーキングバリデーターは、オフラインであるか設定が間違っている場合、ステーキングを失う可能性があります。確認するためにノード ID を入力します。",
+    "dockerAbout": "ノードをインストールして起動するには、Docker Engine が必要です。",
+    "dockerAboutOk": "Dockerエンジンがインストールされています。",
+    "dockerAboutMissing": "Docker エンジンがインストールされていません。 Docker を開いてインストールします。",
+    "rewriteCompose": "構成を書き直す",
+    "rewriteComposeTitle": "現在のアダプターから compose.yml を書き換えますか?",
+    "rewriteComposeDesc": "このチェーンに同梱されているフラグを使用して、{{id}} に対して生成されたコンポーズを上書きします。",
+    "chainMeta": "{{disk}} 分 · {{clients}} クライアント"
   },
   "actions": {
     "detail": "詳細",
@@ -242,26 +291,26 @@
     "restart": "再起動",
     "clear": "消去",
     "upgrade": "アップグレード",
+    "setVersion": "バージョンを変更する",
     "clearConfirm": "インスタンス ID または CLEAR を入力",
     "prune": "イメージを削除",
     "switchNetwork": "ネットワーク切替",
     "removeUnit": "compose／インスタンス記録も削除",
     "restoreAfter": "消去後にスナップショットを復元",
-    "delete": "Delete",
-    "deleteTitle": "Delete {{id}}",
-    "deleteDesc": "This removes the node from the panel.",
-    "deleteC1": "Docker Compose is stopped and removed",
-    "deleteC2": "Chain data on disk is deleted",
-    "deleteC3": "The instance record is removed",
-    "pruneTitle": "Prune unused images",
-    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
-    "pruneC1": "Unused images labelled for this Compose project are deleted.",
-    "clearTitle": "Clear {{id}}",
-    "clearC1": "Chain data on disk is deleted.",
-    "clearC2": "The instance stays in the panel, stopped and empty.",
-    "switchTitle": "Switch network",
-    "switchC1": "The node is stopped and chain data is wiped before the new network is written.",
-    "setVersion": "Change version"
+    "delete": "削除",
+    "deleteTitle": "{{id}}を削除",
+    "deleteDesc": "これにより、パネルからノードが削除されます。",
+    "deleteC1": "Docker Compose が停止および削除される",
+    "deleteC2": "ディスク上のチェーンデータが削除される",
+    "deleteC3": "インスタンスレコードが削除される",
+    "pruneTitle": "使用されていないイメージを削除する",
+    "pruneDesc": "インスタンス ID を入力して、このノードの未使用の Compose イメージを削除します。",
+    "pruneC1": "この Compose プロジェクトにラベル付けされた未使用のイメージは削除されます。",
+    "clearTitle": "クリア{{id}}",
+    "clearC1": "ディスク上のチェーンデータが削除されます。",
+    "clearC2": "インスタンスはパネル内に留まり、停止して空になります。",
+    "switchTitle": "スイッチネットワーク",
+    "switchC1": "新しいネットワークが書き込まれる前に、ノードが停止され、チェーン データが消去されます。"
   },
   "policy": {
     "label": "アップグレード方針",
@@ -287,12 +336,342 @@
     "near": "公式の無料 NEAR tar スナップショットは終了しました。復元はデータを消し、公式 genesis と epoch sync を使います。",
     "none": "このチェーンにスナップショット源は設定されていません。"
   },
+  "producer": {
+    "title": "プロデューサーのホットキーをブロックする",
+    "hint": "これは IP アドレスではありません。 KES キー、VRF キー、および動作証明書をオフライン マシンからアップロードします。コールド キーをこのホストから遠ざけてください。",
+    "warn": "パブリック P2P ポートを持つ同じノードがブロックに署名します。公式トポロジにより、プロデューサーは公共のインターネットから遠ざけられます。これら 3 つのファイルはホットキーです。",
+    "kes": "KES",
+    "vrf": "VRF",
+    "opcert": "opcert",
+    "missing": "付属していない",
+    "present": "添付しました {{fp}}",
+    "presentShort": "ホスト上",
+    "queuedShort": "準備完了",
+    "queued": "選択済み · {{name}}",
+    "fileHint": "典型的な名前 {{file}}",
+    "dropOrBrowse": "ここに {{file}} をドロップするか、参照してください",
+    "dropping": "ドロップして取り付けます {{label}}",
+    "browse": "ブラウズ",
+    "clearFile": "取り除く",
+    "choose": "ファイルを選択してください",
+    "apply": "適用してブロックプロデューサーとして再起動する",
+    "detach": "切り離してリレーとして実行",
+    "applyTitle": "ホットキーを{{id}}に接続しますか?",
+    "applyDesc": "KES、VRF、および opcert は、インスタンス キー ディレクトリの下に書き込まれます。 Compose が書き換えられます。コンテナはブロックプロデューサーとして再起動されます。",
+    "applyC1": "コールドキーはオフラインのままにする必要があります。 cold.skey をアップロードしないでください。",
+    "applyC2": "これらのファイルが有効であれば、実行中のノードはブロックに署名できます。",
+    "applyC3": "メインネット: オフラインまたは設定が間違っているプロデューサーはブロックを見逃します。",
+    "detachTitle": "{{id}} からプロデューサー キーを切り離しますか?",
+    "detachDesc": "ホットキーはこのホストから削除されます。作成はリレーに戻ります。",
+    "detachC1": "ノードはブロックを生成しなくなります。",
+    "mainnet": "メインネット: このホストがホットキーを保持し、ブロックに署名することを理解しています。"
+  },
   "stake": {
     "title": "ステーキング準備（鍵は自分で保管）",
     "offlineKeys": "鍵はオフラインで生成してください。パネルは保存しません。",
     "deposit": "公式 launchpad でデポジット／登録を完了してください。",
     "withdrawal": "引き出し資格情報は自分で設定してください。",
     "monitor": "このページでディスク、ピア、アップグレードバッジを確認してください。"
+  },
+  "playbook": {
+    "overviewTitle": "各チェーンでのステーキングの仕組み",
+    "overviewDesc": "このパネルはノードを実行します。財布と鍵は常に手元にあります。公式リンクのみ - ここでシード フレーズを共有しないでください。",
+    "colChain": "鎖",
+    "colModel": "登録方法",
+    "colMin": "典型的な最小値",
+    "colWallet": "あなたの財布",
+    "colPanel": "このパネルの機能",
+    "yskDoes": "このパネルは次のことを行います",
+    "youDo": "あなたがやる",
+    "steps": "ステップ",
+    "never": "しないでください",
+    "official": "公式リンク",
+    "seeAbout": "完全な手順は [バージョン情報] タブにあります。",
+    "nodeIdReady": "NodeID (このノードから)",
+    "nodeIdPending": "NodeID は、ノードが同期され、RPC に応答した後に表示されます。",
+    "blsReady": "BLS公開鍵",
+    "blsProof": "BLSの所有証明",
+    "blsPending": "BLS 資格情報は、ノードが RPC に応答した後に表示されます。",
+    "copyAll": "すべてコピー",
+    "copyNamed": "コピー {{label}}",
+    "nearStakeKey": "公開鍵をステークする",
+    "nearStakeKeyPending": "最初の起動後 (init 付近) に表示されます。 RPC の準備ができていなくても、キーが不足しているわけではありません。",
+    "nearAccountId": "キーファイル account_id",
+    "nearAccountIdPending": "自分で {pool}{{suffix}} に設定するまでは空のことがよくあります。このパネルは validator_key.json を書き込むことはありません。",
+    "nearFactory": "ステーキングプール工場",
+    "nearPublicAddr": "パブリック P2P (ピア)",
+    "nearPublicAddrPending": "最初の起動時に WAN:{{port}} が config.json に書き込まれた後に表示されます。",
+    "nearCreateCommand": "create_stakeing_pool コマンド",
+    "nearPointing": "プール契約はこのサーバーの IP を使用しません。このノードのステーク公開鍵を保存します。ピアは上のパブリック P2P 行 (ホスト ポート {{port}}) を使用します。 RPC はローカルホスト上に留まります。",
+    "nearAccountIdHint": "プールが存在したら、validator_key.json の account_id を自分で {pool}{{suffix}} に設定します。このパネルはそのファイルを書き込むことはありません。",
+    "cosmosPubkey": "コンセンサス公開鍵",
+    "cosmosPubkeyPending": "gaiad init が priv_validator_key.json を書き込んだ後に表示されます。 RPC の準備ができていなくても、キーが不足しているわけではありません。",
+    "cosmosChainId": "チェーンID",
+    "cosmosP2p": "パブリック P2P (外部アドレス)",
+    "cosmosP2pPending": "最初の起動で tcp://WAN:{{port}} を config.toml に書き込んだ後に表示されます。",
+    "ethBeacon": "ビーコンAPI（ローカルホスト）",
+    "ethBeaconPending": "このホスト上のビーコン HTTP。自分で実行する検証クライアントにこの URL を指定します。この構成には VC がありません。",
+    "cosmosCreateCommand": "create-validator コマンド",
+    "solIdentity": "ID 公開鍵",
+    "solIdentityPending": "RPC が getIdentity に応答した後に表示されます。このプロセスは、投票アカウントを自分で追加するまでは --no-voting です。",
+    "adaP2pPort": "リレー P2P ポート",
+    "adaP2pPending": "このホストのパブリック IPv4 とこのポートを topology.json に配置します。このパネルは WAN を調査しません。",
+    "notPosTitle": "プルーフ・オブ・ステークではない",
+    "notPosBody": "ここでのビットコインは完全なノードまたはプルーニングされたノードです。このページにはステーキングウォレットはありません。",
+    "eth": {
+      "model": "この Compose は、バリデータ クライアントではなく、実行とビーコンのみを実行します。公式ランチパッドに 32 ETH をデポジットします。",
+      "min": "32 ETH + ガス",
+      "wallets": "MetaMask、Ledger、Trezor — 公式ランチパッドのみ",
+      "panel": "EL+ビーコンを実行します。ローカルホスト上の RPC とビーコン API。 Compose にバリデータ クライアントがありません。",
+      "honesty": "このインスタンスは実行+ビーコンのみです。構成ファイルには検証クライアントがありません。キーストアをビーコン データ ディレクトリにコピーしても、認証は開始されません。デポジット契約ではこのサーバーの IP は使用されません。",
+      "yskDoes": [
+        "実行クライアントとビーコンクライアントをインストールして開始します。",
+        "ディスク、ピア、およびアップグレードのステータスを表示します。",
+        "バリデーター・クライアントを実行せず、署名キーストアをロードしません。"
+      ],
+      "youDo": [
+        "公式 Launchpad または stake-deposit-cli を使用して、キーストアと引き出しアドレスを自分で作成します。",
+        "このネットワークのランチパッドに 32 ETH をデポジットします。",
+        "このインスタンスのローカルホスト ビーコン API に対してバリデータ クライアント (このコンポーズではなく) を自分で実行します。"
+      ],
+      "steps": [
+        "実行とビーコンが同期されるまで待ちます。",
+        "このネットワークの公式ランチパッド (このページの Houdi または Mainnet) を開きます。 Sepolia にはここにはランチパッド ボタンがありません。",
+        "オフラインでキーストアを生成します。出金アドレスを自分のETHウォレットに設定します。",
+        "32 ETH をデポジットします (ガス用に余分に保管しておきます)。",
+        "バリデータ クライアントを自分で実行します。この構成には VC がありません。キーストアをビーコンの datadir に配置しても証明されません。"
+      ],
+      "never": [
+        "このパネルを含む誰にも、シード フレーズや引き出しキーを決して渡さないでください。",
+        "署名キーストアをホストされたクラウドにアップロードしないでください。",
+        "キーストアをビーコンのデータディレクトリにコピーした後、このページが証明されることを期待しないでください。"
+      ]
+    },
+    "avax": {
+      "model": "実行中の NodeID と BLS 証明をコアまたはレジャーから P-Chain に登録します。",
+      "min": "2,000 AVAX + 料金 (Fuji では 1 AVAX)。少なくとも14日",
+      "wallets": "コア、レジャー",
+      "panel": "avalanchego を実行し、RPC 応答後に NodeID と BLS を表示できる",
+      "yskDoes": [
+        "avalanchego を実行し、ローカルホスト上で RPC を維持します。",
+        "ノードが RPC に応答したら、NodeID と BLS 資格情報を表示します。"
+      ],
+      "youDo": [
+        "AVAX をコアまたはレジャーに保持します。",
+        "このノードの NodeID と BLS 証明を使用して、コアからバリデーターを追加します。"
+      ],
+      "steps": [
+        "このノードが同期されるまで待ちます。",
+        "インスタンス ページに表示されている NodeID、BLS 公開キー、および BLS 所有証明をコピーします。",
+        "Core Web (ステーキング → 検証) または Core 経由の Ledger で、P-Chain に登録します。",
+        "メインネットには少なくとも 2,000 AVAX、14 日間の最低期間、および手数料の準備金が必要です。"
+      ],
+      "never": [
+        "AVAX をこのパネルに送信しないでください。",
+        "コアまたはレジャー回復フレーズを共有しないでください。"
+      ]
+    },
+    "ada": {
+      "model": "ブラウザウォレットのタップではなく、オフラインのコールド/KES/VRFキーを使用してステークプールを操作します。",
+      "min": "Pledge はあなたの選択です (公式ドキュメントを参照)",
+      "wallets": "公式ステークプールツール (コールドキーはオフラインのまま)",
+      "panel": "最初にカルダノノードをリレーとして実行します。このページではホットキーを接続できます。",
+      "honesty": "このインスタンスはリレーとして開始されます。オンチェーン プールの登録では、オフラインに保持したコールド キーを使用します。ピアとトポロジは、このホストのパブリック IPv4 と、ここに示されている P2P ポートを使用します。パネルは WAN をプローブしません。",
+      "yskDoes": [
+        "提供されている場合は、cardano-node と Mithril スナップショットの復元を実行します。",
+        "KES、VRF、および opcert を提供する場合は、それらを添付してください。コールドキーは拒否されます。"
+      ],
+      "youDo": [
+        "プールキーをオフラインで生成します。",
+        "Cardano の公式ドキュメントを使用してプールを登録します。",
+        "このホストのパブリック IPv4 とリレー P2P ポートを topology.json に入力します。"
+      ],
+      "steps": [
+        "公式のステークプール運営ガイドをお読みください。",
+        "オフライン マシンでコールド、KES、および VRF キーを生成します。",
+        "これらのキーからオンチェーンにプールを登録します。",
+        "このインスタンス ページで、KES、VRF、および運用証明書を添付します。コールドキーをアップロードしないでください。",
+        "リレーを public-ip:P2P-port (このカードに表示されているポート) としてアドバタイズします。このパネルは WAN アドレスを検索しません。"
+      ],
+      "never": [
+        "これを MetaMask のワンクリック賭けとして扱わないでください。",
+        "コールド キーをバリデータ ホストに保存しないでください。"
+      ]
+    },
+    "near": {
+      "model": "公式ファクトリーでステーキングプール契約を作成します。コントラクトには、サーバー IP ではなく、このノードの公開キーが保存されます。",
+      "min": "公式バリデーターのドキュメントを参照してください (プールの作成には 30 NEAR とステークを加えます)",
+      "wallets": "公式NEARウォレット/ロックアップ",
+      "panel": "近づいて走ります。 init 後の公開キー、ファクトリー、create_stake_pool コマンドを示します。",
+      "yskDoes": [
+        "localhost では RPC、24567 では P2P を使用して、neard を実行します。",
+        "init の後、ステーク公開キー、公開 P2P アドレス、ファクトリー、およびコピー可能な create_saking_pool コマンドを表示します。",
+        "validator_key.json を書き込んだり、トランザクションをブロードキャストしたりしないでください。"
+      ],
+      "youDo": [
+        "このインスタンス ページから公開キーとコマンドをコピーします。",
+        "自分のNEARアカウントから公式工場に電話します。",
+        "プールが存在したら、validator_key.json の account_id を自分で {pool}.{factory} に設定します。",
+        "あなたのウォレットからそのプールに賭けてください。"
+      ],
+      "steps": [
+        "ノードを起動し、neard init まで待機すると、公開キーが表示されます (RPC の準備ができていないことは、キーが見つからないことと同じではありません)。",
+        "ステーク公開キーと create_saking_pool コマンドをコピーします。",
+        "ウォレットから、ストレージ用に 30 NEAR を指定してファクトリー (testnet pool.f863973.m0 / mainnet poolv1.near) を呼び出します。コピーされたコマンドは --accountId を使用します。近くの CLI で --account_id が必要な場合は、その CLI の --help に従ってください。",
+        "validator_key.json の account_id を新しいプール アカウントに設定します。このパネルはそのファイルを書き込みません。",
+        "大量のステーキングを行う前に、RPC が応答し、ノードが同期されるまで待ってください。ピアはパブリック P2P :24567 を使用します。コントラクトは IP を使用しません。"
+      ],
+      "never": [
+        "このパネルにシード フレーズを貼り付けないでください。",
+        "このサーバーの IP を契約に含めないでください。",
+        "パネルが create_stake_pool トランザクションを送信することを期待しないでください。"
+      ]
+    },
+    "cosmos": {
+      "model": "サーバーIPではなく、このノードのコンセンサス公開キーを使用して、オペレーターウォレットからcreate-validatorを実行します。",
+      "min": "Cosmos Hub の公式ドキュメントを参照してください (uatom での自己委任)",
+      "wallets": "Keplr またはあなたが管理する別の Cosmos ウォレット",
+      "panel": "ガイアドを実行します。 init 後のコンセンサス公開鍵とコピー可能な create-validator コマンドを示します",
+      "honesty": "create-validator トランザクションは、このノードのコンセンサス公開キーを保存します。ピアは 26656 でパブリック P2P を使用します。RPC はローカルホスト上に留まります。このパネルはトランザクションをブロードキャストしたり、priv_key を読み取ったりしません。",
+      "yskDoes": [
+        "localhost では RPC、26656 では P2P を使用して gaiad を実行します。",
+        "init の後、コンセンサス公開キー、チェーン ID、パブリック P2P、およびコピー可能な create-validator コマンドを表示します。",
+        "priv_validator_key.json を書き込んだり、トランザクションをブロードキャストしたりしないでください。"
+      ],
+      "youDo": [
+        "このインスタンス ページからコンセンサス公開キーとコマンドをコピーします。",
+        "オペレーターウォレット (管理する Keplr または gaiad キー) から、create-validator を送信します。",
+        "このホスト上のウォレット ニーモニックとコンセンサス キーを混合しないでください。"
+      ],
+      "steps": [
+        "ノードを起動し、gaiad init を待つと、コンセンサス公開キーが表示されます (RPC の準備ができていないことは、キーが見つからないことと同じではありません)。",
+        "コンセンサス公開キーと create-validator コマンドをコピーします (チェーン ID はメインネットでは cosmoshub-4、テストネットではプロバイダーです)。",
+        "オペレーターウォレットから、create-validator をブロードキャストします。金額と名義はあなたのものです。",
+        "RPC が応答し、ノードが同期されるまで待ってから、大量にボンディングします。ピアは tcp://WAN:26656 を使用します。トランザクションは IP を使用しません。"
+      ],
+      "never": [
+        "オペレーターウォレットのニーモニックとコンセンサスキーを混合しないでください。",
+        "ここにはウォレットのニーモニックを入力しないでください。",
+        "このサーバーの IP を create-validator に入力しないでください。"
+      ]
+    },
+    "sol": {
+      "model": "この Compose は、--no-voting を指定して Agave を実行します。投票アカウントと引き出し者は、このパネルではなく、公式の Solana ツールを使用して作成されます。",
+      "min": "公式の操作ドキュメントを参照してください (ハードウェアとディスクが重い)",
+      "wallets": "公式 Solana CLI / あなたが管理するウォレット",
+      "panel": "Agave をキャッチアップ ノードとして実行します (--no-voting)。 RPC 応答後に ID 公開キーを表示できます。",
+      "honesty": "このプロセスは --投票なしです。公式 Agave CLI で投票アカウントを作成し、プロセスの開始方法を変更するまでは、投票したりステークを獲得したりすることはできません。このパネルは --no-voting を削除しません。",
+      "yskDoes": [
+        "Agave クライアントを実行し、ディスクについて警告します。",
+        "RPC が getIdentity に応答したら、アイデンティティの公開鍵を表示します。",
+        "投票アカウントを作成せず、投票も開始しません。"
+      ],
+      "youDo": [
+        "あなたが管理するマシン上の公式 Solana ツールを使用して、投票キーと承認された引き出しキーを作成します。",
+        "この ID 公開キーを使用して、公式 CLI で投票アカウントを作成します。",
+        "その後でのみ、投票バリデータを実行します。この構成は --no-voting のままです。"
+      ],
+      "steps": [
+        "このホストに十分なディスクと IOPS があることを確認します (メインネットは通常 2 TiB+)。",
+        "RPC が応答するまで待ってから、ここに表示されている ID 公開キーをコピーします。",
+        "公式投票アカウントとステークガイドに従ってください (以下のリンク)。",
+        "この構成では --no-voting が維持されます。投票アカウントを作成した後にこのページで投票が開始されることを期待しないでください。"
+      ],
+      "never": [
+        "このパネルにはブラウザのウォレット ボタンが表示されることを期待しないでください。",
+        "ID や投票キーペアをこのパネルに貼り付けないでください。"
+      ]
+    },
+    "dot": {
+      "model": "この構成は完全なノードです (--validator なし)。セッション キーと setKeys は、このパネルではなく、Polkadot.js の公式ステップです。",
+      "min": "公式ウィキを参照してください",
+      "wallets": "Polkadot.js",
+      "panel": "polkadot をフルノードとして実行します。ローカルホスト上の RPC。 --validator フラグはありません。",
+      "honesty": "このプロセスは --validator では開始されません。パネルは author_rotateKeys を呼び出しません (これによりキーストアが変更されます)。バリデーターになるには、公式のノード フラグと、localhost RPC に対して行うrotateKeys 呼び出しが必要です。",
+      "yskDoes": [
+        "polkadot を実行し、localhost で RPC を公開します。",
+        "--validator を渡さず、セッション キーをローテーションしません。"
+      ],
+      "youDo": [
+        "公式の検証ツールのセットアップ ガイドに従ってください。",
+        "--validator を自分で追加する場合は、localhost RPC でrotateKeys を呼び出し、結果をスタッシュから Polkadot.js にバインドします。"
+      ],
+      "steps": [
+        "この完全なノードを同期します。",
+        "公式検証ガイドをお読みください。この作成は検証プロセスではありません。",
+        "ここに隠し場所のニーモニックを貼り付けないでください。後で --validator を指定して実行する場合は、http://127.0.0.1 (このインスタンスの RPC ポート) でキーをローテーションします。",
+        "Polkadot.js で、これらのセッション キーをスタッシュ/コントローラーに設定し、公式のボンディング手順に従います。"
+      ],
+      "never": [
+        "stash ニーモニックをこのパネルに貼り付けないでください。",
+        "このページでセッション キーが生成されたり、--validator が開始されたりすることは期待しないでください。"
+      ]
+    },
+    "sui": {
+      "model": "この構成は、Sui フルノード (fullnode.yaml) であり、バリデーター ノードではありません。",
+      "min": "公式のSuiドキュメントを参照してください",
+      "wallets": "公式Suiオペレーターウォレット",
+      "panel": "sui-node をフルノードとして実行します。ローカルホスト上の RPC。",
+      "honesty": "このプロセスは、Sui バリデーターとして署名できません。バリデーターのセットアップでは、別の構成とキーが使用されます。公式バリデーターのドキュメントがリンクされています。このパネルはノードを検証モードに切り替えません。",
+      "yskDoes": [
+        "出荷された sui-node イメージをフルノードとして実行します。"
+      ],
+      "youDo": [
+        "このインスタンスをフルノードとして使用します。",
+        "バリデーターになるには、この構成ではなく、バリデーター構成に関する公式の Sui バリデーターのドキュメントに従ってください。"
+      ],
+      "steps": [
+        "このフルノードを同期します。",
+        "フルノードとして扱います。チェックポイントを再実行しますが、コンセンサスには署名しません。",
+        "別のバリデーター・プロセスを構築している場合にのみ、公式バリデーター・オペレーター・ガイドを開きます。"
+      ],
+      "never": [
+        "このパネルには SUI を送信しないでください。",
+        "このフルノード プロセスがバリデーターとして登録されることを期待しないでください。"
+      ]
+    },
+    "aptos": {
+      "model": "この構成は Aptos パブリック フルノード (ロール full_node) であり、バリデーターではありません。",
+      "min": "Aptos の公式ドキュメントを参照してください",
+      "wallets": "公式Aptosオペレーターウォレット",
+      "panel": "aptos-node をパブリック フルノードとして実行します。ローカルホスト上の RPC。",
+      "honesty": "パブリックフルノードはコンセンサスに参加しません。バリデーターには、別のロール、キー、そして通常はバリデーターのフルノードが必要です。このパネルはノードを検証モードに切り替えません。",
+      "yskDoes": [
+        "出荷された Aptos イメージをパブリック フルノードとして実行します。"
+      ],
+      "youDo": [
+        "このインスタンスをパブリック フルノードとして使用します。",
+        "バリデーターを実行するには、この構成ではなく、公式の Aptos バリデーターノードのドキュメントに従ってください。"
+      ],
+      "steps": [
+        "このパブリックフルノードを同期します。",
+        "これを PFN として扱います。これは台帳データを提供し、投票は行いません。",
+        "別のバリデーターと VFN のペアを構築している場合にのみ、公式バリデーターのドキュメントを開きます。"
+      ],
+      "never": [
+        "このパネルには演算子キーを入力しないでください。",
+        "このフルノード プロセスがバリデーターとして登録されることを期待しないでください。"
+      ]
+    },
+    "btc": {
+      "model": "証拠証明ではありません。これは、ビットコインの完全なノードまたはプルーニングされたノードです。",
+      "min": "—",
+      "wallets": "適用できない",
+      "panel": "ビットコインを実行します",
+      "yskDoes": [
+        "ビットコインのフルノードまたはプルーニングされたノードを実行します。"
+      ],
+      "youDo": [
+        "ビットコインウォレットを個別に使用してください。マイニングとライトニングは対象外です。"
+      ],
+      "steps": [
+        "このインスタンスをビットコイン ノードとしてのみ扱います。",
+        "ステーキング デポジットやバリデーター キーストアはありません。"
+      ],
+      "never": [
+        "このページでステーキングウォレットを探さないでください。"
+      ]
+    }
   },
   "alerts": {
     "diskTitle": "バリデーターディスクが危険",
@@ -313,358 +692,39 @@
     "dockerMissing": "バリデーターインスタンスがありますが、docker コマンドが見つかりません"
   },
   "detail": {
-    "status": "Status",
-    "sync": "Sync",
-    "peers": "Peers",
-    "version": "Version",
-    "access": "Access",
-    "upgrade": "Updates",
-    "upgradeHint": "How this node tracks client versions.",
-    "network": "Network",
-    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
-    "maintain": "Maintenance",
-    "danger": "Clear data",
-    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "status": "状態",
+    "sync": "同期",
+    "peers": "ピア",
+    "traffic": "渋滞",
+    "version": "バージョン",
+    "access": "アクセス",
+    "upgrade": "更新",
+    "upgradeHint": "このノードがクライアントのバージョンを追跡する方法。",
+    "setVersion": "バージョンを変更する",
+    "setVersionHint": "このノード上のクライアントの公式 Docker タグを選択します。 Compose が書き直されてからプルされ、再起動されます。",
+    "setVersionConfirmTitle": "{{id}} を {{tag}} に変更しますか?",
+    "setVersionConfirmDesc": "compose を書き換え、{{ref}} をプルし、ノードを再起動します。",
+    "setVersionC1": "実行中のコンテナが選択したタグに置き換えられます。",
+    "setVersionC2": "確認のためにインスタンス ID を入力します。",
+    "setVersionMainnet": "メインネット: バージョンが悪いとノードがオフラインになる可能性があります。わかりました。",
+    "releaseNotes": "リリースノート",
+    "network": "ネットワーク",
+    "networkHint": "スイッチングネットワークはノードを停止し、チェーンデータをクリアします。 「まずデータを消去」で確認してください。",
+    "maintain": "メンテナンス",
+    "danger": "データのクリア",
+    "dangerHint": "インスタンス ID または CLEAR を入力します。これにより、ディスク上のチェーン データが削除されます。",
     "compose": "Compose",
-    "logs": "Logs",
-    "traffic": "Traffic",
-    "setVersion": "Change version",
-    "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
-    "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
-    "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
-    "setVersionC1": "The running container is replaced with the selected tag.",
-    "setVersionC2": "Type the instance id to confirm.",
-    "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
-    "releaseNotes": "Release notes"
+    "logs": "ログ"
   },
   "state": {
-    "unknown": "Unknown",
-    "stopped": "Stopped",
-    "running": "Running",
-    "syncing": "Syncing",
-    "error": "Error",
-    "starting": "Starting",
-    "created": "Created (never started)",
-    "missing": "No container",
-    "rpc_wait": "Running — RPC not ready"
-  },
-  "profileHelp": {
-    "title": "Profiles",
-    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
-    "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
-    "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
-    "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
-    "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet.",
-    "colName": "Profile",
-    "colUse": "Use for",
-    "colDisk": "Disk",
-    "colStake": "Staking validator",
-    "useMinimal": "Testnet or a first install. Not a full history.",
-    "usePruned": "Follow the chain tip long-term. Keeps recent data only (Pruned).",
-    "useValidatorReady": "Sized so you can later attest or propose. Generate keys offline yourself.",
-    "useRpc": "Let this host or other services query the chain. Listens on 127.0.0.1 by default.",
-    "diskMinimal": "Smallest",
-    "diskPruned": "Medium (more than Minimal)",
-    "diskValidatorReady": "Largest of the four",
-    "diskRpc": "Depends on the chain",
-    "stakeNo": "Not suitable",
-    "stakeYes": "Yes — offline or misconfigured can lose stake",
-    "stakeRpc": "Not a validator"
-  },
-  "software": {
-    "engine": "Docker Engine",
-    "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
-    "client": "Client",
-    "image": "Image",
-    "present": "Local",
-    "local": "Pulled",
-    "missing": "Not pulled",
-    "size": "Size",
-    "usedBy": "Used by",
-    "unused": "No instance",
-    "pull": "Pull",
-    "pulling": "Pull {{ref}}",
-    "empty": "No pinned client images",
-    "emptyDesc": "The catalog is empty. This should not happen.",
-    "daemonDown": "Docker Engine is not running",
-    "pulled": "On this host",
-    "source": "Source",
-    "official": "Official latest",
-    "officialNewer": "Official newer",
-    "stale": "Behind pin",
-    "staleItem": "{{id}} ({{tag}})",
-    "pin": "Panel pin",
-    "openRelease": "Release notes",
-    "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
-  },
-  "playbook": {
-    "overviewTitle": "How staking works on each chain",
-    "overviewDesc": "This panel runs the node. Your wallet and keys stay with you. Official links only — never share a seed phrase here.",
-    "colChain": "Chain",
-    "colModel": "How you register",
-    "colMin": "Typical minimum",
-    "colWallet": "Your wallet",
-    "colPanel": "What this panel does",
-    "yskDoes": "This panel does",
-    "youDo": "You do",
-    "steps": "Steps",
-    "never": "Do not",
-    "official": "Official links",
-    "seeAbout": "Full steps are on the About tab.",
-    "nodeIdReady": "NodeID (from this node)",
-    "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
-    "blsReady": "BLS public key",
-    "blsProof": "BLS proof of possession",
-    "blsPending": "BLS credentials appear after the node answers RPC.",
-    "notPosTitle": "Not proof-of-stake",
-    "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
-    "eth": {
-      "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
-      "min": "32 ETH + gas",
-      "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
-      "panel": "Runs the execution and consensus clients",
-      "yskDoes": [
-        "Install and start the execution and consensus clients.",
-        "Show disk, peers, and upgrade status."
-      ],
-      "youDo": [
-        "Create the keystore and withdrawal address yourself.",
-        "Deposit 32 ETH on the official launchpad.",
-        "Copy the keystore into this node’s data directory."
-      ],
-      "steps": [
-        "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
-        "On the official launchpad, deposit 32 ETH (keep extra for gas).",
-        "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
-        "Watch sync, disk, and upgrade badges on this page."
-      ],
-      "never": [
-        "Never give your seed phrase or withdrawal key to anyone, including this panel.",
-        "Never upload a signing keystore to a hosted cloud."
-      ]
-    },
-    "avax": {
-      "model": "Register the running NodeID and BLS proof on the P-Chain from Core or Ledger.",
-      "min": "2,000 AVAX + fee (1 AVAX on Fuji); at least 14 days",
-      "wallets": "Core, Ledger",
-      "panel": "Runs avalanchego and can show NodeID and BLS after RPC answers",
-      "yskDoes": [
-        "Run avalanchego and keep RPC on localhost.",
-        "Show NodeID and BLS credentials once the node answers RPC."
-      ],
-      "youDo": [
-        "Hold AVAX in Core or Ledger.",
-        "Add the validator from Core using this node’s NodeID and BLS proof."
-      ],
-      "steps": [
-        "Wait until this node is synced.",
-        "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
-        "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
-        "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
-      ],
-      "never": [
-        "Do not send AVAX to this panel.",
-        "Do not share your Core or Ledger recovery phrase."
-      ]
-    },
-    "ada": {
-      "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
-      "min": "Pledge is your choice (see official docs)",
-      "wallets": "Official stake-pool tooling (cold keys stay offline)",
-      "panel": "Runs cardano-node",
-      "yskDoes": [
-        "Run cardano-node and Mithril snapshot restore where offered."
-      ],
-      "youDo": [
-        "Generate pool keys offline.",
-        "Register the pool using official Cardano documentation."
-      ],
-      "steps": [
-        "Read the official operate-a-stake-pool guide.",
-        "Generate cold, KES, and VRF keys on an offline machine.",
-        "Register the pool on-chain from those keys.",
-        "Point the running cardano-node at your operational certificates."
-      ],
-      "never": [
-        "Do not treat this as a MetaMask one-click stake.",
-        "Do not store cold keys on the validator host."
-      ]
-    },
-    "near": {
-      "model": "Stake from your NEAR account into a staking pool contract.",
-      "min": "See official validator docs",
-      "wallets": "Official NEAR wallet / lockup",
-      "panel": "Runs neard",
-      "yskDoes": [
-        "Run neard and show disk / sync."
-      ],
-      "youDo": [
-        "Stake from your NEAR account to your pool using official docs."
-      ],
-      "steps": [
-        "Bring the node to sync.",
-        "Follow official NEAR validator documentation.",
-        "Stake from your own wallet or lockup into the pool."
-      ],
-      "never": [
-        "Do not paste a seed phrase into this panel."
-      ]
-    },
-    "cosmos": {
-      "model": "create-validator from your operator wallet. Consensus key stays on the node.",
-      "min": "See official Cosmos Hub docs",
-      "wallets": "Keplr or another Cosmos wallet you control",
-      "panel": "Runs gaiad",
-      "yskDoes": [
-        "Run gaiad."
-      ],
-      "youDo": [
-        "Keep the operator wallet yourself.",
-        "Broadcast create-validator from that wallet."
-      ],
-      "steps": [
-        "Sync gaiad.",
-        "Keep the consensus key on this host only.",
-        "From Keplr (or equivalent), submit create-validator.",
-        "Monitor the node so it does not miss too many blocks."
-      ],
-      "never": [
-        "Do not mix the operator wallet mnemonic with the consensus key.",
-        "Do not enter wallet mnemonics here."
-      ]
-    },
-    "sol": {
-      "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
-      "min": "See official operations docs (hardware and disk are heavy)",
-      "wallets": "Official Solana CLI / wallet you control",
-      "panel": "Runs Agave; mainnet needs multiple tebibytes",
-      "yskDoes": [
-        "Run the Agave client and warn about disk."
-      ],
-      "youDo": [
-        "Create vote and withdrawer keys with official Solana tools."
-      ],
-      "steps": [
-        "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
-        "Follow official Solana operations documentation.",
-        "Create the vote account and authorized withdrawer yourself.",
-        "Point the running validator at those keys on disk."
-      ],
-      "never": [
-        "Do not expect a browser wallet button in this panel."
-      ]
-    },
-    "dot": {
-      "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
-      "min": "See the official wiki",
-      "wallets": "Polkadot.js",
-      "panel": "Runs the Polkadot client",
-      "yskDoes": [
-        "Run polkadot and expose RPC on localhost."
-      ],
-      "youDo": [
-        "Rotate session keys on the node and set them from Polkadot.js."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Generate session keys on this host.",
-        "In Polkadot.js, set those keys on your stash / controller.",
-        "Follow the official validate guide for bonding."
-      ],
-      "never": [
-        "Do not paste the stash mnemonic into this panel."
-      ]
-    },
-    "sui": {
-      "model": "Follow official Sui validator operator docs with your operator wallet.",
-      "min": "See official Sui docs",
-      "wallets": "Official Sui operator wallet",
-      "panel": "Runs sui-node",
-      "yskDoes": [
-        "Run the shipped sui-node image."
-      ],
-      "youDo": [
-        "Complete registration using official Sui validator docs."
-      ],
-      "steps": [
-        "Sync sui-node.",
-        "Open the official validator operator guide.",
-        "Use your own operator wallet — not this panel — to register."
-      ],
-      "never": [
-        "Do not send SUI to this panel."
-      ]
-    },
-    "aptos": {
-      "model": "Follow official Aptos staking / validator docs with your operator wallet.",
-      "min": "See official Aptos docs",
-      "wallets": "Official Aptos operator wallet",
-      "panel": "Runs the Aptos validator image",
-      "yskDoes": [
-        "Run the shipped Aptos image."
-      ],
-      "youDo": [
-        "Stake and operate from official Aptos documentation."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Read official Aptos staking documentation.",
-        "Use your own operator wallet to register."
-      ],
-      "never": [
-        "Do not enter operator keys in this panel."
-      ]
-    },
-    "btc": {
-      "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
-      "min": "—",
-      "wallets": "Not applicable",
-      "panel": "Runs bitcoind",
-      "yskDoes": [
-        "Run a Bitcoin full or pruned node."
-      ],
-      "youDo": [
-        "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
-      ],
-      "steps": [
-        "Treat this instance as a Bitcoin node only.",
-        "There is no staking deposit and no validator keystore."
-      ],
-      "never": [
-        "Do not look for a staking wallet on this page."
-      ]
-    },
-    "copyAll": "Copy all",
-    "copyNamed": "Copy {{label}}"
-  },
-  "producer": {
-    "title": "Block producer hot keys",
-    "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
-    "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
-    "kes": "KES",
-    "vrf": "VRF",
-    "opcert": "opcert",
-    "missing": "Not attached",
-    "present": "Attached {{fp}}",
-    "choose": "Choose file",
-    "apply": "Apply and restart as block producer",
-    "detach": "Detach and run as relay",
-    "applyTitle": "Attach hot keys to {{id}}?",
-    "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
-    "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
-    "applyC2": "The running node can sign blocks if these files are valid.",
-    "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
-    "detachTitle": "Detach producer keys from {{id}}?",
-    "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
-    "detachC1": "The node will no longer produce blocks.",
-    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
-    "presentShort": "On host",
-    "queuedShort": "Ready",
-    "queued": "Selected · {{name}}",
-    "fileHint": "Typical name {{file}}",
-    "dropOrBrowse": "Drop {{file}} here or browse",
-    "dropping": "Drop to attach {{label}}",
-    "browse": "Browse",
-    "clearFile": "Remove"
+    "unknown": "不明",
+    "stopped": "停止しました",
+    "created": "作成済み (一度も開始されていない)",
+    "missing": "容器なし",
+    "starting": "起動",
+    "rpc_wait": "実行中 - RPC の準備ができていません",
+    "running": "ランニング",
+    "syncing": "同期中",
+    "error": "エラー"
   }
 }

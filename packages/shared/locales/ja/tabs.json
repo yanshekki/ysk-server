@@ -4,6 +4,6 @@
   "about": "説明",
   "main": "行動",
   "stack": "ソフトウェア",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "そのようなタブはありません",
+  "unknownHint": "このページには、{{tab}} という名前のタブがありません。"
 }

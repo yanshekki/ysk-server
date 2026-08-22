@@ -20,8 +20,8 @@
   "stepTuningApplied": "Penyetelan waktu proses diterapkan",
   "stepUnitWritten": "Unit layanan tertulis",
   "stepSystemdStartFailed": "Peluncuran sistem gagal — menggunakan proses fallback",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
-  "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "portListening": "Port {{port}} sedang mendengarkan",
+  "portNotListening": "Port {{port}} tidak mendengarkan",
+  "httpOk": "HTTP Oke {{status}}",
+  "httpFail": "HTTP gagal: {{detail}}"
 }

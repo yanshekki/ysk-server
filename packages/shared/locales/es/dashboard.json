@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Advertencia",
+    "bad": "Problema"
+  },
   "title": "Panel",
   "health": "Salud",
   "protection": "Modo de protección",
@@ -38,12 +44,13 @@
   "readinessCheck": "Preparación:",
   "prodOk": "Listo para la producción",
   "notFullyReady": "No completamente listo",
+  "readinessBlocked": "{{n}} bloqueador(es)",
   "modeScore": "Modo {{mode}} · puntuación {{ready}}/{{total}}",
   "mode": {
     "degraded": "degradado",
     "production_capable": "listo para la producción",
-    "normal": "normal",
-    "blocked": "blocked"
+    "blocked": "obstruido",
+    "normal": "normal"
   },
   "details": "Detalles",
   "certExpiryTitle": "Caducidad del certificado:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "Aplicar auditoría · ok {{ok}} · advertir {{warn}} · malo {{bad}}",
   "executeBadge": "EJECUTAR {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "Este panel escucha en todas las interfaces y su cuenta de administrador no tiene 2FA.",
   "go": "Abierto",
   "open": "Abierto",
   "noCriticalWarn": "Sin alertas críticas o de advertencia",
@@ -81,6 +89,7 @@
   "wizardDesc": "Cree un proyecto y, opcionalmente, borrador de DNS/correo/base de datos (aplicar en cada página de características)",
   "projectName": "Nombre del proyecto",
   "projectNameHint": "Nombre para mostrar; crea un directorio coincidente",
+  "nameRequired": "Introduzca un nombre de proyecto",
   "domainOptional": "Dominio (opcional)",
   "domainHint": "Requerido para habilitar DNS y opciones de correo",
   "runtime": "Tiempo de ejecución",
@@ -93,6 +102,7 @@
   "serverIpv6": "Servidor IPv6 (opcional)",
   "serverIpv6Hint": "Escribe AAAA / ip6: cuando está configurado",
   "serverIpv6Ph": "IPv6 público (opcional)",
+  "needDomainFirst": "Escriba primero un dominio",
   "withDns": "Crear también zona DNS",
   "withDnsDesc": "Dominio de necesidades; solo registro: aplicar zona en la página DNS",
   "withMail": "Registrar también dominio de correo",
@@ -119,15 +129,5 @@
   "notifSearch": "Alertas de búsqueda",
   "notifAll": "Todo",
   "notifDismiss": "Esconder",
-  "goFix": "Arreglar",
-  "needDomainFirst": "Escriba primero un dominio",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "Arreglar"
 }

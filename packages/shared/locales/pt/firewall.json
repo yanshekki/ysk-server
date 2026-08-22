@@ -20,6 +20,8 @@
   "statAllow": "Permitir",
   "statDeny": "Negar",
   "statDefaultIn": "Entrada padrão",
+  "defaultNotApplied": "n/a (UFW desativado)",
+  "ufwOffHint": "A entrada padrão não é aplicada enquanto o UFW está desligado",
   "executeOn": "Sobre",
   "executeOff": "Desligado",
   "ufwDisabled": "UFW desativado",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "Ferramentas subjacentes:",
   "toolHintBody": "UFW = portas/regras permanentes · para resposta a ataques e uso de banimento automático",
   "toolHintfail2ban": "fail2ban = banimentos temporários baseados em log",
+  "toolHintFail2ban": "fail2ban = banimentos temporários baseados em log",
   "executeOffHint": "O sistema é desligado — o status é legível;",
   "tabs": {
     "rules": "Regras",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "Remove esse número de regra UFW (precisa de permissão de alteração do sistema).",
   "servicesTitle": "Serviços gerenciados",
   "servicesHint": "Exposição de rede desejada para serviços YSK. Abrir um serviço sincroniza essas regras automaticamente.",
+  "servicesUfwOff": "A UFW está desligada. Esta lista é a exposição desejada, não as regras que o host está aplicando.",
   "servicesEmpty": "Ainda não há dados de exposição de serviço",
   "servicesEmptyDesc": "Inicie um serviço gerenciado (web, FTPS, VPN, DB…) para preencher esta lista.",
   "servicesManualHint": "Os chips de porta manual estão na guia Portas – prefira gerenciar o acesso aqui para que as regras permaneçam marcadas (ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "Desativar o UFW?",
   "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
   "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado.",
-  "toolHintFail2ban": "fail2ban = banimentos temporários baseados em log",
-  "servicesUfwOff": "A UFW está desligada. Esta lista é a exposição desejada, não as regras que o host está aplicando.",
   "desiredOnlyUfwOff": "Desejado: {{mode}} · UFW desativado (não aplicado)",
-  "syncNotApplied": "UFW desativado · não aplicado",
-  "defaultNotApplied": "n/a (UFW desativado)",
-  "ufwOffHint": "A entrada padrão não é aplicada enquanto o UFW está desligado"
+  "syncNotApplied": "UFW desativado · não aplicado"
 }

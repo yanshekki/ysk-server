@@ -115,7 +115,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "사용법: ysk-server cron <sub> [--data-dir PATH] [--json]\n  목록 [--프로젝트-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  삭제 --id JOB_ID\n  활성화|비활성화 --id JOB_ID\n  run --id JOB_ID # 지금 실행(YSK_EXECUTE=1 필요)\n  설치 # 관리형 crontab 로드(EXECUTE 필요)\n  상태 # 관리 파일과 호스트 crontab을 조사합니다.\n정직: YSK_EXECUTE=1 없이 설치가 차단되었습니다(파일은 계속 기록됨)."
+              "0349e6": "사용법: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  update --id JOB_ID [--schedule S] [--command CMD] [--user USER] [--project-id ID] [--enable|--disable]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\n  host [list] [--user USER] [--jobs-only]\n  host edit --user USER --old-schedule S --old-command C --schedule S --command C --execute\n  host disable|enable|delete|adopt --user USER --old-schedule S --old-command C --execute\n  host run --user USER --command C --execute\nHonesty: install / host write blocked without YSK_EXECUTE=1.\n"
             }
           }
         }

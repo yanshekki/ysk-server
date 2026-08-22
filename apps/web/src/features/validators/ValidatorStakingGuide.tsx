@@ -6,10 +6,16 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   STAKING_PLAYBOOKS,
+  emptyCosmosStakingIdentity,
+  emptyNearStakingIdentity,
   stakingPlaybookAnchor,
+  stakingPlaybookLinksForInstance,
   stakingPlaybookMeta,
   validatorChainLabel,
   type CardanoProducerStatusDto,
+  type CosmosStakingIdentityDto,
+  type NearStakingIdentityDto,
+  type SolStakingIdentityDto,
   type ValidatorChainId,
 } from 'ysk-server-shared';
 import {
@@ -85,7 +91,13 @@ function CredentialList({ items }: { items: CredItem[] }) {
             </div>
             {raw ? (
               <pre
-                className={`cred-row__body${grouped ? ' cred-row__body--hex' : ' cred-row__body--plain'}`}
+                className={`cred-row__body${
+                  grouped
+                    ? ' cred-row__body--hex'
+                    : raw.includes('\n') || raw.length > 80
+                      ? ' cred-row__body--wrap'
+                      : ' cred-row__body--plain'
+                }`}
               >
                 {grouped ?? raw}
               </pre>
@@ -170,6 +182,13 @@ export function ValidatorPlaybookCard({
   nodeId,
   blsPublicKey,
   blsProofOfPossession,
+  near,
+  cosmos,
+  sol,
+  adaP2pPort,
+  p2pPort,
+  ethBeaconUrl,
+  network,
   cardanoProducer,
   producerMainnet,
   onProducerApply,
@@ -181,6 +200,13 @@ export function ValidatorPlaybookCard({
   nodeId?: string | null;
   blsPublicKey?: string | null;
   blsProofOfPossession?: string | null;
+  near?: NearStakingIdentityDto | null;
+  cosmos?: CosmosStakingIdentityDto | null;
+  sol?: SolStakingIdentityDto | null;
+  adaP2pPort?: number | null;
+  p2pPort?: number | null;
+  ethBeaconUrl?: string | null;
+  network?: string;
   cardanoProducer?: CardanoProducerStatusDto | null;
   producerMainnet?: boolean;
   onProducerApply?: (files: { kes?: string; vrf?: string; opcert?: string }) => void;
@@ -238,9 +264,121 @@ export function ValidatorPlaybookCard({
         ]
       : [];
 
+  const nearIdent =
+    id === 'near' ? (near ?? (network ? emptyNearStakingIdentity(network) : null)) : null;
+  const nearPort = p2pPort ?? 24567;
+  const nearCredentials =
+    id === 'near' && nearIdent
+      ? [
+          {
+            label: t('validators.playbook.nearStakeKey'),
+            value: nearIdent.stakePublicKey,
+            pending: t('validators.playbook.nearStakeKeyPending'),
+          },
+          {
+            label: t('validators.playbook.nearAccountId'),
+            value: nearIdent.accountId,
+            pending: t('validators.playbook.nearAccountIdPending', { suffix: nearIdent.poolAccountSuffix }),
+          },
+          {
+            label: t('validators.playbook.nearFactory'),
+            value: nearIdent.factoryAccount,
+            pending: t('validators.playbook.nearFactory'),
+          },
+          {
+            label: t('validators.playbook.nearPublicAddr'),
+            value: nearIdent.publicAddr,
+            pending: t('validators.playbook.nearPublicAddrPending', { port: nearPort }),
+          },
+          {
+            label: t('validators.playbook.nearCreateCommand'),
+            value: nearIdent.createCommand,
+            pending: t('validators.playbook.nearCreateCommand'),
+          },
+        ]
+      : [];
+
+  const cosmosIdent =
+    id === 'cosmos' ? (cosmos ?? (network ? emptyCosmosStakingIdentity(network) : null)) : null;
+  const cosmosPort = p2pPort ?? 26656;
+  const cosmosCredentials =
+    id === 'cosmos' && cosmosIdent
+      ? [
+          {
+            label: t('validators.playbook.cosmosPubkey'),
+            value: cosmosIdent.consensusPubkey,
+            pending: t('validators.playbook.cosmosPubkeyPending'),
+          },
+          {
+            label: t('validators.playbook.cosmosChainId'),
+            value: cosmosIdent.chainId,
+            pending: t('validators.playbook.cosmosChainId'),
+          },
+          {
+            label: t('validators.playbook.cosmosP2p'),
+            value: cosmosIdent.externalAddress,
+            pending: t('validators.playbook.cosmosP2pPending', { port: cosmosPort }),
+          },
+          {
+            label: t('validators.playbook.cosmosCreateCommand'),
+            value: cosmosIdent.createCommand,
+            pending: t('validators.playbook.cosmosCreateCommand'),
+          },
+        ]
+      : [];
+
+  const ethCredentials =
+    id === 'eth'
+      ? [
+          {
+            label: t('validators.playbook.ethBeacon'),
+            value: ethBeaconUrl,
+            pending: t('validators.playbook.ethBeaconPending'),
+          },
+        ]
+      : [];
+
+  const solCredentials =
+    id === 'sol'
+      ? [
+          {
+            label: t('validators.playbook.solIdentity'),
+            value: sol?.identityPubkey,
+            pending: t('validators.playbook.solIdentityPending'),
+          },
+        ]
+      : [];
+
+  const adaCredentials =
+    id === 'ada'
+      ? [
+          {
+            label: t('validators.playbook.adaP2pPort'),
+            value: String(adaP2pPort ?? p2pPort ?? 3001),
+            pending: t('validators.playbook.adaP2pPending'),
+          },
+        ]
+      : [];
+
+  const credentials = [
+    ...avaxCredentials,
+    ...nearCredentials,
+    ...cosmosCredentials,
+    ...solCredentials,
+    ...adaCredentials,
+    ...ethCredentials,
+  ];
+
+  const shownLinks =
+    mode === 'instance' ? stakingPlaybookLinksForInstance(id, network ?? '') : meta.links;
+
+  const honestyKey = `validators.playbook.${id}.honesty`;
+  const honesty = t(honestyKey);
+  const honestyText = honesty === honestyKey ? '' : honesty;
+
   const officialLinks = (
     <ActionBar>
-      {meta.links.map((l) => (
+      {shownLinks.map((l) => (
         <a
           key={l.href}
           href={l.href}
@@ -280,7 +418,16 @@ export function ValidatorPlaybookCard({
             },
           ]}
         />
-        <CredentialList items={avaxCredentials} />
+        {id === 'near' ? (
+          <Alert variant="info">{t('validators.playbook.nearPointing', { port: nearPort })}</Alert>
+        ) : null}
+        {honestyText ? <Alert variant="info">{honestyText}</Alert> : null}
+        <CredentialList items={credentials} />
+        {id === 'near' && nearIdent ? (
+          <p className="muted u-text-sm">
+            {t('validators.playbook.nearAccountIdHint', { suffix: nearIdent.poolAccountSuffix })}
+          </p>
+        ) : null}
         {id === 'ada' && onProducerApply ? (
           <CardanoProducerAttach
             status={cardanoProducer}
@@ -288,6 +435,26 @@ export function ValidatorPlaybookCard({
             onApply={onProducerApply}
             onDetach={onProducerDetach}
           />
+        ) : null}
+        {steps.length ? (
+          <>
+            <h3 className="u-text-sm">{t('validators.playbook.steps')}</h3>
+            <ol className="list-plain" data-testid="staking-next-steps">
+              {steps.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ol>
+          </>
+        ) : null}
+        {never.length ? (
+          <Alert variant="warn">
+            <strong>{t('validators.playbook.never')}</strong>
+            <ul className="list-plain u-mb-0">
+              {never.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </Alert>
         ) : null}
         {officialLinks}
       </CardSection>
@@ -317,7 +484,11 @@ export function ValidatorPlaybookCard({
               },
             ]}
           />
-          <CredentialList items={avaxCredentials} />
+          {id === 'near' ? (
+            <Alert variant="info">{t('validators.playbook.nearPointing', { port: nearPort })}</Alert>
+          ) : null}
+          {honestyText ? <Alert variant="info">{honestyText}</Alert> : null}
+          <CredentialList items={credentials} />
           <FormLayout columns={2}>
             <div>
               <h3 className="u-text-sm">{t('validators.playbook.yskDoes')}</h3>

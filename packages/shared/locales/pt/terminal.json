@@ -15,7 +15,11 @@
   "wsError": "Falha no WebSocket",
   "exitCode": "Código de saída {{code}}",
   "needRootExecute": "Requer root + YSK_EXECUTE=1 para shells do sistema.",
+  "groupSystem": "Sistema",
+  "groupProject": "Projeto",
   "unavailable": "indisponível",
+  "copyAll": "Copiar tudo",
+  "copyAllNeedConn": "Conecte primeiro – o buffer fica vazio enquanto desconectado",
   "placeholder": "Escolha uma identidade e conecte-se",
   "aboutTitle": "Sobre o terminal",
   "aboutSub": "Shell interativo do sistema operacional no navegador (usuários locais). Não é um cliente SSH remoto arbitrário.",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "Um live shell ainda está conectado enquanto você lê esta página.",
   "rootConfirmTitle": "Abrir um shell de root?",
   "rootConfirmDesc": "Esta sessão é um PTY raiz irrestrito no host. Os comandos são auditados.",
-  "rootConfirmBody": "Continue apenas se pretender executar comandos de host privilegiados.",
-  "copyAll": "Copiar tudo",
-  "copyAllNeedConn": "Conecte primeiro – o buffer fica vazio enquanto desconectado",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "Continue apenas se pretender executar comandos de host privilegiados."
 }

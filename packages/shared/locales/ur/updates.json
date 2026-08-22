@@ -13,7 +13,9 @@
   "hourAgo": "{{n}} گھنٹے پہلے",
   "highRiskN": "{{count}} زیادہ خطرہ",
   "panelUpdate": "پینل اپ ڈیٹ دستیاب ہے۔",
+  "footerNewVersion": "نیا ورژن {{version}}",
   "riskOk": "قابل انتظام خطرہ",
+  "riskUnevaluated": "اندازہ نہیں کیا گیا — اسکین + OSV چلائیں۔",
   "pendingScan": "اسکین کا انتظار ہے۔",
   "packages": "پیکجز",
   "highRisk": "زیادہ خطرہ",
@@ -24,6 +26,7 @@
   "reload": "دوبارہ لوڈ کریں۔",
   "osvTitle": "ٹاپ 12 تجویز کردہ پیکجز کے لیے OSV سے استفسار کریں (نیٹ ورک کی ضرورت ہے)",
   "scanOsv": "اسکین + OSV",
+  "cveNotChecked": "چیک نہیں کیا گیا۔",
   "scanPkgs": "پیکجز کو اسکین کریں۔",
   "tabInventory": "پیکیج انوینٹری",
   "tabSelf": "پینل خود",
@@ -72,6 +75,8 @@
   "policyTitle": "پالیسی کو اپ ڈیٹ کریں۔",
   "policyBody": "زیادہ رسک اور CVE پیکجوں کو درخواست دینے سے پہلے منظوری درکار ہوتی ہے۔",
   "applyPkg": "پیکیج اپ گریڈ کا اطلاق کریں۔",
+  "rebootNeeded": "دوبارہ شروع کریں",
+  "kernelRebootHint": "درخواست کے بعد کرنل پیکجوں کو دوبارہ شروع کرنے کی ضرورت ہے۔",
   "applyPkgConfirm": "{{name}} اپ گریڈ کریں؟",
   "applyPkgDesc": "میزبان پر اس پیکج کے لیے موزوں اپ گریڈ چلاتا ہے۔ جڑ + YSK_EXECUTE کی ضرورت ہے۔",
   "lastScan": "آخری اسکین",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "کرنٹ",
   "selfLatestShort": "تازہ ترین",
   "applyPanelUpdate": "پینل اپ ڈیٹ کا اطلاق کریں۔",
+  "applySelfConfirmTitle": "پینل اپ ڈیٹ لاگو کریں؟",
+  "applySelfConfirmDesc": "{{from}} → {{to}} انسٹال کریں اور پینل سروس کو دوبارہ شروع کریں۔ کوئی ڈرائی رن نہیں ہے۔",
+  "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن",
   "recheck": "دوبارہ چیک کریں۔",
   "aboutScope": "دائرہ کار",
   "aboutScopeV": "ysk-server پینل + کیٹلاگ سروسز + رن ٹائمز + باقی مناسب پیکجز",
@@ -98,6 +106,51 @@
   "scanPolicyV": "اسکین ≠ اپ گریڈ نظام کی تبدیلیوں کو لاگو کریں",
   "highRiskPolicy": "زیادہ خطرہ",
   "highRiskPolicyV": "منظوری کی ضرورت ہے: بھیجنے سے پہلے دوسری تصدیق کریں۔",
+  "needApprovalHint": "دستیاب کھولیں اور ان پیکجوں کو فلٹر کریں جن کی منظوری کی ضرورت ہے۔",
+  "applyNeedConfirm": "درخواست دینے سے پہلے ایک تصدیقی ڈائیلاگ کھولتا ہے۔",
+  "probeFailed": "تحقیقات ناکام ہوگئی",
+  "notViaApt": "apt کے ذریعہ انتظام نہیں کیا گیا - کوئی امیدوار نہیں۔",
+  "noCandidate": "کوئی امیدوار ورژن نہیں۔",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "جیو آئی پی صفحہ",
+  "job": {
+    "protection_probe": {
+      "name": "تحفظ کی تحقیقات",
+      "hint": "متواتر دفاعی سگنل"
+    },
+    "updates_scan": {
+      "name": "اپ ڈیٹس اسکین",
+      "hint": "پیکیج انوینٹری کو تازہ کریں۔"
+    },
+    "daily_backup": {
+      "name": "روزانہ بیک اپ",
+      "hint": "شیڈول کردہ تمام بیک اپ"
+    },
+    "db_temp_expire": {
+      "name": "temp DB صارفین کی میعاد ختم",
+      "hint": "میعاد ختم ہونے والے عارضی ڈیٹا بیس کے صارفین کو چھوڑ دیں۔"
+    },
+    "defense_auto_ban": {
+      "name": "دفاعی آٹو پابندی",
+      "hint": "آٹو پابندی ٹک لگائیں۔"
+    },
+    "defense_geoip_update": {
+      "name": "جیو آئی پی اپ ڈیٹ",
+      "hint": "GeoIP ڈیٹا بیس ڈاؤن لوڈ کریں۔"
+    },
+    "log_auto_vacuum": {
+      "name": "لاگ ویکیوم",
+      "hint": "جرنل کی برقراری"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL کو ای میل کریں۔",
+      "hint": "میل DNSBL چیک کریں۔"
+    },
+    "validators_upgrade_scan": {
+      "name": "توثیق کرنے والے اسکین کو اپ گریڈ کرتے ہیں۔",
+      "hint": "تصدیق کنندہ تصویر / بائنری اپ ڈیٹس کو چیک کریں۔"
+    }
+  },
   "permPolicy": "اجازتیں",
   "permPolicyV": "بغیر EXECUTE/root → بلاک شدہ (کوئی جعلی کامیابی نہیں)",
   "osvPolicyV": "نیٹ ورک کی ضرورت ہے؛ صرف ٹاپ 12 تجاویز کو تقویت بخشتا ہے۔",
@@ -122,6 +175,12 @@
   "updateFailed": "اپ ڈیٹ ناکام ہو گیا۔",
   "updateIncomplete": "اپ ڈیٹ نامکمل ہے۔",
   "appliedUpdate": "اپ ڈیٹ لاگو ہو گیا۔",
+  "panelRestarting": "نیا ورژن لوڈ کرنے کے لیے پینل دوبارہ شروع ہو رہا ہے…",
+  "panelRestarted": "پینل واپس آ گیا · {{version}}",
+  "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔",
+  "reloadUi": "UI دوبارہ لوڈ کریں۔",
+  "reloadUiTitle": "پینل UI کو دوبارہ لوڈ کریں؟",
+  "reloadUiDesc": "پینل سروس {{version}} ہے۔ اس ٹیب میں اب بھی پچھلا فرنٹ اینڈ ہے جب تک کہ آپ دوبارہ لوڈ نہ کریں۔ اس صفحہ پر غیر محفوظ شدہ فیلڈز ضائع ہو جائیں گی۔",
   "aptCandidate": "موزوں امیدوار",
   "advice": {
     "update": "اپ ڈیٹ کی سفارش کی گئی۔",
@@ -182,64 +241,5 @@
   "needsReboot": "ریبوٹ کی ضرورت ہے۔",
   "kernelRebootWarn": "نئے دانا کو انسٹال کرنے کے لیے عام طور پر اسے استعمال کرنے سے پہلے ریبوٹ کی ضرورت ہوتی ہے۔",
   "neverRun": "ابھی تک نہیں چلا؟",
-  "scanOsvN": "اسکین + OSV (پہلا {{n}})",
-  "rebootNeeded": "دوبارہ شروع کریں",
-  "kernelRebootHint": "درخواست کے بعد کرنل پیکجوں کو دوبارہ شروع کرنے کی ضرورت ہے۔",
-  "needApprovalHint": "دستیاب کھولیں اور ان پیکجوں کو فلٹر کریں جن کی منظوری کی ضرورت ہے۔",
-  "applyNeedConfirm": "درخواست دینے سے پہلے ایک تصدیقی ڈائیلاگ کھولتا ہے۔",
-  "probeFailed": "تحقیقات ناکام ہوگئی",
-  "notViaApt": "apt کے ذریعہ انتظام نہیں کیا گیا - کوئی امیدوار نہیں۔",
-  "noCandidate": "کوئی امیدوار ورژن نہیں۔",
-  "jobOpenGeo": "جیو آئی پی صفحہ",
-  "job": {
-    "protection_probe": {
-      "name": "تحفظ کی تحقیقات",
-      "hint": "متواتر دفاعی سگنل"
-    },
-    "updates_scan": {
-      "name": "اپ ڈیٹس اسکین",
-      "hint": "پیکیج انوینٹری کو تازہ کریں۔"
-    },
-    "daily_backup": {
-      "name": "روزانہ بیک اپ",
-      "hint": "شیڈول کردہ تمام بیک اپ"
-    },
-    "db_temp_expire": {
-      "name": "temp DB صارفین کی میعاد ختم",
-      "hint": "میعاد ختم ہونے والے عارضی ڈیٹا بیس کے صارفین کو چھوڑ دیں۔"
-    },
-    "defense_auto_ban": {
-      "name": "دفاعی آٹو پابندی",
-      "hint": "آٹو پابندی ٹک لگائیں۔"
-    },
-    "defense_geoip_update": {
-      "name": "جیو آئی پی اپ ڈیٹ",
-      "hint": "GeoIP ڈیٹا بیس ڈاؤن لوڈ کریں۔"
-    },
-    "log_auto_vacuum": {
-      "name": "لاگ ویکیوم",
-      "hint": "جرنل کی برقراری"
-    },
-    "email_dnsbl": {
-      "name": "DNSBL کو ای میل کریں۔",
-      "hint": "میل DNSBL چیک کریں۔"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "پہلے سے ہی تازہ ترین پینل ورژن",
-  "panelRestarting": "نیا ورژن لوڈ کرنے کے لیے پینل دوبارہ شروع ہو رہا ہے…",
-  "panelRestarted": "پینل واپس آ گیا · {{version}}",
-  "panelRestartWait": "اپ ڈیٹ لاگو ہو گیا۔ اگر یہ صفحہ نہیں بدلا تو چند سیکنڈ بعد دوبارہ لوڈ کریں۔",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "اسکین + OSV (پہلا {{n}})"
 }

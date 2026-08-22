@@ -791,6 +791,15 @@ export const api = {
   runCronNow(id: string): Promise<Record<string, unknown>> {
     return request(`/api/v1/cron/${id}/run`, { method: 'POST', body: '{}' });
   },
+  cronHostOp(
+    action: 'replace' | 'disable' | 'enable' | 'delete' | 'run' | 'adopt',
+    body: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return request(`/api/v1/cron/host/${action}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
   cronStatus(): Promise<{
     managedPath: string;
     managedLines: number;

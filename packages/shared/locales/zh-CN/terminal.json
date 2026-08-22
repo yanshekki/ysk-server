@@ -15,7 +15,11 @@
   "wsError": "WebSocket 连接失败",
   "exitCode": "退出码 {{code}}",
   "needRootExecute": "需要 root 与 YSK_EXECUTE=1 才能打开系统 shell。",
+  "groupSystem": "系统",
+  "groupProject": "专案",
   "unavailable": "不可用",
+  "copyAll": "全部复制",
+  "copyAllNeedConn": "首先连接——断开连接时缓冲区为空",
   "placeholder": "选择身份后按「连接」",
   "aboutTitle": "终端说明",
   "aboutSub": "浏览器交互 shell（本机 OS 用户），不是任意远程 SSH 客户端。",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "说明分页开启期间，工作阶段仍保持连线。",
   "rootConfirmTitle": "打开 root shell？",
   "rootConfirmDesc": "此会话是主机上不受限制的 root PTY。命令会写入审计记录。",
-  "rootConfirmBody": "仅在你打算执行具权限的主机命令时继续。",
-  "copyAll": "全部复制",
-  "copyAllNeedConn": "首先连接——断开连接时缓冲区为空",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "仅在你打算执行具权限的主机命令时继续。"
 }

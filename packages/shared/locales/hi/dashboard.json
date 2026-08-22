@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "चेतावनी",
+    "bad": "संकट"
+  },
   "title": "डैशबोर्ड",
   "health": "स्वास्थ्य",
   "protection": "सुरक्षा मोड",
@@ -38,12 +44,13 @@
   "readinessCheck": "तत्परता:",
   "prodOk": "उत्पादन तैयार",
   "notFullyReady": "पूरी तरह तैयार नहीं",
+  "readinessBlocked": "{{n}} अवरोधक",
   "modeScore": "मोड {{mode}} · स्कोर {{ready}}/{{total}}",
   "mode": {
     "degraded": "अपमानित",
     "production_capable": "उत्पादन तैयार",
-    "normal": "सामान्य",
-    "blocked": "blocked"
+    "blocked": "अवरोधित",
+    "normal": "सामान्य"
   },
   "details": "विवरण",
   "certExpiryTitle": "प्रमाणपत्र की समाप्ति:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "ऑडिट लागू करें · ठीक है {{ok}} · चेतावनी {{warn}} · ख़राब {{bad}}",
   "executeBadge": "निष्पादित {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "यह पैनल सभी इंटरफ़ेस पर सुनता है और आपके व्यवस्थापक खाते में कोई 2FA नहीं है।",
   "go": "खुला",
   "open": "खुला",
   "noCriticalWarn": "कोई महत्वपूर्ण या चेतावनी अलर्ट नहीं",
@@ -81,6 +89,7 @@
   "wizardDesc": "एक प्रोजेक्ट बनाएं और वैकल्पिक रूप से डीएनएस/मेल/डेटाबेस का मसौदा तैयार करें (प्रत्येक फीचर पेज पर लागू करें)",
   "projectName": "प्रोजेक्ट का नाम",
   "projectNameHint": "प्रदर्शित होने वाला नाम; एक मेल खाती निर्देशिका बनाता है",
+  "nameRequired": "प्रोजेक्ट का नाम दर्ज करें",
   "domainOptional": "डोमेन (वैकल्पिक)",
   "domainHint": "DNS और मेल विकल्प सक्षम करने के लिए आवश्यक है",
   "runtime": "क्रम",
@@ -93,6 +102,7 @@
   "serverIpv6": "सर्वर IPv6 (वैकल्पिक)",
   "serverIpv6Hint": "सेट होने पर AAAA / ip6: लिखता है",
   "serverIpv6Ph": "सार्वजनिक IPv6 (वैकल्पिक)",
+  "needDomainFirst": "पहले डोमेन भरें",
   "withDns": "DNS ज़ोन भी बनाएं",
   "withDnsDesc": "डोमेन की आवश्यकता है; केवल पंजीकरण - डीएनएस पेज पर जोन लागू करें",
   "withMail": "मेल डोमेन भी रजिस्टर करें",
@@ -119,15 +129,5 @@
   "notifSearch": "अलर्ट खोजें",
   "notifAll": "सभी",
   "notifDismiss": "छिपाना",
-  "goFix": "हल करना",
-  "needDomainFirst": "पहले डोमेन भरें",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "हल करना"
 }

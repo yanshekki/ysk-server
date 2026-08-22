@@ -1,0 +1,1827 @@
+{
+  "dashboard": {
+    "id": "dashboard",
+    "title": "Dasbor",
+    "summary": "Sekilas tentang kesehatan host, tugas terbuka, dan pintasan—tempat yang biasa digunakan untuk memulai pemeriksaan harian.",
+    "canDo": [
+      "Ringkasan kesehatan：Status kunci untuk layanan, disk, mode perlindungan, dan lainnya.",
+      "Tautan cepat：Lompat ke halaman umum tanpa menelusuri menu.",
+      "Peringatan dan tugas：Item yang memerlukan perhatian (pembaruan, kuota, dan sejenisnya).",
+      "Pemeriksaan kesehatan tuan rumah setiap hari",
+      "Jika ada yang salah, mulailah dari sini lalu telusuri subsistemnya"
+    ],
+    "notes": [
+      "Ini hanya tampilan ringkasan—detail dan hasil penerapan bersifat resmi di setiap halaman fitur"
+    ],
+    "related": [
+      {
+        "label": "Layanan",
+        "to": "/services"
+      },
+      {
+        "label": "Pembaruan",
+        "to": "/updates"
+      },
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server health --json"
+    ]
+  },
+  "projects": {
+    "id": "projects",
+    "title": "Proyek situs web",
+    "summary": "Kelola akar dokumen, runtime, domain, dan terapkan siklus hidup per situs.",
+    "canDo": [
+      "Daftar proyek：Buat, cari, dan buka setiap situs.",
+      "Isolasi pengguna OS: Pengguna dan rumah Linux khusus opsional per proyek.",
+      "Templat：Membuat perancah situs baru dari templat yang telah ditetapkan sebelumnya.",
+      "Host beberapa situs di satu mesin",
+      "Pisahkan pengguna sistem untuk isolasi yang lebih kuat"
+    ],
+    "notes": [
+      "Menghapus proyek akan memengaruhi file dan layanan—buat cadangan terlebih dahulu",
+      "diterbitkan ≠ dapat diselesaikan secara publik; DNS harus benar"
+    ],
+    "related": [
+      {
+        "label": "File",
+        "to": "/files"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server projects list --json",
+      "ysk-server projects create --name demo --runtime node"
+    ]
+  },
+  "projectDetail": {
+    "id": "projectDetail",
+    "title": "Detil proyek",
+    "summary": "Pusat kendali untuk satu situs: penerapan, env, kesehatan, pencadangan, dan titik akhir jaringan.",
+    "canDo": [
+      "Deploy：Mulai atau perbarui runtime untuk situs ini.",
+      "Lingkungan：Edit proyek env vars dengan aman.",
+      "Kesehatan dan log: Periksa kesiapan dan buka log terkait.",
+      "Kontrol Git：status, ambil, checkout, setel ulang; URL kait masuk untuk GitHub/Gitea/GitLab (bukan Slack).",
+      "Putar rahasia tanpa menyentuh proyek lain"
+    ],
+    "notes": [
+      "Aturan penerapan/eksekusi tetap berlaku—diblokir berarti host tidak diubah",
+      "Jawaban kait Git masuk tanpa sesi panel; clone/deploy masih membutuhkan YSK_EXECUTE=1"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Log",
+        "to": "/logs"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server projects get --id <ID> --json",
+      "ysk-server projects deploy --id <ID> --execute"
+    ]
+  },
+  "email": {
+    "id": "email",
+    "title": "Surat",
+    "summary": "Domain email, kotak surat, dan pengaturan pengiriman, dengan panduan daftar periksa DNS.",
+    "canDo": [
+      "Domain email：Domain yang mengirim dan menerima email.",
+      "Saran DNS：Catatan MX / SPF / DKIM / DMARC untuk dipublikasikan.",
+      "Kesehatan dan reputasi：Pemeriksaan kesiapan pengiriman (beberapa item bersifat eksternal).",
+      "Buat domain email baru",
+      "Debug soft-fail / reject setelah perubahan DNS"
+    ],
+    "notes": [
+      "PTR, port 25, dan reputasi IP seringkali memerlukan host atau pemilik IP",
+      "Panel tidak dapat menggantikan penyedia DNS eksternal atau menghapus Anda dari daftar blokir"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server email domains --json",
+      "ysk-server email bootstrap --domain example.com --ip A.B.C.D --execute"
+    ]
+  },
+  "emailDomain": {
+    "id": "emailDomain",
+    "title": "Detail domain email",
+    "summary": "Kotak surat, alias, DKIM, penerusan, dan kesehatan untuk satu domain email.",
+    "canDo": [
+      "Manajemen kotak surat：Membuat kotak surat, kuota, dan kata sandi.",
+      "DNS / DKIM：Menampilkan kunci dan catatan yang harus dipublikasikan.",
+      "Kebijakan lanjutan：Penerusan, batasan tarif, anti-spam, dan sejenisnya (sebagaimana diterapkan).",
+      "Buat kotak surat staf",
+      "Putar DKIM atau perbaiki pemeriksaan DNS yang gagal"
+    ],
+    "notes": [
+      "Propagasi DNS bergantung pada TTL",
+      "Jika SSO webmail diaktifkan, atur kata sandi dan plugin secara terpisah"
+    ],
+    "related": [
+      {
+        "label": "Ikhtisar surat",
+        "to": "/email"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server email mailboxes --domain example.com --json",
+      "ysk-server email deliverability --domain example.com --json"
+    ]
+  },
+  "files": {
+    "id": "files",
+    "title": "File",
+    "summary": "Jelajahi, unggah, unduh, dan kelola file di dalam jalur resmi.",
+    "canDo": [
+      "Browser direktori：Navigasi hanya di bawah akar yang diizinkan.",
+      "Unggah / unduh：Pindahkan aset situs atau arsip cadangan.",
+      "Pintasan proyek：Lompat dari proyek ke direktori home-nya.",
+      "Perbaiki aset statis tanpa SSH",
+      "Tarik arsip cadangan dari host"
+    ],
+    "notes": [
+      "Hanya jalur yang diizinkan—tidak ada akses disk penuh sembarangan",
+      "Penghapusan dapat membuat situs tidak aktif; buat cadangan file penting terlebih dahulu"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Cadangan",
+        "to": "/backups"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server files list --root public --json",
+      "ysk-server files shares list --root public --json"
+    ]
+  },
+  "publicFiles": {
+    "id": "publicFiles",
+    "title": "File publik",
+    "summary": "Area pengunduhan publik yang terkontrol (misalnya paket rilis atau aset statis).",
+    "canDo": [
+      "Manajemen area publik：Kelola file yang dapat dijangkau melalui HTTP.",
+      "Kuota：Membatasi penggunaan area publik.",
+      "Publikasikan paket unduhan pelanggan",
+      "Bagikan aset yang tidak sensitif",
+      "Konfirmasikan awalan dan kuota publik"
+    ],
+    "notes": [
+      "Jangan pernah meletakkan kunci pribadi atau data pribadi pelanggan di area publik"
+    ],
+    "related": [
+      {
+        "label": "File",
+        "to": "/files"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting public-files --domain files.example.com --reload"
+    ]
+  },
+  "ftp": {
+    "id": "ftp",
+    "title": "FTPS",
+    "summary": "Kelola akun FTPS, kunci SFTP, dan pengaturan layanan vsftpd di satu tempat.",
+    "canDo": [
+      "CRUD Akun：Membuat, menonaktifkan, dan menghapus pengguna FTP.",
+      "Direktori beranda：Batasi setiap akun pada jalur tertentu.",
+      "Biarkan desainer mengunggah file statis",
+      "Akun kontraktor sementara",
+      "Konfirmasikan layanan FTPS telah diinstal dan dijalankan"
+    ],
+    "notes": [
+      "FTP biasa tidak aman; lebih suka FTPS / SFTP",
+      "Akun hanya berlaku setelah layanan berhasil diterapkan"
+    ],
+    "related": [
+      {
+        "label": "File",
+        "to": "/files"
+      },
+      {
+        "label": "Pusat perlindungan",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
+    ]
+  },
+  "ftpService": {
+    "id": "ftpService",
+    "title": "layanan FTPS",
+    "summary": "Instal dan kendalikan vsftpd/FTPS dari panel: siklus hidup, TLS, PASV, dan port firewall host.",
+    "canDo": [
+      "Instal dan mulai FTPS",
+      "Terapkan konfigurasi dan mulai ulang",
+      "Buka port mendengarkan + PASV melalui panel firewall",
+      "Tetapkan IP PASV publik dan domain TLS"
+    ],
+    "notes": [
+      "Digabung menjadi /ftp (tab layanan).",
+      "Buka port firewall dari Ikhtisar (membutuhkan root + EXECUTE) — jangan SSH untuk menjalankan ufw",
+      "Tetapkan IP publik PASV di bawah Jaringan jika di belakang NAT",
+      "Grup keamanan cloud tetap harus mengizinkan port TCP yang sama jika digunakan"
+    ],
+    "related": [
+      {
+        "label": "FTPS",
+        "to": "/ftp"
+      },
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
+    ]
+  },
+  "mysql": {
+    "id": "mysql",
+    "title": "database MySQL",
+    "summary": "Kelola database MySQL lokal, pengguna, dan pengaturan koneksi dengan status jujur ​​​​tentang apa yang sebenarnya ditulis ke sistem.",
+    "canDo": [
+      "Database CRUD：Membuat, membuat daftar, dan menghapus database MySQL (skema).",
+      "Pengguna dan hibah：Buat akun database dan ikat hak akses.",
+      "Terapkan dan status：Membedakan draf, tertulis, diterapkan, dan diblokir—hindari keberhasilan yang salah.",
+      "Sediakan database MySQL yang terisolasi dan akun untuk proyek situs web baru",
+      "Memutar kata sandi aplikasi atau mendapatkan kembali basis data untuk situs yang dinonaktifkan"
+    ],
+    "notes": [
+      "Panel berhasil ≠ aplikasi dapat terhubung—verifikasi host, port, firewall, dan pemberian akun",
+      "Menghapus database berisiko tinggi; konfirmasikan tidak ada ketergantungan produksi sebelum mendaftar"
+    ],
+    "related": [
+      {
+        "label": "layanan MySQL",
+        "to": "/databases/mysql/service"
+      },
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "mysqlService": {
+    "id": "mysqlService",
+    "title": "layanan MySQL",
+    "summary": "Instal, mulai, hentikan, dan sesuaikan layanan MySQL itu sendiri (bukan konten database)—prasyarat untuk halaman data.",
+    "canDo": [
+      "Instal sekali klik：Instal paket MySQL di host (membutuhkan izin perubahan sistem).",
+      "Mulai / hentikan / muat ulang: Kontrol unit systemd dan laporkan hasil nyata.",
+      "Pemeriksaan koneksi：Periksa apakah port dapat dijangkau dan layanan siap.",
+      "MySQL pertama kali di host baru",
+      "Mulai ulang layanan database di jendela pemeliharaan dan konfirmasi pemulihan"
+    ],
+    "notes": [
+      "Tanpa EXECUTE, hanya rencana/skrip yang ditulis—tidak ada apt/systemctl yang sebenarnya",
+      "kemampuan root dan non-root berbeda; beberapa tindakan secara jujur ​​ditandai diblokir"
+    ],
+    "related": [
+      {
+        "label": "data MySQL",
+        "to": "/databases/mysql"
+      },
+      {
+        "label": "Ikhtisar layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "mariadb": {
+    "id": "mariadb",
+    "title": "Basis data MariaDB",
+    "summary": "Kelola database MariaDB lokal, pengguna, dan pengaturan koneksi dengan status jujur ​​​​tentang apa yang sebenarnya ditulis ke sistem.",
+    "canDo": [
+      "CRUD Basis Data：Membuat, membuat daftar, dan menghapus basis data MariaDB (skema).",
+      "Pengguna dan hibah：Buat akun database dan ikat hak akses.",
+      "Terapkan dan status：Membedakan draf, tertulis, diterapkan, dan diblokir—hindari keberhasilan yang salah.",
+      "Menyediakan database MariaDB yang terisolasi dan akun untuk proyek situs web baru",
+      "Memutar kata sandi aplikasi atau mendapatkan kembali basis data untuk situs yang dinonaktifkan"
+    ],
+    "notes": [
+      "Panel berhasil ≠ aplikasi dapat terhubung—verifikasi host, port, firewall, dan pemberian akun",
+      "Menghapus database berisiko tinggi; konfirmasikan tidak ada ketergantungan produksi sebelum mendaftar"
+    ],
+    "related": [
+      {
+        "label": "Layanan MariaDB",
+        "to": "/databases/mariadb/service"
+      },
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "mariadbService": {
+    "id": "mariadbService",
+    "title": "Layanan MariaDB",
+    "summary": "Instal, mulai, hentikan, dan sesuaikan layanan MariaDB itu sendiri (bukan konten basis data)—prasyarat untuk halaman data.",
+    "canDo": [
+      "Instal sekali klik：Instal paket MariaDB di host (memerlukan izin perubahan sistem).",
+      "Mulai / hentikan / muat ulang: Kontrol unit systemd dan laporkan hasil nyata.",
+      "Pemeriksaan koneksi：Periksa apakah port dapat dijangkau dan layanan siap.",
+      "MariaDB pertama kali di host baru",
+      "Mulai ulang layanan database di jendela pemeliharaan dan konfirmasi pemulihan"
+    ],
+    "notes": [
+      "Tanpa EXECUTE, hanya rencana/skrip yang ditulis—tidak ada apt/systemctl yang sebenarnya",
+      "kemampuan root dan non-root berbeda; beberapa tindakan secara jujur ​​ditandai diblokir"
+    ],
+    "related": [
+      {
+        "label": "Data MariaDB",
+        "to": "/databases/mariadb"
+      },
+      {
+        "label": "Ikhtisar layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "postgres": {
+    "id": "postgres",
+    "title": "Basis data PostgreSQL",
+    "summary": "Kelola database PostgreSQL lokal, pengguna, dan pengaturan koneksi dengan status jujur ​​tentang apa yang sebenarnya ditulis ke sistem.",
+    "canDo": [
+      "Database CRUD：Membuat, membuat daftar, dan menghapus database PostgreSQL (skema).",
+      "Pengguna dan hibah：Buat akun database dan ikat hak akses.",
+      "Terapkan dan status：Membedakan draf, tertulis, diterapkan, dan diblokir—hindari keberhasilan yang salah.",
+      "Sediakan database PostgreSQL yang terisolasi dan akun untuk proyek situs web baru",
+      "Memutar kata sandi aplikasi atau mendapatkan kembali basis data untuk situs yang dinonaktifkan"
+    ],
+    "notes": [
+      "Panel berhasil ≠ aplikasi dapat terhubung—verifikasi host, port, firewall, dan pemberian akun",
+      "Menghapus database berisiko tinggi; konfirmasikan tidak ada ketergantungan produksi sebelum mendaftar"
+    ],
+    "related": [
+      {
+        "label": "layanan PostgreSQL",
+        "to": "/databases/postgres/service"
+      },
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting postgres-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "postgresService": {
+    "id": "postgresService",
+    "title": "layanan PostgreSQL",
+    "summary": "Instal, mulai, hentikan, dan sesuaikan layanan PostgreSQL itu sendiri (bukan konten database)—prasyarat untuk halaman data.",
+    "canDo": [
+      "Instal sekali klik：Instal paket PostgreSQL di host (memerlukan izin perubahan sistem).",
+      "Mulai / hentikan / muat ulang: Kontrol unit systemd dan laporkan hasil nyata.",
+      "Pemeriksaan koneksi：Periksa apakah port dapat dijangkau dan layanan siap.",
+      "PostgreSQL pertama kali di host baru",
+      "Mulai ulang layanan database di jendela pemeliharaan dan konfirmasi pemulihan"
+    ],
+    "notes": [
+      "Tanpa EXECUTE, hanya rencana/skrip yang ditulis—tidak ada apt/systemctl yang sebenarnya",
+      "kemampuan root dan non-root berbeda; beberapa tindakan secara jujur ​​ditandai diblokir"
+    ],
+    "related": [
+      {
+        "label": "data PostgreSQL",
+        "to": "/databases/postgres"
+      },
+      {
+        "label": "Ikhtisar layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "redis": {
+    "id": "redis",
+    "title": "Redis",
+    "summary": "Telusuri dan kelola kunci Redis dan indeks DB; menerapkan pengaturan terkait koneksi.",
+    "canDo": [
+      "Browser kunci：Periksa kunci dan nilai per DB (tergantung izin dan batas ukuran).",
+      "Pengaturan instans：Kelola target koneksi Redis.",
+      "Periksa cache sesi",
+      "Hapus kunci antrian yang buruk",
+      "Konfirmasikan layanan Redis sedang berjalan"
+    ],
+    "notes": [
+      "Menghapus kunci dalam produksi memerlukan kehati-hatian yang ekstrim",
+      "Kunci besar mungkin terpotong di UI"
+    ],
+    "related": [
+      {
+        "label": "layanan redis",
+        "to": "/databases/redis/service"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
+    ]
+  },
+  "redisService": {
+    "id": "redisService",
+    "title": "layanan redis",
+    "summary": "Instal, mulai, hentikan, dan sesuaikan layanan Redis itu sendiri (bukan konten data)—prasyarat untuk halaman data.",
+    "canDo": [
+      "Instal sekali klik：Instal paket Redis di host (memerlukan izin perubahan sistem).",
+      "Mulai / hentikan / muat ulang: Kontrol unit systemd dan laporkan hasil nyata.",
+      "Pemeriksaan koneksi：Periksa apakah port dapat dijangkau dan layanan siap.",
+      "Redis pertama kali di host baru",
+      "Mulai ulang layanan di jendela pemeliharaan dan konfirmasi pemulihan"
+    ],
+    "notes": [
+      "Tanpa EXECUTE, hanya rencana/skrip yang ditulis—tidak ada apt/systemctl yang sebenarnya",
+      "kemampuan root dan non-root berbeda; beberapa tindakan secara jujur ​​ditandai diblokir"
+    ],
+    "related": [
+      {
+        "label": "Data ulang",
+        "to": "/databases/redis"
+      },
+      {
+        "label": "Ikhtisar layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
+    ]
+  },
+  "dns": {
+    "id": "dns",
+    "title": "DNS",
+    "summary": "Zona dan catatan resmi, sinkronisasi cluster, DNSSEC, dan alat kueri.",
+    "canDo": [
+      "Zona dan catatan：Data resmi yang dilayani atau direncanakan oleh tuan rumah.",
+      "Sinkronisasi / DNSSEC：Kluster rekan dan penandatanganan saat diaktifkan.",
+      "Alat kueri：Pemeriksaan gaya penggalian cepat dari panel.",
+      "Publikasikan A/MX untuk situs atau domain email baru",
+      "Periksa apakah tepi dan asal teratasi sebagaimana mestinya"
+    ],
+    "notes": [
+      "TTL dan cache eksternal menunda apa yang dilihat publik",
+      "Pengaturan apex/NS yang salah dapat membuat seluruh domain offline"
+    ],
+    "related": [
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      },
+      {
+        "label": "Surat",
+        "to": "/email"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server dns zones --json",
+      "ysk-server hosting dns-zone --zone example.com --ip A.B.C.D"
+    ]
+  },
+  "cdn": {
+    "id": "cdn",
+    "title": "CDN (tepi yang dihosting sendiri)",
+    "summary": "Akselerasi tepi multi-node dengan YSK: register tepi, asal/cache, push Nginx, DNS multi-A/failover, distribusi TLS opsional.",
+    "canDo": [
+      "Registri tepi: Lacak node tepi dan kesehatannya.",
+      "Site push：Dorong kebijakan Nginx / cache ke edge.",
+      "Pembantu DNS：Pola multi-A/failover untuk IP edge.",
+      "Mempercepat situs publik dari beberapa tepi VPS",
+      "Gagal ketika salah satu sisinya tidak sehat"
+    ],
+    "notes": [
+      "Pekerjaan edge yang antri ≠ diterapkan pada setiap node—baca status jujur",
+      "Terapkan tidak menciptakan root@publicIpv4; SSH membutuhkan identitas/nama pengguna/sshHost. Probe mengklasifikasikan batas waktu/DNS/TLS."
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server cdn nodes --json",
+      "ysk-server cdn sites --json"
+    ]
+  },
+  "ssl": {
+    "id": "ssl",
+    "title": "Sertifikat SSL",
+    "summary": "Minta, unggah, dan lampirkan sertifikat TLS untuk situs, email, atau nama host panel.",
+    "canDo": [
+      "Terbitkan / unggah：Terbitkan ACME atau tempel file PEM.",
+      "Lampirkan：Ikatkan sertifikat ke nama host situs atau layanan.",
+      "Aktifkan HTTPS untuk domain baru",
+      "Ganti sertifikat yang kedaluwarsa",
+      "Tambahkan atau pilih nama host"
+    ],
+    "notes": [
+      "ACME memerlukan DNS yang benar dan biasanya port 80 dapat dijangkau",
+      "Sertifikat pada disk ≠ browser memercayai rantai penuh—verifikasi secara end-to-end"
+    ],
+    "related": [
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server ssl list --json",
+      "ysk-server ssl get --domain example.com --json"
+    ]
+  },
+  "nginx": {
+    "id": "nginx",
+    "title": "Nginx",
+    "summary": "Kelola vhost mandiri dan tinjau konfigurasi yang dikelola proyek.",
+    "canDo": [
+      "Daftar situs proyek (konferensi terkelola dari publikasi / goLive)",
+      "Buat situs mandiri dan Terapkan ke sistem",
+      "Pratinjau konferensi; edit proyek Nginx di bawah Project → Network",
+      "Jalankan nginx -t / reload bila diizinkan",
+      "Bersihkan cache Nginx yang dikelola panel jika tersedia"
+    ],
+    "notes": [
+      "Lokasi proyek dan lokasi mandiri dicantumkan secara terpisah; ubah konfigurasi proyek di bawah Project Network",
+      "Terapkan setelah buat untuk menulis konfigurasi sistem; gagal nginx -t tidak pernah menandai diterapkan",
+      "Konferensi yang dikelola CDN memiliki siklus hidup terpisah—jangan digabungkan dengan pengeditan manual"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      },
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      }
+    ]
+  },
+  "node": {
+    "id": "node",
+    "title": "Node.js",
+    "summary": "Kelola versi runtime Node.js, rantai alat, dan kemampuan yang digunakan oleh penerapan proyek di host ini.",
+    "canDo": [
+      "Pemeriksaan lingkungan：Deteksi Node.js yang terinstal dan apakah CLI umum tersedia.",
+      "Instal / perbarui pembantu：Instal atau alihkan runtime jika izin memungkinkan.",
+      "Integrasi proyek：Penyebaran proyek menggunakan runtime yang dikonfirmasi di halaman ini.",
+      "Siapkan versi Node.js yang benar untuk situs yang cocok",
+      "Inisialisasi runtime pada host baru sebelum membuat proyek"
+    ],
+    "notes": [
+      "Perubahan runtime global dapat memengaruhi setiap proyek yang menggunakan runtime tersebut",
+      "Status proses aktual bersifat otoritatif pada halaman detail proyek dan layanan"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind node --version 22 --execute"
+    ]
+  },
+  "php": {
+    "id": "php",
+    "title": "PHP",
+    "summary": "Kelola versi runtime PHP, rantai alat, dan kemampuan yang digunakan oleh penerapan proyek di host ini.",
+    "canDo": [
+      "Pemeriksaan lingkungan：Deteksi PHP yang terinstal dan apakah CLI umum tersedia.",
+      "Instal / perbarui pembantu：Instal atau alihkan runtime jika izin memungkinkan.",
+      "Integrasi proyek：Penyebaran proyek menggunakan runtime yang dikonfirmasi di halaman ini.",
+      "Siapkan versi PHP yang benar untuk situs yang cocok",
+      "Inisialisasi runtime pada host baru sebelum membuat proyek"
+    ],
+    "notes": [
+      "Perubahan runtime global dapat memengaruhi setiap proyek yang menggunakan runtime tersebut",
+      "Status proses aktual bersifat otoritatif pada halaman detail proyek dan layanan"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind php --version 8.3 --execute"
+    ]
+  },
+  "python": {
+    "id": "python",
+    "title": "ular piton",
+    "summary": "Kelola versi runtime Python, rantai alat, dan kemampuan yang digunakan oleh penerapan proyek di host ini.",
+    "canDo": [
+      "Pemeriksaan lingkungan：Deteksi Python yang terinstal dan apakah CLI umum tersedia.",
+      "Instal / perbarui pembantu：Instal atau alihkan runtime jika izin memungkinkan.",
+      "Integrasi proyek：Penyebaran proyek menggunakan runtime yang dikonfirmasi di halaman ini.",
+      "Siapkan versi Python yang benar untuk situs yang cocok",
+      "Inisialisasi runtime pada host baru sebelum membuat proyek"
+    ],
+    "notes": [
+      "Perubahan runtime global dapat memengaruhi setiap proyek yang menggunakan runtime tersebut",
+      "Status proses aktual bersifat otoritatif pada halaman detail proyek dan layanan"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind python --version 3.12 --execute"
+    ]
+  },
+  "go": {
+    "id": "go",
+    "title": "Pergi",
+    "summary": "Kelola versi runtime Go, rantai alat, dan kemampuan yang digunakan oleh penerapan proyek di host ini.",
+    "canDo": [
+      "Pemeriksaan lingkungan：Deteksi Go yang terinstal dan apakah CLI umum tersedia.",
+      "Instal / perbarui pembantu：Instal atau alihkan runtime jika izin memungkinkan.",
+      "Integrasi proyek：Penyebaran proyek menggunakan runtime yang dikonfirmasi di halaman ini.",
+      "Siapkan versi Go yang benar untuk situs yang cocok",
+      "Inisialisasi runtime pada host baru sebelum membuat proyek"
+    ],
+    "notes": [
+      "Perubahan runtime global dapat memengaruhi setiap proyek yang menggunakan runtime tersebut",
+      "Status proses aktual bersifat otoritatif pada halaman detail proyek dan layanan"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind go --version 1.24 --execute"
+    ]
+  },
+  "rust": {
+    "id": "rust",
+    "title": "Karat",
+    "summary": "Kelola versi runtime Rust, rantai alat, dan kemampuan yang digunakan oleh penerapan proyek di host ini.",
+    "canDo": [
+      "Pemeriksaan lingkungan：Deteksi Rust yang diinstal dan apakah CLI umum tersedia.",
+      "Instal / perbarui pembantu：Instal atau alihkan runtime jika izin memungkinkan.",
+      "Integrasi proyek：Penyebaran proyek menggunakan runtime yang dikonfirmasi di halaman ini.",
+      "Siapkan versi Rust yang benar untuk situs yang cocok",
+      "Inisialisasi runtime pada host baru sebelum membuat proyek"
+    ],
+    "notes": [
+      "Perubahan runtime global dapat memengaruhi setiap proyek yang menggunakan runtime tersebut",
+      "Status proses aktual bersifat otoritatif pada halaman detail proyek dan layanan"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind rust --version stable --execute"
+    ]
+  },
+  "protection": {
+    "id": "protection",
+    "title": "Pusat perlindungan",
+    "summary": "Tempat tunggal untuk firewall host, Fail2ban, larangan otomatis, dan kebijakan pertahanan.",
+    "canDo": [
+      "Mode perlindungan：Kekuatan pertahanan keseluruhan dan kebijakan otomasi.",
+      "Blokir dan daftar yang diizinkan：Tinjau larangan, batalkan larangan, dan pertahankan IP tepercaya.",
+      "Tumpukan bawah：Alat UFW dan Fail2ban bersarang di bawah pusat ini (bukan navigasi tingkat atas).",
+      "Menanggapi lalu lintas brute force atau scan",
+      "Perkuat kebijakan masuk tanpa meninggalkan panel"
+    ],
+    "notes": [
+      "Aturan yang terlalu ketat dapat menghalangi Anda—pertahankan jalur pemulihan yang tidak lazim",
+      "Terapkan kebutuhan EXECUTE; jika tidak, hanya rencana yang tertulis"
+    ],
+    "related": [
+      {
+        "label": "Dinding Api (UFW)",
+        "to": "/protection/firewall"
+      },
+      {
+        "label": "Gagal2larangan",
+        "to": "/protection/fail2ban"
+      },
+      {
+        "label": "Keamanan",
+        "to": "/security"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json",
+      "ysk-server defense ban --ip 1.2.3.4 --json"
+    ]
+  },
+  "firewall": {
+    "id": "firewall",
+    "title": "Dinding Api (UFW)",
+    "summary": "Lapisan Perlindungan yang lebih rendah: Aturan UFW dan kebijakan masuk/keluar.",
+    "canDo": [
+      "Aturan：Izinkan / tolak berdasarkan port dan sumber.",
+      "Terapkan：Dorong kebijakan ketika EXECUTE mengizinkan.",
+      "Buka 443 hanya dari jaringan yang dikenal",
+      "Tutup port yang terbuka lebar secara tidak sengaja",
+      "Tinjau aturan saat ini"
+    ],
+    "notes": [
+      "Aturan penolakan yang buruk dapat mengunci SSH—menjaga akses konsol",
+      "Bersarang di bawah Perlindungan; bukan entri IA produk kedua"
+    ],
+    "related": [
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      },
+      {
+        "label": "Gagal2larangan",
+        "to": "/protection/fail2ban"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting firewall-apply --execute"
+    ]
+  },
+  "fail2ban": {
+    "id": "fail2ban",
+    "title": "Gagal2larangan",
+    "summary": "Lapisan Perlindungan yang lebih rendah: melarang sumber yang tidak bersahabat dari pola log.",
+    "canDo": [
+      "Penjara：Layanan apa yang dilarang.",
+      "Daftar larangan: Larangan aktif dan pembatalan larangan manual.",
+      "Potong kekerasan SSH",
+      "Batalkan pemblokiran positif palsu",
+      "Periksa status layanan"
+    ],
+    "notes": [
+      "Membutuhkan unit dipasang dan dijalankan untuk larangan langsung",
+      "Menerapkan kejujuran tetap berlaku tanpa EXECUTE"
+    ],
+    "related": [
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      },
+      {
+        "label": "tembok api",
+        "to": "/protection/firewall"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json"
+    ]
+  },
+  "security": {
+    "id": "security",
+    "title": "Keamanan akun",
+    "summary": "Keamanan login panel: kata sandi, TOTP, dan sesi.",
+    "canDo": [
+      "Kata sandi：ubah kata sandi masuk panel.",
+      "TOTP：kata sandi satu kali berbasis waktu untuk masuk.",
+      "Sesi：daftar atau cabut sesi masuk.",
+      "Aktifkan TOTP untuk akun admin",
+      "Cabut sesi yang dicuri atau dibagikan"
+    ],
+    "notes": [
+      "Kehilangan perangkat TOTP mungkin memerlukan pemulihan out-of-band—mencadangkan kode pemulihan."
+    ],
+    "related": [
+      {
+        "label": "Pengguna",
+        "to": "/users"
+      },
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server security status --json",
+      "ysk-server security sessions list --json"
+    ]
+  },
+  "users": {
+    "id": "users",
+    "title": "Pengguna dan paket",
+    "summary": "Pengguna panel, peran, dan kuota paket sumber daya.",
+    "canDo": [
+      "Pengguna：Buat akun dan tetapkan peran.",
+      "Paket：Paket sumber daya/kuota untuk penyewa.",
+      "Masuk ke operator baru",
+      "Batasi disk atau situs per paket",
+      "Buat pengguna"
+    ],
+    "notes": [
+      "Jangan hapus admin terakhir",
+      "Penangguhan segera dilakukan untuk sesi baru"
+    ],
+    "related": [
+      {
+        "label": "Keamanan",
+        "to": "/security"
+      },
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server users list --json"
+    ]
+  },
+  "services": {
+    "id": "services",
+    "title": "Layanan",
+    "summary": "Ikhtisar unit systemd utama; memulai, menghentikan, dan tindakan terkait.",
+    "canDo": [
+      "Matriks layanan：Status aktif untuk banyak unit sekaligus.",
+      "Tindakan：mulai / hentikan / mulai ulang satu layanan.",
+      "Lihat komponen tumpukan mana yang down",
+      "Nyalakan kembali unit yang macet selama pemeliharaan",
+      "Buka Layanan"
+    ],
+    "notes": [
+      "Memulai ulang database dan layanan serupa akan memutus koneksi"
+    ],
+    "related": [
+      {
+        "label": "Dasbor",
+        "to": "/"
+      },
+      {
+        "label": "Log",
+        "to": "/logs"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
+    ]
+  },
+  "metrics": {
+    "id": "metrics",
+    "title": "Metrik",
+    "summary": "Metrik operasional untuk penggunaan CPU, memori, disk, dan proyek.",
+    "canDo": [
+      "Metrik host：Penggunaan sumber daya langsung atau terkini.",
+      "Penggunaan proyek：Disk per situs dan ringkasan penggunaan terkait.",
+      "Putuskan apakah akan meningkatkannya",
+      "Temukan proyek yang mengisi disk",
+      "Tinjau ikhtisarnya"
+    ],
+    "notes": [
+      "Interval dan presisi sampel bergantung pada implementasi—bukan APM penuh"
+    ],
+    "related": [
+      {
+        "label": "Dasbor",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server host metrics --json"
+    ]
+  },
+  "network": {
+    "id": "network",
+    "title": "Jaringan",
+    "summary": "Periksa antarmuka, rute, pemecah masalah DNS, dan detail jaringan tingkat lanjut.",
+    "canDo": [
+      "Antarmuka dan alamat：Lihat pengikatan IPv4 / IPv6.",
+      "Rute：Periksa gateway default dan tabel perutean.",
+      "Resolver：Bagaimana host ini menyelesaikan domain.",
+      "Konfirmasikan IP publik setelah host ditayangkan",
+      "Memecahkan masalah rute yang buruk"
+    ],
+    "notes": [
+      "Beberapa perubahan memerlukan izin sistem dan dapat mengganggu konektivitas"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server host overview --json"
+    ]
+  },
+  "logs": {
+    "id": "logs",
+    "title": "Pusat pencatatan",
+    "summary": "jurnal dan sumber log yang diizinkan dalam batas aman.",
+    "canDo": [
+      "Sumber：Hanya jalur/unit log yang disetujui.",
+      "Penampil：Ekor dan sorot tanpa pekerjaan rumah cangkang.",
+      "Debug penerapan yang gagal",
+      "Periksa kegagalan autentikasi atau email",
+      "Pilih sumber"
+    ],
+    "notes": [
+      "Bukan SIEM lengkap—cakupan sengaja diizinkan"
+    ],
+    "related": [
+      {
+        "label": "Layanan",
+        "to": "/services"
+      },
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server logs sources --json",
+      "ysk-server logs query --source journal: --lines 50 --json"
+    ]
+  },
+  "cron": {
+    "title": "Cron",
+    "summary": "Periksa crontab nyata per pengguna dan kelola pekerjaan yang terdaftar di panel.",
+    "canDo": [
+      "Buat daftar pekerjaan crontab untuk pengguna root dan proyek Linux",
+      "Filter berdasarkan pengguna (identitas yang sama ditetapkan sebagai Terminal)",
+      "Buat pekerjaan panel dan instal ke crontab sistem",
+      "Beri tahu baris yang ditandai panel (# ysk:id) dari baris asli host",
+      "Jalankan tugas panel satu kali untuk pengujian"
+    ],
+    "notes": [
+      "Membaca crontab pengguna lain memerlukan bidang kendali sebagai root",
+      "Instal menggabungkan pekerjaan panel ke dalam crontab pengguna bidang kontrol (pekerjaan proyek biasanya menggunakan runuser)",
+      "Garis asli host terlihat; v1 tidak mengedit baris non-YSK di panel"
+    ],
+    "related": [
+      {
+        "label": "Cadangan",
+        "to": "/backups"
+      }
+    ],
+    "id": "cron"
+  },
+  "backups": {
+    "id": "backups",
+    "title": "Cadangan",
+    "summary": "Menjadwalkan dan menjalankan pencadangan proyek/data; mengelola artefak cadangan.",
+    "canDo": [
+      "Pekerjaan：Tentukan apa yang dicadangkan dan kapan.",
+      "Artefak：Mendaftar dan mengunduh produk cadangan.",
+      "Cuplikan proyek setiap malam",
+      "Tarik cadangan sebelum migrasi yang berisiko",
+      "Konfigurasikan pengaturan cadangan"
+    ],
+    "notes": [
+      "Pekerjaan yang terdaftar ≠ pemulihan terverifikasi—uji pemulihan secara rutin",
+      "Tes SFTP jarak jauh menggunakan identitas keluar; kunci yang hilang tidak EXECUTE-off",
+      "Pratinjau Bidang Kontrol mencantumkan arsip (tar -tzf) tanpa baris proyek"
+    ],
+    "related": [
+      {
+        "label": "Proyek",
+        "to": "/projects"
+      },
+      {
+        "label": "File",
+        "to": "/files"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server backup list --json",
+      "ysk-server backup status --json"
+    ]
+  },
+  "migrate": {
+    "id": "migrate",
+    "title": "Migrasi host penuh",
+    "summary": "Inventarisasi lingkungan YSK host ini, lalu migrasikan melalui SSH ke host baru (misalnya perubahan IP publik).",
+    "canDo": [
+      "Inventaris：Pindai sumber daya dan perangkat lunak yang dikelola di host ini.",
+      "Periksa terlebih dahulu dan jalankan：Hubungkan ke target, transfer, dan pulihkan.",
+      "Verifikasi：Periksa layanan penting setelah migrasi.",
+      "Hapus VPS yang sudah habis masa berlakunya",
+      "Hapus sisa /home/ysk-server-<uuid> (konfirmasi + JALANKAN)"
+    ],
+    "notes": [
+      "Membutuhkan kemampuan root dan EXECUTE pada target",
+      "Rumah yatim piatu adalah sisa direktori disk, bukan positif palsu"
+    ],
+    "related": [
+      {
+        "label": "Cadangan",
+        "to": "/backups"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server migrate inventory --json",
+      "ysk-server migrate orphan-homes --json"
+    ]
+  },
+  "updates": {
+    "id": "updates",
+    "title": "Pembaruan",
+    "summary": "Saran paket OS dan status pembaruan mandiri panel—jujur ​​tentang apa yang dapat diterapkan.",
+    "canDo": [
+      "Inventaris：Apa yang diinstal dan apa yang terlihat dapat diupgrade.",
+      "Terapkan jalur：Pembaruan langsung hanya dengan EXECUTE (dan sering kali root).",
+      "Tambalan sebelum CVE yang diketahui",
+      "Periksa apakah pembuatan panel terkini",
+      "Segarkan inventaris"
+    ],
+    "notes": [
+      "Tanpa EXECUTE, hasil tetap direncanakan/diblokir",
+      "Peningkatan paket dapat memulai kembali layanan"
+    ],
+    "related": [
+      {
+        "label": "Layanan",
+        "to": "/services"
+      },
+      {
+        "label": "Dasbor",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server update --json"
+    ]
+  },
+  "systemd": {
+    "id": "systemd",
+    "title": "unit sistem",
+    "summary": "Periksa dan operasikan detail unit systemd individual.",
+    "canDo": [
+      "Status unit：status aktif, diaktifkan, dan terkait.",
+      "Tindakan: mulai / hentikan / mulai ulang / aktifkan.",
+      "Sempurnakan unit khusus",
+      "Cari satuan",
+      "Status tinjauan"
+    ],
+    "notes": [
+      "Kesalahan dapat membuat layanan penting menjadi offline"
+    ],
+    "related": [
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server system unit-install --enable --execute"
+    ]
+  },
+  "readiness": {
+    "id": "readiness",
+    "title": "Kesiapan",
+    "summary": "Periksa produksi terhadap daftar kesiapan produk untuk komponen dan pengaturan yang diperlukan.",
+    "canDo": [
+      "Pemindaian item：Binari, layanan, dan kelengkapan pengaturan.",
+      "Panduan perbaikan：Tautan ke halaman fitur pencocokan untuk mengisi kekosongan.",
+      "Penerimaan pra-produksi",
+      "Periksa kembali setelah migrasi",
+      "Jalankan pemeriksaan"
+    ],
+    "notes": [
+      "Siap ≠ lulus uji beban bisnis"
+    ],
+    "related": [
+      {
+        "label": "Dasbor",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server doctor --json"
+    ]
+  },
+  "systemIndex": {
+    "id": "systemIndex",
+    "title": "Alat sistem",
+    "summary": "Titik masuk untuk utilitas tingkat sistem dan informasi host.",
+    "canDo": [
+      "Info tuan rumah：Nama host, zona waktu, dan fakta terkait.",
+      "Tautan alat：Lompat ke unit, kesiapan, migrasi, dan lainnya.",
+      "Temukan fitur tingkat sistem dengan cepat",
+      "Tinjau informasi tuan rumah",
+      "Buka sub-alat yang diperlukan"
+    ],
+    "notes": [
+      "Mengubah nama host/zona waktu dapat memengaruhi sertifikat dan stempel waktu log"
+    ],
+    "related": [
+      {
+        "label": "Jaringan",
+        "to": "/network"
+      },
+      {
+        "label": "Pembaruan",
+        "to": "/updates"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server status --json"
+    ]
+  },
+  "ai": {
+    "id": "ai",
+    "title": "tugas AI",
+    "summary": "Jalankan tugas-tugas terkontrol yang dibantu AI di dalam panel (diperlukan konfigurasi penyedia).",
+    "canDo": [
+      "Tugas：Kirim perintah dan tinjau hasilnya.",
+      "Pengaturan：Ikat penyedia model dan kunci bila ada.",
+      "Draf catatan konfigurasi",
+      "Membantu menafsirkan log kesalahan",
+      "Konfirmasikan AI telah dikonfigurasi"
+    ],
+    "notes": [
+      "Keluaran AI perlu ditinjau oleh manusia—jangan pernah memperlakukannya sebagai perintah produksi apa adanya",
+      "Mungkin dikenakan biaya API"
+    ],
+    "related": [
+      {
+        "label": "Agen",
+        "to": "/agents"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server ask \"…\" --json",
+      "ysk-server tools --json"
+    ]
+  },
+  "agents": {
+    "id": "agents",
+    "title": "Agen AI",
+    "summary": "Daftarkan agen edge, perintah antrean, baca riwayat, dan selidiki runtime AI.",
+    "canDo": [
+      "Daftar：tambahkan agen tepi ke daftar bidang kontrol (terdaftar ≠ online).",
+      "Perintah：antrian preset CLI atau argumen khusus; tepinya tertarik dan miring.",
+      "Riwayat：antri/selesai/kesalahan, kode keluar, dan JSON.",
+      "Runtime: selidiki, tulis unit systemd, dan instal OpenClaw / Hermes / IonClaw.",
+      "Status：terdaftar → online → basi (>60an) → offline."
+    ],
+    "notes": [
+      "Pendaftaran tidak memulai suatu proses. Node harus menjalankan agen keluar.",
+      "Perintah pengubah host masih perlu EXECUTE di edge."
+    ],
+    "related": [
+      {
+        "label": "tugas AI",
+        "to": "/ai"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server agents runtimes --json",
+      "ysk-server agent run --json"
+    ]
+  },
+  "servicesConsole": {
+    "id": "servicesConsole",
+    "title": "Konsol layanan",
+    "summary": "Konsol operasi dan status untuk satu jenis layanan.",
+    "canDo": [
+      "Status：Status aktif/instal langsung.",
+      "Tindakan：Instal, mulai, muat ulang, dan sejenisnya.",
+      "Operasikan beberapa layanan backend dari satu tempat",
+      "Pilih layanan",
+      "Status tinjauan"
+    ],
+    "notes": [
+      "Pastikan radius ledakan sebelum tindakan berisiko tinggi"
+    ],
+    "related": [
+      {
+        "label": "Ikhtisar layanan",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
+    ]
+  },
+  "java": {
+    "id": "java",
+    "title": "Jawa",
+    "summary": "Kelola instalasi host OpenJDK.",
+    "canDo": [
+      "Instal atau ganti OpenJDK",
+      "Periksa apakah Java tersedia"
+    ],
+    "notes": [
+      "Proyek menggunakan host JDK untuk pembangunan"
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind java --version 21 --execute"
+    ]
+  },
+  "kotlin": {
+    "id": "kotlin",
+    "title": "Kotlin",
+    "summary": "Kelola compiler Kotlin (memerlukan JDK).",
+    "canDo": [
+      "Instal kompiler Kotlin",
+      "Konfirmasikan JDK hadir"
+    ],
+    "notes": [
+      "Kotlin memerlukan JDK lokal"
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind kotlin --version 2.0 --execute"
+    ]
+  },
+  "bun": {
+    "id": "bun",
+    "title": "Sanggul",
+    "summary": "Kelola instalasi dan pembaruan runtime Bun.",
+    "canDo": [
+      "Instal atau perbarui Bun",
+      "Periksa versi Bun"
+    ],
+    "notes": [
+      "Digunakan ketika runtime proyek adalah Bun"
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind bun --version latest --execute"
+    ]
+  },
+  "terminal": {
+    "id": "terminal",
+    "title": "Terminal",
+    "summary": "Shell PTY asli di browser sebagai root atau pengguna proyek Linux.",
+    "canDo": [
+      "Buka shell interaktif sebagai root atau pengguna proyek",
+      "Nuansa terminal penuh (warna, vim, ubah ukuran)",
+      "Putuskan sambungan akan mematikan PTY"
+    ],
+    "notes": [
+      "SSH jarak jauh sewenang-wenang (v1 hanya host lokal)",
+      "Hubungkan tanpa root + JALANKAN"
+    ],
+    "workflow": [
+      "Tinjau status di halaman ini",
+      "Terapkan perubahan dengan tindakan panel",
+      "Konfirmasikan kesiapan/kesehatan jika terjadi pergantian host"
+    ],
+    "cliHints": [
+      "# browser PTY only — no remote SSH required"
+    ]
+  },
+  "hostBrowse": {
+    "id": "hostBrowse",
+    "title": "Telusuri Tuan Rumah",
+    "summary": "Jelajahi melalui host ini dengan Proxy (menulis ulang) atau browser asli (screencast Chromium). Target tidak pernah melihat identitas browser desktop Anda.",
+    "canDo": [
+      "Mode internet/intranet dengan kebijakan SSRF",
+      "Mesin proxy untuk halaman statis dan formulir",
+      "Mesin browser nyata untuk rendering Chromium penuh",
+      "Hanya cookie sisi server"
+    ],
+    "notes": [
+      "Proksi: penulisan ulang HTML + formulir POST; Browser sebenarnya membutuhkan sistem Chrome",
+      "Metadata cloud selalu diblokir",
+      "Membutuhkan kemampuan jaringan.jelajahi"
+    ],
+    "workflow": [
+      "Buka Telusuri Host",
+      "Pilih Proxy atau Browser asli",
+      "Masukkan URL dan Buka"
+    ],
+    "cliHints": [
+      "# panel only — install google-chrome for real browser engine"
+    ],
+    "related": [
+      {
+        "label": "Jaringan",
+        "to": "/network"
+      },
+      {
+        "label": "Terminal",
+        "to": "/terminal"
+      }
+    ]
+  },
+  "vpn": {
+    "id": "vpn",
+    "title": "VPN",
+    "summary": "Host WireGuard, OpenVPN, atau Shadowsocks sebagai server untuk ponsel/laptop, atau sambungkan host ini sebagai klien ke VPN lain.",
+    "canDo": [
+      "Instal WireGuard, OpenVPN, dan Shadowsocks pada tab Perangkat Lunak",
+      "Mulai server dan buka port mendengarkan",
+      "Buat klien — unduh conf; WireGuard dan Shadowsocks juga menampilkan QR",
+      "Impor conf dan sambungkan host ini sebagai klien"
+    ],
+    "workflow": [
+      "Tab perangkat lunak → instal mesin",
+      "Tab mesin → atur titik akhir/port → Terapkan server",
+      "Tambahkan rekan/klien → unduh conf (QR untuk WireGuard / Shadowsocks)",
+      "Tab klien → tempel conf → Hubungkan"
+    ],
+    "notes": [
+      "Memerlukan root dan YSK_EXECUTE untuk instalasi, penerapan server, dan koneksi klien",
+      "Tetapkan titik akhir publik nyata (IP atau domain) atau klien seluler tidak dapat menjangkau server",
+      "Server (wg0) dan antarmuka klien (wg-c-*) dapat hidup berdampingan; tonton IP/perutean yang Diizinkan"
+    ],
+    "cliHints": [
+      "wg show",
+      "systemctl status wg-quick@wg0"
+    ],
+    "related": [
+      {
+        "label": "Perlindungan",
+        "to": "/protection"
+      },
+      {
+        "label": "Jaringan",
+        "to": "/network"
+      }
+    ]
+  },
+  "vnc": {
+    "id": "vnc",
+    "title": "Desktop jarak jauh VNC",
+    "summary": "Jalankan sesi TigerVNC multi-pengguna (masing-masing satu pengguna Linux), buka di browser dengan noVNC, atau sambungkan keluar sebagai klien melalui proxy server atau jaringan Anda sendiri.",
+    "canDo": [
+      "Instal sekali klik TigerVNC, noVNC, XFCE opsional, dan penampil",
+      "Buat pengguna Linux independen untuk setiap akun VNC",
+      "Lebih suka RFB localhost + noVNC; port langsung opsional dengan firewall",
+      "Pilih jalur klien: dapat dijangkau pengguna atau melalui proxy server"
+    ],
+    "workflow": [
+      "Instal tab → TigerVNC (lalu noVNC)",
+      "Pengaturan → desktop default/resolusi/pengikatan RFB",
+      "Akun → buat sesi pengguna",
+      "Buka di browser atau berikan host:port kepada pengguna"
+    ],
+    "notes": [
+      "Buka di browser membutuhkan noVNC. Instal di tab Instal sebelum membuka remote di sini.",
+      "Kedua jalur klien membuka VNC di browser melalui panel proxy TCP. Mereka berbeda berdasarkan alamat target.",
+      "Dapat dijangkau pengguna: nama host publik (mis. hermes.example.com:5901). Proksi server: Alamat LAN/DC yang hanya dapat dijangkau oleh host ini; TCP diperiksa dari server ini terlebih dahulu.",
+      "Instal dan penyediaan pengguna memerlukan root + YSK_EXECUTE. RFB default hanya untuk localhost; lebih memilih VPN saat mengekspos desktop."
+    ],
+    "cliHints": [
+      "vncserver -list",
+      "ss -lntp | grep 590"
+    ],
+    "related": [
+      {
+        "label": "VPN",
+        "to": "/vpn"
+      },
+      {
+        "label": "tembok api",
+        "to": "/protection/firewall"
+      }
+    ]
+  },
+  "apache": {
+    "id": "apache",
+    "title": "apache",
+    "summary": "Kelola situs dan pengaturan Apache.",
+    "canDo": [
+      "Buat vhost proksi/statis/PHP",
+      "Pengaturan global dan situs",
+      "Terapkan dengan configtest"
+    ],
+    "workflow": [
+      "Instal Apache",
+      "Buat situs",
+      "Menerapkan"
+    ],
+    "notes": [
+      "Mengajukan permohonan ke host memerlukan izin perubahan sistem"
+    ]
+  },
+  "btTracker": {
+    "id": "btTracker",
+    "title": "Pelacak BT",
+    "summary": "Pelacak BitTorrent / WebTorrent yang dihosting sendiri untuk berbagi file. Buat benih .torrent dan biarkan tamu mengunduh melalui magnet atau .torrent.",
+    "canDo": [
+      "Mulai dan hentikan pelacak yang sedang dalam proses",
+      "Atur port HTTP/WS dan host pengumuman publik",
+      "Perhatikan kawanan benih, lintah, dan kecepatannya",
+      "Buat berbagi file dengan mode langsung, BT, atau keduanya",
+      "Ekspos port pelacak melalui eksposur Jaringan / chip firewall"
+    ],
+    "workflow": [
+      "Buka BT Tracker → atur host pengumuman publik → Mulai",
+      "Buka port jika pengunduh berada di luar host",
+      "Di File → Bagikan, pilih BitTorrent atau keduanya",
+      "Salin magnet / .torrent dari halaman share atau publik"
+    ],
+    "notes": [
+      "Pelacak dibundel Node (bukan paket yang tepat)",
+      "Host publik yang kosong menggunakan 127.0.0.1 — hanya pengujian host yang sama",
+      "BT tanpa pelacak yang berjalan mungkin gagal dalam penemuan rekan"
+    ],
+    "cliHints": [
+      "ysk-server bt-tracker status --json",
+      "ysk-server bt-tracker start --execute --json",
+      "ysk-server files shares create --path FILE --mode both --root public --json"
+    ],
+    "related": [
+      {
+        "label": "File",
+        "to": "/files"
+      },
+      {
+        "label": "Jaringan",
+        "to": "/network"
+      }
+    ]
+  },
+  "validators": {
+    "id": "validators",
+    "title": "Validator (Beta)",
+    "summary": "Instal sekali klik dan kelola node L1 (Ethereum, Avalanche, NEAR, Cardano, Bitcoin, Cosmos, Sui, Aptos, Polkadot, Solana) di host ini. Non-penahanan — panel tidak pernah memegang kunci staking.",
+    "canDo": [
+      "Buat daftar instance node dan rantai yang direkomendasikan",
+      "Membuat, memulai, menghentikan, dan menghapus node dari panel wizard",
+      "Lihat disk yang digunakan oleh data validator",
+      "Gunakan CLI: daftar validator ysk-server|buat|mulai --json"
+    ],
+    "workflow": [
+      "Baca tab disk sebelum membuat node",
+      "Lebih suka testnet + Minimal pada disk kecil",
+      "Minimal / Dipangkas / Siap Validator / RPC dijelaskan di bawah",
+      "Mutasi membutuhkan root dan YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Beta: instal dan mulai ketika Docker Engine, root, dan YSK_EXECUTE=1 tersedia",
+      "Mainnet membutuhkan ratusan GB gratis (ETH) — aliran pembuatan akan menolak jika ruang terbatas",
+      "RPC mengikat ke localhost secara default"
+    ],
+    "cliHints": [
+      "ysk-server validators list --json",
+      "ysk-server validators chains --json",
+      "ysk-server validators disk --json"
+    ],
+    "related": [
+      {
+        "label": "Docker",
+        "to": "/docker"
+      },
+      {
+        "label": "Pembaruan",
+        "to": "/updates"
+      },
+      {
+        "label": "Jaringan",
+        "to": "/network"
+      }
+    ]
+  },
+  "docker": {
+    "id": "docker",
+    "title": "Docker",
+    "summary": "Instal dan kendalikan Mesin Docker di host ini — kontainer, gambar, Tulis (termasuk tumpukan validator), volume, jaringan, dan pemangkasan.",
+    "canDo": [
+      "Instal docker.io + docker-compose-v2 dari panel",
+      "Mulai dan hentikan docker.service",
+      "Jalankan gambar yang dibatasi, tarik, pangkas, dan periksa proyek Compose",
+      "CLI: status buruh pelabuhan ysk-server|ps|gambar|buat --json"
+    ],
+    "workflow": [
+      "Instal jika spanduk mengatakan Docker hilang",
+      "Pertahankan RPC dan port yang dipublikasikan pada 127.0.0.1 kecuali Anda bermaksud untuk mengeksposnya ke publik",
+      "Mutasi membutuhkan root dan YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Halaman ini mengelola Docker pada satu host. Gunakan Kubernetes eksternal untuk orkestrasi cluster. Tidak ada hak istimewa untuk dijalankan, tidak ada unggahan Tulis sewenang-wenang.",
+      "Menghentikan mesin juga akan menghentikan tumpukan validator."
+    ],
+    "cliHints": [
+      "ysk-server docker status --json",
+      "ysk-server docker ps --json",
+      "ysk-server docker compose ls --json"
+    ],
+    "related": [
+      {
+        "label": "Validator",
+        "to": "/validators"
+      },
+      {
+        "label": "Layanan",
+        "to": "/services"
+      }
+    ]
+  }
+}

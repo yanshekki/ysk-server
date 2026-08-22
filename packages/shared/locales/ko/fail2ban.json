@@ -36,6 +36,10 @@
   "emptyBansDesc": "또는 fail2ban-client를 읽을 권한이 없습니다.",
   "ignoreipTitle": "IP 허용 목록 무시",
   "ignoreipDesc": "IP는 절대 금지되지 않습니다(패널 파일 + 선택적 라이브 fail2ban-client)",
+  "whitelistEmptyWarn": "허용 목록이 비어 있습니다. jail이 당신을 차단할 수 있습니다. ignoreip 적용 전에 로그인 IP를 넣으세요.",
+  "suggestIgnoreLogin": "내 로그인 IP {{ip}}",
+  "applyIgnoreEmptyWarn": "허용 목록이 빈 채로 적용하면 ignoreip가 비워집니다",
+  "applyIgnoreNeedConfirm": "jail ignoreip를 다시 쓰고 fail2ban을 다시 불러옵니다",
   "addIp": "IP 추가",
   "addWhitelist": "허용 목록에 추가",
   "applyPolicyIgnoreip": "정책 적용(ignoreip 포함)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "이것은 호스트 또는 로그인 IP입니다. 금지하는 대신 Ignoreip에 추가하세요.",
   "suggestIgnoreHint": "제안된 관리자 IP(정책을 적용할 때까지만 패널 파일):",
-  "suggestIgnoreAdd": "{{ip}} 추가",
-  "whitelistEmptyWarn": "허용 목록이 비어 있습니다. jail이 당신을 차단할 수 있습니다. ignoreip 적용 전에 로그인 IP를 넣으세요.",
-  "suggestIgnoreLogin": "내 로그인 IP {{ip}}",
-  "applyIgnoreEmptyWarn": "허용 목록이 빈 채로 적용하면 ignoreip가 비워집니다",
-  "applyIgnoreNeedConfirm": "jail ignoreip를 다시 쓰고 fail2ban을 다시 불러옵니다"
+  "suggestIgnoreAdd": "{{ip}} 추가"
 }

@@ -84,13 +84,13 @@
     "latest": "أحدث",
     "upToDate": "ما يصل إلى التاريخ / الريبو الأحدث",
     "refresh": "إعادة فحص الأحدث",
+    "refreshHasUpdate": "الإصدار الأحدث متاح",
+    "refreshLatest": "بالفعل أحدث نسخة مسجلة",
     "pick": "اختر الإصدار",
     "noTarget": "لا يوجد هدف التحديث",
     "needRuntimePage": "قم بتثبيت هذا الإصدار على صفحة وقت التشغيل",
     "noAptCandidate": "لا يوجد نسخة مرشحة مناسبة",
-    "sourceLabel": "مصدر",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "مصدر"
   },
   "install": {
     "progress": "التثبيت: {{list}}…",

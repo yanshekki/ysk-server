@@ -102,12 +102,12 @@
   "capabilitiesHint": "এই ভূমিকা কি করতে পারে টগল করুন",
   "enabledCount": "{{total}} এর {{enabled}} সক্ষম",
   "bandAboveMax": "সর্বোচ্চ স্তরের উপরে",
+  "roleUnavailable": "এই ভূমিকার জন্য উপলব্ধ নয়",
   "dirtyHint": "কাস্টমাইজড (ফ্যাক্টরি থেকে আলাদা)",
   "unsaved": "অসংরক্ষিত",
   "unsavedHint": "এই ভূমিকার অসংরক্ষিত সম্পাদনা",
   "nothingToSave": "সংরক্ষণ করার কিছুই নেই",
   "saveRole": "{{role}} নীতি সংরক্ষণ করুন",
   "discardTitle": "অসংরক্ষিত নীতি বাতিল করবেন?",
-  "discardDesc": "ভূমিকা পরিবর্তন করা অসংরক্ষিত ক্ষমতা সম্পাদনা ড্রপ.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "ভূমিকা পরিবর্তন করা অসংরক্ষিত ক্ষমতা সম্পাদনা ড্রপ."
 }

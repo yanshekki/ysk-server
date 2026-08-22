@@ -4,6 +4,6 @@
   "about": "Acerca de",
   "main": "Comportamiento",
   "stack": "Software",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "No existe esa pestaña",
+  "unknownHint": "Esta página no tiene ninguna pestaña llamada {{tab}}."
 }

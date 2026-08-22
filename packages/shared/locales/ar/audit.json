@@ -23,8 +23,8 @@
     "project.suspend": "تعليق المشروع",
     "software.install": "تثبيت البرنامج",
     "software.update": "تحديث البرنامج",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "استعادة النسخة الاحتياطية",
+    "backup.run": "تشغيل النسخ الاحتياطي",
+    "backup.delete": "تم حذف النسخة الاحتياطية"
   }
 }

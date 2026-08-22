@@ -84,13 +84,13 @@
     "latest": "最新",
     "upToDate": "已是最新／仓库最新",
     "refresh": "重新检查最新",
+    "refreshHasUpdate": "有较新版本",
+    "refreshLatest": "已是纪录中的最新版本",
     "pick": "选择版本",
     "noTarget": "没有可更新版本",
     "needRuntimePage": "请在运行环境页安装此版本",
     "noAptCandidate": "没有可用的 apt 候选版本",
-    "sourceLabel": "来源",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "来源"
   },
   "install": {
     "progress": "正在安装：{{list}}…",

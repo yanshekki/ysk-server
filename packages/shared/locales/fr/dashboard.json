@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}} : {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Avertissement",
+    "bad": "Problème"
+  },
   "title": "Tableau de bord",
   "health": "Santé",
   "protection": "Mode protection",
@@ -38,12 +44,13 @@
   "readinessCheck": "Préparation :",
   "prodOk": "Prêt pour la production",
   "notFullyReady": "Pas entièrement prêt",
+  "readinessBlocked": "{{n}} bloqueur(s)",
   "modeScore": "Mode {{mode}} · score {{ready}}/{{total}}",
   "mode": {
     "degraded": "dégradé",
     "production_capable": "prêt pour la production",
-    "normal": "normale",
-    "blocked": "blocked"
+    "blocked": "bloqué",
+    "normal": "normale"
   },
   "details": "Détails",
   "certExpiryTitle": "Expiration du certificat :",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "Audit d'application · ok {{ok}} · avert. {{warn}} · mauvais {{bad}}",
   "executeBadge": "EXÉCUTER {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "Ce panneau écoute sur toutes les interfaces et votre compte administrateur n'a pas de 2FA.",
   "go": "Ouvrir",
   "open": "Ouvrir",
   "noCriticalWarn": "Aucune alerte critique ou d'avertissement",
@@ -81,6 +89,7 @@
   "wizardDesc": "Créer un projet et éventuellement préparer DNS / mail / base de données (appliquer sur chaque page de fonctionnalité)",
   "projectName": "Nom du projet",
   "projectNameHint": "Nom d'affichage ; crée un répertoire correspondant",
+  "nameRequired": "Entrez un nom de projet",
   "domainOptional": "Domaine (facultatif)",
   "domainHint": "Requis pour activer les options DNS et mail",
   "runtime": "Durée d'exécution",
@@ -93,6 +102,7 @@
   "serverIpv6": "IPv6 du serveur (facultatif)",
   "serverIpv6Hint": "Écrit AAAA / ip6: si défini",
   "serverIpv6Ph": "IPv6 public (facultatif)",
+  "needDomainFirst": "Saisissez d’abord un domaine",
   "withDns": "Créer aussi la zone DNS",
   "withDnsDesc": "Domaine requis ; enregistrement uniquement — appliquer la zone sur la page DNS",
   "withMail": "Enregistrer aussi le domaine mail",
@@ -119,15 +129,5 @@
   "notifSearch": "Rechercher des alertes",
   "notifAll": "Tous",
   "notifDismiss": "Cacher",
-  "goFix": "Réparer",
-  "needDomainFirst": "Saisissez d’abord un domaine",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "Réparer"
 }

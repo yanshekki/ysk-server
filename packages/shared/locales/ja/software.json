@@ -84,13 +84,13 @@
     "latest": "最新",
     "upToDate": "最新/最新のリポジトリ",
     "refresh": "最新の再確認",
+    "refreshHasUpdate": "新しいバージョンが利用可能",
+    "refreshLatest": "すでに最新の録音バージョン",
     "pick": "バージョンを選択",
     "noTarget": "アップデート対象なし",
     "needRuntimePage": "このバージョンをランタイム ページにインストールします",
     "noAptCandidate": "適切な候補バージョンがありません",
-    "sourceLabel": "ソース",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "ソース"
   },
   "install": {
     "progress": "インストール中: {{list}}…",

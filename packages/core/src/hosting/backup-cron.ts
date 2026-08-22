@@ -13,12 +13,22 @@ import {
   statSync,
   unlinkSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
+import { userInfo } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 import { planCronJob } from './extras.js';
 import { publicFilesRoot } from '../files/manager.js';
+import {
+  findHostJobRaw,
+  isInstallOwnedCronUser,
+  parseJobFields,
+  rewriteHostCronLine,
+  runHostCronCommand,
+  type HostCronRewriteNext,
+  type HostCronRewriteResult,
+} from './cron-host-rewrite.js';
 
 /** Constrain archive under dataDir/backups/<projectId>/ */
 export function resolveManagedBackupArchive(
@@ -1050,6 +1060,8 @@ export interface HostCronLine {
   kind: HostCronLineKind;
   source: HostCronSource;
   managedJobId?: string;
+  /** Comment line that still parses as a job (`# 0 3 * * * cmd`). */
+  disabled?: boolean;
 }
 
 export interface HostCronUserSlot {
@@ -1107,6 +1119,21 @@ export function parseCrontabText(
     const managedJobId = extractYskManagedId(line);
 
     if (t.startsWith('#')) {
+      const inner = t.replace(/^#\s?/, '');
+      const asJob = inner.startsWith('#') ? null : parseJobFields(inner);
+      if (asJob) {
+        out.push({
+          ...base,
+          raw: line,
+          kind: 'job',
+          schedule: asJob.schedule,
+          command: asJob.command,
+          source: classifyCronSource(inner),
+          managedJobId: extractYskManagedId(inner),
+          disabled: true,
+        });
+        continue;
+      }
       out.push({ ...base, raw: line, kind: 'comment', source, managedJobId });
       continue;
     }
@@ -1115,34 +1142,14 @@ export function parseCrontabText(
       out.push({ ...base, raw: line, kind: 'env', source: 'host', managedJobId });
       continue;
     }
-    // @reboot / @daily / @hourly …
-    if (t.startsWith('@')) {
-      const sp = t.search(/\s+/);
-      const schedule = sp > 0 ? t.slice(0, sp) : t;
-      let command = sp > 0 ? t.slice(sp).trim() : '';
-      command = command.replace(/\s+#\s*ysk:[^\s#]+/i, '').trim();
+    const job = parseJobFields(t);
+    if (job) {
       out.push({
         ...base,
         raw: line,
         kind: 'job',
-        schedule,
-        command,
-        source,
-        managedJobId,
-      });
-      continue;
-    }
-    // Standard 5-field cron: min hour dom mon dow command…
-    const m = t.match(/^(\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.+)$/);
-    if (m) {
-      let command = m[2] ?? '';
-      command = command.replace(/\s+#\s*ysk:[^\s#]+/i, '').trim();
-      out.push({
-        ...base,
-        raw: line,
-        kind: 'job',
-        schedule: m[1],
-        command,
+        schedule: job.schedule,
+        command: job.command,
         source,
         managedJobId,
       });
@@ -1595,6 +1602,114 @@ export class CronJobService {
       isRoot,
       executeEnabled: this.host.executeEnabled(),
     };
+  }
+
+  async rewriteHostLine(input: {
+    user: string;
+    oldRaw: string;
+    next: HostCronRewriteNext;
+  }): Promise<HostCronRewriteResult> {
+    return rewriteHostCronLine({
+      host: this.host,
+      dataDir: this.dataDir,
+      user: input.user,
+      oldRaw: input.oldRaw,
+      next: input.next,
+    });
+  }
+
+  async runHostLine(user: string, command: string): Promise<HostCronRewriteResult> {
+    return runHostCronCommand({ host: this.host, user, command });
+  }
+
+  /**
+   * Create a managed job and tag the live host line `# ysk:<id>` in one EXECUTE.
+   * Without EXECUTE nothing is written (no orphan panel row).
+   */
+  async adoptHostLine(input: {
+    user: string;
+    oldRaw: string;
+    actor: string;
+  }): Promise<HostCronRewriteResult & { jobId?: string }> {
+    const processUser = (() => {
+      try {
+        return userInfo().username;
+      } catch {
+        return '';
+      }
+    })();
+    if (!isInstallOwnedCronUser(input.user, processUser)) {
+      return {
+        ok: false,
+        user: input.user,
+        notes: [tl('notes.cron.hostAdoptOnlyInstallUser')],
+      };
+    }
+    if (String(input.oldRaw ?? '').trimStart().startsWith('#')) {
+      return {
+        ok: false,
+        user: input.user,
+        notes: [tl('notes.cron.hostAdoptEnableFirst')],
+      };
+    }
+    if (!this.host.executeEnabled()) {
+      return {
+        ok: false,
+        blocked: true,
+        requiresExecute: true,
+        user: input.user,
+        notes: [tl('notes.cron.hostAdoptNeedExecute')],
+      };
+    }
+    const parsed = parseJobFields(String(input.oldRaw ?? '').replace(/^#\s?/, ''));
+    if (!parsed) {
+      return { ok: false, user: input.user, notes: [tl('notes.cron.hostLineNotJob')] };
+    }
+    const job = this.create({
+      user: input.user === 'current' ? 'root' : input.user,
+      schedule: parsed.schedule,
+      command: parsed.command,
+      actor: input.actor,
+      skipRunuserWrap: true,
+    });
+    const rewritten = await rewriteHostCronLine({
+      host: this.host,
+      dataDir: this.dataDir,
+      user: input.user,
+      oldRaw: input.oldRaw,
+      next: { type: 'adopt', managedId: job.id },
+    });
+    if (!rewritten.ok) {
+      this.delete(job.id);
+      return rewritten;
+    }
+    return { ...rewritten, jobId: job.id, notes: [...rewritten.notes, tl('notes.cron.hostAdopted', { id: job.id })] };
+  }
+
+  async resolveHostJobRaw(input: {
+    user: string;
+    schedule: string;
+    command: string;
+  }): Promise<{ ok: true; raw: string } | { ok: false; notes: string[] }> {
+    const isRoot = this.host.isRoot();
+    const user = input.user.trim() || 'current';
+    const read = await this.host.runCommand(
+      isRoot && user !== 'current' ? ['crontab', '-u', user, '-l'] : ['crontab', '-l'],
+      { timeoutMs: 8_000 },
+    );
+    const text = read.exitCode === 0 ? String(read.stdout || '') : '';
+    const found = findHostJobRaw(text, input.schedule, input.command);
+    if (!found.ok) {
+      return {
+        ok: false,
+        notes: [
+          found.reason === 'duplicate'
+            ? tl('notes.cron.hostLineDuplicate', { count: found.count })
+            : tl('notes.cron.hostLineMissing'),
+        ],
+      };
+    }
+    return { ok: true, raw: found.raw };
   }
 
   /** Probe managed file vs host crontab (honest status). */

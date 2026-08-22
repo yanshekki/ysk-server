@@ -20,8 +20,8 @@
   "stepTuningApplied": "রানটাইম টিউনিং প্রয়োগ করা হয়েছে",
   "stepUnitWritten": "সার্ভিস ইউনিট লিখিত",
   "stepSystemdStartFailed": "সিস্টেমড শুরু ব্যর্থ হয়েছে — প্রক্রিয়া ফলব্যাক ব্যবহার করে",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
-  "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "portListening": "পোর্ট {{port}} শুনছে",
+  "portNotListening": "পোর্ট {{port}} শুনছে না",
+  "httpOk": "HTTP ঠিক আছে {{status}}",
+  "httpFail": "HTTP ব্যর্থ হয়েছে: {{detail}}"
 }

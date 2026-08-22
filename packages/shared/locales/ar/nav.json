@@ -21,6 +21,7 @@
   "postgresService": "خدمة PostgreSQL",
   "redis": "Redis",
   "redisService": "خدمة ريديس",
+  "cluster": "مجموعات",
   "dns": "DNS",
   "ssl": "شهادات SSL",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "دورك لا يشمل هذه الصفحة. اطلب من مسؤول إن احتجت إليها.",
   "backToDashboard": "العودة إلى لوحة المعلومات",
   "validators": "المدققون (Beta)",
-  "docker": "عامل ميناء",
-  "cluster": "Clusters"
+  "docker": "عامل ميناء"
 }

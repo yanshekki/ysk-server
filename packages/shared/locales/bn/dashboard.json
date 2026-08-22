@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "সতর্কতা",
+    "bad": "সমস্যা"
+  },
   "title": "ড্যাশবোর্ড",
   "health": "স্বাস্থ্য",
   "protection": "সুরক্ষা মোড",
@@ -38,12 +44,13 @@
   "readinessCheck": "প্রস্তুতি:",
   "prodOk": "উত্পাদন প্রস্তুত",
   "notFullyReady": "পুরোপুরি প্রস্তুত নয়",
+  "readinessBlocked": "{{n}} ব্লকার(গুলি)",
   "modeScore": "মোড {{mode}} · স্কোর {{ready}}/{{total}}",
   "mode": {
     "degraded": "অধঃপতন",
     "production_capable": "উত্পাদন প্রস্তুত",
-    "normal": "স্বাভাবিক",
-    "blocked": "blocked"
+    "blocked": "অবরুদ্ধ",
+    "normal": "স্বাভাবিক"
   },
   "details": "বিস্তারিত",
   "certExpiryTitle": "শংসাপত্রের মেয়াদ:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "অডিট প্রয়োগ করুন · ঠিক আছে {{ok}} · সতর্ক {{warn}} · খারাপ {{bad}}",
   "executeBadge": "চালান {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "এই প্যানেলটি সমস্ত ইন্টারফেসে শোনে এবং আপনার অ্যাডমিন অ্যাকাউন্টে 2FA নেই।",
   "go": "খোলা",
   "open": "খোলা",
   "noCriticalWarn": "কোন সমালোচনামূলক বা সতর্কতা সতর্কতা",
@@ -81,6 +89,7 @@
   "wizardDesc": "একটি প্রকল্প তৈরি করুন এবং ঐচ্ছিকভাবে DNS/মেইল/ডাটাবেস খসড়া করুন (প্রতিটি বৈশিষ্ট্য পৃষ্ঠায় আবেদন করুন)",
   "projectName": "প্রকল্পের নাম",
   "projectNameHint": "প্রদর্শনের নাম; একটি মিলিত ডিরেক্টরি তৈরি করে",
+  "nameRequired": "একটি প্রকল্পের নাম লিখুন",
   "domainOptional": "ডোমেন (ঐচ্ছিক)",
   "domainHint": "DNS এবং মেল বিকল্পগুলি সক্ষম করার জন্য প্রয়োজনীয়৷",
   "runtime": "রানটাইম",
@@ -93,6 +102,7 @@
   "serverIpv6": "সার্ভার IPv6 (ঐচ্ছিক)",
   "serverIpv6Hint": "AAAA/ip6 লিখেছেন: সেট করা হলে",
   "serverIpv6Ph": "সর্বজনীন IPv6 (ঐচ্ছিক)",
+  "needDomainFirst": "আগে ডোমেইন লিখুন",
   "withDns": "এছাড়াও DNS জোন তৈরি করুন",
   "withDnsDesc": "ডোমেইন প্রয়োজন; শুধুমাত্র নিবন্ধন — DNS পৃষ্ঠায় জোন প্রয়োগ করুন",
   "withMail": "এছাড়াও মেইল ​​ডোমেইন নিবন্ধন করুন",
@@ -119,15 +129,5 @@
   "notifSearch": "অনুসন্ধান সতর্কতা",
   "notifAll": "সব",
   "notifDismiss": "লুকান",
-  "goFix": "ঠিক করুন",
-  "needDomainFirst": "আগে ডোমেইন লিখুন",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "ঠিক করুন"
 }

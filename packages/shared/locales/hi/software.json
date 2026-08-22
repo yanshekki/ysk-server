@@ -84,13 +84,13 @@
     "latest": "नवीनतम",
     "upToDate": "अद्यतित/रेपो नवीनतम",
     "refresh": "नवीनतम पुनः जांचें",
+    "refreshHasUpdate": "नया संस्करण उपलब्ध है",
+    "refreshLatest": "पहले से ही नवीनतम रिकॉर्ड किया गया संस्करण",
     "pick": "संस्करण चुनें",
     "noTarget": "कोई अद्यतन लक्ष्य नहीं",
     "needRuntimePage": "इस संस्करण को रनटाइम पेज पर स्थापित करें",
     "noAptCandidate": "कोई उपयुक्त उम्मीदवार संस्करण नहीं",
-    "sourceLabel": "स्रोत",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "स्रोत"
   },
   "install": {
     "progress": "इंस्टाल कर रहा है: {{list}}…",

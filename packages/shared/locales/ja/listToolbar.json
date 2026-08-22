@@ -9,5 +9,5 @@
   "noResults": "該当するものがありません",
   "noResultsHint": "別のキーワードを試すか、フィルターをクリアしてください。",
   "searching": "検索中…",
-  "emptyChip": "No items in this filter"
+  "emptyChip": "このフィルタには項目がありません"
 }

@@ -136,6 +136,9 @@ export const validatorsApi = {
       blsPublicKey?: string | null;
       blsProofOfPossession?: string | null;
       cardanoProducer?: import('ysk-server-shared').CardanoProducerStatusDto;
+      near?: import('ysk-server-shared').NearStakingIdentityDto;
+      cosmos?: import('ysk-server-shared').CosmosStakingIdentityDto;
+      sol?: import('ysk-server-shared').SolStakingIdentityDto;
     }>(`/api/v1/validators/${encodeURIComponent(id)}/checklist`),
   saveSettings: (autoClear: boolean) =>
     api.requestRaw<{ ok: boolean; settings: ValidatorSettingsDto }>('/api/v1/validators/settings', {

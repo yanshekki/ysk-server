@@ -23,8 +23,8 @@
     "project.suspend": "暂停项目",
     "software.install": "安装软件",
     "software.update": "更新软件",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "还原备份",
+    "backup.run": "执行备份",
+    "backup.delete": "删除备份"
   }
 }

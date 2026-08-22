@@ -4,6 +4,6 @@
   "about": "설명",
   "main": "행위",
   "stack": "소프트웨어",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "해당 탭이 없습니다",
+  "unknownHint": "이 페이지에는 {{tab}}라는 탭이 없습니다."
 }

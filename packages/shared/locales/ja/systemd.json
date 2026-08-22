@@ -70,6 +70,8 @@
   "policyNotEqualFull": "テンプレートの書き込み ≠ サービスの有効化 ≠ リスニング",
   "controlPlaneUnit": "コントロールプレーンユニット",
   "kpiRuntime": "処理時間",
+  "rawStateHint": "ツールチップの生のユニット状態",
+  "bootHint": "起動時にユニットを起動するかどうか",
   "kpiBoot": "ブートイネーブル",
   "kpiCaps": "適用機能",
   "capsReady": "システムにインストール可能",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "テンプレートの書き込みとシステムのインストールは別の手順です。インストール後の再実行は通常の操作であり、欠落しているステップではありません。",
   "policyInstallFull": "インストールして有効にする: /etc/systemd/system にコピーし、daemon-reload、 --now を有効にします。 root + EXECUTE が必要です。",
   "policyBlockedTitle": "特権なしでブロックされました",
-  "policyNotEqualTitle": "国家は同等ではない",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "国家は同等ではない"
 }

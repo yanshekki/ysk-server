@@ -5,6 +5,7 @@ export * from './adapters/base.js';
 export * from './adapters/eth.js';
 export * from './adapters/avax.js';
 export * from './adapters/near.js';
+export * from './adapters/cosmos-identity.js';
 export * from './adapters/ada.js';
 export * from './adapters/phase2.js';
 export * from './honesty.js';

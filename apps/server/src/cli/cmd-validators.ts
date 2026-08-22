@@ -30,6 +30,15 @@ import {
   ensureClientOfficialReleases,
   attachAdaProducerKeys,
   detachAdaProducerKeys,
+  stakingChecklistForInstance,
+  snapshotOffer,
+  regenerateValidatorCompose,
+  removeValidatorLeftover,
+  collectValidatorSoftware,
+  pullPinnedValidatorImage,
+  writeValidatorCompose,
+  validatorContainerStats,
+  refreshOfficialReleases,
 } from 'ysk-server-core';
 import { isValidatorInstanceId, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -105,6 +114,85 @@ export async function runValidatorsCommand(
     }
     h.printJson({ ok: true, instance });
     return 0;
+  }
+
+  if (sub === 'checklist') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const inst = getValidatorInstance(ctx.dataDir, id);
+    if (!inst) {
+      h.printJson({ ok: false, code: 'not_found', message: tl('validators.errors.notFound') });
+      return 4;
+    }
+    h.printJson({
+      ok: true,
+      id,
+      ...(await stakingChecklistForInstance(inst, ctx.dataDir)),
+      snapshot: snapshotOffer(inst.chain, inst.network),
+    });
+    return 0;
+  }
+
+  if (sub === 'rewrite-compose') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = regenerateValidatorCompose({
+      dataDir: ctx.dataDir,
+      id,
+      execute,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'leftover-remove' || sub === 'leftovers-remove' || sub === 'leftover-rm') {
+    const leftoverPath = h.getOpt(args, '--path') ?? tokens[2] ?? '';
+    const name = leftoverPath.replace(/\/+$/, '').split('/').pop() ?? '';
+    const confirm =
+      h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? name : '');
+    const result = removeValidatorLeftover({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      path: leftoverPath,
+      confirm,
+      execute,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'software') {
+    if (h.hasFlag(args, '--refresh')) {
+      try {
+        await refreshOfficialReleases({ dataDir: ctx.dataDir, force: true });
+      } catch {
+        /* pin-only fallback */
+      }
+    }
+    const software = await collectValidatorSoftware({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+    });
+    h.printJson({ ok: true, ...software });
+    return 0;
+  }
+
+  if (sub === 'pull' || sub === 'software-pull') {
+    const result = await pullPinnedValidatorImage({
+      host: ctx.host,
+      dataDir: ctx.dataDir,
+      execute,
+      image: h.getOpt(args, '--image') ?? tokens[2] ?? '',
+      tag: h.getOpt(args, '--tag') ?? undefined,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
   }
 
   if (sub === 'logs') {
@@ -286,6 +374,45 @@ export async function runValidatorsCommand(
     }
     h.printJson(readValidatorCompose(ctx.dataDir, id));
     return 0;
+  }
+
+  if (sub === 'compose-write' || sub === 'save-compose') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const file = h.getOpt(args, '--file');
+    const content = file
+      ? readFileSync(file, 'utf8')
+      : (h.getOpt(args, '--content') ?? '');
+    const result = writeValidatorCompose({
+      dataDir: ctx.dataDir,
+      id,
+      content,
+      execute,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'stats') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    if (!getValidatorInstance(ctx.dataDir, id)) {
+      h.printJson({ ok: false, code: 'not_found', message: tl('validators.errors.notFound') });
+      return 4;
+    }
+    const stats = await validatorContainerStats({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      id,
+    });
+    h.printJson(stats);
+    return stats.ok ? 0 : 1;
   }
 
   if (sub === 'mithril') {

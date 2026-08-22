@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",
   "installedCount": "已安装 {{installed}} · 未安装 {{missing}}",
+  "countHint": "此处计的是软件方案里的操作系统套件，不是另一分页的服务单元。",
+  "executeRoot": "系统变更 {{execute}} · 管理员 {{root}}",
+  "manifestPlan": "方案 {{plan}}（{{bundles}}）",
+  "manifestHint": "上次选用的软件方案与套件组",
   "needRootExecute": "实际安装或移除需要管理员权限，并开启系统变更权限。仍可先做预览试行。",
   "modeInstall": "安装套餐",
   "modeUninstall": "移除套餐",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "至少选择一个捆绑包。空选择不再意味着全部删除。",
   "uninstallConfirmTitle": "删除选定的捆绑包？",
   "uninstallConfirmDesc": "{{count}} 个捆绑包将被删除。键入 REMOVE 进行确认。",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "控制面",
+    "web": "网站寄存",
+    "database": "数据库",
+    "email": "邮件套件",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "FTP/FTPS",
+    "defense": "主机防护",
+    "runtimes": "语言执行环境"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "仅控制面",
+    "recommended": "建议寄存组合",
+    "full": "全部软件"
   }
 }

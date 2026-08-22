@@ -1,6 +1,6 @@
 /**
  * Product help catalog — locale-aware.
- * Data: ./data/{zh-HK,zh-CN,en}.json (+ Tier-2 when present)
+ * Data: ./data/{locale}.json for every shipped locale
  * Normalizes legacy guide shapes → professional About sections.
  */
 import { normalizeLocale, type LocaleCode } from 'ysk-server-shared';
@@ -9,6 +9,16 @@ import type { PageGuideDoc, PageGuideRaw } from './types';
 import zhHK from './data/zh-HK.json';
 import zhCN from './data/zh-CN.json';
 import en from './data/en.json';
+import ja from './data/ja.json';
+import ko from './data/ko.json';
+import hi from './data/hi.json';
+import es from './data/es.json';
+import ar from './data/ar.json';
+import fr from './data/fr.json';
+import bn from './data/bn.json';
+import pt from './data/pt.json';
+import id from './data/id.json';
+import ur from './data/ur.json';
 
 type GuideMap = Record<string, PageGuideRaw>;
 
@@ -16,11 +26,20 @@ const CATALOGS: Partial<Record<LocaleCode, GuideMap>> = {
   'zh-HK': zhHK as GuideMap,
   'zh-CN': zhCN as GuideMap,
   en: en as GuideMap,
+  ja: ja as GuideMap,
+  ko: ko as GuideMap,
+  hi: hi as GuideMap,
+  es: es as GuideMap,
+  ar: ar as GuideMap,
+  fr: fr as GuideMap,
+  bn: bn as GuideMap,
+  pt: pt as GuideMap,
+  id: id as GuideMap,
+  ur: ur as GuideMap,
 };
 
 function mapFor(locale?: string | null): GuideMap {
   const code = normalizeLocale(locale);
-  // Tier-1 has native catalogs; Tier-2 falls back to English (scaffold quality bar).
   return (
     (CATALOGS[code] as GuideMap | undefined) ??
     (CATALOGS.en as GuideMap) ??

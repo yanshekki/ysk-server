@@ -102,12 +102,12 @@
   "capabilitiesHint": "قم بتبديل ما قد يفعله هذا الدور",
   "enabledCount": "{{enabled}} من {{total}} ممكّنة",
   "bandAboveMax": "فوق المستوى الأقصى",
+  "roleUnavailable": "غير متاح لهذا الدور",
   "dirtyHint": "حسب الطلب (يختلف عن المصنع)",
   "unsaved": "غير محفوظة",
   "unsavedHint": "التعديلات غير المحفوظة على هذا الدور",
   "nothingToSave": "لا شيء للحفظ",
   "saveRole": "حفظ {{role}} السياسة",
   "discardTitle": "هل تريد تجاهل السياسة غير المحفوظة؟",
-  "discardDesc": "يؤدي تبديل الأدوار إلى إسقاط تعديلات الإمكانات غير المحفوظة.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "يؤدي تبديل الأدوار إلى إسقاط تعديلات الإمكانات غير المحفوظة."
 }

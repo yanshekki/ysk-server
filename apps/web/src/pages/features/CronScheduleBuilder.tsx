@@ -184,6 +184,7 @@ function clamp(n: number, lo: number, hi: number) {
 export function isValidCronSchedule(expr: string): boolean {
   const s = expr.trim();
   if (!s || /[\r\n]/.test(s)) return false;
+  if (/^@(reboot|hourly|daily|weekly|monthly|yearly|annually)$/i.test(s)) return true;
   const fields = s.split(/\s+/);
   if (fields.length !== 5) return false;
   for (const f of fields) {

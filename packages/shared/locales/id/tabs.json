@@ -4,6 +4,6 @@
   "about": "Tentang",
   "main": "Tindakan",
   "stack": "Perangkat lunak",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "Tidak ada tab seperti itu",
+  "unknownHint": "Halaman ini tidak memiliki tab bernama {{tab}}."
 }

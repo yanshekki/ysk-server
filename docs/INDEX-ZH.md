@@ -86,7 +86,7 @@
 | [security/2fa-ZH.md](./security/2fa-ZH.md) | 面板與 SSH 2FA |
 | [security/ssh-ZH.md](./security/ssh-ZH.md) | SSH 身分 |
 | [api/overview-ZH.md](./api/overview-ZH.md) | HTTP API 地圖 |
-| [i18n-ZH.md](./i18n-ZH.md) | 語言包（zh-HK／zh-CN／en） |
+| [i18n-ZH.md](./i18n-ZH.md) | 13 種語言（zh-HK／zh-CN／en + 全球語言 + RTL）；說明 tab 每語一份 |
 
 ## 法律文件
 

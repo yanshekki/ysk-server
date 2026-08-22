@@ -36,6 +36,10 @@
   "emptyBansDesc": "یا fail2ban-client کو پڑھنے کی اجازت نہیں ہے۔",
   "ignoreipTitle": "وائٹ لسٹ کو نظرانداز کریں۔",
   "ignoreipDesc": "آئی پی پر کبھی پابندی نہیں لگائی گئی (پینل فائل + اختیاری لائیو فیل 2 بین کلائنٹ)",
+  "whitelistEmptyWarn": "وائٹ لسٹ خالی ہے؛ jail آپ پر پابندی لگا سکتے ہیں۔ ignoreip سے پہلے لاگ اِن IP شامل کریں۔",
+  "suggestIgnoreLogin": "آپ کا لاگ اِن IP {{ip}}",
+  "applyIgnoreEmptyWarn": "خالی وائٹ لسٹ سے اطلاق ignoreip صاف کر دے گا",
+  "applyIgnoreNeedConfirm": "jail ignoreip دوبارہ لکھتا ہے اور fail2ban ری لوڈ کرتا ہے",
   "addIp": "آئی پی شامل کریں۔",
   "addWhitelist": "وائٹ لسٹ میں شامل کریں۔",
   "applyPolicyIgnoreip": "پالیسی کا اطلاق کریں (بشمول نظر انداز)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "یہ میزبان یا آپ کا لاگ ان آئی پی ہے — اسے پابندی لگانے کے بجائے نظر انداز میں شامل کریں۔",
   "suggestIgnoreHint": "تجویز کردہ ایڈمن آئی پیز (پینل فائل صرف اس وقت تک جب تک کہ آپ پالیسی لاگو نہ کریں):",
-  "suggestIgnoreAdd": "{{ip}} شامل کریں",
-  "whitelistEmptyWarn": "وائٹ لسٹ خالی ہے؛ jail آپ پر پابندی لگا سکتے ہیں۔ ignoreip سے پہلے لاگ اِن IP شامل کریں۔",
-  "suggestIgnoreLogin": "آپ کا لاگ اِن IP {{ip}}",
-  "applyIgnoreEmptyWarn": "خالی وائٹ لسٹ سے اطلاق ignoreip صاف کر دے گا",
-  "applyIgnoreNeedConfirm": "jail ignoreip دوبارہ لکھتا ہے اور fail2ban ری لوڈ کرتا ہے"
+  "suggestIgnoreAdd": "{{ip}} شامل کریں"
 }

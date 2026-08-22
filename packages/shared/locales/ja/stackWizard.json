@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "パージを確認しますか?登録されたデータパス（データベース/メール）は完全に削除されます。",
   "installedCount": "インストールされています {{installed}} · {{missing}} が見つかりません",
+  "countHint": "これらの数はソフトウェア プラン内の OS パッケージであり、他のタブのサービス マトリックス ユニットではありません。",
+  "executeRoot": "システム変更 {{execute}} · 管理者 {{root}}",
+  "manifestPlan": "計画 {{plan}} ({{bundles}})",
+  "manifestHint": "最後に選択したソフトウェア プランとバンドル",
   "needRootExecute": "ライブ インストール/削除には、管理者権限とシステム変更権限が必要です。ドライランも可能です。",
   "modeInstall": "プランをインストール",
   "modeUninstall": "アンインストール",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "少なくとも 1 つのバンドルを選択します。空の選択はすべてを削除することを意味しなくなりました。",
   "uninstallConfirmTitle": "選択したバンドルを削除しますか?",
   "uninstallConfirmDesc": "{{count}} バンドルが削除されます。 REMOVE と入力して確認します。",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "コントロールプレーン",
+    "web": "ウェブホスティング",
+    "database": "データベース",
+    "email": "メールスタック",
     "dns": "DNS",
     "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "defense": "ホストの防御",
+    "runtimes": "言語ランタイム"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "コントロールプレーンのみ",
+    "recommended": "推奨されるホスティング",
+    "full": "すべてのソフトウェア"
   }
 }

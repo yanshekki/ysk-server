@@ -13,7 +13,9 @@
   "hourAgo": "{{n}} jam yang lalu",
   "highRiskN": "{{count}} berisiko tinggi",
   "panelUpdate": "Pembaruan panel tersedia",
+  "footerNewVersion": "Versi baru {{version}}",
   "riskOk": "Risiko dapat dikelola",
+  "riskUnevaluated": "Tidak dievaluasi — jalankan Scan + OSV",
   "pendingScan": "Menunggu pemindaian",
   "packages": "Paket",
   "highRisk": "Risiko tinggi",
@@ -24,6 +26,7 @@
   "reload": "Muat ulang",
   "osvTitle": "Kueri OSV untuk 12 paket teratas yang disarankan (membutuhkan jaringan)",
   "scanOsv": "Pindai + OSV",
+  "cveNotChecked": "Tidak diperiksa",
   "scanPkgs": "Pindai paket",
   "tabInventory": "Persediaan paket",
   "tabSelf": "Panel sendiri",
@@ -72,6 +75,8 @@
   "policyTitle": "Perbarui kebijakan",
   "policyBody": "Paket berisiko tinggi dan CVE memerlukan persetujuan sebelum mengajukan permohonan",
   "applyPkg": "Terapkan peningkatan paket",
+  "rebootNeeded": "menyalakan ulang",
+  "kernelRebootHint": "Paket kernel perlu di-boot ulang setelah diterapkan",
   "applyPkgConfirm": "Tingkatkan {{name}}?",
   "applyPkgDesc": "Menjalankan apt upgrade untuk paket ini di host. Membutuhkan root + YSK_EXECUTE.",
   "lastScan": "Pemindaian terakhir",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "Saat ini",
   "selfLatestShort": "Terbaru",
   "applyPanelUpdate": "Terapkan pembaruan panel",
+  "applySelfConfirmTitle": "Terapkan pembaruan panel?",
+  "applySelfConfirmDesc": "Instal {{from}} → {{to}} dan mulai ulang layanan panel. Tidak ada uji coba.",
+  "applyPanelAlreadyLatest": "Sudah versi panel terbaru",
   "recheck": "Periksa kembali",
   "aboutScope": "Cakupan",
   "aboutScopeV": "panel ysk-server + layanan katalog + runtime + sisa paket apt",
@@ -98,6 +106,51 @@
   "scanPolicyV": "Pindai ≠ ditingkatkan; menerapkan perubahan sistem",
   "highRiskPolicy": "Risiko tinggi",
   "highRiskPolicyV": "Perlu persetujuan: konfirmasi kedua sebelum dikirim",
+  "needApprovalHint": "Buka Tersedia dan filter ke paket yang memerlukan persetujuan",
+  "applyNeedConfirm": "Membuka dialog konfirmasi sebelum menerapkan",
+  "probeFailed": "Penyelidikan gagal",
+  "notViaApt": "Tidak dikelola oleh apt — tidak ada kandidat",
+  "noCandidate": "Tidak ada versi kandidat",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "halaman GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Pemeriksaan perlindungan",
+      "hint": "Sinyal pertahanan berkala"
+    },
+    "updates_scan": {
+      "name": "Pemindaian pembaruan",
+      "hint": "Segarkan inventaris paket"
+    },
+    "daily_backup": {
+      "name": "Cadangan harian",
+      "hint": "Semua pencadangan terjadwal"
+    },
+    "db_temp_expire": {
+      "name": "Kedaluwarsa pengguna DB sementara",
+      "hint": "Hapus pengguna database sementara yang sudah kadaluarsa"
+    },
+    "defense_auto_ban": {
+      "name": "Larangan otomatis pertahanan",
+      "hint": "Terapkan centang larangan otomatis"
+    },
+    "defense_geoip_update": {
+      "name": "Pembaruan GeoIP",
+      "hint": "Unduh database GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "Log vakum",
+      "hint": "retensi jurnal"
+    },
+    "email_dnsbl": {
+      "name": "Surel DNSBL",
+      "hint": "Periksa DNSBL melalui email"
+    },
+    "validators_upgrade_scan": {
+      "name": "Pemindaian peningkatan validator",
+      "hint": "Periksa pembaruan gambar validator/biner"
+    }
+  },
   "permPolicy": "Izin",
   "permPolicyV": "Tanpa EXECUTE/root → diblokir (tidak ada kesuksesan palsu)",
   "osvPolicyV": "Membutuhkan jaringan; memperkaya 12 saran teratas saja",
@@ -122,6 +175,12 @@
   "updateFailed": "Pembaruan gagal",
   "updateIncomplete": "Pembaruan tidak lengkap",
   "appliedUpdate": "Pembaruan diterapkan",
+  "panelRestarting": "Panel sedang dimulai ulang untuk memuat versi baru…",
+  "panelRestarted": "Panel kembali · {{version}}",
+  "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
+  "reloadUi": "Muat ulang UI",
+  "reloadUiTitle": "Muat ulang UI panel?",
+  "reloadUiDesc": "Layanan panelnya adalah {{version}}. Tab ini masih memiliki frontend sebelumnya hingga Anda memuat ulang. Bidang yang belum disimpan di halaman ini akan hilang.",
   "aptCandidate": "Kandidat yang tepat",
   "advice": {
     "update": "Pembaruan direkomendasikan",
@@ -182,64 +241,5 @@
   "needsReboot": "Diperlukan reboot",
   "kernelRebootWarn": "Menginstal kernel baru biasanya memerlukan reboot sebelum digunakan.",
   "neverRun": "belum berjalan",
-  "scanOsvN": "Pindai + OSV (pertama {{n}})",
-  "rebootNeeded": "menyalakan ulang",
-  "kernelRebootHint": "Paket kernel perlu di-boot ulang setelah diterapkan",
-  "needApprovalHint": "Buka Tersedia dan filter ke paket yang memerlukan persetujuan",
-  "applyNeedConfirm": "Membuka dialog konfirmasi sebelum menerapkan",
-  "probeFailed": "Penyelidikan gagal",
-  "notViaApt": "Tidak dikelola oleh apt — tidak ada kandidat",
-  "noCandidate": "Tidak ada versi kandidat",
-  "jobOpenGeo": "halaman GeoIP",
-  "job": {
-    "protection_probe": {
-      "name": "Pemeriksaan perlindungan",
-      "hint": "Sinyal pertahanan berkala"
-    },
-    "updates_scan": {
-      "name": "Pemindaian pembaruan",
-      "hint": "Segarkan inventaris paket"
-    },
-    "daily_backup": {
-      "name": "Cadangan harian",
-      "hint": "Semua pencadangan terjadwal"
-    },
-    "db_temp_expire": {
-      "name": "Kedaluwarsa pengguna DB sementara",
-      "hint": "Hapus pengguna database sementara yang sudah kadaluarsa"
-    },
-    "defense_auto_ban": {
-      "name": "Larangan otomatis pertahanan",
-      "hint": "Terapkan centang larangan otomatis"
-    },
-    "defense_geoip_update": {
-      "name": "Pembaruan GeoIP",
-      "hint": "Unduh database GeoIP"
-    },
-    "log_auto_vacuum": {
-      "name": "Log vakum",
-      "hint": "retensi jurnal"
-    },
-    "email_dnsbl": {
-      "name": "Surel DNSBL",
-      "hint": "Periksa DNSBL melalui email"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "Sudah versi panel terbaru",
-  "panelRestarting": "Panel sedang dimulai ulang untuk memuat versi baru…",
-  "panelRestarted": "Panel kembali · {{version}}",
-  "panelRestartWait": "Pembaruan diterapkan. Jika halaman ini tidak berubah, muat ulang beberapa detik lagi.",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "Pindai + OSV (pertama {{n}})"
 }

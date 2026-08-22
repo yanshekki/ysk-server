@@ -20,8 +20,8 @@
   "stepTuningApplied": "Ajuste de tempo de execução aplicado",
   "stepUnitWritten": "Unidade de serviço escrita",
   "stepSystemdStartFailed": "Falha na inicialização do Systemd - usando fallback de processo",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
+  "portListening": "A porta {{port}} está escutando",
+  "portNotListening": "A porta {{port}} não está escutando",
   "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "httpFail": "Falha no HTTP: {{detail}}"
 }

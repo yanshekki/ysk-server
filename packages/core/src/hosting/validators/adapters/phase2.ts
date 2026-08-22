@@ -4,7 +4,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ValidatorInstanceDto } from 'ysk-server-shared';
+import { cosmosStakingChainId, type ValidatorInstanceDto } from 'ysk-server-shared';
 import type { ValidatorHostPlan, ValidatorNodeStatus } from './base.js';
 import { SUI_NODE_IMAGE, suiNodeTag, v1ValidatorClients } from '../registry.js';
 import { composeBind } from '../compose-runner.js';
@@ -74,7 +74,7 @@ export function parseBtcInfo(body: unknown): Probe {
 }
 
 export function cosmosChainId(network: string): string {
-  return network === 'mainnet' ? 'cosmoshub-4' : 'provider';
+  return cosmosStakingChainId(network);
 }
 
 /** Official Cosmos Hub testnet is ICS `provider` (theta-testnet-001 is killed). */
@@ -231,8 +231,8 @@ if [ "${chainId}" = "provider" ]; then
 fi
 ${RESOLVE_PUBLIC_IP_SH}
 if [ -n "$PUB" ]; then
-  gaiad config set config p2p.external_address "tcp://$PUB:26656" --home /data 2>/dev/null || true
-  sed -i -e '/^\\[p2p\\]/,/^\\[/{s|^external_address = .*|external_address = "tcp://'"$PUB"':26656"|}' /data/config/config.toml || true
+  gaiad config set config p2p.external_address "tcp://$PUB:${p2p}" --home /data 2>/dev/null || true
+  sed -i -e '/^\\[p2p\\]/,/^\\[/{s|^external_address = .*|external_address = "tcp://'"$PUB"':${p2p}"|}' /data/config/config.toml || true
 fi
 gaiad start --home /data --rpc.laddr tcp://0.0.0.0:26657 --p2p.laddr tcp://0.0.0.0:26656 --p2p.seeds="${seeds}" --minimum-gas-prices=0.005uatom`)}
     ports:
@@ -657,5 +657,25 @@ export async function probeSolStatus(spec: ValidatorInstanceDto, fetchFn: typeof
     return parseSolHealth(await postRpc(`http://127.0.0.1:${spec.ports.rpc ?? 8899}`, 'getHealth', fetchFn));
   } catch (e) {
     return { syncProgress: null, peers: null, version: null, lastError: e instanceof Error ? e.message : 'rpc' };
+  }
+}
+
+export async function probeSolIdentity(
+  spec: ValidatorInstanceDto,
+  fetchFn: typeof fetch = fetch,
+): Promise<{ identityPubkey: string | null }> {
+  try {
+    const body = (await postRpc(
+      `http://127.0.0.1:${spec.ports.rpc ?? 8899}`,
+      'getIdentity',
+      fetchFn,
+    )) as { result?: { identity?: unknown } };
+    const id = body.result?.identity;
+    if (typeof id === 'string' && id.trim() && !/secret|private/i.test(id)) {
+      return { identityPubkey: id.trim() };
+    }
+    return { identityPubkey: null };
+  } catch {
+    return { identityPubkey: null };
   }
 }

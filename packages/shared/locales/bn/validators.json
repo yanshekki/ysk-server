@@ -5,38 +5,64 @@
   "tab": {
     "nodes": "নোড",
     "disk": "ডিস্ক",
-    "about": "সম্পর্কে",
-    "stack": "Software"
+    "stack": "সফটওয়্যার",
+    "about": "সম্পর্কে"
   },
   "empty": {
     "title": "এখনও কোনো ভ্যালিডেটর নোড নেই",
     "desc": "কয়েক ক্লিকে টেস্টনেট নোড তৈরি করুন।"
   },
   "refresh": "রিফ্রেশ",
+  "software": {
+    "engine": "ডকার ইঞ্জিন",
+    "engineDesc": "যাচাইকারী নোডগুলি রচনা প্রকল্প হিসাবে চালিত হয়। এটি অনুপস্থিত থাকলে এখানে ডকার ইনস্টল করুন। ছবি ছাঁটাই ডকার পৃষ্ঠায় থাকে।",
+    "client": "ক্লায়েন্ট",
+    "image": "ছবি",
+    "present": "স্থানীয়",
+    "local": "টানা",
+    "missing": "টানা হয়নি",
+    "size": "আকার",
+    "usedBy": "দ্বারা ব্যবহৃত",
+    "unused": "কোনো দৃষ্টান্ত নেই",
+    "pull": "Pull",
+    "pulled": "এই হোস্ট উপর",
+    "pulling": "টানুন {{ref}}",
+    "empty": "কোনো পিন করা ক্লায়েন্টের ছবি নেই",
+    "emptyDesc": "ক্যাটালগ খালি। এটা হওয়া উচিত নয়।",
+    "daemonDown": "ডকার ইঞ্জিন চলছে না",
+    "source": "উৎস",
+    "official": "অফিসিয়াল সর্বশেষ",
+    "officialNewer": "অফিসিয়াল নতুন",
+    "stale": "পিনের পিছনে",
+    "staleItem": "{{id}} ({{tag}})",
+    "pin": "প্যানেল পিন",
+    "openRelease": "রিলিজ নোট",
+    "chooseOnInstance": "উদাহরণ পৃষ্ঠায় সংস্করণ পরিবর্তন করুন. একটি ছবি টানা একটি চলমান নোড পুনরায় ট্যাগ না."
+  },
   "disk": {
     "title": "ভ্যালিডেটর ডিস্ক",
     "root": "ডেটা ডিরেক্টরি",
     "free": "খালি",
     "used": "ব্যবহৃত",
+    "fsUsed": "ফাইল সিস্টেম ব্যবহার করা হয়েছে",
+    "leftoverTitle": "অবশিষ্ট ডেটা ({{count}})",
+    "leftoverEmpty": "কোন অবশিষ্ট উদাহরণ ডিরেক্টরি",
+    "leftoverDesc": "ভ্যালিডেটর রুটের অধীনে থাকা ডাইরেক্টরি যা স্টোরের উদাহরণ নয়। সেগুলি অব্যবহৃত হয়েছে তা নিশ্চিত করার পরেই সরান৷",
+    "leftoverRemove": "সরান",
+    "leftoverRemoveTitle": "অবশিষ্ট যাচাইকারী ডেটা মুছবেন?",
+    "leftoverRemoveDesc": "স্থায়ীভাবে ডিস্ক থেকে {{path}} মুছে দিন। এটি একটি তালিকাভুক্ত নোড নয়।",
+    "browseRoot": "ফাইল ব্রাউজারে খুলুন",
     "none": "এখনও কোনো ইনস্ট্যান্স ডেটা নেই",
     "warn": "ডিস্ক ব্যবহার বেশি (৭০%+)",
     "danger": "ডিস্ক ব্যবহার সংকটজনক (৮৫%+)",
     "autoClear": "ডিস্ক সংকট হলে সবচেয়ে বড় বন্ধ ইনস্ট্যান্স স্বয়ংক্রিয় খালি করুন (ডিফল্ট বন্ধ)",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
-    "autoClearConfirmTitle": "Enable auto-clear?",
-    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
-    "fsUsed": "Filesystem used",
-    "leftoverTitle": "Leftover data ({{count}})",
-    "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
-    "leftoverRemove": "Remove",
-    "leftoverRemoveTitle": "Delete leftover validator data?",
-    "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
-    "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
-    "autoClearCandidate": "Current candidate: {{id}}",
-    "autoClearNone": "No stopped instance is a candidate right now.",
-    "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories",
-    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
+    "autoClearRisk": "ধ্বংসাত্মক: সবচেয়ে বড় থামানো উদাহরণটি আরও প্রম্পট ছাড়াই মুছে ফেলা হয়। ডিফল্ট বন্ধ আছে। এটি ফায়ার পরে অডিট / লগ চেক করুন.",
+    "autoClearConfirmTitle": "স্বতঃ-পরিষ্কার সক্ষম করবেন?",
+    "autoClearC1": "যখন ডিস্ক জটিল হয়, তখন সবচেয়ে বড় থামানো উদাহরণটি আবার জিজ্ঞাসা না করেই মুছে ফেলা হয়।",
+    "autoClearThreshold": "ট্রিগার: 85% বা তার উপরে ফাইল সিস্টেম ব্যবহার।",
+    "autoClearCandidate": "বর্তমান প্রার্থী: {{id}}",
+    "autoClearCandidates": "থামানো প্রার্থী (প্রথমে ডেটা সহ সবচেয়ে বড়): {{list}}",
+    "autoClearNone": "কোন থেমে দৃষ্টান্ত এই মুহূর্তে একটি প্রার্থী."
   },
   "chain": {
     "eth": "Ethereum",
@@ -63,7 +89,7 @@
   "networkKind": {
     "testnet": "টেস্টনেট",
     "mainnet": "মেইননেট",
-    "mixed": "Mainnet + testnet"
+    "mixed": "মেইননেট + টেস্টনেট"
   },
   "profile": {
     "minimal": "ন্যূনতম",
@@ -71,41 +97,72 @@
     "validator-ready": "ভ্যালিডেটর প্রস্তুত",
     "rpc": "RPC"
   },
+  "profileHelp": {
+    "title": "Profiles",
+    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
+    "colName": "প্রোফাইল",
+    "colUse": "জন্য ব্যবহার করুন",
+    "colDisk": "ডিস্ক",
+    "colStake": "স্ট্যাকিং ভ্যালিডেটর",
+    "useMinimal": "Testnet বা একটি প্রথম ইনস্টল. পুরো ইতিহাস নয়।",
+    "usePruned": "দীর্ঘমেয়াদী চেইন টিপ অনুসরণ করুন. শুধুমাত্র সাম্প্রতিক ডেটা রাখে (ছেঁটে)।",
+    "useValidatorReady": "আকারের যাতে আপনি পরে সত্যায়িত বা প্রস্তাব করতে পারেন। কী অফলাইনে নিজেই তৈরি করুন।",
+    "useRpc": "এই হোস্ট বা অন্যান্য পরিষেবাগুলিকে চেইনটি জিজ্ঞাসা করতে দিন৷ ডিফল্টরূপে 127.0.0.1 এ শোনে।",
+    "diskMinimal": "সবচেয়ে ছোট",
+    "diskPruned": "মাঝারি (ন্যূনতম থেকে বেশি)",
+    "diskValidatorReady": "চারটির মধ্যে সবচেয়ে বড়",
+    "diskRpc": "চেইনের উপর নির্ভর করে",
+    "stakeNo": "উপযুক্ত নয়",
+    "stakeYes": "হ্যাঁ — অফলাইন বা ভুল কনফিগার করা অংশ হারাতে পারে",
+    "stakeRpc": "যাচাইকারী নয়",
+    "minimal": "সবচেয়ে ছোট ডিস্ক। টেস্টনেট বা প্রথম ইনস্টলের জন্য ব্যবহার করুন। একটি সম্পূর্ণ ইতিহাস নয়, এবং একটি লাইভ স্টেকিং যাচাইকারীর জন্য নয়।",
+    "pruned": "সাম্প্রতিক চেইন অবস্থা রাখে এবং পুরানো ব্লকগুলি ফেলে দেয় (ছাঁটা)। মিনিমালের চেয়ে বেশি ডিস্ক, একটি পূর্ণ নোডের চেয়ে কম। দীর্ঘমেয়াদী টিপ অনুসরণ করতে ব্যবহার করুন.",
+    "validatorReady": "আরও ডিস্ক রিজার্ভ করে যাতে আপনি পরে যাচাই বা যাচাইকারী হিসাবে প্রস্তাব করতে পারেন। কী অফলাইনে নিজেই তৈরি করুন। অফলাইন বা ভুল কনফিগার করা অংশ হারাতে পারে।",
+    "rpc": "এই হোস্ট বা অন্যান্য পরিষেবার জন্য চেইন জিজ্ঞাসা করুন. RPC ডিফল্টরূপে 127.0.0.1 এ শোনে এবং ইন্টারনেটে প্রকাশিত হয় না।"
+  },
   "col": {
     "id": "ID",
     "chain": "চেইন",
     "network": "নেটওয়ার্ক",
     "profile": "প্রোফাইল",
     "status": "অবস্থা",
-    "disk": "ডিস্ক",
-    "traffic": "Traffic"
+    "traffic": "ট্রাফিক",
+    "disk": "ডিস্ক"
   },
   "cli": {
-    "usage": "ব্যবহার: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "ব্যবহার: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "এক্সিকিউশন ক্লায়েন্ট",
     "cl": "কনসেনসাস ক্লায়েন্ট",
-    "version": "Version",
-    "pin": "Panel pin",
-    "officialNewer": "Official newer",
-    "olderThanPin": "Older than the panel pin",
-    "prerelease": "Prerelease",
-    "current": "Running now",
-    "source": "Image source"
+    "version": "সংস্করণ",
+    "pin": "প্যানেল পিন",
+    "officialNewer": "অফিসিয়াল নতুন",
+    "olderThanPin": "প্যানেল পিনের চেয়ে পুরানো",
+    "prerelease": "প্রিলিলিজ",
+    "current": "এখন চলছে",
+    "source": "ইমেজ সোর্স"
   },
   "mithril": {
     "label": "আগে Mithril স্ন্যাপশট থেকে পুনরুদ্ধার করুন (টেস্টনেটে সুপারিশকৃত)",
-    "action": "Mithril দিয়ে পুনরুদ্ধার",
-    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
+    "hint": "এটি ইন্সটল করার পর এককালীন পুনরুদ্ধার। এটা রচনা করা হয় না. আপনি ইনস্ট্যান্স পৃষ্ঠা থেকে পরে এটি চালাতে পারেন।",
+    "action": "Mithril দিয়ে পুনরুদ্ধার"
   },
   "errors": {
     "notFound": "ভ্যালিডেটর ইনস্ট্যান্স পাওয়া যায়নি",
     "invalidId": "ইনস্ট্যান্স আইডি অবৈধ",
     "diskLow": "এই চেইন, নেটওয়ার্ক ও প্রোফাইলের জন্য পর্যাপ্ত খালি ডিস্ক নেই",
+    "memLow": "এই চেইনের মেমরি ক্যাপের জন্য পর্যাপ্ত ফ্রি RAM নেই",
     "diskUnknownMainnet": "খালি ডিস্ক মাপা যায়নি; মেইননেট তৈরি প্রত্যাখ্যান",
     "needDocker": "Docker Compose প্রয়োজন কিন্তু পাওয়া যায়নি",
     "composeFailed": "docker compose ব্যর্থ",
+    "containerNotUp": "কম্পোজ শুরু হলেও কন্টেইনারটি চলতে থাকেনি",
+    "probeFailed": "নোড এখনও RPC উত্তর দিচ্ছে না। এই পৃষ্ঠায় লগ চেক করুন.",
+    "oom": "স্মৃতির বাইরে। একটি মেমরি সীমা সেট করুন বা RAM যোগ করুন, তারপর পুনরায় চালু করুন।",
+    "nofile": "প্রক্রিয়াটি ওপেন-ফাইল (নোফাইল) সীমাতে আঘাত করেছে। ulimits.nofile বাড়ান এবং রিস্টার্ট করুন।",
+    "noContainer": "এই উদাহরণের জন্য কোন রচনা ধারক বিদ্যমান নেই.",
+    "restarting": "কন্টেইনার পুনরায় চালু হচ্ছে। এই পৃষ্ঠায় লগ চেক করুন.",
+    "restartingCount": "কন্টেইনার রিস্টার্ট হচ্ছে ({{n}})। এই পৃষ্ঠায় লগ চেক করুন.",
     "needConfirm": "খালি করতে confirm=ইনস্ট্যান্স আইডি বা CLEAR লাগে",
     "mithrilAdaOnly": "Mithril পুনরুদ্ধার শুধু Cardano-এর জন্য",
     "needMithrilConfirm": "Mithril-এর জন্য confirm=ইনস্ট্যান্স আইডি বা MITHRIL লাগে",
@@ -119,35 +176,27 @@
     "composeNotManaged": "YSK-পরিচালিত নয় এমন Compose ফাইল লেখা হবে না",
     "badDataPath": "ডেটা পথ সিস্টেম পথের বাইরে একটি পরম ডিরেক্টরি হতে হবে",
     "portInUse": "সেই RPC পোর্ট ইতিমধ্যে অন্য ভ্যালিডেটর ইনস্ট্যান্স ব্যবহার করছে",
+    "badTag": "সেই ক্লায়েন্ট সংস্করণটি এই ছবির জন্য একটি অফিসিয়াল ট্যাগ নয়৷",
+    "needVersionConfirm": "সংস্করণ পরিবর্তন করার জন্য নিশ্চিত=ইনস্ট্যান্স আইডি প্রয়োজন",
+    "needMainnetVersionAck": "মেইননেট সংস্করণে পরিবর্তনের প্রয়োজন স্বীকার মেইননেট",
     "snapshotUnsupported": "এই চেইনের জন্য অনুমোদিত স্ন্যাপশট উৎস নেই",
     "snapshotLookup": "অফিসিয়াল স্ন্যাপশট পয়েন্টার সমাধান করা যায়নি",
     "needSnapshotConfirm": "স্ন্যাপশট পুনরুদ্ধারে confirm=ইনস্ট্যান্স আইডি বা SNAPSHOT লাগে",
     "snapshotBlocked": "স্ন্যাপশট docker run অনুমোদন তালিকায় আটকে গেছে",
     "snapshotFailed": "স্ন্যাপশট ডাউনলোড বা খোলা ব্যর্থ",
-    "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
-    "noContainer": "No compose container exists for this instance.",
-    "restarting": "Container is restarting. Check logs on this page.",
-    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
-    "memLow": "Not enough free RAM for this chain's memory cap",
-    "badTag": "That client version is not an official tag for this image",
-    "needVersionConfirm": "Changing version requires confirm=instance id",
-    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet",
-    "producerAdaOnly": "Producer keys are only for Cardano",
-    "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
-    "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
-    "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
-    "producerTooLarge": "That key file is larger than 64 KiB",
-    "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
-    "producerEmpty": "Provide at least one of kes, vrf, or opcert",
-    "switchNeedDetachProducer": "Detach producer keys before switching network"
+    "producerAdaOnly": "প্রযোজক কী শুধুমাত্র Cardano জন্য",
+    "needProducerConfirm": "প্রযোজক কী সংযুক্ত করার জন্য নিশ্চিত=ইনস্ট্যান্স আইডি বা প্রযোজক প্রয়োজন",
+    "needMainnetProducerAck": "মেইননেট প্রযোজক সংযুক্তির জন্য অ্যাকসেপ্ট মেইননেট প্রয়োজন",
+    "producerColdRejected": "ঠাণ্ডা বা পুল-মালিক স্বাক্ষরকারী কীগুলি প্রত্যাখ্যান করা হয়। কোল্ড কী অফলাইনে রাখুন।",
+    "producerTooLarge": "সেই কী ফাইলটি 64 KiB এর চেয়ে বড়",
+    "producerBadType": "এই ফাইলটি একটি KES কী, VRF কী বা অপারেশনাল সার্টিফিকেট নয়",
+    "producerEmpty": "kes, vrf, বা opcert এর মধ্যে অন্তত একটি প্রদান করুন",
+    "switchNeedDetachProducer": "নেটওয়ার্ক স্যুইচ করার আগে প্রযোজক কীগুলি আলাদা করুন৷"
   },
   "notes": {
     "beta": "এই বৈশিষ্ট্য Beta। হোস্ট পরিবর্তনে root ও YSK_EXECUTE=1 লাগে।",
     "noKeys": "YSK Server কখনো স্টেকিং চাবি তৈরি বা সংরক্ষণ করে না।",
-    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
+    "dockerSoon": "এই পৃষ্ঠা উইজার্ড থেকে ইনস্টল করুন এবং শুরু করুন। হোস্ট পরিবর্তন রুট এবং YSK_EXECUTE=1 প্রয়োজন।",
     "dryCreate": "ইনস্ট্যান্স স্পেক ও compose লেখা হয়েছে (dry-run)। কন্টেইনার চালু করতে --execute ও YSK_EXECUTE=1 দিন।",
     "dryStart": "চালু dry-run। --execute ও YSK_EXECUTE=1 দিন।",
     "dryStop": "থামানো dry-run। --execute ও YSK_EXECUTE=1 দিন।",
@@ -173,67 +222,67 @@
     "snapshotEthCl": "অফিসিয়াল checkpoint sync-এর জন্য CL ডেটা রিসেট",
     "snapshotNear": "NEAR ডেটা মুছেছে; compose অফিসিয়াল genesis ও epoch sync দিয়ে আবার শুরু করবে",
     "nativePrune": "ক্লায়েন্ট-নেটিভ পরিষ্কার কমান্ড চালানো হয়েছে",
-    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "deleted": "Node deleted",
-    "leftoverRemoved": "Removed leftover {{path}}",
-    "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
-    "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
-    "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
-    "producerAttached": "Hot keys attached; compose rewritten as block producer",
-    "producerDetached": "Hot keys removed; compose rewritten as relay"
+    "dryProducer": "প্রযোজক কী ড্রাই-রান হয়। যোগ করুন --execute এবং YSK_EXECUTE=1।",
+    "dryProducerDetach": "প্রযোজক বিচ্ছিন্ন হয় ড্রাই-রান. যোগ করুন --execute এবং YSK_EXECUTE=1।",
+    "producerPartial": "হট কী লিখেছেন। ব্লক প্রযোজক হিসাবে নোড শুরু হওয়ার আগে KES, VRF এবং opcert সংযুক্ত করুন।",
+    "producerAttached": "হট কী সংযুক্ত; ব্লক প্রযোজক হিসাবে পুনর্লিখিত রচনা",
+    "producerDetached": "হট কী অপসারণ; রিলে হিসাবে পুনর্লিখিত রচনা",
+    "dryDelete": "মুছে ফেলা হয় ড্রাই-রান। পাস --এক্সিকিউট এবং YSK_EXECUTE=1।",
+    "deleted": "নোড মুছে ফেলা হয়েছে",
+    "leftoverRemoved": "অবশিষ্টাংশ সরানো হয়েছে {{path}}"
   },
   "create": "নোড তৈরি",
   "wizard": {
     "title": "নোড তৈরি",
+    "stepOf": "ধাপ {{n}} / {{total}}",
+    "stepChain": "চেইন",
+    "stepNetwork": "নেটওয়ার্ক",
+    "stepProfile": "প্রোফাইল",
+    "stepSummary": "সারাংশ",
+    "needDocker": "ডকার ইঞ্জিন ইনস্টল করা নেই। প্রথমে এটি ইনস্টল করুন - এই বোতামটি নিষ্ক্রিয় থাকে।",
+    "diskNeed": "এই প্রোফাইলের প্রয়োজন প্রায় {{need}} · বিনামূল্যে {{free}}",
+    "diskNeedNetwork": "এই নেটওয়ার্কের জন্য ডিফল্ট (ন্যূনতম) প্রয়োজন প্রায় {{need}} · বিনামূল্যে {{free}}",
+    "profileHint": {
+      "minimal": "সবচেয়ে ছোট সিঙ্ক — হালকা ডিস্ক, স্টেক করার জন্য নয়।",
+      "pruned": "শুধুমাত্র সাম্প্রতিক ইতিহাস রাখে (ছেঁটে)। সংরক্ষণাগারের চেয়ে ছোট, এখনও RPC-এর জন্য ব্যবহারযোগ্য।",
+      "validator-ready": "একটি স্টেকিং যাচাইকারীর জন্য আকার। ন্যূনতম তুলনায় আরো ডিস্ক প্রয়োজন.",
+      "rpc": "পাবলিক RPC নোড — একটি স্টেকিং ভ্যালিডেটর নয়।"
+    },
+    "diskShort": "এই চেইন/নেটওয়ার্ক/প্রোফাইলের জন্য পর্যাপ্ত ফ্রি ডিস্ক নেই",
+    "diskShortDetail": "প্রয়োজন {{need}} · বিনামূল্যে {{free}} · ছোট {{short}}",
+    "memShort": "এই চেইনের মেমরি ক্যাপের জন্য পর্যাপ্ত ফ্রি RAM নেই",
+    "memShortDetail": "প্রয়োজন {{need}} · বিনামূল্যে {{free}} · ছোট {{short}}",
+    "needCustomPath": "একটি পরম ডেটা পাথ লিখুন",
+    "previewId": "নোড আইডি",
+    "previewCompose": "প্রজেক্ট রচনা করুন",
+    "profileSeeAbout": "What each profile means is on the About tab.",
     "back": "পিছনে",
     "next": "পরবর্তী",
     "install": "স্থাপন",
     "mainnetWarn": "মেইননেটে অনেক খালি ডিস্ক লাগে (ETH প্রায়ই ৮০০ GiB+)। টেস্টনেট সুপারিশকৃত।",
     "mainnetAck": "আমি ডিস্ক ও স্ল্যাশিং ঝুঁকি বুঝি। মেইননেট চালিয়ে যান।",
+    "lowDiskAcked": "ফ্রি ডিস্ক প্রস্তাবিত আকারের নিচে। আপনি যাইহোক তৈরি নিশ্চিত করেছেন; ডিস্ক পূর্ণ হলে সিঙ্ক বন্ধ হতে পারে।",
+    "lowMemAcked": "ফ্রি RAM এই চেইনের মেমরি ক্যাপ প্লাস 1 GiB হেডরুমের নিচে। আপনি যাইহোক তৈরি নিশ্চিত করেছেন; নোড OOM বা স্টল হতে পারে।",
     "heavyWarn": "এই চেইন ভারী (বড় ডিস্ক ও উচ্চ IOPS)। Solana মেইননেটে সাধারণত ২ TiB+ লাগে।",
     "memory": "মেমরি সীমা (যেমন 4g)",
     "cpus": "CPU সীমা (যেমন 2.0)",
     "dataPath": "ডেটা পথ (ঐচ্ছিক)",
     "rpcPort": "RPC পোর্ট (ঐচ্ছিক)",
-    "stepOf": "Step {{n}} / {{total}}",
-    "stepChain": "Chain",
-    "stepNetwork": "Network",
-    "stepProfile": "Profile",
-    "stepSummary": "Summary",
-    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
-    "diskNeed": "This profile needs about {{need}} · free {{free}}",
-    "diskShort": "Not enough free disk for this chain / network / profile",
-    "limitNone": "No limit",
-    "rpcDefault": "Default",
-    "customPath": "Use a custom data path",
-    "installConfirmTitle": "Install this node?",
-    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
-    "installC1": "Several gigabytes of images may be downloaded.",
-    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
-    "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
-    "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
-    "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "needCustomPath": "Enter an absolute data path",
-    "previewId": "Node id",
-    "previewCompose": "Compose project",
-    "profileSeeAbout": "What each profile means is on the About tab.",
-    "dockerAbout": "Docker Engine is required to install and start nodes.",
-    "dockerAboutOk": "Docker Engine is installed.",
-    "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
-    "rewriteCompose": "Rewrite compose",
-    "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
-    "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-    "chainMeta": "{{disk}} min · {{clients}} clients",
-    "profileHint": {
-      "minimal": "Smallest sync — light disk, not for staking.",
-      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
-      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
-      "rpc": "Public RPC node — not a staking validator."
-    },
-    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
-    "memShort": "Not enough free RAM for this chain's memory cap",
-    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall."
+    "limitNone": "কোন সীমা নেই",
+    "rpcDefault": "ডিফল্ট",
+    "customPath": "একটি কাস্টম ডেটা পাথ ব্যবহার করুন",
+    "installConfirmTitle": "এই নোড ইনস্টল করবেন?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}। প্রায় {{disk}} ডিস্ক। ইমেজ টান একটি দীর্ঘ সময় নিতে পারে.",
+    "installC1": "বেশ কিছু গিগাবাইট ছবি ডাউনলোড করা যেতে পারে।",
+    "installC2": "আপনি প্যানেল টাস্ক বাতিল করতে পারেন; ইতিমধ্যে টানা ছবি স্বয়ংক্রিয়ভাবে মুছে ফেলা হয় না.",
+    "installC3": "মেইননেট অনেক ডিস্ক ব্যবহার করে। অফলাইন বা ভুল কনফিগার করা হলে একটি স্টেকিং ভ্যালিডেটর শেয়ার হারাতে পারে। নিশ্চিত করতে নোড আইডি টাইপ করুন।",
+    "dockerAbout": "নোড ইনস্টল এবং শুরু করতে ডকার ইঞ্জিন প্রয়োজন।",
+    "dockerAboutOk": "ডকার ইঞ্জিন ইনস্টল করা আছে।",
+    "dockerAboutMissing": "ডকার ইঞ্জিন ইনস্টল করা নেই। এটি ইনস্টল করতে ডকার খুলুন।",
+    "rewriteCompose": "রচনা পুনর্লিখন",
+    "rewriteComposeTitle": "বর্তমান অ্যাডাপ্টার থেকে compose.yml পুনরায় লিখবেন?",
+    "rewriteComposeDesc": "এই চেইনের জন্য পাঠানো ফ্ল্যাগগুলি ব্যবহার করে {{id}} এর জন্য তৈরি করা রচনাটিকে ওভাররাইট করে৷",
+    "chainMeta": "{{disk}} মিনিট · {{clients}} ক্লায়েন্ট"
   },
   "actions": {
     "detail": "বিস্তারিত",
@@ -242,26 +291,26 @@
     "restart": "পুনরায় চালু",
     "clear": "খালি করুন",
     "upgrade": "আপগ্রেড",
+    "setVersion": "সংস্করণ পরিবর্তন করুন",
     "clearConfirm": "ইনস্ট্যান্স আইডি বা CLEAR লিখুন",
     "prune": "ইমেজ পরিষ্কার",
     "switchNetwork": "নেটওয়ার্ক বদলান",
     "removeUnit": "compose / ইনস্ট্যান্স রেকর্ডও মুছুন",
     "restoreAfter": "খালি করার পর স্ন্যাপশট পুনরুদ্ধার",
-    "delete": "Delete",
-    "deleteTitle": "Delete {{id}}",
-    "deleteDesc": "This removes the node from the panel.",
-    "deleteC1": "Docker Compose is stopped and removed",
-    "deleteC2": "Chain data on disk is deleted",
-    "deleteC3": "The instance record is removed",
-    "pruneTitle": "Prune unused images",
-    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
-    "pruneC1": "Unused images labelled for this Compose project are deleted.",
-    "clearTitle": "Clear {{id}}",
-    "clearC1": "Chain data on disk is deleted.",
-    "clearC2": "The instance stays in the panel, stopped and empty.",
-    "switchTitle": "Switch network",
-    "switchC1": "The node is stopped and chain data is wiped before the new network is written.",
-    "setVersion": "Change version"
+    "delete": "মুছুন",
+    "deleteTitle": "মুছুন {{id}}",
+    "deleteDesc": "এটি প্যানেল থেকে নোড সরিয়ে দেয়।",
+    "deleteC1": "ডকার রচনা বন্ধ এবং সরানো হয়েছে",
+    "deleteC2": "ডিস্কের চেইন ডেটা মুছে ফেলা হয়েছে",
+    "deleteC3": "উদাহরণ রেকর্ড মুছে ফেলা হয়",
+    "pruneTitle": "অব্যবহৃত ছবি ছাঁটাই",
+    "pruneDesc": "এই নোডের জন্য অব্যবহৃত রচনা চিত্রগুলি ছাঁটাই করতে ইনস্ট্যান্স আইডি টাইপ করুন।",
+    "pruneC1": "এই রচনা প্রকল্পের জন্য লেবেলযুক্ত অব্যবহৃত চিত্রগুলি মুছে ফেলা হয়েছে৷",
+    "clearTitle": "পরিষ্কার {{id}}",
+    "clearC1": "ডিস্কের চেইন ডেটা মুছে ফেলা হয়েছে।",
+    "clearC2": "উদাহরণটি প্যানেলে থাকে, বন্ধ এবং খালি থাকে।",
+    "switchTitle": "নেটওয়ার্ক পরিবর্তন করুন",
+    "switchC1": "নোড বন্ধ করা হয় এবং নতুন নেটওয়ার্ক লেখার আগে চেইন ডেটা মুছে ফেলা হয়।"
   },
   "policy": {
     "label": "আপগ্রেড নীতি",
@@ -287,12 +336,342 @@
     "near": "অফিসিয়াল বিনামূল্যে NEAR tar স্ন্যাপশট বন্ধ হয়েছে। পুনরুদ্ধার ডেটা মুছে অফিসিয়াল genesis ও epoch sync ব্যবহার করে।",
     "none": "এই চেইনের জন্য কোনো স্ন্যাপশট উৎস সেট নেই।"
   },
+  "producer": {
+    "title": "প্রযোজক হট কী ব্লক করুন",
+    "hint": "এটি একটি আইপি ঠিকানা নয়। অফলাইন মেশিন থেকে KES কী, VRF কী এবং অপারেশনাল সার্টিফিকেট আপলোড করুন। এই হোস্ট বন্ধ কোল্ড কী রাখুন.",
+    "warn": "একটি পাবলিক P2P পোর্টের সাথে একই নোড ব্লক সাইন ইন করবে। অফিসিয়াল টপোলজি প্রযোজককে সর্বজনীন ইন্টারনেট থেকে দূরে রাখে। এই তিনটি ফাইল হট কী।",
+    "kes": "KES",
+    "vrf": "VRF",
+    "opcert": "opcert",
+    "missing": "সংযুক্ত নয়",
+    "present": "সংযুক্ত {{fp}}",
+    "presentShort": "হোস্টে",
+    "queuedShort": "প্রস্তুত",
+    "queued": "নির্বাচিত · {{name}}",
+    "fileHint": "সাধারণ নাম {{file}}",
+    "dropOrBrowse": "এখানে {{file}} ড্রপ করুন বা ব্রাউজ করুন",
+    "dropping": "সংযুক্ত করতে ড্রপ করুন {{label}}",
+    "browse": "ব্রাউজ করুন",
+    "clearFile": "সরান",
+    "choose": "ফাইল নির্বাচন করুন",
+    "apply": "ব্লক প্রযোজক হিসাবে আবেদন করুন এবং পুনরায় চালু করুন",
+    "detach": "বিচ্ছিন্ন করুন এবং রিলে হিসাবে চালান",
+    "applyTitle": "{{id}} এর সাথে হট কী সংযুক্ত করবেন?",
+    "applyDesc": "KES, VRF, এবং opcert ইনস্ট্যান্স কী ডিরেক্টরির অধীনে লেখা হয়। রচনা পুনরায় লেখা হয়. ধারকটি ব্লক প্রযোজক হিসাবে পুনরায় চালু হয়।",
+    "applyC1": "কোল্ড কী অফলাইনে থাকতে হবে। ঠান্ডা.স্কি আপলোড করবেন না।",
+    "applyC2": "এই ফাইলগুলি বৈধ হলে চলমান নোড ব্লক সাইন ইন করতে পারে।",
+    "applyC3": "মেইননেট: একটি অফলাইন বা ভুল কনফিগার করা প্রযোজক ব্লক মিস করে।",
+    "detachTitle": "{{id}} থেকে প্রযোজক কীগুলি আলাদা করবেন?",
+    "detachDesc": "হট কী এই হোস্ট থেকে মুছে ফেলা হয়. রচনা রিলে ফিরে যায়.",
+    "detachC1": "নোড আর ব্লক তৈরি করবে না।",
+    "mainnet": "মেইননেট: আমি বুঝি এই হোস্টে হট কী এবং সাইন ব্লক থাকবে।"
+  },
   "stake": {
     "title": "স্টেকিংয়ের প্রস্তুতি (চাবি আপনার কাছে)",
     "offlineKeys": "চাবি অফলাইনে তৈরি করুন। প্যানেল কখনো সংরক্ষণ করে না।",
     "deposit": "অফিসিয়াল launchpad-এ জমা / নিবন্ধন সম্পন্ন করুন।",
     "withdrawal": "উত্তোলন পরিচয়পত্র নিজে সেট করুন।",
     "monitor": "এই পাতায় ডিস্ক, পিয়ার ও আপগ্রেড ব্যাজ দেখুন।"
+  },
+  "playbook": {
+    "overviewTitle": "প্রতিটি চেইনে কীভাবে স্টেকিং কাজ করে",
+    "overviewDesc": "এই প্যানেল নোড চালায়। আপনার মানিব্যাগ এবং চাবি আপনার সাথে থাকবে। শুধুমাত্র অফিসিয়াল লিঙ্ক - এখানে একটি বীজ বাক্যাংশ শেয়ার করবেন না।",
+    "colChain": "চেইন",
+    "colModel": "আপনি কিভাবে নিবন্ধন",
+    "colMin": "সাধারণ ন্যূনতম",
+    "colWallet": "আপনার মানিব্যাগ",
+    "colPanel": "এই প্যানেল কি করে",
+    "yskDoes": "এই প্যানেল করে",
+    "youDo": "তুমি করো",
+    "steps": "ধাপ",
+    "never": "করবেন না",
+    "official": "অফিসিয়াল লিঙ্ক",
+    "seeAbout": "সম্পূর্ণ পদক্ষেপগুলি সম্পর্কে ট্যাবে রয়েছে৷",
+    "nodeIdReady": "NodeID (এই নোড থেকে)",
+    "nodeIdPending": "নোড সিঙ্ক করা এবং RPC উত্তর দেওয়ার পরে NodeID উপস্থিত হয়।",
+    "blsReady": "BLS পাবলিক কী",
+    "blsProof": "BLS দখলের প্রমাণ",
+    "blsPending": "নোড RPC উত্তর দেওয়ার পরে BLS শংসাপত্রগুলি উপস্থিত হয়।",
+    "copyAll": "সব কপি করুন",
+    "copyNamed": "কপি {{label}}",
+    "nearStakeKey": "স্টেক পাবলিক কী",
+    "nearStakeKeyPending": "প্রথম শুরুর পরে উপস্থিত হয় (init এর কাছাকাছি)। RPC প্রস্তুত নয় এর অর্থ এই নয় যে কীটি নেই৷",
+    "nearAccountId": "মূল ফাইল account_id",
+    "nearAccountIdPending": "আপনি নিজে {pool}{{suffix}} সেট না করা পর্যন্ত প্রায়ই খালি। এই প্যানেল কখনই validator_key.json লিখে না।",
+    "nearFactory": "স্টেকিং-পুল কারখানা",
+    "nearPublicAddr": "পাবলিক P2P (সহকর্মীরা)",
+    "nearPublicAddrPending": "config.json-এ WAN:{{port}} লেখার প্রথম শুরুর পরে উপস্থিত হয়।",
+    "nearCreateCommand": "create_staking_pool কমান্ড",
+    "nearPointing": "পুল চুক্তি এই সার্ভারের আইপি নেয় না। এটি এই নোডের স্টেক পাবলিক কী সংরক্ষণ করে। সহকর্মীরা উপরে সর্বজনীন P2P সারি ব্যবহার করে (হোস্ট পোর্ট {{port}})। আরপিসি লোকালহোস্টে থাকে।",
+    "nearAccountIdHint": "পুলটি উপস্থিত হওয়ার পরে, validator_key.json-এ account_id সেট করুন নিজেকে {pool}{{suffix}} এ। এই প্যানেল কখনই সেই ফাইলটি লেখে না।",
+    "cosmosPubkey": "ঐক্যমত পাবলিক কী",
+    "cosmosPubkeyPending": "gaiad init priv_validator_key.json লেখার পরে উপস্থিত হয়। RPC প্রস্তুত নয় এর অর্থ এই নয় যে কীটি নেই৷",
+    "cosmosChainId": "চেইন-আইডি",
+    "cosmosP2p": "সর্বজনীন P2P (বাহ্যিক_ঠিকানা)",
+    "cosmosP2pPending": "config.toml-এ tcp://WAN:{{port}} লেখার প্রথম শুরুর পরে উপস্থিত হয়।",
+    "ethBeacon": "বীকন API (স্থানীয় হোস্ট)",
+    "ethBeaconPending": "এই হোস্টে বীকন HTTP। এই ইউআরএল-এ আপনি নিজেই চালান এমন একটি যাচাইকারী ক্লায়েন্টকে নির্দেশ করুন — এই রচনাটির কোনো ভিসি নেই।",
+    "cosmosCreateCommand": "create-validator কমান্ড",
+    "solIdentity": "আইডেন্টিটি পাবকি",
+    "solIdentityPending": "RPC উত্তর পেয়ে আইডেন্টিটি পরে উপস্থিত হয়। আপনি নিজে একটি ভোট অ্যাকাউন্ট যোগ না করা পর্যন্ত এই প্রক্রিয়াটি --নো-ভোটিং।",
+    "adaP2pPort": "রিলে P2P পোর্ট",
+    "adaP2pPending": "এই হোস্টের পাবলিক IPv4 এবং এই পোর্টটিকে topology.json-এ রাখুন। এই প্যানেল WAN তদন্ত করে না।",
+    "notPosTitle": "প্রুফ অফ স্টেক নয়",
+    "notPosBody": "বিটকয়েন এখানে একটি পূর্ণ বা ছাঁটাই করা নোড। এই পৃষ্ঠায় কোন মানিব্যাগ নেই.",
+    "eth": {
+      "model": "এই রচনাটি শুধুমাত্র এক্সিকিউশন + বীকন চালায় — একটি বৈধতা ক্লায়েন্ট নয়। অফিসিয়াল লঞ্চপ্যাডে 32 ETH জমা করুন।",
+      "min": "32 ETH + গ্যাস",
+      "wallets": "মেটামাস্ক, লেজার, ট্রেজার — শুধুমাত্র অফিসিয়াল লঞ্চপ্যাডে",
+      "panel": "EL + বীকন চালায়। লোকালহোস্টে RPC এবং বীকন API। কম্পোজে কোনো যাচাইকারী ক্লায়েন্ট নেই।",
+      "honesty": "এই উদাহরণটি শুধুমাত্র মৃত্যুদন্ড + বীকন। কম্পোজ ফাইলে কোনো ভ্যালিডেটর ক্লায়েন্ট নেই। বীকন ডেটা ডিরেক্টরিতে একটি কীস্টোর অনুলিপি করলে তা প্রমাণিত হবে না। ডিপোজিট চুক্তি এই সার্ভারের আইপি নেয় না।",
+      "yskDoes": [
+        "সঞ্চালন এবং বীকন ক্লায়েন্ট ইনস্টল করুন এবং শুরু করুন।",
+        "ডিস্ক, পিয়ার এবং আপগ্রেড স্থিতি দেখান।",
+        "একটি যাচাইকারী ক্লায়েন্ট চালায় না এবং একটি সাইনিং কীস্টোর লোড করে না।"
+      ],
+      "youDo": [
+        "অফিসিয়াল লঞ্চপ্যাডে অথবা স্টেকিং-ডিপোজিট-ক্লাই-এর মাধ্যমে কী-স্টোর এবং প্রত্যাহারের ঠিকানা নিজেই তৈরি করুন।",
+        "এই নেটওয়ার্কের জন্য লঞ্চপ্যাডে 32 ETH জমা করুন।",
+        "এই দৃষ্টান্তের লোকালহোস্ট বীকন এপিআই-এর বিরুদ্ধে নিজেই একটি যাচাইকারী ক্লায়েন্ট চালান (এই রচনাটি নয়)।"
+      ],
+      "steps": [
+        "এক্সিকিউশন এবং বীকন সিঙ্ক না হওয়া পর্যন্ত অপেক্ষা করুন।",
+        "এই নেটওয়ার্কের জন্য অফিসিয়াল লঞ্চপ্যাড খুলুন (এই পৃষ্ঠায় হুডি বা মেইননেট)। সেপোলিয়া এখানে কোন লঞ্চপ্যাড বোতাম নেই।",
+        "অফলাইন, কীস্টোর জেনারেট করুন। আপনার নিজের ETH ওয়ালেটে প্রত্যাহারের ঠিকানা সেট করুন।",
+        "32 ETH জমা করুন (গ্যাসের জন্য অতিরিক্ত রাখুন)।",
+        "নিজেই একটি ভ্যালিডেটর ক্লায়েন্ট চালান। এই কম্পোজের কোন ভিসি নেই — বীকন ডেটাডিরে একটি কীস্টোর রাখলে তা প্রমাণিত হয় না।"
+      ],
+      "never": [
+        "এই প্যানেল সহ কাউকে আপনার বীজ বাক্যাংশ বা প্রত্যাহারের কী দেবেন না।",
+        "হোস্ট করা ক্লাউডে কখনই সাইনিং কীস্টোর আপলোড করবেন না।",
+        "আপনি বীকন ডেটাডিরে একটি কীস্টোর অনুলিপি করার পরে এই পৃষ্ঠাটি সত্যায়িত হবে বলে আশা করবেন না।"
+      ]
+    },
+    "avax": {
+      "model": "কোর বা লেজার থেকে পি-চেইনে চলমান নোডআইডি এবং বিএলএস প্রমাণ নিবন্ধন করুন।",
+      "min": "2,000 AVAX + ফি (ফুজিতে 1 AVAX); কমপক্ষে 14 দিন",
+      "wallets": "কোর, লেজার",
+      "panel": "avalanchego চালায় এবং RPC উত্তরের পরে NodeID এবং BLS দেখাতে পারে",
+      "yskDoes": [
+        "avalanchego চালান এবং স্থানীয় হোস্টে RPC রাখুন।",
+        "নোড RPC উত্তর দিলে NodeID এবং BLS শংসাপত্র দেখান।"
+      ],
+      "youDo": [
+        "কোর বা লেজারে AVAX ধরে রাখুন।",
+        "এই নোডের NodeID এবং BLS প্রমাণ ব্যবহার করে Core থেকে ভ্যালিডেটর যোগ করুন।"
+      ],
+      "steps": [
+        "এই নোড সিঙ্ক না হওয়া পর্যন্ত অপেক্ষা করুন।",
+        "উদাহরণ পৃষ্ঠায় দেখানো NodeID, BLS পাবলিক কী, এবং BLS দখলের প্রমাণ কপি করুন।",
+        "কোর ওয়েবে (স্ট্যাকিং → ভ্যালিডেট), বা কোরের মাধ্যমে লেজার দিয়ে, পি-চেইনে নিবন্ধন করুন।",
+        "মেইননেটের জন্য কমপক্ষে 2,000 AVAX প্রয়োজন, একটি 14 দিনের সর্বনিম্ন সময়কাল এবং একটি ফি রিজার্ভ।"
+      ],
+      "never": [
+        "এই প্যানেলে AVAX পাঠাবেন না।",
+        "আপনার কোর বা লেজার পুনরুদ্ধার বাক্যাংশ শেয়ার করবেন না।"
+      ]
+    },
+    "ada": {
+      "model": "অফলাইন কোল্ড / KES / VRF কীগুলির সাথে একটি স্টেক পুল পরিচালনা করুন — ব্রাউজার ওয়ালেট ট্যাপ নয়।",
+      "min": "অঙ্গীকার আপনার পছন্দ (অফিসিয়াল ডক্স দেখুন)",
+      "wallets": "অফিসিয়াল স্টেক-পুল টুলিং (কোল্ড কী অফলাইনে থাকে)",
+      "panel": "প্রথমে একটি রিলে হিসাবে কার্ডানো-নোড চালায়; হট কী এই পৃষ্ঠায় সংযুক্ত করা যেতে পারে.",
+      "honesty": "এই উদাহরণ একটি রিলে হিসাবে শুরু হয়. অন-চেইন পুল নিবন্ধন আপনি অফলাইনে রাখা কোল্ড কী ব্যবহার করে। সহকর্মী এবং টপোলজি এই হোস্টের সর্বজনীন IPv4 এবং এখানে দেখানো P2P পোর্ট ব্যবহার করে — প্যানেলটি WAN পরীক্ষা করে না।",
+      "yskDoes": [
+        "কার্ডানো-নোড চালান এবং মিথ্রিল স্ন্যাপশট পুনরুদ্ধার যেখানে দেওয়া হয়।",
+        "KES, VRF, এবং opcert প্রদান করার সময় সংযুক্ত করুন। ঠান্ডা চাবি প্রত্যাখ্যান করা হয়."
+      ],
+      "youDo": [
+        "অফলাইনে পুল কী জেনারেট করুন।",
+        "অফিসিয়াল কার্ডানো ডকুমেন্টেশন ব্যবহার করে পুল নিবন্ধন করুন।",
+        "এই হোস্টের পাবলিক IPv4 এবং রিলে P2P পোর্টটিকে topology.json-এ রাখুন।"
+      ],
+      "steps": [
+        "অফিসিয়াল অপারেট-এ-স্টেক-পুল গাইড পড়ুন।",
+        "একটি অফলাইন মেশিনে ঠান্ডা, KES, এবং VRF কী তৈরি করুন।",
+        "সেই কীগুলি থেকে পুল অন-চেইন নিবন্ধন করুন।",
+        "এই উদাহরণ পৃষ্ঠায়, KES, VRF এবং অপারেশনাল সার্টিফিকেট সংযুক্ত করুন। কোল্ড কী আপলোড করবেন না।",
+        "রিলেকে পাবলিক-আইপি:পি2পি-পোর্ট হিসেবে বিজ্ঞাপন দিন (এই কার্ডে দেখানো পোর্ট)। এই প্যানেলটি WAN ঠিকানাটি সন্ধান করে না৷"
+      ],
+      "never": [
+        "এটিকে মেটামাস্ক ওয়ান-ক্লিক স্টেক হিসাবে বিবেচনা করবেন না।",
+        "ভ্যালিডেটর হোস্টে কোল্ড কী সংরক্ষণ করবেন না।"
+      ]
+    },
+    "near": {
+      "model": "অফিসিয়াল কারখানায় একটি স্টেকিং-পুল চুক্তি তৈরি করুন। চুক্তি এই নোডের সর্বজনীন কী সংরক্ষণ করে — সার্ভার আইপি নয়।",
+      "min": "অফিসিয়াল ভ্যালিডেটর ডক্স দেখুন (পুল তৈরি করতে 30 কাছাকাছি, প্লাস স্টেক)",
+      "wallets": "অফিসিয়াল কাছাকাছি ওয়ালেট/লকআপ",
+      "panel": "কাছাকাছি রান; init এর পরে পাবলিক কী, ফ্যাক্টরি এবং create_staking_pool কমান্ড দেখায়",
+      "yskDoes": [
+        "লোকালহোস্টে RPC এবং 24567-এ P2P-এর সাথে neard চালান।",
+        "init এর পরে, স্টেক পাবলিক কী, পাবলিক P2P ঠিকানা, ফ্যাক্টরি এবং একটি অনুলিপিযোগ্য create_staking_pool কমান্ড দেখান।",
+        "validator_key.json লিখবেন না বা লেনদেন সম্প্রচার করবেন না।"
+      ],
+      "youDo": [
+        "এই উদাহরণ পৃষ্ঠা থেকে সর্বজনীন কী এবং কমান্ড অনুলিপি করুন।",
+        "আপনার নিজের কাছের অ্যাকাউন্ট থেকে, অফিসিয়াল কারখানায় কল করুন।",
+        "পুলটি উপস্থিত হওয়ার পরে, validator_key.json-এ account_id সেট করুন {pool}.{factory} তে।",
+        "আপনার মানিব্যাগ থেকে সেই পুলে অংশ নিন।"
+      ],
+      "steps": [
+        "নোড শুরু করুন এবং কাছাকাছি init-এর জন্য অপেক্ষা করুন যাতে সর্বজনীন কী উপস্থিত হয় (RPC প্রস্তুত নয় অনুপস্থিত কীগুলির মতো নয়)।",
+        "স্টেক পাবলিক কী এবং create_staking_pool কমান্ড কপি করুন।",
+        "আপনার ওয়ালেট থেকে, স্টোরেজের জন্য 30 NEAR সহ কারখানায় (testnet pool.f863973.m0 / mainnet poolv1.near) কল করুন। অনুলিপি করা কমান্ড --accountId ব্যবহার করে; যদি আপনার কাছাকাছি CLI আশা করে --account_id, সেই CLI-এর --help অনুসরণ করুন।",
+        "আপনার নতুন পুল অ্যাকাউন্টে validator_key.json এ account_id সেট করুন। এই প্যানেল সেই ফাইলটি লেখে না।",
+        "RPC উত্তর না হওয়া পর্যন্ত অপেক্ষা করুন এবং নোডটি বড় পরিমাণে স্টক করার আগে সিঙ্ক করা হয়। সহকর্মীরা পাবলিক P2P :24567 ব্যবহার করে — চুক্তিটি আইপি নেয় না।"
+      ],
+      "never": [
+        "এই প্যানেলে একটি বীজ বাক্যাংশ পেস্ট করবেন না।",
+        "এই সার্ভারের আইপি চুক্তিতে রাখবেন না।",
+        "প্যানেলটি create_staking_pool লেনদেন পাঠাবে বলে আশা করবেন না।"
+      ]
+    },
+    "cosmos": {
+      "model": "এই নোডের কনসেনসাস পাবলিক কী ব্যবহার করে আপনার অপারেটর ওয়ালেট থেকে ক্রিয়েট-ভ্যালিডেটর - সার্ভার আইপি নয়।",
+      "min": "অফিসিয়াল কসমস হাব ডক্স দেখুন (ইউএটমে স্ব-প্রতিনিধি)",
+      "wallets": "Keplr বা অন্য কসমস ওয়ালেট আপনি নিয়ন্ত্রণ করেন",
+      "panel": "রান গাইয়াদ; কনসেনসাস পাবকি এবং init-এর পরে একটি অনুলিপিযোগ্য ক্রিয়ে-ভ্যালিডেটর কমান্ড দেখায়",
+      "honesty": "ক্রিয়েট-ভ্যালিডেটর লেনদেন এই নোডের কনসেনসাস পাবলিক কী সংরক্ষণ করে। সহকর্মীরা 26656-এ পাবলিক P2P ব্যবহার করে। RPC লোকালহোস্টে থাকে। এই প্যানেল লেনদেন সম্প্রচার করে না বা priv_key পড়ে না।",
+      "yskDoes": [
+        "লোকালহোস্টে RPC এবং 26656-এ P2P দিয়ে gaiad চালান।",
+        "init এর পরে, সর্বসম্মত পাবলিক কী, চেইন-আইডি, পাবলিক P2P, এবং একটি অনুলিপিযোগ্য ক্রিয়ে-ভ্যালিডেটর কমান্ড দেখান।",
+        "কখনই priv_validator_key.json লিখবেন না বা লেনদেন সম্প্রচার করবেন না।"
+      ],
+      "youDo": [
+        "এই উদাহরণ পৃষ্ঠা থেকে সর্বসম্মত পাবলিক কী এবং কমান্ড অনুলিপি করুন।",
+        "আপনার অপারেটর ওয়ালেট থেকে (আপনি নিয়ন্ত্রণ করেন Keplr বা gaiad কী), Create-validator জমা দিন।",
+        "এই হোস্টের ঐকমত্য কী-এর সাথে সেই ওয়ালেট মেমোনিক মিশ্রিত করবেন না।"
+      ],
+      "steps": [
+        "নোড শুরু করুন এবং gaiad init-এর জন্য অপেক্ষা করুন যাতে সর্বসম্মত পাবলিক কী উপস্থিত হয় (RPC প্রস্তুত নয় অনুপস্থিত কীগুলির মতো নয়)।",
+        "কনসেনসাস পাবলিক কী এবং ক্রিয়েট-ভ্যালিডেটর কমান্ড কপি করুন (চেইন-আইডি হল মেইননেটে কসমোশব-4, টেস্টনেটে প্রদানকারী)।",
+        "আপনার অপারেটর ওয়ালেট থেকে, ক্রিয়েট-ভ্যালিডেটর সম্প্রচার করুন। পরিমাণ এবং moniker আপনার.",
+        "RPC উত্তর না হওয়া পর্যন্ত অপেক্ষা করুন এবং নোডটি বড় পরিমাণে বন্ধন করার আগে সিঙ্ক করা হয়। সহকর্মীরা tcp://WAN:26656 ব্যবহার করে — লেনদেনটি আইপি নেয় না।"
+      ],
+      "never": [
+        "অপারেটর ওয়ালেট মেমোনিককে কনসেনসাস কী দিয়ে মিশ্রিত করবেন না।",
+        "এখানে ওয়ালেট স্মৃতিবিদ্যা প্রবেশ করবেন না।",
+        "এই সার্ভারের আইপি ক্রিয়েট-ভ্যালিডেটরে রাখবেন না।"
+      ]
+    },
+    "sol": {
+      "model": "এই রচনাটি --নো-ভোটিং সহ Agave চালায়। ভোট অ্যাকাউন্ট এবং উইথড্রয়ার অফিসিয়াল সোলানা টুল দিয়ে তৈরি করা হয় — এই প্যানেল নয়।",
+      "min": "অফিসিয়াল অপারেশন ডক্স দেখুন (হার্ডওয়্যার এবং ডিস্ক ভারী)",
+      "wallets": "অফিসিয়াল সোলানা সিএলআই/ওয়ালেট আপনি নিয়ন্ত্রণ করেন",
+      "panel": "একটি ক্যাচ-আপ নোড হিসাবে Agave চালায় (---না-ভোটিং)। RPC উত্তরের পরে পরিচয় পাবকি দেখাতে পারে।",
+      "honesty": "এই প্রক্রিয়াটি হল --নো-ভোটিং। যতক্ষণ না আপনি অফিসিয়াল Agave CLI-এর সাথে একটি ভোট অ্যাকাউন্ট তৈরি করেন এবং প্রক্রিয়াটি কীভাবে শুরু হয় তা পরিবর্তন না করা পর্যন্ত এটি ভোট বা অংশীদারিত্ব অর্জন করবে না। এই প্যানেল অপসারণ করে না --না-ভোটিং।",
+      "yskDoes": [
+        "Agave ক্লায়েন্ট চালান এবং ডিস্ক সম্পর্কে সতর্ক করুন।",
+        "RPC getIdentity উত্তর দিলে পরিচয় পাবকি দেখান।",
+        "একটি ভোট অ্যাকাউন্ট তৈরি করে না এবং ভোট দেওয়া শুরু করে না।"
+      ],
+      "youDo": [
+        "আপনার নিয়ন্ত্রণে থাকা একটি মেশিনে অফিসিয়াল সোলানা টুলের সাহায্যে ভোট এবং অনুমোদিত-প্রত্যাহারকারী কী তৈরি করুন।",
+        "এই পরিচয় পাবকি ব্যবহার করে অফিসিয়াল CLI-এর সাথে ভোট অ্যাকাউন্ট তৈরি করুন।",
+        "শুধুমাত্র তারপর একটি ভোটিং যাচাইকারী চালান — এই রচনাটি থাকে --না-ভোটিং।"
+      ],
+      "steps": [
+        "নিশ্চিত করুন এই হোস্টের যথেষ্ট ডিস্ক এবং IOPS আছে (মেইননেট সাধারণত 2 টিআইবি+)।",
+        "RPC উত্তর না দেওয়া পর্যন্ত অপেক্ষা করুন, তারপর এখানে দেখানো আইডেন্টিটি পাবকি কপি করুন।",
+        "অফিসিয়াল ভোট-অ্যাকাউন্ট এবং স্টেক গাইড অনুসরণ করুন (নীচের লিঙ্ক)।",
+        "এই রচনাটি রাখে --না-ভোটিং। আপনি একটি ভোট অ্যাকাউন্ট তৈরি করার পরে এই পৃষ্ঠাটি ভোট দেওয়া শুরু করবে বলে আশা করবেন না।"
+      ],
+      "never": [
+        "এই প্যানেলে একটি ব্রাউজার ওয়ালেট বোতাম আশা করবেন না।",
+        "এই প্যানেলে পরিচয় বা ভোটের কী-পেয়ার পেস্ট করবেন না।"
+      ]
+    },
+    "dot": {
+      "model": "এই রচনাটি একটি পূর্ণ নোড (কোনও -- ভ্যালিডেটর নয়)। সেশন কী এবং সেটকিগুলি Polkadot.js-এর অফিসিয়াল পদক্ষেপ - এই প্যানেল নয়৷",
+      "min": "অফিসিয়াল উইকি দেখুন",
+      "wallets": "Polkadot.js",
+      "panel": "একটি পূর্ণ নোড হিসাবে পোলকডট চালায়। স্থানীয় হোস্টে RPC। না -- ভ্যালিডেটর পতাকা।",
+      "honesty": "এই প্রক্রিয়াটি --validator দিয়ে শুরু হয় না। প্যানেল author_rotateKeys কল করে না (যা কীস্টোর পরিবর্তন করবে)। একজন যাচাইকারী হওয়ার জন্য অফিসিয়াল নোড ফ্ল্যাগ এবং স্থানীয় হোস্ট RPC এর বিরুদ্ধে একটি রোটেটকি কল প্রয়োজন।",
+      "yskDoes": [
+        "পোলকডট চালান এবং লোকালহোস্টে RPC প্রকাশ করুন।",
+        "--validator পাস করে না এবং সেশন কী ঘোরায় না।"
+      ],
+      "youDo": [
+        "অফিসিয়াল সেট-আপ-এ-ভ্যালিডেটর গাইড অনুসরণ করুন।",
+        "আপনি নিজে --validator যোগ করলে, স্থানীয় হোস্ট RPC-তে rotateKeys কল করুন এবং আপনার স্ট্যাশ থেকে Polkadot.js-এ ফলাফলটি আবদ্ধ করুন।"
+      ],
+      "steps": [
+        "এই সম্পূর্ণ নোড সিঙ্ক.",
+        "অফিসিয়াল বৈধতা নির্দেশিকা পড়ুন. এই রচনা একটি বৈধতা প্রক্রিয়া নয়.",
+        "এখানে stash nemonic পেস্ট করবেন না. আপনি যদি পরে --validator দিয়ে চালান, তাহলে http://127.0.0.1 (এই উদাহরণে RPC পোর্ট) কী নিজেই ঘোরান।",
+        "Polkadot.js-এ, আপনার স্ট্যাশ/কন্ট্রোলারে সেই সেশন কীগুলি সেট করুন, তারপর অফিসিয়াল বন্ধনের পদক্ষেপগুলি অনুসরণ করুন।"
+      ],
+      "never": [
+        "এই প্যানেলে stash nemonic পেস্ট করবেন না।",
+        "এই পৃষ্ঠাটি সেশন কী তৈরি করবে বা --validator শুরু করবে বলে আশা করবেন না।"
+      ]
+    },
+    "sui": {
+      "model": "এই রচনাটি একটি সুই ফুলনোড (fullnode.yaml), একটি যাচাইকারী নোড নয়।",
+      "min": "অফিসিয়াল সুই ডক্স দেখুন",
+      "wallets": "অফিসিয়াল সুই অপারেটর ওয়ালেট",
+      "panel": "একটি ফুলনোড হিসাবে sui-নোড চালায়। স্থানীয় হোস্টে RPC।",
+      "honesty": "এই প্রক্রিয়াটি সুই যাচাইকারী হিসাবে স্বাক্ষর করতে পারে না। ভ্যালিডেটর সেটআপ একটি ভিন্ন কনফিগারেশন এবং কী ব্যবহার করে। অফিসিয়াল ভ্যালিডেটর ডক্স লিঙ্ক করা হয়; এই প্যানেলটি নোডটিকে বৈধকারী মোডে স্যুইচ করে না।",
+      "yskDoes": [
+        "শিপড সুই-নোড ইমেজটিকে ফুলনোড হিসেবে চালান।"
+      ],
+      "youDo": [
+        "একটি ফুলনোড হিসাবে এই উদাহরণ ব্যবহার করুন.",
+        "যাচাইকারী হওয়ার জন্য, একটি ভ্যালিডেটর কনফিগারেশনে অফিসিয়াল Sui ভ্যালিডেটর ডক্স অনুসরণ করুন - এই রচনাটি নয়।"
+      ],
+      "steps": [
+        "এই ফুলনোড সিঙ্ক করুন।",
+        "এটিকে একটি ফুলনোড হিসাবে বিবেচনা করুন: এটি চেকপয়েন্টগুলি পুনরায় কার্যকর করে কিন্তু ঐক্যমত স্বাক্ষর করে না।",
+        "আপনি যদি একটি পৃথক যাচাইকরণ প্রক্রিয়া তৈরি করেন তবেই অফিসিয়াল ভ্যালিডেটর অপারেটর গাইড খুলুন।"
+      ],
+      "never": [
+        "এই প্যানেলে SUI পাঠাবেন না।",
+        "এই ফুলনোড প্রক্রিয়াটি যাচাইকারী হিসাবে নিবন্ধন করার আশা করবেন না।"
+      ]
+    },
+    "aptos": {
+      "model": "এই রচনাটি একটি Aptos পাবলিক ফুলনোড (রোল full_node), একটি যাচাইকারী নয়।",
+      "min": "অফিসিয়াল Aptos ডক্স দেখুন",
+      "wallets": "অফিসিয়াল Aptos অপারেটর ওয়ালেট",
+      "panel": "অ্যাপটোস-নোডকে পাবলিক ফুলনোড হিসেবে চালায়। স্থানীয় হোস্টে RPC।",
+      "honesty": "সর্বজনীন ফুলনোডগুলি ঐক্যমতে অংশগ্রহণ করে না। একটি যাচাইকারীর একটি ভিন্ন ভূমিকা, কী এবং সাধারণত একটি যাচাইকারী ফুলনোড প্রয়োজন। এই প্যানেলটি নোডটিকে বৈধকারী মোডে স্যুইচ করে না।",
+      "yskDoes": [
+        "একটি পাবলিক ফুলনোড হিসাবে পাঠানো Aptos ইমেজ চালান."
+      ],
+      "youDo": [
+        "একটি পাবলিক ফুলনোড হিসাবে এই উদাহরণ ব্যবহার করুন.",
+        "একটি যাচাইকারী চালানোর জন্য, অফিসিয়াল Aptos ভ্যালিডেটর-নোড ডক্স অনুসরণ করুন - এই রচনাটি নয়।"
+      ],
+      "steps": [
+        "এই সর্বজনীন ফুলনোড সিঙ্ক করুন।",
+        "এটিকে একটি পিএফএন হিসাবে বিবেচনা করুন: এটি লেজার ডেটা পরিবেশন করে, এটি ভোট দেয় না।",
+        "আপনি যদি একটি পৃথক যাচাইকারী + VFN জোড়া তৈরি করছেন শুধুমাত্র তখনই অফিসিয়াল ভ্যালিডেটর ডক্স খুলুন।"
+      ],
+      "never": [
+        "এই প্যানেলে অপারেটর কী লিখবেন না।",
+        "এই ফুলনোড প্রক্রিয়াটি যাচাইকারী হিসাবে নিবন্ধন করার আশা করবেন না।"
+      ]
+    },
+    "btc": {
+      "model": "প্রুফ অফ স্টেক নয়। এটি একটি বিটকয়েন পূর্ণ বা ছাঁটাই করা নোড।",
+      "min": "—",
+      "wallets": "প্রযোজ্য নয়",
+      "panel": "বিটকয়েন্ড চালায়",
+      "yskDoes": [
+        "একটি বিটকয়েন পূর্ণ বা ছাঁটাই নোড চালান।"
+      ],
+      "youDo": [
+        "আলাদাভাবে যেকোনো বিটকয়েন ওয়ালেট ব্যবহার করুন। মাইনিং এবং লাইটনিং সুযোগের বাইরে।"
+      ],
+      "steps": [
+        "এই উদাহরণটিকে শুধুমাত্র একটি বিটকয়েন নোড হিসাবে বিবেচনা করুন।",
+        "কোনো স্টেকিং ডিপোজিট নেই এবং কোনো ভ্যালিডেটর কীস্টোর নেই।"
+      ],
+      "never": [
+        "এই পৃষ্ঠায় একটি staking ওয়ালেট সন্ধান করবেন না."
+      ]
+    }
   },
   "alerts": {
     "diskTitle": "ভ্যালিডেটর ডিস্ক সংকটজনক",
@@ -313,358 +692,39 @@
     "dockerMissing": "ভ্যালিডেটর ইনস্ট্যান্স আছে কিন্তু docker কমান্ড পাওয়া যায়নি"
   },
   "detail": {
-    "status": "Status",
-    "sync": "Sync",
-    "peers": "Peers",
-    "version": "Version",
-    "access": "Access",
-    "upgrade": "Updates",
-    "upgradeHint": "How this node tracks client versions.",
-    "network": "Network",
-    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
-    "maintain": "Maintenance",
-    "danger": "Clear data",
-    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "status": "স্ট্যাটাস",
+    "sync": "সিঙ্ক",
+    "peers": "সমবয়সীদের",
+    "traffic": "ট্রাফিক",
+    "version": "সংস্করণ",
+    "access": "অ্যাক্সেস",
+    "upgrade": "আপডেট",
+    "upgradeHint": "কিভাবে এই নোড ক্লায়েন্ট সংস্করণ ট্র্যাক.",
+    "setVersion": "সংস্করণ পরিবর্তন করুন",
+    "setVersionHint": "এই নোডে একজন ক্লায়েন্টের জন্য একটি অফিসিয়াল ডকার ট্যাগ বেছে নিন। রচনা পুনরায় লেখা হয়, তারপর টানা এবং পুনরায় চালু করা হয়।",
+    "setVersionConfirmTitle": "{{id}} {{tag}} এ পরিবর্তন করবেন?",
+    "setVersionConfirmDesc": "কম্পোজ পুনর্লিখন করে, {{ref}} টানে এবং নোড পুনরায় চালু করে।",
+    "setVersionC1": "চলমান ধারকটি নির্বাচিত ট্যাগ দিয়ে প্রতিস্থাপিত হয়।",
+    "setVersionC2": "নিশ্চিত করতে ইনস্ট্যান্স আইডি টাইপ করুন।",
+    "setVersionMainnet": "মেইননেট: একটি খারাপ সংস্করণ নোড অফলাইনে নিতে পারে। বুঝলাম।",
+    "releaseNotes": "রিলিজ নোট",
+    "network": "নেটওয়ার্ক",
+    "networkHint": "স্যুইচিং নেটওয়ার্ক নোড বন্ধ করে এবং চেইন ডেটা সাফ করে। প্রথমে সাফ ডেটার অধীনে নিশ্চিত করুন।",
+    "maintain": "রক্ষণাবেক্ষণ",
+    "danger": "ডেটা সাফ করুন",
+    "dangerHint": "ইনস্ট্যান্স আইডি টাইপ করুন বা সাফ করুন। এটি ডিস্কের চেইন ডেটা মুছে দেয়।",
     "compose": "Compose",
-    "logs": "Logs",
-    "traffic": "Traffic",
-    "setVersion": "Change version",
-    "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
-    "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
-    "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
-    "setVersionC1": "The running container is replaced with the selected tag.",
-    "setVersionC2": "Type the instance id to confirm.",
-    "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
-    "releaseNotes": "Release notes"
+    "logs": "লগ"
   },
   "state": {
-    "unknown": "Unknown",
-    "stopped": "Stopped",
-    "running": "Running",
-    "syncing": "Syncing",
-    "error": "Error",
-    "starting": "Starting",
-    "created": "Created (never started)",
-    "missing": "No container",
-    "rpc_wait": "Running — RPC not ready"
-  },
-  "profileHelp": {
-    "title": "Profiles",
-    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
-    "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
-    "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
-    "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
-    "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet.",
-    "colName": "Profile",
-    "colUse": "Use for",
-    "colDisk": "Disk",
-    "colStake": "Staking validator",
-    "useMinimal": "Testnet or a first install. Not a full history.",
-    "usePruned": "Follow the chain tip long-term. Keeps recent data only (Pruned).",
-    "useValidatorReady": "Sized so you can later attest or propose. Generate keys offline yourself.",
-    "useRpc": "Let this host or other services query the chain. Listens on 127.0.0.1 by default.",
-    "diskMinimal": "Smallest",
-    "diskPruned": "Medium (more than Minimal)",
-    "diskValidatorReady": "Largest of the four",
-    "diskRpc": "Depends on the chain",
-    "stakeNo": "Not suitable",
-    "stakeYes": "Yes — offline or misconfigured can lose stake",
-    "stakeRpc": "Not a validator"
-  },
-  "software": {
-    "engine": "Docker Engine",
-    "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
-    "client": "Client",
-    "image": "Image",
-    "present": "Local",
-    "local": "Pulled",
-    "missing": "Not pulled",
-    "size": "Size",
-    "usedBy": "Used by",
-    "unused": "No instance",
-    "pull": "Pull",
-    "pulling": "Pull {{ref}}",
-    "empty": "No pinned client images",
-    "emptyDesc": "The catalog is empty. This should not happen.",
-    "daemonDown": "Docker Engine is not running",
-    "pulled": "On this host",
-    "source": "Source",
-    "official": "Official latest",
-    "officialNewer": "Official newer",
-    "stale": "Behind pin",
-    "staleItem": "{{id}} ({{tag}})",
-    "pin": "Panel pin",
-    "openRelease": "Release notes",
-    "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
-  },
-  "playbook": {
-    "overviewTitle": "How staking works on each chain",
-    "overviewDesc": "This panel runs the node. Your wallet and keys stay with you. Official links only — never share a seed phrase here.",
-    "colChain": "Chain",
-    "colModel": "How you register",
-    "colMin": "Typical minimum",
-    "colWallet": "Your wallet",
-    "colPanel": "What this panel does",
-    "yskDoes": "This panel does",
-    "youDo": "You do",
-    "steps": "Steps",
-    "never": "Do not",
-    "official": "Official links",
-    "seeAbout": "Full steps are on the About tab.",
-    "nodeIdReady": "NodeID (from this node)",
-    "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
-    "blsReady": "BLS public key",
-    "blsProof": "BLS proof of possession",
-    "blsPending": "BLS credentials appear after the node answers RPC.",
-    "notPosTitle": "Not proof-of-stake",
-    "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
-    "eth": {
-      "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
-      "min": "32 ETH + gas",
-      "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
-      "panel": "Runs the execution and consensus clients",
-      "yskDoes": [
-        "Install and start the execution and consensus clients.",
-        "Show disk, peers, and upgrade status."
-      ],
-      "youDo": [
-        "Create the keystore and withdrawal address yourself.",
-        "Deposit 32 ETH on the official launchpad.",
-        "Copy the keystore into this node’s data directory."
-      ],
-      "steps": [
-        "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
-        "On the official launchpad, deposit 32 ETH (keep extra for gas).",
-        "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
-        "Watch sync, disk, and upgrade badges on this page."
-      ],
-      "never": [
-        "Never give your seed phrase or withdrawal key to anyone, including this panel.",
-        "Never upload a signing keystore to a hosted cloud."
-      ]
-    },
-    "avax": {
-      "model": "Register the running NodeID and BLS proof on the P-Chain from Core or Ledger.",
-      "min": "2,000 AVAX + fee (1 AVAX on Fuji); at least 14 days",
-      "wallets": "Core, Ledger",
-      "panel": "Runs avalanchego and can show NodeID and BLS after RPC answers",
-      "yskDoes": [
-        "Run avalanchego and keep RPC on localhost.",
-        "Show NodeID and BLS credentials once the node answers RPC."
-      ],
-      "youDo": [
-        "Hold AVAX in Core or Ledger.",
-        "Add the validator from Core using this node’s NodeID and BLS proof."
-      ],
-      "steps": [
-        "Wait until this node is synced.",
-        "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
-        "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
-        "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
-      ],
-      "never": [
-        "Do not send AVAX to this panel.",
-        "Do not share your Core or Ledger recovery phrase."
-      ]
-    },
-    "ada": {
-      "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
-      "min": "Pledge is your choice (see official docs)",
-      "wallets": "Official stake-pool tooling (cold keys stay offline)",
-      "panel": "Runs cardano-node",
-      "yskDoes": [
-        "Run cardano-node and Mithril snapshot restore where offered."
-      ],
-      "youDo": [
-        "Generate pool keys offline.",
-        "Register the pool using official Cardano documentation."
-      ],
-      "steps": [
-        "Read the official operate-a-stake-pool guide.",
-        "Generate cold, KES, and VRF keys on an offline machine.",
-        "Register the pool on-chain from those keys.",
-        "Point the running cardano-node at your operational certificates."
-      ],
-      "never": [
-        "Do not treat this as a MetaMask one-click stake.",
-        "Do not store cold keys on the validator host."
-      ]
-    },
-    "near": {
-      "model": "Stake from your NEAR account into a staking pool contract.",
-      "min": "See official validator docs",
-      "wallets": "Official NEAR wallet / lockup",
-      "panel": "Runs neard",
-      "yskDoes": [
-        "Run neard and show disk / sync."
-      ],
-      "youDo": [
-        "Stake from your NEAR account to your pool using official docs."
-      ],
-      "steps": [
-        "Bring the node to sync.",
-        "Follow official NEAR validator documentation.",
-        "Stake from your own wallet or lockup into the pool."
-      ],
-      "never": [
-        "Do not paste a seed phrase into this panel."
-      ]
-    },
-    "cosmos": {
-      "model": "create-validator from your operator wallet. Consensus key stays on the node.",
-      "min": "See official Cosmos Hub docs",
-      "wallets": "Keplr or another Cosmos wallet you control",
-      "panel": "Runs gaiad",
-      "yskDoes": [
-        "Run gaiad."
-      ],
-      "youDo": [
-        "Keep the operator wallet yourself.",
-        "Broadcast create-validator from that wallet."
-      ],
-      "steps": [
-        "Sync gaiad.",
-        "Keep the consensus key on this host only.",
-        "From Keplr (or equivalent), submit create-validator.",
-        "Monitor the node so it does not miss too many blocks."
-      ],
-      "never": [
-        "Do not mix the operator wallet mnemonic with the consensus key.",
-        "Do not enter wallet mnemonics here."
-      ]
-    },
-    "sol": {
-      "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
-      "min": "See official operations docs (hardware and disk are heavy)",
-      "wallets": "Official Solana CLI / wallet you control",
-      "panel": "Runs Agave; mainnet needs multiple tebibytes",
-      "yskDoes": [
-        "Run the Agave client and warn about disk."
-      ],
-      "youDo": [
-        "Create vote and withdrawer keys with official Solana tools."
-      ],
-      "steps": [
-        "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
-        "Follow official Solana operations documentation.",
-        "Create the vote account and authorized withdrawer yourself.",
-        "Point the running validator at those keys on disk."
-      ],
-      "never": [
-        "Do not expect a browser wallet button in this panel."
-      ]
-    },
-    "dot": {
-      "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
-      "min": "See the official wiki",
-      "wallets": "Polkadot.js",
-      "panel": "Runs the Polkadot client",
-      "yskDoes": [
-        "Run polkadot and expose RPC on localhost."
-      ],
-      "youDo": [
-        "Rotate session keys on the node and set them from Polkadot.js."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Generate session keys on this host.",
-        "In Polkadot.js, set those keys on your stash / controller.",
-        "Follow the official validate guide for bonding."
-      ],
-      "never": [
-        "Do not paste the stash mnemonic into this panel."
-      ]
-    },
-    "sui": {
-      "model": "Follow official Sui validator operator docs with your operator wallet.",
-      "min": "See official Sui docs",
-      "wallets": "Official Sui operator wallet",
-      "panel": "Runs sui-node",
-      "yskDoes": [
-        "Run the shipped sui-node image."
-      ],
-      "youDo": [
-        "Complete registration using official Sui validator docs."
-      ],
-      "steps": [
-        "Sync sui-node.",
-        "Open the official validator operator guide.",
-        "Use your own operator wallet — not this panel — to register."
-      ],
-      "never": [
-        "Do not send SUI to this panel."
-      ]
-    },
-    "aptos": {
-      "model": "Follow official Aptos staking / validator docs with your operator wallet.",
-      "min": "See official Aptos docs",
-      "wallets": "Official Aptos operator wallet",
-      "panel": "Runs the Aptos validator image",
-      "yskDoes": [
-        "Run the shipped Aptos image."
-      ],
-      "youDo": [
-        "Stake and operate from official Aptos documentation."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Read official Aptos staking documentation.",
-        "Use your own operator wallet to register."
-      ],
-      "never": [
-        "Do not enter operator keys in this panel."
-      ]
-    },
-    "btc": {
-      "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
-      "min": "—",
-      "wallets": "Not applicable",
-      "panel": "Runs bitcoind",
-      "yskDoes": [
-        "Run a Bitcoin full or pruned node."
-      ],
-      "youDo": [
-        "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
-      ],
-      "steps": [
-        "Treat this instance as a Bitcoin node only.",
-        "There is no staking deposit and no validator keystore."
-      ],
-      "never": [
-        "Do not look for a staking wallet on this page."
-      ]
-    },
-    "copyAll": "Copy all",
-    "copyNamed": "Copy {{label}}"
-  },
-  "producer": {
-    "title": "Block producer hot keys",
-    "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
-    "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
-    "kes": "KES",
-    "vrf": "VRF",
-    "opcert": "opcert",
-    "missing": "Not attached",
-    "present": "Attached {{fp}}",
-    "choose": "Choose file",
-    "apply": "Apply and restart as block producer",
-    "detach": "Detach and run as relay",
-    "applyTitle": "Attach hot keys to {{id}}?",
-    "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
-    "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
-    "applyC2": "The running node can sign blocks if these files are valid.",
-    "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
-    "detachTitle": "Detach producer keys from {{id}}?",
-    "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
-    "detachC1": "The node will no longer produce blocks.",
-    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
-    "presentShort": "On host",
-    "queuedShort": "Ready",
-    "queued": "Selected · {{name}}",
-    "fileHint": "Typical name {{file}}",
-    "dropOrBrowse": "Drop {{file}} here or browse",
-    "dropping": "Drop to attach {{label}}",
-    "browse": "Browse",
-    "clearFile": "Remove"
+    "unknown": "অজানা",
+    "stopped": "থেমে গেল",
+    "created": "তৈরি করা হয়েছে (কখনও শুরু হয়নি)",
+    "missing": "ধারক নেই",
+    "starting": "শুরু হচ্ছে",
+    "rpc_wait": "চলমান — RPC প্রস্তুত নয়৷",
+    "running": "চলমান",
+    "syncing": "সিঙ্ক হচ্ছে",
+    "error": "ত্রুটি"
   }
 }

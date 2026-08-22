@@ -13,7 +13,9 @@
   "hourAgo": "{{n}}h atrás",
   "highRiskN": "{{count}} alto risco",
   "panelUpdate": "Atualização do painel disponível",
+  "footerNewVersion": "Nova versão {{version}}",
   "riskOk": "Risco gerenciável",
+  "riskUnevaluated": "Não avaliado — execute Scan + OSV",
   "pendingScan": "Aguardando verificação",
   "packages": "Pacotes",
   "highRisk": "Alto risco",
@@ -24,6 +26,7 @@
   "reload": "Recarregar",
   "osvTitle": "Consulte o OSV para obter os 12 principais pacotes sugeridos (precisa de rede)",
   "scanOsv": "Digitalizar + OSV",
+  "cveNotChecked": "Não verificado",
   "scanPkgs": "Digitalizar pacotes",
   "tabInventory": "Inventário de pacotes",
   "tabSelf": "Painel próprio",
@@ -72,6 +75,8 @@
   "policyTitle": "Atualizar política",
   "policyBody": "Pacotes de alto risco e CVE exigem aprovação antes de serem aplicados",
   "applyPkg": "Aplicar atualização de pacote",
+  "rebootNeeded": "reinício",
+  "kernelRebootHint": "Os pacotes do kernel precisam ser reinicializados após a aplicação",
   "applyPkgConfirm": "Atualizar {{name}}?",
   "applyPkgDesc": "Executa apt upgrade para este pacote no host. Precisa de root + YSK_EXECUTE.",
   "lastScan": "Última verificação",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "Atual",
   "selfLatestShort": "Mais recente",
   "applyPanelUpdate": "Aplicar atualização do painel",
+  "applySelfConfirmTitle": "Aplicar atualização do painel?",
+  "applySelfConfirmDesc": "Instale {{from}} → {{to}} e reinicie o serviço do painel. Não há ensaio.",
+  "applyPanelAlreadyLatest": "Já é a versão mais recente do painel",
   "recheck": "Verifique novamente",
   "aboutScope": "Escopo",
   "aboutScopeV": "painel ysk-server + serviços de catálogo + tempos de execução + pacotes apt restantes",
@@ -98,6 +106,51 @@
   "scanPolicyV": "Digitalizar ≠ atualizado; aplicar alterações no sistema",
   "highRiskPolicy": "Alto risco",
   "highRiskPolicyV": "Precisa de aprovação: segunda confirmação antes de enviar",
+  "needApprovalHint": "Abra Disponível e filtre os pacotes que precisam de aprovação",
+  "applyNeedConfirm": "Abre uma caixa de diálogo de confirmação antes de aplicar",
+  "probeFailed": "Falha na investigação",
+  "notViaApt": "Não gerenciado pelo apt — nenhum candidato",
+  "noCandidate": "Nenhuma versão candidata",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "Página GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Sonda de proteção",
+      "hint": "Sinais de defesa periódicos"
+    },
+    "updates_scan": {
+      "name": "Verificação de atualizações",
+      "hint": "Atualizar inventário de pacotes"
+    },
+    "daily_backup": {
+      "name": "Backup diário",
+      "hint": "Backup agendado de todos"
+    },
+    "db_temp_expire": {
+      "name": "Expirar usuários temporários do banco de dados",
+      "hint": "Eliminar usuários de banco de dados temporário expirados"
+    },
+    "defense_auto_ban": {
+      "name": "Banimento automático de defesa",
+      "hint": "Aplicar tick de banimento automático"
+    },
+    "defense_geoip_update": {
+      "name": "Atualização GeoIP",
+      "hint": "Baixe bancos de dados GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "Vácuo de toras",
+      "hint": "retenção de diário"
+    },
+    "email_dnsbl": {
+      "name": "E-mail DNSBL",
+      "hint": "Verificação DNSBL de correio"
+    },
+    "validators_upgrade_scan": {
+      "name": "Verificação de atualização de validadores",
+      "hint": "Verifique a imagem do validador/atualizações binárias"
+    }
+  },
   "permPolicy": "Permissões",
   "permPolicyV": "Sem EXECUTE/root → bloqueado (sem sucesso falso)",
   "osvPolicyV": "Precisa de rede; enriquece apenas as 12 principais sugestões",
@@ -122,6 +175,12 @@
   "updateFailed": "Falha na atualização",
   "updateIncomplete": "Atualização incompleta",
   "appliedUpdate": "Atualização aplicada",
+  "panelRestarting": "O painel está a reiniciar para carregar a nova versão…",
+  "panelRestarted": "Painel de volta · {{version}}",
+  "panelRestartWait": "Atualização aplicada. Se esta página não atualizar, recarregue após alguns segundos.",
+  "reloadUi": "Recarregar IU",
+  "reloadUiTitle": "Recarregar a IU do painel?",
+  "reloadUiDesc": "O serviço do painel é {{version}}. Esta guia ainda possui o frontend anterior até você recarregar. Os campos não salvos nesta página serão perdidos.",
   "aptCandidate": "Candidato apto",
   "advice": {
     "update": "Atualização recomendada",
@@ -182,64 +241,5 @@
   "needsReboot": "Reinicialização necessária",
   "kernelRebootWarn": "A instalação de um novo kernel geralmente precisa ser reinicializada antes de ser usado.",
   "neverRun": "ainda não executou",
-  "scanOsvN": "Digitalizar + OSV (primeiro {{n}})",
-  "rebootNeeded": "reinício",
-  "kernelRebootHint": "Os pacotes do kernel precisam ser reinicializados após a aplicação",
-  "needApprovalHint": "Abra Disponível e filtre os pacotes que precisam de aprovação",
-  "applyNeedConfirm": "Abre uma caixa de diálogo de confirmação antes de aplicar",
-  "probeFailed": "Falha na investigação",
-  "notViaApt": "Não gerenciado pelo apt — nenhum candidato",
-  "noCandidate": "Nenhuma versão candidata",
-  "jobOpenGeo": "Página GeoIP",
-  "job": {
-    "protection_probe": {
-      "name": "Sonda de proteção",
-      "hint": "Sinais de defesa periódicos"
-    },
-    "updates_scan": {
-      "name": "Verificação de atualizações",
-      "hint": "Atualizar inventário de pacotes"
-    },
-    "daily_backup": {
-      "name": "Backup diário",
-      "hint": "Backup agendado de todos"
-    },
-    "db_temp_expire": {
-      "name": "Expirar usuários temporários do banco de dados",
-      "hint": "Eliminar usuários de banco de dados temporário expirados"
-    },
-    "defense_auto_ban": {
-      "name": "Banimento automático de defesa",
-      "hint": "Aplicar tick de banimento automático"
-    },
-    "defense_geoip_update": {
-      "name": "Atualização GeoIP",
-      "hint": "Baixe bancos de dados GeoIP"
-    },
-    "log_auto_vacuum": {
-      "name": "Vácuo de toras",
-      "hint": "retenção de diário"
-    },
-    "email_dnsbl": {
-      "name": "E-mail DNSBL",
-      "hint": "Verificação DNSBL de correio"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "Já é a versão mais recente do painel",
-  "panelRestarting": "O painel está a reiniciar para carregar a nova versão…",
-  "panelRestarted": "Painel de volta · {{version}}",
-  "panelRestartWait": "Atualização aplicada. Se esta página não atualizar, recarregue após alguns segundos.",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "Digitalizar + OSV (primeiro {{n}})"
 }

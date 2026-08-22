@@ -23,8 +23,8 @@
     "project.suspend": "منصوبے کو معطل کریں۔",
     "software.install": "سافٹ ویئر انسٹال کریں۔",
     "software.update": "سافٹ ویئر کو اپ ڈیٹ کریں۔",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "بیک اپ کی بحالی",
+    "backup.run": "بیک اپ رن",
+    "backup.delete": "بیک اپ حذف ہو گیا۔"
   }
 }

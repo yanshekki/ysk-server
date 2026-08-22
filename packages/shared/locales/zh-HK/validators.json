@@ -130,7 +130,7 @@
     "disk": "磁碟"
   },
   "cli": {
-    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+    "usage": "用法： ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "執行層客戶端",
@@ -394,31 +394,57 @@
     "blsPending": "節點回應 RPC 後，才會顯示 BLS 憑證。",
     "copyAll": "全部複製",
     "copyNamed": "複製「{{label}}」",
+    "nearStakeKey": "質押公鑰",
+    "nearStakeKeyPending": "首次啟動完成 neard init 後出現。RPC 未就緒不代表尚未產生金鑰。",
+    "nearAccountId": "金鑰檔 account_id",
+    "nearAccountIdPending": "建立池後須自行改成 {pool}{{suffix}}。本面板不寫入 validator_key.json。",
+    "nearFactory": "質押池 factory",
+    "nearPublicAddr": "Public P2P（同儕）",
+    "nearPublicAddrPending": "首次啟動把 WAN:{{port}} 寫入 config.json 後出現。",
+    "nearCreateCommand": "create_staking_pool 命令",
+    "nearPointing": "質押池合約不以本伺服器 IP 指向節點，而是存放此節點的 stake public key。同儕使用上方 Public P2P（主機埠 {{port}}）。RPC 僅本機。",
+    "nearAccountIdHint": "池建立後，請自行把 validator_key.json 的 account_id 設為 {pool}{{suffix}}。本面板不寫入該檔。",
+    "cosmosPubkey": "共識公鑰",
+    "cosmosPubkeyPending": "gaiad init 寫入 priv_validator_key.json 後出現。RPC 未就緒不代表尚未產生金鑰。",
+    "cosmosChainId": "chain-id",
+    "cosmosP2p": "Public P2P（external_address）",
+    "cosmosP2pPending": "首次啟動把 tcp://WAN:{{port}} 寫入 config.toml 後出現。",
+    "ethBeacon": "Beacon API（本機）",
+    "ethBeaconPending": "此主機的 beacon HTTP。請自行把 validator client 對準此 URL — 此 compose 沒有 VC。",
+    "cosmosCreateCommand": "create-validator 命令",
+    "solIdentity": "Identity 公鑰",
+    "solIdentityPending": "RPC 回應 getIdentity 後出現。本進程為 --no-voting，除非你自行建立 vote account。",
+    "adaP2pPort": "Relay P2P 埠",
+    "adaP2pPending": "請把本主機公開 IPv4 與此埠寫入 topology.json。本面板不探測 WAN。",
     "notPosTitle": "不是權益證明",
     "notPosBody": "此處的 Bitcoin 是完整或 Pruned 節點。本頁沒有質押錢包。",
     "eth": {
-      "model": "在官方 launchpad 存入 32 ETH。簽署用 keystore 不是提取匙。",
+      "model": "本 compose 只跑執行層 + beacon，沒有 validator client。請在官方 launchpad 存入 32 ETH。",
       "min": "32 ETH + 手續費",
       "wallets": "MetaMask、Ledger、Trezor — 只在官方 launchpad 使用",
-      "panel": "運行執行層與共識層客戶端",
+      "panel": "運行 EL + beacon。RPC 與 beacon API 僅本機。compose 沒有 validator client。",
+      "honesty": "此實例只是執行層 + beacon。compose 沒有 validator client。把 keystore 放進 beacon 資料目錄不會開始 attest。存款合約不以本伺服器 IP 指向節點。",
       "yskDoes": [
-        "安裝並啟動執行層與共識層客戶端。",
-        "顯示磁碟、對等節點與升級狀態。"
+        "安裝並啟動執行層與 beacon 客戶端。",
+        "顯示磁碟、對等節點與升級狀態。",
+        "不運行 validator client，亦不載入簽署 keystore。"
       ],
       "youDo": [
-        "自行產生 keystore，提取地址填入你的 ETH 錢包。",
-        "在官方 launchpad 存入 32 ETH。",
-        "自行把 keystore 放入此節點的資料目錄。"
+        "用官方 launchpad 或 staking-deposit-cli 自行產生 keystore，提取地址填入你的 ETH 錢包。",
+        "在本網絡的官方 launchpad 存入 32 ETH。",
+        "自行運行 validator client（不是此 compose），對準此實例本機 beacon API。"
       ],
       "steps": [
-        "在離線環境用官方 launchpad 或 staking-deposit-cli 產生驗證者 keystore。提取地址填入你自己的 ETH 錢包。",
-        "在官方 launchpad 將 32 ETH 存入存款合約（另預留手續費）。",
-        "自行將 keystore 檔放入本節點資料目錄。面板不會代你上傳或保管。",
-        "在本頁留意同步、磁碟與升級徽章。"
+        "等執行層與 beacon 完成同步。",
+        "開啟本網絡的官方 launchpad（本頁提供 Hoodi 或 Mainnet）。Sepolia 在此沒有 launchpad 按鈕。",
+        "離線產生 keystore。提取地址填入你自己的 ETH 錢包。",
+        "存入 32 ETH（另預留手續費）。",
+        "自行運行 validator client。此 compose 沒有 VC — 把 keystore 放入 beacon 資料目錄不會開始 attest。"
       ],
       "never": [
         "不要把助記詞或提取私鑰交給任何人，包括本面板。",
-        "不要把簽署 keystore 上傳到任何雲端託管。"
+        "不要把簽署 keystore 上傳到任何雲端託管。",
+        "不要以為把 keystore 複製進 beacon 目錄後本頁就會 attest。"
       ]
     },
     "avax": {
@@ -449,19 +475,23 @@
       "model": "以離線 cold／KES／VRF 金鑰經營 stake pool，不是瀏覽器錢包一鍵操作。",
       "min": "質押金額由你決定（見官方文件）",
       "wallets": "官方 stake pool 工具（cold 金鑰保持離線）",
-      "panel": "運行 cardano-node",
+      "panel": "先以 relay 運行 cardano-node；可在本頁掛上熱鑰。",
+      "honesty": "此實例預設為 relay。鏈上登記 pool 用你離線保管的 cold 金鑰。同儕與拓撲使用本主機公開 IPv4 與本卡顯示的 P2P 埠 — 面板不探測 WAN。",
       "yskDoes": [
-        "運行 cardano-node，並在支援時提供 Mithril 快照還原。"
+        "運行 cardano-node，並在支援時提供 Mithril 快照還原。",
+        "你提供時掛上 KES、VRF 與 opcert。拒絕 cold 金鑰。"
       ],
       "youDo": [
         "離線產生 pool 金鑰。",
-        "按官方 Cardano 文件登記 stake pool。"
+        "按官方 Cardano 文件登記 stake pool。",
+        "把本主機公開 IPv4 與 relay P2P 埠寫入 topology.json。"
       ],
       "steps": [
         "閱讀官方 operate-a-stake-pool 指南。",
         "在離線機器產生 cold、KES、VRF 金鑰。",
         "用該等金鑰在鏈上登記 stake pool。",
-        "在此實例頁掛上 KES、VRF 與 operational certificate。不要上傳 cold 金鑰。"
+        "在此實例頁掛上 KES、VRF 與 operational certificate。不要上傳 cold 金鑰。",
+        "以 公開IP:P2P埠 公告 relay（埠見本卡）。本面板不查 WAN 地址。"
       ],
       "never": [
         "不要當成 MetaMask 一鍵質押。",
@@ -469,128 +499,158 @@
       ]
     },
     "near": {
-      "model": "用你的 NEAR 帳戶，將幣 stake 到 staking pool 合約。",
-      "min": "見官方驗證者文件",
+      "model": "在官方 factory 建立 staking-pool 合約。合約存放此節點的 public key，不是伺服器 IP。",
+      "min": "見官方驗證者文件（建立池須 30 NEAR，另加質押）",
       "wallets": "官方 NEAR 錢包／lockup",
-      "panel": "運行 neard",
+      "panel": "運行 neard；init 後顯示 public key、factory 與 create_staking_pool 命令",
       "yskDoes": [
-        "運行 neard，並顯示磁碟／同步。"
+        "運行 neard，RPC 僅本機，P2P 使用 24567。",
+        "init 後顯示 stake public key、Public P2P、factory，以及可複製的 create_staking_pool 命令。",
+        "永不寫入 validator_key.json，亦不代發交易。"
       ],
       "youDo": [
-        "按官方文件，從你的 NEAR 帳戶 stake 到你的 pool。"
+        "在此實例頁複製 public key 與命令。",
+        "用你自己的 NEAR 帳戶呼叫官方 factory。",
+        "池建立後，自行把 validator_key.json 的 account_id 設為 {pool}.{factory}。",
+        "用你的錢包將幣質押到該池。"
       ],
       "steps": [
-        "先讓節點完成同步。",
-        "依官方 NEAR 驗證者文件操作。",
-        "用你自己的錢包或 lockup 將幣 stake 到 pool。"
+        "啟動節點，等 neard init 後出現 public key（RPC 未就緒不代表尚未產生金鑰）。",
+        "複製 stake public key 與 create_staking_pool 命令。",
+        "用你的錢包呼叫 factory（測試網 pool.f863973.m0／主網 poolv1.near），並附帶 30 NEAR 作為儲存。複製的命令使用 --accountId；若你的 near CLI 要 --account_id，以該 CLI 的 --help 為準。",
+        "把 validator_key.json 的 account_id 設為新建的池帳戶。本面板不寫入該檔。",
+        "大量質押前應等 RPC 可答且同步完成。同儕使用 Public P2P :24567 — 合約不接收 IP。"
       ],
       "never": [
-        "不要在本面板貼上助記詞。"
+        "不要在本面板貼上助記詞。",
+        "不要把本伺服器 IP 寫進合約。",
+        "不要期望面板代發 create_staking_pool 交易。"
       ]
     },
     "cosmos": {
-      "model": "用操作者錢包送出 create-validator。共識匙留在節點。",
-      "min": "見官方 Cosmos Hub 文件",
+      "model": "用操作者錢包送出 create-validator。交易存放此節點的共識公鑰，不是伺服器 IP。",
+      "min": "見官方 Cosmos Hub 文件（自行質押以 uatom 計）",
       "wallets": "Keplr 或其他由你控制的 Cosmos 錢包",
-      "panel": "運行 gaiad",
+      "panel": "運行 gaiad；init 後顯示共識公鑰與可複製的 create-validator 命令",
+      "honesty": "create-validator 存放此節點的共識公鑰。同儕使用 26656 的 Public P2P。RPC 僅本機。本面板不代發交易，亦不讀取 priv_key。",
       "yskDoes": [
-        "運行 gaiad。"
+        "運行 gaiad，RPC 僅本機，P2P 使用 26656。",
+        "init 後顯示共識公鑰、chain-id、Public P2P，以及可複製的 create-validator 命令。",
+        "永不寫入 priv_validator_key.json，亦不代發交易。"
       ],
       "youDo": [
-        "自行保管操作者錢包。",
-        "由該錢包廣播 create-validator。"
+        "在此實例頁複製共識公鑰與命令。",
+        "用你控制的操作者錢包（Keplr 或 gaiad keys）送出 create-validator。",
+        "不要把該錢包助記詞與本機共識匙混在一起。"
       ],
       "steps": [
-        "同步 gaiad。",
-        "共識匙只留在此主機。",
-        "用 Keplr（或同等錢包）送出 create-validator。",
-        "監察節點，避免長期缺席出塊。"
+        "啟動節點，等 gaiad init 後出現共識公鑰（RPC 未就緒不代表尚未產生金鑰）。",
+        "複製共識公鑰與 create-validator 命令（主網 chain-id 為 cosmoshub-4，測試網為 provider）。",
+        "用操作者錢包廣播 create-validator。金額與 moniker 由你決定。",
+        "大量綁定前應等 RPC 可答且同步完成。同儕使用 tcp://WAN:26656 — 交易不接收 IP。"
       ],
       "never": [
         "不要把操作者錢包助記詞與共識匙混在一起。",
-        "不要在此輸入錢包助記詞。"
+        "不要在此輸入錢包助記詞。",
+        "不要把本伺服器 IP 寫進 create-validator。"
       ]
     },
     "sol": {
-      "model": "vote account、identity 與 authorized withdrawer，用官方 Solana 工具建立。",
+      "model": "本 compose 以 --no-voting 運行 Agave。vote account 與 withdrawer 用官方 Solana 工具建立，不是本面板。",
       "min": "見官方維運文件（硬件與磁碟需求很高）",
       "wallets": "你控制的官方 Solana CLI／錢包",
-      "panel": "運行 Agave；主網通常需要數 TiB 磁碟",
+      "panel": "以 --no-voting 運行 Agave 同步節點。RPC 回應後可顯示 identity pubkey。",
+      "honesty": "本進程為 --no-voting。在你用官方 Agave CLI 建立 vote account 並改啟動方式之前，不會投票、也不會賺取質押。本面板不移除 --no-voting。",
       "yskDoes": [
-        "運行 Agave 客戶端，並警告磁碟需求。"
+        "運行 Agave 客戶端，並警告磁碟需求。",
+        "RPC 回應 getIdentity 後顯示 identity pubkey。",
+        "不建立 vote account，亦不開始投票。"
       ],
       "youDo": [
-        "用官方 Solana 工具建立 vote 與 withdrawer 金鑰。"
+        "在你控制的機器上，用官方 Solana 工具建立 vote 與 authorized-withdrawer 金鑰。",
+        "用官方 CLI 建立 vote account，並使用此處的 identity pubkey。",
+        "此 compose 維持 --no-voting。"
       ],
       "steps": [
         "確認本機磁碟與 IOPS 足夠（主網通常 2 TiB 或以上）。",
-        "依官方 Solana 維運文件操作。",
-        "自行建立 vote account 與 authorized withdrawer。",
-        "把運行中的驗證者指向磁碟上的金鑰。"
+        "等 RPC 可答後，複製本頁的 identity pubkey。",
+        "依官方 vote-account 與 stake 指南操作（見下方連結）。",
+        "此 compose 維持 --no-voting。不要以為建立 vote account 後本頁就會開始投票。"
       ],
       "never": [
-        "不要期望本面板提供瀏覽器錢包按鈕。"
+        "不要期望本面板提供瀏覽器錢包按鈕。",
+        "不要把 identity 或 vote 金鑰對貼進本面板。"
       ]
     },
     "dot": {
-      "model": "節點產生 session keys；用 Polkadot.js 綁到你的 stash。",
+      "model": "本 compose 是全節點（沒有 --validator）。session keys 與 setKeys 是官方 Polkadot.js 步驟，不是本面板。",
       "min": "見官方 wiki",
       "wallets": "Polkadot.js",
-      "panel": "運行 Polkadot 客戶端",
+      "panel": "以全節點運行 polkadot。RPC 僅本機。沒有 --validator。",
+      "honesty": "本進程不是以 --validator 啟動。面板不呼叫 author_rotateKeys（會改 keystore）。要成為驗證者，須依官方文件加上驗證者旗標，並自行對本機 RPC 做 rotateKeys。",
       "yskDoes": [
-        "運行 polkadot，RPC 只聽本機。"
+        "運行 polkadot，RPC 只聽本機。",
+        "不加上 --validator，亦不輪替 session keys。"
       ],
       "youDo": [
-        "在節點輪替 session keys，再用 Polkadot.js 設定。"
+        "閱讀官方 set-up-a-validator 指南。",
+        "若你自行加上 --validator，對本機 RPC 呼叫 rotateKeys，再在 Polkadot.js 用 stash 綁定結果。"
       ],
       "steps": [
-        "同步節點。",
-        "在此主機產生 session keys。",
-        "在 Polkadot.js 把該等金鑰設到 stash／controller。",
-        "按官方 validate 指南完成綁定。"
+        "同步此全節點。",
+        "閱讀官方 validate 指南。此 compose 不是驗證者進程。",
+        "不要在此貼上 stash 助記詞。若你稍後以 --validator 運行，請自行對本機 RPC 埠做 rotateKeys。",
+        "在 Polkadot.js 把 session keys 設到 stash／controller，再按官方步驟綁定。"
       ],
       "never": [
-        "不要在本面板貼上 stash 助記詞。"
+        "不要在本面板貼上 stash 助記詞。",
+        "不要期望本頁產生 session keys，或已經以 --validator 啟動。"
       ]
     },
     "sui": {
-      "model": "依官方 Sui 驗證者文件，用你的操作者錢包登記。",
+      "model": "本 compose 是 Sui fullnode（fullnode.yaml），不是驗證者節點。",
       "min": "見官方 Sui 文件",
       "wallets": "官方 Sui 操作者錢包",
-      "panel": "運行 sui-node",
+      "panel": "以 fullnode 運行 sui-node。RPC 僅本機。",
+      "honesty": "此進程不能以 Sui 驗證者身份簽署。驗證者要用另一份設定與金鑰。官方驗證者文件有連結；本面板不會把節點切成驗證者模式。",
       "yskDoes": [
-        "運行產品附帶的 sui-node 映像。"
+        "以 fullnode 運行產品附帶的 sui-node 映像。"
       ],
       "youDo": [
-        "按官方 Sui 驗證者文件完成登記。"
+        "把此實例當 fullnode 使用。",
+        "若要成為驗證者，請依官方 Sui 驗證者文件另建驗證者設定 — 不是此 compose。"
       ],
       "steps": [
-        "同步 sui-node。",
-        "開啟官方驗證者操作指南。",
-        "用你自己的操作者錢包登記，不要用本面板。"
+        "同步此 fullnode。",
+        "把它當 fullnode：會重放 checkpoint，但不簽署共識。",
+        "只有在你另行建立驗證者進程時，才需要官方驗證者操作指南。"
       ],
       "never": [
-        "不要把 SUI 轉入本面板。"
+        "不要把 SUI 轉入本面板。",
+        "不要期望此 fullnode 進程登記成驗證者。"
       ]
     },
     "aptos": {
-      "model": "依官方 Aptos 質押／驗證者文件，用你的操作者錢包。",
+      "model": "本 compose 是 Aptos 公共全節點（role full_node），不是驗證者。",
       "min": "見官方 Aptos 文件",
       "wallets": "官方 Aptos 操作者錢包",
-      "panel": "運行 Aptos validator 映像",
+      "panel": "以公共全節點運行 aptos-node。RPC 僅本機。",
+      "honesty": "公共全節點不參與共識。驗證者需要不同 role、金鑰，通常還要 validator fullnode。本面板不會把節點切成驗證者模式。",
       "yskDoes": [
-        "運行產品附帶的 Aptos 映像。"
+        "以公共全節點運行產品附帶的 Aptos 映像。"
       ],
       "youDo": [
-        "按官方 Aptos 文件完成質押與操作。"
+        "把此實例當公共全節點使用。",
+        "若要跑驗證者，請依官方 Aptos validator-node 文件 — 不是此 compose。"
       ],
       "steps": [
-        "同步節點。",
-        "閱讀官方 Aptos 質押文件。",
-        "用你自己的操作者錢包登記。"
+        "同步此公共全節點。",
+        "把它當 PFN：提供帳本資料，不投票。",
+        "只有在你另行建立驗證者 + VFN 時，才需要官方驗證者文件。"
       ],
       "never": [
-        "不要在本面板輸入操作者金鑰。"
+        "不要在本面板輸入操作者金鑰。",
+        "不要期望此全節點進程登記成驗證者。"
       ]
     },
     "btc": {

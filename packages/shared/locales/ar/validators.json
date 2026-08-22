@@ -5,38 +5,64 @@
   "tab": {
     "nodes": "العُقد",
     "disk": "القرص",
-    "about": "حول",
-    "stack": "Software"
+    "stack": "برمجة",
+    "about": "حول"
   },
   "empty": {
     "title": "لا توجد عُقد مدقق بعد",
     "desc": "أنشئ عقدة شبكة اختبار بعدة نقرات."
   },
   "refresh": "تحديث",
+  "software": {
+    "engine": "محرك دوكر",
+    "engineDesc": "تعمل عقد التحقق من الصحة كمشروعات إنشاء. قم بتثبيت Docker هنا إذا كان مفقودًا. يبقى تقليم الصورة على صفحة Docker.",
+    "client": "عميل",
+    "image": "صورة",
+    "present": "محلي",
+    "local": "انسحبت",
+    "missing": "لم يتم سحبها",
+    "size": "مقاس",
+    "usedBy": "يستخدم من قبل",
+    "unused": "لا مثيل",
+    "pull": "Pull",
+    "pulled": "على هذا المضيف",
+    "pulling": "سحب {{ref}}",
+    "empty": "لا توجد صور العميل المثبتة",
+    "emptyDesc": "الكتالوج فارغ. لا ينبغي أن يحدث هذا.",
+    "daemonDown": "محرك Docker لا يعمل",
+    "source": "مصدر",
+    "official": "الأحدث الرسمية",
+    "officialNewer": "أحدث الرسمية",
+    "stale": "خلف الدبوس",
+    "staleItem": "{{id}} ({{tag}})",
+    "pin": "دبوس اللوحة",
+    "openRelease": "ملاحظات الإصدار",
+    "chooseOnInstance": "قم بتغيير الإصدار الموجود على صفحة المثيل. لا يؤدي سحب الصورة إلى إعادة وضع علامة على العقدة قيد التشغيل."
+  },
   "disk": {
     "title": "قرص المدققين",
     "root": "دليل البيانات",
     "free": "حر",
     "used": "مستخدم",
+    "fsUsed": "نظام الملفات المستخدم",
+    "leftoverTitle": "البيانات المتبقية ({{count}})",
+    "leftoverEmpty": "لا توجد أدلة مثيل متبقية",
+    "leftoverDesc": "الدلائل الموجودة ضمن جذر أدوات التحقق من الصحة والتي ليست نسخة مخزن. قم بالإزالة فقط بعد التأكد من عدم استخدامها.",
+    "leftoverRemove": "يزيل",
+    "leftoverRemoveTitle": "هل تريد حذف بيانات المدقق المتبقية؟",
+    "leftoverRemoveDesc": "حذف {{path}} نهائيًا من القرص. هذه ليست عقدة مدرجة.",
+    "browseRoot": "فتح في متصفح الملفات",
     "none": "لا توجد بيانات مثيل بعد",
     "warn": "استخدام القرص مرتفع (٧٠٪+)",
     "danger": "استخدام القرص حرج (٨٥٪+)",
     "autoClear": "مسح أكبر مثيل متوقف تلقائيًا عند حرج القرص (معطّل افتراضيًا)",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
-    "autoClearConfirmTitle": "Enable auto-clear?",
-    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
-    "fsUsed": "Filesystem used",
-    "leftoverTitle": "Leftover data ({{count}})",
-    "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
-    "leftoverRemove": "Remove",
-    "leftoverRemoveTitle": "Delete leftover validator data?",
-    "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
-    "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
-    "autoClearCandidate": "Current candidate: {{id}}",
-    "autoClearNone": "No stopped instance is a candidate right now.",
-    "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories",
-    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
+    "autoClearRisk": "مدمر: يتم حذف أكبر مثيل متوقف دون مطالبة أخرى. الافتراضي معطل. تحقق من التدقيق/السجلات بعد إطلاقه.",
+    "autoClearConfirmTitle": "هل تريد تفعيل المسح التلقائي؟",
+    "autoClearC1": "عندما يكون القرص حرجًا، يتم حذف أكبر مثيل متوقف دون المطالبة مرة أخرى.",
+    "autoClearThreshold": "المشغل: استخدام نظام الملفات بنسبة 85% أو أعلى.",
+    "autoClearCandidate": "المرشح الحالي: {{id}}",
+    "autoClearCandidates": "المرشحين المتوقفين (الأكبر مع البيانات أولاً): {{list}}",
+    "autoClearNone": "لا يوجد مثيل متوقف مرشح في الوقت الحالي."
   },
   "chain": {
     "eth": "Ethereum",
@@ -63,7 +89,7 @@
   "networkKind": {
     "testnet": "شبكة الاختبار",
     "mainnet": "الشبكة الرئيسية",
-    "mixed": "Mainnet + testnet"
+    "mixed": "الشبكة الرئيسية + شبكة الاختبار"
   },
   "profile": {
     "minimal": "أدنى",
@@ -71,41 +97,72 @@
     "validator-ready": "جاهز للمدقق",
     "rpc": "RPC"
   },
+  "profileHelp": {
+    "title": "Profiles",
+    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
+    "colName": "حساب تعريفي",
+    "colUse": "استخدم ل",
+    "colDisk": "القرص",
+    "colStake": "مدقق التوقيع المساحي",
+    "useMinimal": "Testnet أو التثبيت الأول. ليس تاريخا كاملا.",
+    "usePruned": "اتبع طرف السلسلة على المدى الطويل. يحتفظ بالبيانات الحديثة فقط (مقلدة).",
+    "useValidatorReady": "الحجم بحيث يمكنك التصديق عليه أو اقتراحه لاحقًا. قم بإنشاء المفاتيح دون اتصال بالإنترنت بنفسك.",
+    "useRpc": "اسمح لهذا المضيف أو الخدمات الأخرى بالاستعلام عن السلسلة. يستمع على 127.0.0.1 بشكل افتراضي.",
+    "diskMinimal": "الأصغر",
+    "diskPruned": "متوسطة (أكثر من الحد الأدنى)",
+    "diskValidatorReady": "الأكبر بين الأربعة",
+    "diskRpc": "يعتمد على السلسلة",
+    "stakeNo": "غير مناسب",
+    "stakeYes": "نعم — يمكن أن يؤدي عدم الاتصال بالإنترنت أو التهيئة الخاطئة إلى فقدان حصتك",
+    "stakeRpc": "ليس المدقق",
+    "minimal": "أصغر قرص. استخدم لشبكات الاختبار أو التثبيت الأول. ليس تاريخًا كاملاً، وليس مدققًا حيًا للستاكينغ.",
+    "pruned": "يحافظ على حالة السلسلة الحديثة ويسقط الكتل الأقدم (مقلمة). قرص أكبر من الحد الأدنى وأقل من العقدة الكاملة. استخدمه لمتابعة النصيحة على المدى الطويل.",
+    "validatorReady": "يحجز المزيد من القرص حتى تتمكن لاحقًا من التصديق أو الاقتراح كمدقق. قم بإنشاء المفاتيح دون اتصال بالإنترنت بنفسك. يمكن أن يؤدي عدم الاتصال بالإنترنت أو التهيئة الخاطئة إلى فقدان حصتك.",
+    "rpc": "لهذا المضيف أو الخدمات الأخرى للاستعلام عن السلسلة. يستمع RPC إلى 127.0.0.1 بشكل افتراضي ولا يتم نشره على الإنترنت."
+  },
   "col": {
     "id": "ID",
     "chain": "السلسلة",
     "network": "الشبكة",
     "profile": "الملف",
     "status": "الحالة",
-    "disk": "القرص",
-    "traffic": "Traffic"
+    "traffic": "مرور",
+    "disk": "القرص"
   },
   "cli": {
-    "usage": "الاستخدام: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "الاستخدام: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "عميل التنفيذ",
     "cl": "عميل الإجماع",
-    "version": "Version",
-    "pin": "Panel pin",
-    "officialNewer": "Official newer",
-    "olderThanPin": "Older than the panel pin",
-    "prerelease": "Prerelease",
-    "current": "Running now",
-    "source": "Image source"
+    "version": "إصدار",
+    "pin": "دبوس اللوحة",
+    "officialNewer": "أحدث الرسمية",
+    "olderThanPin": "أقدم من دبوس اللوحة",
+    "prerelease": "الإصدار التجريبي",
+    "current": "تشغيل الآن",
+    "source": "مصدر الصورة"
   },
   "mithril": {
     "label": "استعادة من لقطة Mithril أولًا (موصى به في شبكة الاختبار)",
-    "action": "استعادة بـ Mithril",
-    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
+    "hint": "هذه عملية استعادة لمرة واحدة بعد التثبيت. لم يتم كتابته في التأليف. يمكنك أيضًا تشغيله لاحقًا من صفحة المثيل.",
+    "action": "استعادة بـ Mithril"
   },
   "errors": {
     "notFound": "مثيل المدقق غير موجود",
     "invalidId": "معرّف المثيل غير صالح",
     "diskLow": "لا يكفي القرص الحر لهذه السلسلة والشبكة والملف",
+    "memLow": "لا توجد ذاكرة وصول عشوائي (RAM) كافية لغطاء ذاكرة هذه السلسلة",
     "diskUnknownMainnet": "تعذر قياس القرص الحر؛ رُفض الإنشاء على الشبكة الرئيسية",
     "needDocker": "Docker Compose مطلوب ولم يُعثر عليه",
     "composeFailed": "فشل docker compose",
+    "containerNotUp": "بدأ الإنشاء، لكن الحاوية لم تظل قيد التشغيل",
+    "probeFailed": "العقدة لا تجيب على RPC حتى الآن. تحقق من السجلات في هذه الصفحة.",
+    "oom": "نفاد الذاكرة. قم بتعيين حد للذاكرة أو إضافة ذاكرة الوصول العشوائي (RAM)، ثم أعد التشغيل.",
+    "nofile": "وصلت العملية إلى حد الملفات المفتوحة (nofile). ارفع ulimits.nofile وأعد التشغيل.",
+    "noContainer": "لا توجد حاوية إنشاء لهذا المثيل.",
+    "restarting": "يتم إعادة تشغيل الحاوية. تحقق من السجلات في هذه الصفحة.",
+    "restartingCount": "يتم إعادة تشغيل الحاوية ({{n}}). تحقق من السجلات في هذه الصفحة.",
     "needConfirm": "المسح يتطلب confirm=معرّف المثيل أو CLEAR",
     "mithrilAdaOnly": "استعادة Mithril متاحة لـ Cardano فقط",
     "needMithrilConfirm": "Mithril يتطلب confirm=معرّف المثيل أو MITHRIL",
@@ -119,35 +176,27 @@
     "composeNotManaged": "رفض كتابة ملف Compose لا تديره YSK",
     "badDataPath": "يجب أن يكون مسار البيانات مجلدًا مطلقًا خارج مسارات النظام",
     "portInUse": "منفذ RPC هذا مستخدم فعلًا من مثيل مدقق آخر",
+    "badTag": "إصدار العميل هذا ليس علامة رسمية لهذه الصورة",
+    "needVersionConfirm": "يتطلب تغيير الإصدار تأكيدًا=معرف المثيل",
+    "needMainnetVersionAck": "تتطلب تغييرات إصدار الشبكة الرئيسية قبولMainnet",
     "snapshotUnsupported": "لا يوجد مصدر لقطة مسموح لهذه السلسلة",
     "snapshotLookup": "تعذر حل مؤشر اللقطة الرسمي",
     "needSnapshotConfirm": "استعادة اللقطة تتطلب confirm=معرّف المثيل أو SNAPSHOT",
     "snapshotBlocked": "حُظر docker run الخاص باللقطة بواسطة قائمة السماح",
     "snapshotFailed": "فشل تنزيل اللقطة أو استخراجها",
-    "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
-    "noContainer": "No compose container exists for this instance.",
-    "restarting": "Container is restarting. Check logs on this page.",
-    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
-    "memLow": "Not enough free RAM for this chain's memory cap",
-    "badTag": "That client version is not an official tag for this image",
-    "needVersionConfirm": "Changing version requires confirm=instance id",
-    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet",
-    "producerAdaOnly": "Producer keys are only for Cardano",
-    "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
-    "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
-    "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
-    "producerTooLarge": "That key file is larger than 64 KiB",
-    "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
-    "producerEmpty": "Provide at least one of kes, vrf, or opcert",
-    "switchNeedDetachProducer": "Detach producer keys before switching network"
+    "producerAdaOnly": "مفاتيح المنتج مخصصة فقط لـ Cardano",
+    "needProducerConfirm": "يتطلب إرفاق مفاتيح المنتج تأكيدًا=معرف المثيل أو PRODUCER",
+    "needMainnetProducerAck": "يتطلب إرفاق منتج Mainnet قبولMainnet",
+    "producerColdRejected": "يتم رفض مفاتيح التوقيع الباردة أو مالك حمام السباحة. احتفظ بالمفاتيح الباردة في وضع عدم الاتصال.",
+    "producerTooLarge": "حجم ملف المفتاح هذا أكبر من 64 كيلو بايت",
+    "producerBadType": "هذا الملف ليس مفتاح KES أو مفتاح VRF أو شهادة تشغيلية",
+    "producerEmpty": "قم بتوفير واحد على الأقل من kes أو vrf أو opcert",
+    "switchNeedDetachProducer": "افصل مفاتيح المنتج قبل تبديل الشبكة"
   },
   "notes": {
     "beta": "هذه الميزة Beta. تغييرات المضيف تحتاج root و YSK_EXECUTE=1.",
     "noKeys": "لا يولّد YSK Server مفاتيح الرهن ولا يخزنها أبدًا.",
-    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
+    "dockerSoon": "قم بالتثبيت والبدء من معالج الصفحة هذا. تحتاج تغييرات المضيف إلى الجذر وYSK_EXECUTE=1.",
     "dryCreate": "كُتبت مواصفات المثيل وcompose (dry-run). مرّر --execute و YSK_EXECUTE=1 لبدء الحاويات.",
     "dryStart": "البدء dry-run. مرّر --execute و YSK_EXECUTE=1.",
     "dryStop": "الإيقاف dry-run. مرّر --execute و YSK_EXECUTE=1.",
@@ -173,67 +222,67 @@
     "snapshotEthCl": "أُعيد ضبط بيانات CL لمزامنة نقطة التحقق الرسمية",
     "snapshotNear": "مُسحت بيانات NEAR؛ سيعيد compose التهيئة بالـ genesis الرسمي وepoch sync",
     "nativePrune": "شُغّل أمر التقليم الأصلي للعميل",
-    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "deleted": "Node deleted",
-    "leftoverRemoved": "Removed leftover {{path}}",
-    "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
-    "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
-    "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
-    "producerAttached": "Hot keys attached; compose rewritten as block producer",
-    "producerDetached": "Hot keys removed; compose rewritten as relay"
+    "dryProducer": "يتم تشغيل مفاتيح المنتج بشكل جاف. أضف --execute وYSK_EXECUTE=1.",
+    "dryProducerDetach": "يعتبر فصل المنتج جافًا. أضف --execute وYSK_EXECUTE=1.",
+    "producerPartial": "كتب المفاتيح الساخنة. قم بإرفاق KES وVRF وopcert قبل أن تبدأ العقدة كمنتج للكتل.",
+    "producerAttached": "مفاتيح التشغيل السريع مرفقة؛ إعادة كتابة التأليف كمنتج كتلة",
+    "producerDetached": "تمت إزالة المفاتيح الساخنة؛ يؤلف إعادة كتابته كما التتابع",
+    "dryDelete": "الحذف جاف. قم بتمرير --execute وYSK_EXECUTE=1.",
+    "deleted": "تم حذف العقدة",
+    "leftoverRemoved": "تمت إزالة بقايا {{path}}"
   },
   "create": "إنشاء عقدة",
   "wizard": {
     "title": "إنشاء عقدة",
+    "stepOf": "الخطوة {{n}} / {{total}}",
+    "stepChain": "سلسلة",
+    "stepNetwork": "شبكة",
+    "stepProfile": "حساب تعريفي",
+    "stepSummary": "ملخص",
+    "needDocker": "لم يتم تثبيت محرك Docker. قم بتثبيته أولاً — يظل هذا الزر معطلاً.",
+    "diskNeed": "يحتاج هذا الملف الشخصي إلى حوالي {{need}} · مجانًا {{free}}",
+    "diskNeedNetwork": "الافتراضي (الحد الأدنى) لهذه الشبكة يحتاج إلى حوالي {{need}} · مجاني {{free}}",
+    "profileHint": {
+      "minimal": "أصغر مزامنة — قرص خفيف، وليس للتخزين.",
+      "pruned": "يحتفظ بالتاريخ الحديث فقط (مقطع). أصغر من الأرشيف، ولا يزال قابلاً للاستخدام في RPC.",
+      "validator-ready": "الحجم لمدقق التوقيع المساحي. يحتاج إلى قرص أكبر من الحد الأدنى.",
+      "rpc": "عقدة RPC العامة — ليست أداة التحقق من صحة التوقيع."
+    },
+    "diskShort": "لا يوجد قرص مجاني كافٍ لهذه السلسلة/الشبكة/الملف الشخصي",
+    "diskShortDetail": "تحتاج {{need}} · مجاني {{free}} · قصير {{short}}",
+    "memShort": "لا توجد ذاكرة وصول عشوائي (RAM) كافية لغطاء ذاكرة هذه السلسلة",
+    "memShortDetail": "تحتاج {{need}} · مجاني {{free}} · قصير {{short}}",
+    "needCustomPath": "أدخل مسار البيانات المطلق",
+    "previewId": "معرف العقدة",
+    "previewCompose": "تأليف المشروع",
+    "profileSeeAbout": "What each profile means is on the About tab.",
     "back": "رجوع",
     "next": "التالي",
     "install": "تثبيت",
     "mainnetWarn": "الشبكة الرئيسية تحتاج مساحة حرة كبيرة (ETH غالبًا ٨٠٠ جيبيبايت+). يُنصح بشبكة الاختبار.",
     "mainnetAck": "أفهم مخاطر القرص والقطع. المتابعة على الشبكة الرئيسية.",
+    "lowDiskAcked": "القرص الحر أقل من الحجم الموصى به. لقد قمت بتأكيد الإنشاء على أية حال؛ قد تتوقف المزامنة إذا امتلأ القرص.",
+    "lowMemAcked": "توجد ذاكرة الوصول العشوائي المجانية أسفل غطاء ذاكرة هذه السلسلة بالإضافة إلى مساحة رأس تبلغ 1 جيجا بايت. لقد قمت بتأكيد الإنشاء على أية حال؛ العقدة قد OOM أو المماطلة.",
     "heavyWarn": "هذه السلسلة ثقيلة (قرص كبير وIOPS مرتفع). Solana على الشبكة الرئيسية تحتاج عادة ٢ تيبيبايت+.",
     "memory": "حد الذاكرة (مثل 4g)",
     "cpus": "حد المعالج (مثل 2.0)",
     "dataPath": "مسار البيانات (اختياري)",
     "rpcPort": "منفذ RPC (اختياري)",
-    "stepOf": "Step {{n}} / {{total}}",
-    "stepChain": "Chain",
-    "stepNetwork": "Network",
-    "stepProfile": "Profile",
-    "stepSummary": "Summary",
-    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
-    "diskNeed": "This profile needs about {{need}} · free {{free}}",
-    "diskShort": "Not enough free disk for this chain / network / profile",
-    "limitNone": "No limit",
-    "rpcDefault": "Default",
-    "customPath": "Use a custom data path",
-    "installConfirmTitle": "Install this node?",
-    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
-    "installC1": "Several gigabytes of images may be downloaded.",
-    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
-    "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
-    "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
-    "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "needCustomPath": "Enter an absolute data path",
-    "previewId": "Node id",
-    "previewCompose": "Compose project",
-    "profileSeeAbout": "What each profile means is on the About tab.",
-    "dockerAbout": "Docker Engine is required to install and start nodes.",
-    "dockerAboutOk": "Docker Engine is installed.",
-    "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
-    "rewriteCompose": "Rewrite compose",
-    "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
-    "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-    "chainMeta": "{{disk}} min · {{clients}} clients",
-    "profileHint": {
-      "minimal": "Smallest sync — light disk, not for staking.",
-      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
-      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
-      "rpc": "Public RPC node — not a staking validator."
-    },
-    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
-    "memShort": "Not enough free RAM for this chain's memory cap",
-    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall."
+    "limitNone": "لا يوجد حد",
+    "rpcDefault": "تقصير",
+    "customPath": "استخدم مسار بيانات مخصص",
+    "installConfirmTitle": "تثبيت هذه العقدة؟",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. حوالي {{disk}} من القرص. يمكن أن يستغرق سحب الصورة وقتًا طويلاً.",
+    "installC1": "يمكن تنزيل عدة غيغابايت من الصور.",
+    "installC2": "يمكنك إلغاء مهمة اللوحة؛ لا يتم حذف الصور التي تم سحبها بالفعل تلقائيًا.",
+    "installC3": "تستخدم الشبكة الرئيسية الكثير من الأقراص. يمكن أن يفقد مدقق التوقيع المساحي حصته إذا كان غير متصل بالإنترنت أو تمت تهيئته بشكل خاطئ. اكتب معرف العقدة للتأكيد.",
+    "dockerAbout": "مطلوب محرك Docker لتثبيت العقد وبدء تشغيلها.",
+    "dockerAboutOk": "تم تثبيت محرك Docker.",
+    "dockerAboutMissing": "لم يتم تثبيت محرك Docker. افتح Docker لتثبيته.",
+    "rewriteCompose": "أعد كتابة الإنشاء",
+    "rewriteComposeTitle": "هل تريد إعادة كتابة compose.yml من المحول الحالي؟",
+    "rewriteComposeDesc": "استبدال الإنشاء الذي تم إنشاؤه لـ {{id}} باستخدام الأعلام المشحونة لهذه السلسلة.",
+    "chainMeta": "{{disk}} دقيقة · {{clients}} عملاء"
   },
   "actions": {
     "detail": "التفاصيل",
@@ -242,26 +291,26 @@
     "restart": "إعادة تشغيل",
     "clear": "مسح",
     "upgrade": "ترقية",
+    "setVersion": "تغيير الإصدار",
     "clearConfirm": "اكتب معرّف المثيل أو CLEAR",
     "prune": "تنظيف الصور",
     "switchNetwork": "تبديل الشبكة",
     "removeUnit": "احذف أيضًا compose / سجل المثيل",
     "restoreAfter": "استعادة اللقطة بعد المسح",
-    "delete": "Delete",
-    "deleteTitle": "Delete {{id}}",
-    "deleteDesc": "This removes the node from the panel.",
-    "deleteC1": "Docker Compose is stopped and removed",
-    "deleteC2": "Chain data on disk is deleted",
-    "deleteC3": "The instance record is removed",
-    "pruneTitle": "Prune unused images",
-    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
-    "pruneC1": "Unused images labelled for this Compose project are deleted.",
-    "clearTitle": "Clear {{id}}",
-    "clearC1": "Chain data on disk is deleted.",
-    "clearC2": "The instance stays in the panel, stopped and empty.",
-    "switchTitle": "Switch network",
-    "switchC1": "The node is stopped and chain data is wiped before the new network is written.",
-    "setVersion": "Change version"
+    "delete": "يمسح",
+    "deleteTitle": "حذف {{id}}",
+    "deleteDesc": "يؤدي هذا إلى إزالة العقدة من اللوحة.",
+    "deleteC1": "تم إيقاف Docker Compose وإزالته",
+    "deleteC2": "يتم حذف بيانات السلسلة الموجودة على القرص",
+    "deleteC3": "تتم إزالة سجل المثيل",
+    "pruneTitle": "تقليم الصور غير المستخدمة",
+    "pruneDesc": "اكتب معرف المثيل لتقليم صور الإنشاء غير المستخدمة لهذه العقدة.",
+    "pruneC1": "يتم حذف الصور غير المستخدمة التي تم تصنيفها لمشروع الإنشاء هذا.",
+    "clearTitle": "مسح {{id}}",
+    "clearC1": "يتم حذف بيانات السلسلة الموجودة على القرص.",
+    "clearC2": "يبقى المثيل في اللوحة، متوقفًا وفارغًا.",
+    "switchTitle": "تبديل الشبكة",
+    "switchC1": "يتم إيقاف العقدة ومسح بيانات السلسلة قبل كتابة الشبكة الجديدة."
   },
   "policy": {
     "label": "سياسة الترقية",
@@ -287,12 +336,342 @@
     "near": "أُوقفت لقطات tar المجانية الرسمية لـ NEAR. الاستعادة تمسح البيانات وتستخدم genesis الرسمي وepoch sync.",
     "none": "لا يوجد مصدر لقطة مضبوط لهذه السلسلة."
   },
+  "producer": {
+    "title": "كتلة المفاتيح الساخنة منتج",
+    "hint": "هذا ليس عنوان IP. قم بتحميل مفتاح KES ومفتاح VRF وشهادة التشغيل من جهاز غير متصل بالإنترنت. احتفظ بالمفاتيح الباردة بعيدًا عن هذا المضيف.",
+    "warn": "ستقوم نفس العقدة التي تحتوي على منفذ P2P عام بتوقيع الكتل. الهيكل الرسمي يبقي المنتج بعيدًا عن الإنترنت العام. هذه الملفات الثلاثة هي مفاتيح التشغيل السريع.",
+    "kes": "KES",
+    "vrf": "VRF",
+    "opcert": "com.ocert",
+    "missing": "غير مرفقة",
+    "present": "مرفق {{fp}}",
+    "presentShort": "على المضيف",
+    "queuedShort": "مستعد",
+    "queued": "تم التحديد · {{name}}",
+    "fileHint": "الاسم النموذجي {{file}}",
+    "dropOrBrowse": "أسقط {{file}} هنا أو تصفح",
+    "dropping": "قطرة لإرفاق {{label}}",
+    "browse": "تصفح",
+    "clearFile": "يزيل",
+    "choose": "اختر الملف",
+    "apply": "قم بالتطبيق وإعادة التشغيل كمنتج للكتل",
+    "detach": "فصل وتشغيل كمرحل",
+    "applyTitle": "إرفاق مفاتيح التشغيل السريع بـ {{id}}؟",
+    "applyDesc": "تتم كتابة KES وVRF وopcert ضمن دليل مفاتيح المثيل. تمت إعادة كتابة الإنشاء. يتم إعادة تشغيل الحاوية كمنتج كتلة.",
+    "applyC1": "يجب أن تظل المفاتيح الباردة غير متصلة بالإنترنت. لا تقم بتحميل Cold.skey.",
+    "applyC2": "يمكن للعقدة قيد التشغيل توقيع الكتل إذا كانت هذه الملفات صالحة.",
+    "applyC3": "الشبكة الرئيسية: يفتقد المنتج غير المتصل بالإنترنت أو الذي تم تكوينه بشكل خاطئ الكتل.",
+    "detachTitle": "فصل مفاتيح المنتج من {{id}}؟",
+    "detachDesc": "يتم حذف مفاتيح التشغيل السريع من هذا المضيف. يعود الإنشاء إلى التتابع.",
+    "detachC1": "لن تنتج العقدة كتلًا بعد الآن.",
+    "mainnet": "الشبكة الرئيسية: أدرك أن هذا المضيف سيحمل مفاتيح التشغيل السريع وكتل التوقيع."
+  },
   "stake": {
     "title": "الاستعداد للرهن (المفاتيح تبقى لديك)",
     "offlineKeys": "ولّد المفاتيح دون اتصال. اللوحة لا تخزنها أبدًا.",
     "deposit": "أكمل الإيداع / التسجيل على المنصة الرسمية.",
     "withdrawal": "اضبط بيانات اعتماد السحب بنفسك.",
     "monitor": "راقب القرص والأقران وشارات الترقية في هذه الصفحة."
+  },
+  "playbook": {
+    "overviewTitle": "كيف يعمل التوقيع المساحي على كل سلسلة",
+    "overviewDesc": "تعمل هذه اللوحة على تشغيل العقدة. محفظتك ومفاتيحك تبقى معك. الروابط الرسمية فقط - لا تشارك أبدًا عبارة أولية هنا.",
+    "colChain": "سلسلة",
+    "colModel": "كيف تقوم بالتسجيل",
+    "colMin": "الحد الأدنى النموذجي",
+    "colWallet": "محفظتك",
+    "colPanel": "ماذا تفعل هذه اللوحة",
+    "yskDoes": "هذه اللوحة تفعل",
+    "youDo": "أنت تفعل",
+    "steps": "خطوات",
+    "never": "لا",
+    "official": "الروابط الرسمية",
+    "seeAbout": "الخطوات الكاملة موجودة في علامة التبويب \"حول\".",
+    "nodeIdReady": "NodeID (من هذه العقدة)",
+    "nodeIdPending": "يظهر NodeID بعد مزامنة العقدة والرد على RPC.",
+    "blsReady": "المفتاح العام لـ BLS",
+    "blsProof": "إثبات الحيازة BLS",
+    "blsPending": "تظهر بيانات اعتماد BLS بعد أن تجيب العقدة على RPC.",
+    "copyAll": "انسخ الكل",
+    "copyNamed": "نسخ {{label}}",
+    "nearStakeKey": "حصة المفتاح العام",
+    "nearStakeKeyPending": "يظهر بعد البداية الأولى (بالقرب من الحرف الأول). RPC غير جاهز لا يعني أن المفتاح مفقود.",
+    "nearAccountId": "ملف المفتاح account_id",
+    "nearAccountIdPending": "غالبًا ما تكون فارغة حتى تقوم بتعيينها على {pool}{{suffix}} بنفسك. هذه اللوحة لا تكتب أبدًا validator_key.json.",
+    "nearFactory": "مصنع حمامات السباحة",
+    "nearPublicAddr": "P2P العام (الأقران)",
+    "nearPublicAddrPending": "يظهر بعد البداية الأولى ويكتب WAN:{{port}} في config.json.",
+    "nearCreateCommand": "الأمر create_stake_pool",
+    "nearPointing": "لا يأخذ عقد المجمع عنوان IP الخاص بهذا الخادم. يقوم بتخزين المفتاح العام لحصة هذه العقدة. يستخدم الأقران صف P2P العام أعلاه (منفذ المضيف {{port}}). يبقى RPC على المضيف المحلي.",
+    "nearAccountIdHint": "بعد وجود المجمع، قم بتعيين account_id في validator_key.json على {pool}{{suffix}} بنفسك. هذه اللوحة لا تكتب هذا الملف أبدًا.",
+    "cosmosPubkey": "المفتاح العام بالإجماع",
+    "cosmosPubkeyPending": "يظهر بعد أن يكتب gaiad init priv_validator_key.json. RPC غير جاهز لا يعني أن المفتاح مفقود.",
+    "cosmosChainId": "معرف السلسلة",
+    "cosmosP2p": "P2P عام (عنوان_خارجي)",
+    "cosmosP2pPending": "يظهر بعد البداية الأولى ويكتب tcp://WAN:{{port}} في config.toml.",
+    "ethBeacon": "واجهة برمجة تطبيقات المنارة (المضيف المحلي)",
+    "ethBeaconPending": "منارة HTTP على هذا المضيف. قم بتوجيه عميل التحقق الذي تقوم بتشغيله بنفسك إلى عنوان URL هذا - لا يحتوي هذا الإنشاء على VC.",
+    "cosmosCreateCommand": "أمر إنشاء المدقق",
+    "solIdentity": "الهوية العامة",
+    "solIdentityPending": "يظهر بعد إجابات RPC على getIdentity. هذه العملية هي --لا تصويت حتى تقوم بإضافة حساب تصويت بنفسك.",
+    "adaP2pPort": "تتابع منفذ P2P",
+    "adaP2pPending": "ضع IPv4 العام لهذا المضيف وهذا المنفذ في ملف topology.json. لا تقوم هذه اللوحة بالتحقق من شبكة WAN.",
+    "notPosTitle": "ليس دليلاً على الحصة",
+    "notPosBody": "Bitcoin هنا عبارة عن عقدة كاملة أو مجردة. لا توجد محفظة التوقيع المساحي في هذه الصفحة.",
+    "eth": {
+      "model": "يقوم هذا الإنشاء بتشغيل التنفيذ + الإشارة فقط - وليس عميل التحقق من الصحة. قم بإيداع 32 ETH على منصة الإطلاق الرسمية.",
+      "min": "32 إيثيريوم + غاز",
+      "wallets": "MetaMask وLedger وTrezor — فقط على منصة الإطلاق الرسمية",
+      "panel": "يعمل EL + منارة. RPC وواجهة برمجة تطبيقات المنارة على المضيف المحلي. لا يوجد عميل مدقق في الإنشاء.",
+      "honesty": "هذا المثيل هو التنفيذ + الإشارة فقط. لا يوجد عميل مدقق في ملف الإنشاء. لن يبدأ نسخ ملف تخزين المفاتيح في دليل بيانات المنارة في التصديق. عقد الإيداع لا يأخذ عنوان IP الخاص بهذا الخادم.",
+      "yskDoes": [
+        "تثبيت وبدء التنفيذ وإرشاد العملاء.",
+        "إظهار القرص والأقران وحالة الترقية.",
+        "لا يقوم بتشغيل عميل التحقق من الصحة ولا يقوم بتحميل مخزن مفاتيح التوقيع."
+      ],
+      "youDo": [
+        "قم بإنشاء عنوان تخزين المفاتيح والسحب بنفسك على لوحة التشغيل الرسمية أو باستخدام Slooking-deposit-cli.",
+        "قم بإيداع 32 ETH على لوحة التشغيل لهذه الشبكة.",
+        "قم بتشغيل عميل التحقق من الصحة بنفسك (وليس هذا الإنشاء) مقابل واجهة برمجة تطبيقات منارة المضيف المحلي لهذا المثيل."
+      ],
+      "steps": [
+        "انتظر حتى تتم مزامنة التنفيذ والإشارات.",
+        "افتح لوحة التشغيل الرسمية لهذه الشبكة (Hoodi أو Mainnet في هذه الصفحة). لا يوجد لدى Sepolia زر لوحة التشغيل هنا.",
+        "غير متصل، قم بإنشاء مخزن المفاتيح. قم بتعيين عنوان السحب لمحفظة ETH الخاصة بك.",
+        "قم بإيداع 32 إيثيريوم (احتفظ بالمزيد مقابل الغاز).",
+        "قم بتشغيل عميل التحقق بنفسك. لا تحتوي عملية الإنشاء هذه على VC - ولا يشهد وضع مخزن مفاتيح في دليل البيانات الإرشادي."
+      ],
+      "never": [
+        "لا تقم أبدًا بإعطاء العبارة الأولية أو مفتاح السحب لأي شخص، بما في ذلك هذه اللوحة.",
+        "لا تقم مطلقًا بتحميل مخزن مفاتيح التوقيع على السحابة المستضافة.",
+        "لا تتوقع أن يتم إثبات هذه الصفحة بعد قيامك بنسخ ملف تخزين المفاتيح إلى دليل بيانات الإشارة."
+      ]
+    },
+    "avax": {
+      "model": "قم بتسجيل إثبات NodeID وBLS قيد التشغيل على P-Chain من Core أو Ledger.",
+      "min": "2000 AVAX + الرسوم (1 AVAX في فوجي)؛ 14 يوما على الأقل",
+      "wallets": "الأساسية، ليدجر",
+      "panel": "يقوم بتشغيل الانهيار الجليدي ويمكنه إظهار NodeID وBLS بعد إجابات RPC",
+      "yskDoes": [
+        "قم بتشغيل avalanchego واحتفظ بـ RPC على المضيف المحلي.",
+        "إظهار بيانات اعتماد NodeID وBLS بمجرد إجابة العقدة على RPC."
+      ],
+      "youDo": [
+        "احتفظ بـ AVAX في Core أو Ledger.",
+        "قم بإضافة أداة التحقق من الصحة من Core باستخدام إثبات NodeID وBLS لهذه العقدة."
+      ],
+      "steps": [
+        "انتظر حتى تتم مزامنة هذه العقدة.",
+        "انسخ NodeID ومفتاح BLS العام وإثبات ملكية BLS الموضح في صفحة المثيل.",
+        "في Core web (Stake → Validate)، أو باستخدام Ledger عبر Core، قم بالتسجيل في P-Chain.",
+        "تحتاج الشبكة الرئيسية إلى 2000 AVAX على الأقل، وفترة لا تقل عن 14 يومًا، واحتياطي الرسوم."
+      ],
+      "never": [
+        "لا ترسل AVAX إلى هذه اللوحة.",
+        "لا تشارك عبارة استرداد Core أو Ledger الخاصة بك."
+      ]
+    },
+    "ada": {
+      "model": "قم بتشغيل مجموعة حصص باستخدام مفاتيح Cold / KES / VRF غير المتصلة بالإنترنت - وليس نقرة محفظة المتصفح.",
+      "min": "التعهد هو اختيارك (انظر المستندات الرسمية)",
+      "wallets": "الأدوات الرسمية لتجميع الحصص (تظل المفاتيح الباردة غير متصلة بالإنترنت)",
+      "panel": "تشغيل عقدة كاردانو كمرحل أولاً؛ يمكن إرفاق المفاتيح الساخنة على هذه الصفحة.",
+      "honesty": "يبدأ هذا المثيل كمرحل. يستخدم تسجيل التجمع عبر السلسلة المفاتيح الباردة التي تحتفظ بها في وضع عدم الاتصال. يستخدم النظراء والهيكل IPv4 العام لهذا المضيف ومنفذ P2P الموضح هنا - ولا تقوم اللوحة بالتحقق من شبكة WAN.",
+      "yskDoes": [
+        "قم بتشغيل عقدة كاردانو واستعادة لقطة Mithril حيثما يتم عرض ذلك.",
+        "قم بإرفاق KES وVRF وopcert عند توفيرها. تم رفض المفاتيح الباردة."
+      ],
+      "youDo": [
+        "إنشاء مفاتيح التجمع دون اتصال بالإنترنت.",
+        "قم بتسجيل المجمع باستخدام وثائق Cardano الرسمية.",
+        "ضع IPv4 العام لهذا المضيف ومنفذ التتابع P2P في ملف topology.json."
+      ],
+      "steps": [
+        "اقرأ الدليل الرسمي لـopera-a-stake-pool.",
+        "قم بإنشاء مفاتيح Cold وKES وVRF على جهاز غير متصل بالإنترنت.",
+        "قم بتسجيل التجمع على السلسلة من تلك المفاتيح.",
+        "في صفحة المثيل هذه، قم بإرفاق KES وVRF وشهادة التشغيل. لا تقم بتحميل المفاتيح الباردة.",
+        "أعلن عن التتابع كمنفذ IP عام: P2P (المنفذ الموضح على هذه البطاقة). لا تبحث هذه اللوحة عن عنوان WAN."
+      ],
+      "never": [
+        "لا تعامل هذا باعتباره حصة MetaMask بنقرة واحدة.",
+        "لا تقم بتخزين المفاتيح الباردة على مضيف أداة التحقق من الصحة."
+      ]
+    },
+    "near": {
+      "model": "قم بإنشاء عقد ملكية جماعية في المصنع الرسمي. يخزن العقد المفتاح العام لهذه العقدة، وليس عنوان IP الخاص بالخادم.",
+      "min": "راجع مستندات التحقق الرسمية (30 NEAR لإنشاء المجموعة، بالإضافة إلى الحصة)",
+      "wallets": "المحفظة / القفل الرسمي NEAR",
+      "panel": "يعمل بالقرب من؛ يُظهر المفتاح العام والمصنع وأمر create_stake_pool بعد الحرف الأول",
+      "yskDoes": [
+        "قم بتشغيل neard باستخدام RPC على المضيف المحلي وP2P على 24567.",
+        "بعد الحرف الأول، قم بإظهار المفتاح العام للحصة، وعنوان P2P العام، والمصنع، وأمر create_stake_pool القابل للنسخ.",
+        "لا تكتب أبدًا validator_key.json أو تبث المعاملة."
+      ],
+      "youDo": [
+        "انسخ المفتاح العام والأمر من صفحة المثيل هذه.",
+        "من حساب NEAR الخاص بك، اتصل بالمصنع الرسمي.",
+        "بعد وجود التجمع، قم بتعيين account_id في validator_key.json على {pool}.{factory} بنفسك.",
+        "حصة من محفظتك في هذا المجمع."
+      ],
+      "steps": [
+        "ابدأ العقدة وانتظر neard init حتى يظهر المفتاح العام (RPC غير جاهز ليس مثل المفاتيح المفقودة).",
+        "انسخ المفتاح العام للحصة والأمر create_stake_pool.",
+        "من محفظتك، اتصل بالمصنع (testnetpool.f863973.m0 / mainnetpoolv1.near) مع 30 NEAR للتخزين. يستخدم الأمر المنسوخ --accountId؛ إذا كان مؤشر سطر الأوامر القريب الخاص بك يتوقع --account_id، فاتبع --help الخاص بـ CLI.",
+        "قم بتعيين account_id في validator_key.json إلى حسابك المجمع الجديد. هذه اللوحة لا تكتب هذا الملف.",
+        "انتظر حتى يجيب RPC وتتم مزامنة العقدة قبل تخزين كميات كبيرة. يستخدم الزملاء Public P2P :24567 — العقد لا يأخذ عنوان IP."
+      ],
+      "never": [
+        "لا تلصق عبارة أولية في هذه اللوحة.",
+        "لا تضع عنوان IP الخاص بهذا الخادم في العقد.",
+        "لا تتوقع أن ترسل اللوحة معاملة create_stake_pool."
+      ]
+    },
+    "cosmos": {
+      "model": "قم بإنشاء أداة التحقق من محفظة المشغل الخاصة بك باستخدام المفتاح العام المتفق عليه لهذه العقدة - وليس عنوان IP الخاص بالخادم.",
+      "min": "راجع مستندات Cosmos Hub الرسمية (التفويض الذاتي في uatom)",
+      "wallets": "Keplr أو محفظة Cosmos أخرى تتحكم فيها",
+      "panel": "يدير جاياد. يعرض مفتاح الإجماع وأمر إنشاء مدقق قابل للنسخ بعد الحرف الأول",
+      "honesty": "تقوم معاملة إنشاء المدقق بتخزين المفتاح العام المتفق عليه لهذه العقدة. يستخدم الزملاء P2P العام على 26656. ويبقى RPC على المضيف المحلي. لا تقوم هذه اللوحة ببث المعاملة أو قراءة priv_key.",
+      "yskDoes": [
+        "قم بتشغيل gaiad باستخدام RPC على المضيف المحلي وP2P على 26656.",
+        "بعد الحرف الأول، قم بإظهار المفتاح العام المتفق عليه، ومعرف السلسلة، وP2P العام، وأمر إنشاء مدقق قابل للنسخ.",
+        "لا تكتب مطلقًا priv_validator_key.json أو تبث المعاملة."
+      ],
+      "youDo": [
+        "انسخ المفتاح العام المتفق عليه والأمر من صفحة المثيل هذه.",
+        "من محفظة المشغل الخاصة بك (Keplr أو مفاتيح gaiad التي تتحكم فيها)، أرسل أداة التحقق من الإنشاء.",
+        "لا تخلط تلك المحفظة التذكيرية مع مفتاح الإجماع على هذا المضيف."
+      ],
+      "steps": [
+        "ابدأ العقدة وانتظر gaiad init حتى يظهر المفتاح العام المتفق عليه (RPC غير جاهز ليس مثل المفاتيح المفقودة).",
+        "انسخ المفتاح العام المتفق عليه وأمر create-validator (معرف السلسلة هو cosmoshub-4 على الشبكة الرئيسية، والموفر على testnet).",
+        "من محفظة المشغل الخاصة بك، قم ببث أداة التحقق من الإنشاء. المبلغ واللقب لك.",
+        "انتظر حتى يجيب RPC وتتم مزامنة العقدة قبل ربط كميات كبيرة. يستخدم الزملاء tcp://WAN:26656 — المعاملة لا تأخذ عنوان IP."
+      ],
+      "never": [
+        "لا تخلط بين تذكيرات محفظة المشغل ومفتاح الإجماع.",
+        "لا تدخل أساليب تقوية المحفظة هنا.",
+        "لا تضع عنوان IP لهذا الخادم في أداة التحقق من الإنشاء."
+      ]
+    },
+    "sol": {
+      "model": "يدير هذا التأليف Agave بـ --no-voting. يتم إنشاء حساب التصويت والسحب باستخدام أدوات Solana الرسمية - وليس هذه اللوحة.",
+      "min": "راجع مستندات العمليات الرسمية (الأجهزة والأقراص ثقيلة)",
+      "wallets": "المحفظة الرسمية Solana CLI/التي تتحكم فيها",
+      "panel": "تشغيل Agave كعقدة اللحاق بالركب (--عدم التصويت). يمكن إظهار مفتاح الهوية بعد إجابات RPC.",
+      "honesty": "هذه العملية هي عدم التصويت. لن يتم التصويت أو الحصول على حصة حتى تقوم بإنشاء حساب تصويت مع Agave CLI الرسمي وتغيير كيفية بدء العملية. هذه اللوحة لا تزيل --no-voting.",
+      "yskDoes": [
+        "قم بتشغيل عميل Agave وحذر من القرص.",
+        "أظهر مفتاح الهوية العمومي بمجرد إجابة RPC على getIdentity.",
+        "لا ينشئ حساب تصويت ولا يبدأ التصويت."
+      ],
+      "youDo": [
+        "أنشئ مفاتيح التصويت والسحب المعتمد باستخدام أدوات Solana الرسمية على جهاز تتحكم فيه.",
+        "أنشئ حساب التصويت باستخدام واجهة سطر الأوامر (CLI) الرسمية، باستخدام مفتاح الهوية العام هذا.",
+        "عندها فقط قم بتشغيل أداة التحقق من التصويت - يبقى هذا الإنشاء --no-voting."
+      ],
+      "steps": [
+        "تأكد من أن هذا المضيف لديه ما يكفي من القرص وIOPS (الشبكة الرئيسية عادةً ما تكون 2 تيرابايت +).",
+        "انتظر حتى يجيب RPC، ثم انسخ مفتاح الهوية الموضح هنا.",
+        "اتبع أدلة حساب التصويت والمراهنة الرسمية (الروابط أدناه).",
+        "هذا التأليف يحافظ على عدم التصويت. لا تتوقع أن تبدأ هذه الصفحة بالتصويت بعد إنشاء حساب التصويت."
+      ],
+      "never": [
+        "لا تتوقع وجود زر محفظة المتصفح في هذه اللوحة.",
+        "لا تقم بلصق الهوية أو التصويت لأزواج المفاتيح في هذه اللوحة."
+      ]
+    },
+    "dot": {
+      "model": "هذا الإنشاء عبارة عن عقدة كاملة (بدون --validator). مفاتيح الجلسة وsetKeys هي خطوات Polkadot.js الرسمية - وليست هذه اللوحة.",
+      "min": "انظر الويكي الرسمي",
+      "wallets": "Polkadot.js",
+      "panel": "تشغيل polkadot كعقدة كاملة. RPC على المضيف المحلي. لا --علامة التحقق من الصحة.",
+      "honesty": "لم تبدأ هذه العملية باستخدام --validator. لا تستدعي اللوحة Author_rotateKeys (وهذا من شأنه أن يغير مخزن المفاتيح). لكي تصبح مدققًا، تحتاج إلى علامة العقدة الرسمية واستدعاء rotateKeys الذي تجريه مقابل localhost RPC.",
+      "yskDoes": [
+        "قم بتشغيل polkadot واكشف RPC على المضيف المحلي.",
+        "لا يمر --validator ولا يقوم بتدوير مفاتيح الجلسة."
+      ],
+      "youDo": [
+        "اتبع الدليل الرسمي لإعداد أداة التحقق.",
+        "إذا قمت بإضافة --validator بنفسك، فاتصل بـ RotateKeys على localhost RPC واربط النتيجة في Polkadot.js من مخبأتك."
+      ],
+      "steps": [
+        "مزامنة هذه العقدة الكاملة.",
+        "اقرأ دليل التحقق الرسمي. هذا الإنشاء ليس عملية التحقق من الصحة.",
+        "لا تلصق ذاكري المخبأ هنا. إذا قمت بتشغيل لاحقًا باستخدام --validator، فقم بتدوير المفاتيح بنفسك على http://127.0.0.1 (منفذ RPC في هذا المثيل).",
+        "في Polkadot.js، قم بتعيين مفاتيح الجلسة هذه على مخبأك/وحدة التحكم الخاصة بك، ثم اتبع خطوات الربط الرسمية."
+      ],
+      "never": [
+        "لا تقم بلصق ذاكري المخبأ في هذه اللوحة.",
+        "لا تتوقع أن تقوم هذه الصفحة بإنشاء مفاتيح جلسة أو أن تبدأ --validator."
+      ]
+    },
+    "sui": {
+      "model": "هذا الإنشاء عبارة عن عقدة Sui كاملة (fullnode.yaml)، وليست عقدة مدقق.",
+      "min": "راجع مستندات Sui الرسمية",
+      "wallets": "محفظة مشغل Sui الرسمية",
+      "panel": "تشغيل عقدة sui كعقدة كاملة. RPC على المضيف المحلي.",
+      "honesty": "لا يمكن لهذه العملية التوقيع كمدقق Sui. يستخدم إعداد أداة التحقق تكوينًا ومفاتيح مختلفة. يتم ربط مستندات المدقق الرسمية؛ لا تقوم هذه اللوحة بتبديل العقدة إلى وضع التحقق من الصحة.",
+      "yskDoes": [
+        "قم بتشغيل صورة العقدة sui المشحونة كعقدة كاملة."
+      ],
+      "youDo": [
+        "استخدم هذا المثيل كعقدة كاملة.",
+        "لكي تصبح مدققًا، اتبع مستندات أداة التحقق من صحة Sui الرسمية في تكوين أداة التحقق من الصحة - وليس هذا الإنشاء."
+      ],
+      "steps": [
+        "مزامنة هذه العقدة الكاملة.",
+        "تعامل معها على أنها عقدة كاملة: فهي تعيد تنفيذ نقاط التفتيش ولكنها لا توقع الإجماع.",
+        "افتح دليل مشغل أداة التحقق الرسمية فقط إذا كنت تقوم بإنشاء عملية منفصلة للتحقق من الصحة."
+      ],
+      "never": [
+        "لا ترسل SUI إلى هذه اللوحة.",
+        "لا تتوقع أن يتم تسجيل عملية العقدة الكاملة هذه كمدقق."
+      ]
+    },
+    "aptos": {
+      "model": "يعد هذا الإنشاء بمثابة عقدة كاملة عامة لـ Aptos (دور العقدة الكاملة)، وليس أداة التحقق.",
+      "min": "راجع مستندات Aptos الرسمية",
+      "wallets": "محفظة مشغل Aptos الرسمية",
+      "panel": "تشغيل aptos-node كعقدة كاملة عامة. RPC على المضيف المحلي.",
+      "honesty": "العقد الكاملة العامة لا تشارك في الإجماع. يحتاج المدقق إلى دور ومفاتيح مختلفة وعادةً ما يحتاج إلى عقدة كاملة للتحقق. لا تقوم هذه اللوحة بتبديل العقدة إلى وضع التحقق من الصحة.",
+      "yskDoes": [
+        "قم بتشغيل صورة Aptos المشحونة كعقدة كاملة عامة."
+      ],
+      "youDo": [
+        "استخدم هذا المثيل كعقدة كاملة عامة.",
+        "لتشغيل أداة التحقق من الصحة، اتبع المستندات الرسمية لعقدة التحقق من Aptos - وليس هذا الإنشاء."
+      ],
+      "steps": [
+        "مزامنة هذه العقدة الكاملة العامة.",
+        "تعامل معها على أنها PFN: فهي تخدم بيانات دفتر الأستاذ، ولا تصوت.",
+        "افتح مستندات المدقق الرسمية فقط إذا كنت تقوم بإنشاء مدقق منفصل + زوج VFN."
+      ],
+      "never": [
+        "لا تدخل مفاتيح المشغل في هذه اللوحة.",
+        "لا تتوقع أن يتم تسجيل عملية العقدة الكاملة هذه كمدقق."
+      ]
+    },
+    "btc": {
+      "model": "ليس دليلاً على الحصة. هذه عقدة Bitcoin كاملة أو مجردة.",
+      "min": "—",
+      "wallets": "لا ينطبق",
+      "panel": "يعمل بالبيتكويند",
+      "yskDoes": [
+        "قم بتشغيل عقدة Bitcoin كاملة أو مقطوعة."
+      ],
+      "youDo": [
+        "استخدم أي محفظة بيتكوين بشكل منفصل. التعدين والبرق خارج النطاق."
+      ],
+      "steps": [
+        "تعامل مع هذا المثيل على أنه عقدة Bitcoin فقط.",
+        "لا يوجد إيداع للتخزين ولا يوجد مخزن مفاتيح للتحقق من الصحة."
+      ],
+      "never": [
+        "لا تبحث عن محفظة التوقيع المساحي في هذه الصفحة."
+      ]
+    }
   },
   "alerts": {
     "diskTitle": "قرص المدقق حرج",
@@ -313,358 +692,39 @@
     "dockerMissing": "توجد مثيلات مدقق لكن أمر docker غير موجود"
   },
   "detail": {
-    "status": "Status",
-    "sync": "Sync",
-    "peers": "Peers",
-    "version": "Version",
-    "access": "Access",
-    "upgrade": "Updates",
-    "upgradeHint": "How this node tracks client versions.",
-    "network": "Network",
-    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
-    "maintain": "Maintenance",
-    "danger": "Clear data",
-    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "status": "حالة",
+    "sync": "مزامنة",
+    "peers": "أقرانهم",
+    "traffic": "مرور",
+    "version": "إصدار",
+    "access": "وصول",
+    "upgrade": "التحديثات",
+    "upgradeHint": "كيف تتعقب هذه العقدة إصدارات العميل.",
+    "setVersion": "تغيير الإصدار",
+    "setVersionHint": "اختر علامة Docker رسمية للعميل على هذه العقدة. تتم إعادة كتابة الإنشاء، ثم يتم سحبه وإعادة تشغيله.",
+    "setVersionConfirmTitle": "تغيير {{id}} إلى {{tag}}؟",
+    "setVersionConfirmDesc": "يعيد كتابة العقدة ويسحب {{ref}} ويعيد تشغيلها.",
+    "setVersionC1": "يتم استبدال الحاوية قيد التشغيل بالعلامة المحددة.",
+    "setVersionC2": "اكتب معرف المثيل للتأكيد.",
+    "setVersionMainnet": "الشبكة الرئيسية: يمكن للإصدار السيئ أن يجعل العقدة غير متصلة بالإنترنت. أفهم.",
+    "releaseNotes": "ملاحظات الإصدار",
+    "network": "شبكة",
+    "networkHint": "يؤدي تبديل الشبكة إلى إيقاف العقدة ومسح بيانات السلسلة. قم بالتأكيد ضمن مسح البيانات أولاً.",
+    "maintain": "صيانة",
+    "danger": "مسح البيانات",
+    "dangerHint": "اكتب معرف المثيل أو CLEAR. يؤدي هذا إلى حذف بيانات السلسلة الموجودة على القرص.",
     "compose": "Compose",
-    "logs": "Logs",
-    "traffic": "Traffic",
-    "setVersion": "Change version",
-    "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
-    "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
-    "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
-    "setVersionC1": "The running container is replaced with the selected tag.",
-    "setVersionC2": "Type the instance id to confirm.",
-    "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
-    "releaseNotes": "Release notes"
+    "logs": "سجلات"
   },
   "state": {
-    "unknown": "Unknown",
-    "stopped": "Stopped",
-    "running": "Running",
-    "syncing": "Syncing",
-    "error": "Error",
-    "starting": "Starting",
-    "created": "Created (never started)",
-    "missing": "No container",
-    "rpc_wait": "Running — RPC not ready"
-  },
-  "profileHelp": {
-    "title": "Profiles",
-    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
-    "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
-    "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
-    "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
-    "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet.",
-    "colName": "Profile",
-    "colUse": "Use for",
-    "colDisk": "Disk",
-    "colStake": "Staking validator",
-    "useMinimal": "Testnet or a first install. Not a full history.",
-    "usePruned": "Follow the chain tip long-term. Keeps recent data only (Pruned).",
-    "useValidatorReady": "Sized so you can later attest or propose. Generate keys offline yourself.",
-    "useRpc": "Let this host or other services query the chain. Listens on 127.0.0.1 by default.",
-    "diskMinimal": "Smallest",
-    "diskPruned": "Medium (more than Minimal)",
-    "diskValidatorReady": "Largest of the four",
-    "diskRpc": "Depends on the chain",
-    "stakeNo": "Not suitable",
-    "stakeYes": "Yes — offline or misconfigured can lose stake",
-    "stakeRpc": "Not a validator"
-  },
-  "software": {
-    "engine": "Docker Engine",
-    "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
-    "client": "Client",
-    "image": "Image",
-    "present": "Local",
-    "local": "Pulled",
-    "missing": "Not pulled",
-    "size": "Size",
-    "usedBy": "Used by",
-    "unused": "No instance",
-    "pull": "Pull",
-    "pulling": "Pull {{ref}}",
-    "empty": "No pinned client images",
-    "emptyDesc": "The catalog is empty. This should not happen.",
-    "daemonDown": "Docker Engine is not running",
-    "pulled": "On this host",
-    "source": "Source",
-    "official": "Official latest",
-    "officialNewer": "Official newer",
-    "stale": "Behind pin",
-    "staleItem": "{{id}} ({{tag}})",
-    "pin": "Panel pin",
-    "openRelease": "Release notes",
-    "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
-  },
-  "playbook": {
-    "overviewTitle": "How staking works on each chain",
-    "overviewDesc": "This panel runs the node. Your wallet and keys stay with you. Official links only — never share a seed phrase here.",
-    "colChain": "Chain",
-    "colModel": "How you register",
-    "colMin": "Typical minimum",
-    "colWallet": "Your wallet",
-    "colPanel": "What this panel does",
-    "yskDoes": "This panel does",
-    "youDo": "You do",
-    "steps": "Steps",
-    "never": "Do not",
-    "official": "Official links",
-    "seeAbout": "Full steps are on the About tab.",
-    "nodeIdReady": "NodeID (from this node)",
-    "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
-    "blsReady": "BLS public key",
-    "blsProof": "BLS proof of possession",
-    "blsPending": "BLS credentials appear after the node answers RPC.",
-    "notPosTitle": "Not proof-of-stake",
-    "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
-    "eth": {
-      "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
-      "min": "32 ETH + gas",
-      "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
-      "panel": "Runs the execution and consensus clients",
-      "yskDoes": [
-        "Install and start the execution and consensus clients.",
-        "Show disk, peers, and upgrade status."
-      ],
-      "youDo": [
-        "Create the keystore and withdrawal address yourself.",
-        "Deposit 32 ETH on the official launchpad.",
-        "Copy the keystore into this node’s data directory."
-      ],
-      "steps": [
-        "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
-        "On the official launchpad, deposit 32 ETH (keep extra for gas).",
-        "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
-        "Watch sync, disk, and upgrade badges on this page."
-      ],
-      "never": [
-        "Never give your seed phrase or withdrawal key to anyone, including this panel.",
-        "Never upload a signing keystore to a hosted cloud."
-      ]
-    },
-    "avax": {
-      "model": "Register the running NodeID and BLS proof on the P-Chain from Core or Ledger.",
-      "min": "2,000 AVAX + fee (1 AVAX on Fuji); at least 14 days",
-      "wallets": "Core, Ledger",
-      "panel": "Runs avalanchego and can show NodeID and BLS after RPC answers",
-      "yskDoes": [
-        "Run avalanchego and keep RPC on localhost.",
-        "Show NodeID and BLS credentials once the node answers RPC."
-      ],
-      "youDo": [
-        "Hold AVAX in Core or Ledger.",
-        "Add the validator from Core using this node’s NodeID and BLS proof."
-      ],
-      "steps": [
-        "Wait until this node is synced.",
-        "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
-        "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
-        "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
-      ],
-      "never": [
-        "Do not send AVAX to this panel.",
-        "Do not share your Core or Ledger recovery phrase."
-      ]
-    },
-    "ada": {
-      "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
-      "min": "Pledge is your choice (see official docs)",
-      "wallets": "Official stake-pool tooling (cold keys stay offline)",
-      "panel": "Runs cardano-node",
-      "yskDoes": [
-        "Run cardano-node and Mithril snapshot restore where offered."
-      ],
-      "youDo": [
-        "Generate pool keys offline.",
-        "Register the pool using official Cardano documentation."
-      ],
-      "steps": [
-        "Read the official operate-a-stake-pool guide.",
-        "Generate cold, KES, and VRF keys on an offline machine.",
-        "Register the pool on-chain from those keys.",
-        "Point the running cardano-node at your operational certificates."
-      ],
-      "never": [
-        "Do not treat this as a MetaMask one-click stake.",
-        "Do not store cold keys on the validator host."
-      ]
-    },
-    "near": {
-      "model": "Stake from your NEAR account into a staking pool contract.",
-      "min": "See official validator docs",
-      "wallets": "Official NEAR wallet / lockup",
-      "panel": "Runs neard",
-      "yskDoes": [
-        "Run neard and show disk / sync."
-      ],
-      "youDo": [
-        "Stake from your NEAR account to your pool using official docs."
-      ],
-      "steps": [
-        "Bring the node to sync.",
-        "Follow official NEAR validator documentation.",
-        "Stake from your own wallet or lockup into the pool."
-      ],
-      "never": [
-        "Do not paste a seed phrase into this panel."
-      ]
-    },
-    "cosmos": {
-      "model": "create-validator from your operator wallet. Consensus key stays on the node.",
-      "min": "See official Cosmos Hub docs",
-      "wallets": "Keplr or another Cosmos wallet you control",
-      "panel": "Runs gaiad",
-      "yskDoes": [
-        "Run gaiad."
-      ],
-      "youDo": [
-        "Keep the operator wallet yourself.",
-        "Broadcast create-validator from that wallet."
-      ],
-      "steps": [
-        "Sync gaiad.",
-        "Keep the consensus key on this host only.",
-        "From Keplr (or equivalent), submit create-validator.",
-        "Monitor the node so it does not miss too many blocks."
-      ],
-      "never": [
-        "Do not mix the operator wallet mnemonic with the consensus key.",
-        "Do not enter wallet mnemonics here."
-      ]
-    },
-    "sol": {
-      "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
-      "min": "See official operations docs (hardware and disk are heavy)",
-      "wallets": "Official Solana CLI / wallet you control",
-      "panel": "Runs Agave; mainnet needs multiple tebibytes",
-      "yskDoes": [
-        "Run the Agave client and warn about disk."
-      ],
-      "youDo": [
-        "Create vote and withdrawer keys with official Solana tools."
-      ],
-      "steps": [
-        "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
-        "Follow official Solana operations documentation.",
-        "Create the vote account and authorized withdrawer yourself.",
-        "Point the running validator at those keys on disk."
-      ],
-      "never": [
-        "Do not expect a browser wallet button in this panel."
-      ]
-    },
-    "dot": {
-      "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
-      "min": "See the official wiki",
-      "wallets": "Polkadot.js",
-      "panel": "Runs the Polkadot client",
-      "yskDoes": [
-        "Run polkadot and expose RPC on localhost."
-      ],
-      "youDo": [
-        "Rotate session keys on the node and set them from Polkadot.js."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Generate session keys on this host.",
-        "In Polkadot.js, set those keys on your stash / controller.",
-        "Follow the official validate guide for bonding."
-      ],
-      "never": [
-        "Do not paste the stash mnemonic into this panel."
-      ]
-    },
-    "sui": {
-      "model": "Follow official Sui validator operator docs with your operator wallet.",
-      "min": "See official Sui docs",
-      "wallets": "Official Sui operator wallet",
-      "panel": "Runs sui-node",
-      "yskDoes": [
-        "Run the shipped sui-node image."
-      ],
-      "youDo": [
-        "Complete registration using official Sui validator docs."
-      ],
-      "steps": [
-        "Sync sui-node.",
-        "Open the official validator operator guide.",
-        "Use your own operator wallet — not this panel — to register."
-      ],
-      "never": [
-        "Do not send SUI to this panel."
-      ]
-    },
-    "aptos": {
-      "model": "Follow official Aptos staking / validator docs with your operator wallet.",
-      "min": "See official Aptos docs",
-      "wallets": "Official Aptos operator wallet",
-      "panel": "Runs the Aptos validator image",
-      "yskDoes": [
-        "Run the shipped Aptos image."
-      ],
-      "youDo": [
-        "Stake and operate from official Aptos documentation."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Read official Aptos staking documentation.",
-        "Use your own operator wallet to register."
-      ],
-      "never": [
-        "Do not enter operator keys in this panel."
-      ]
-    },
-    "btc": {
-      "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
-      "min": "—",
-      "wallets": "Not applicable",
-      "panel": "Runs bitcoind",
-      "yskDoes": [
-        "Run a Bitcoin full or pruned node."
-      ],
-      "youDo": [
-        "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
-      ],
-      "steps": [
-        "Treat this instance as a Bitcoin node only.",
-        "There is no staking deposit and no validator keystore."
-      ],
-      "never": [
-        "Do not look for a staking wallet on this page."
-      ]
-    },
-    "copyAll": "Copy all",
-    "copyNamed": "Copy {{label}}"
-  },
-  "producer": {
-    "title": "Block producer hot keys",
-    "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
-    "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
-    "kes": "KES",
-    "vrf": "VRF",
-    "opcert": "opcert",
-    "missing": "Not attached",
-    "present": "Attached {{fp}}",
-    "choose": "Choose file",
-    "apply": "Apply and restart as block producer",
-    "detach": "Detach and run as relay",
-    "applyTitle": "Attach hot keys to {{id}}?",
-    "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
-    "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
-    "applyC2": "The running node can sign blocks if these files are valid.",
-    "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
-    "detachTitle": "Detach producer keys from {{id}}?",
-    "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
-    "detachC1": "The node will no longer produce blocks.",
-    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
-    "presentShort": "On host",
-    "queuedShort": "Ready",
-    "queued": "Selected · {{name}}",
-    "fileHint": "Typical name {{file}}",
-    "dropOrBrowse": "Drop {{file}} here or browse",
-    "dropping": "Drop to attach {{label}}",
-    "browse": "Browse",
-    "clearFile": "Remove"
+    "unknown": "مجهول",
+    "stopped": "توقف",
+    "created": "تم الإنشاء (لم يبدأ أبدًا)",
+    "missing": "لا حاوية",
+    "starting": "البدء",
+    "rpc_wait": "قيد التشغيل - RPC غير جاهز",
+    "running": "جري",
+    "syncing": "المزامنة",
+    "error": "خطأ"
   }
 }

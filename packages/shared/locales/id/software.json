@@ -84,13 +84,13 @@
     "latest": "Terbaru",
     "upToDate": "Up to date / repo terbaru",
     "refresh": "Periksa kembali yang terbaru",
+    "refreshHasUpdate": "Versi yang lebih baru tersedia",
+    "refreshLatest": "Sudah versi rekaman terbaru",
     "pick": "Pilih versi",
     "noTarget": "Tidak ada target pembaruan",
     "needRuntimePage": "Instal versi ini di halaman runtime",
     "noAptCandidate": "Tidak ada versi kandidat yang tepat",
-    "sourceLabel": "Sumber",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "Sumber"
   },
   "install": {
     "progress": "Memasang: {{list}}…",

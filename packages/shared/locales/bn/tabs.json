@@ -4,6 +4,6 @@
   "about": "সম্পর্কে",
   "main": "কর্ম",
   "stack": "সফটওয়্যার",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "এরকম কোন ট্যাব নেই",
+  "unknownHint": "এই পৃষ্ঠাটিতে {{tab}} নামের কোনো ট্যাব নেই।"
 }

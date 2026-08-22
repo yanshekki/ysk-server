@@ -26,6 +26,7 @@ export * from './git-errors.js';
 export * from './git-auth.js';
 export * from './git-hook.js';
 export * from './backup-cron.js';
+export * from './cron-host-rewrite.js';
 export * from './project-logs.js';
 export * from './ssl-certs.js';
 export * from './ssl-le-errors.js';

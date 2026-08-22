@@ -36,6 +36,10 @@
   "emptyBansDesc": "或无权读取 fail2ban-client",
   "ignoreipTitle": "ignoreip 白名单",
   "ignoreipDesc": "永不会被 ban 的 IP（管理文件 + 可选 live fail2ban-client）。建议加入你的办公／居家 IP。",
+  "whitelistEmptyWarn": "白名单为空，jail 可能把你自己封锁。套用 ignoreip 前请先加入登录 IP。",
+  "suggestIgnoreLogin": "你的登录 IP {{ip}}",
+  "applyIgnoreEmptyWarn": "白名单为空时套用会清空 ignoreip",
+  "applyIgnoreNeedConfirm": "会重写 jail ignoreip 并重新载入 fail2ban",
   "addIp": "新增 IP",
   "addWhitelist": "加入白名单",
   "applyPolicyIgnoreip": "套用策略（含 ignoreip）",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "这是主机或您的登录 IP — 将其添加到ignoreip而不是禁止",
   "suggestIgnoreHint": "建议的管理 IP（仅在您应用策略之前为面板文件）：",
-  "suggestIgnoreAdd": "添加 {{ip}}",
-  "whitelistEmptyWarn": "白名单为空，jail 可能把你自己封锁。套用 ignoreip 前请先加入登录 IP。",
-  "suggestIgnoreLogin": "你的登录 IP {{ip}}",
-  "applyIgnoreEmptyWarn": "白名单为空时套用会清空 ignoreip",
-  "applyIgnoreNeedConfirm": "会重写 jail ignoreip 并重新载入 fail2ban"
+  "suggestIgnoreAdd": "添加 {{ip}}"
 }

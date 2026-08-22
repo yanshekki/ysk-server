@@ -838,6 +838,37 @@
       "example": "ysk-server cron status --json"
     },
     {
+      "name": "cron update",
+      "aliases": ["cron edit", "cron patch"],
+      "risk": "write-panel",
+      "summary": "Patch a managed cron job (schedule/command/user/project/enabled). Same as panel PATCH. Live host crontab is unchanged until install.",
+      "args": ["--id", "--schedule", "--command", "--user", "--project-id", "--enable", "--disable"],
+      "example": "ysk-server cron update --id JOB_ID --schedule '0 4 * * *' --command '/usr/bin/true' --json",
+      "exitCodes": { "4": "not_found" }
+    },
+    {
+      "name": "cron host list",
+      "aliases": ["cron host-list", "cron host-scan"],
+      "risk": "read",
+      "summary": "List live host crontab lines (root + project linux users)",
+      "args": ["--user", "--jobs-only"],
+      "example": "ysk-server cron host list --json"
+    },
+    {
+      "name": "cron host edit",
+      "risk": "write-host",
+      "summary": "In-place replace one host crontab line (not install)",
+      "args": ["--user", "--old-schedule", "--old-command", "--schedule", "--command", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server cron host edit --user root --old-schedule '*/15 * * * *' --old-command /usr/bin/true --schedule '0 * * * *' --command /usr/bin/true --execute --json"
+    },
+    {
+      "name": "dns ddns",
+      "risk": "write-host",
+      "summary": "Host WAN DDNS status/probe/update/add/delete. Probe is detect-only. Publish needs execute.",
+      "args": ["--fqdn", "--provider", "--force", "--execute"],
+      "example": "ysk-server dns ddns status --json"
+    },
+    {
       "name": "email domains list",
       "risk": "read",
       "summary": "List email domains",
@@ -1302,6 +1333,60 @@
       "summary": "Get one validator instance by id",
       "args": ["--id"],
       "example": "ysk-server validators get --id eth-hoodi-1 --json",
+      "exitCodes": { "4": "not_found" }
+    },
+    {
+      "name": "validators checklist",
+      "risk": "read",
+      "summary": "Public staking identity and next-step playbook (no secrets)",
+      "args": ["--id"],
+      "example": "ysk-server validators checklist --id near-testnet-1 --json",
+      "exitCodes": { "4": "not_found" }
+    },
+    {
+      "name": "validators rewrite-compose",
+      "risk": "write-host",
+      "summary": "Regenerate official compose.yml (host P2P in public_addr). Dry-run without --execute.",
+      "args": ["--id", "--execute"],
+      "example": "ysk-server validators rewrite-compose --id near-testnet-1 --json"
+    },
+    {
+      "name": "validators compose-write",
+      "aliases": ["validators save-compose"],
+      "risk": "write-host",
+      "summary": "Write compose.yml from --file or --content. Dry-run without --execute.",
+      "args": ["--id", "--file", "--content", "--execute"],
+      "example": "ysk-server validators compose-write --id near-testnet-1 --file ./compose.yml --json"
+    },
+    {
+      "name": "validators software",
+      "risk": "read",
+      "summary": "Pinned validator images vs local Docker and official tags",
+      "args": ["--refresh"],
+      "example": "ysk-server validators software --json"
+    },
+    {
+      "name": "validators pull",
+      "aliases": ["validators software-pull"],
+      "risk": "write-host",
+      "summary": "docker pull an allowlisted validator pin",
+      "args": ["--image", "--tag", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators pull --image nearprotocol/nearcore --tag 2.5.0 --execute --json"
+    },
+    {
+      "name": "validators leftover-remove",
+      "aliases": ["validators leftovers-remove", "validators leftover-rm"],
+      "risk": "write-host",
+      "summary": "Remove a leftover directory under the validators root (confirm=basename)",
+      "args": ["--path", "--confirm", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators leftover-remove --path /var/lib/ysk-server/validators/orphan --confirm orphan --execute --json"
+    },
+    {
+      "name": "validators stats",
+      "risk": "read",
+      "summary": "docker stats --no-stream for one instance compose project",
+      "args": ["--id"],
+      "example": "ysk-server validators stats --id eth-hoodi-1 --json",
       "exitCodes": { "4": "not_found" }
     },
     {

@@ -5,38 +5,64 @@
   "tab": {
     "nodes": "Nœuds",
     "disk": "Disque",
-    "about": "À propos",
-    "stack": "Software"
+    "stack": "Logiciel",
+    "about": "À propos"
   },
   "empty": {
     "title": "Aucun nœud validateur pour l’instant",
     "desc": "Créez un nœud de testnet en quelques clics."
   },
   "refresh": "Actualiser",
+  "software": {
+    "engine": "Moteur Docker",
+    "engineDesc": "Les nœuds de validation s'exécutent en tant que projets Compose. Installez Docker ici s'il est manquant. L'élagage de l'image reste sur la page Docker.",
+    "client": "Client",
+    "image": "Image",
+    "present": "Locale",
+    "local": "Tiré",
+    "missing": "Pas tiré",
+    "size": "Taille",
+    "usedBy": "Utilisé par",
+    "unused": "Aucun exemple",
+    "pull": "Pull",
+    "pulled": "Sur cet hôte",
+    "pulling": "Tirez {{ref}}",
+    "empty": "Aucune image client épinglée",
+    "emptyDesc": "Le catalogue est vide. Cela ne devrait pas arriver.",
+    "daemonDown": "Le moteur Docker ne fonctionne pas",
+    "source": "Source",
+    "official": "Dernier officiel",
+    "officialNewer": "Officiel plus récent",
+    "stale": "Derrière la broche",
+    "staleItem": "{{id}} ({{tag}})",
+    "pin": "Goupille du panneau",
+    "openRelease": "Notes de version",
+    "chooseOnInstance": "Modifiez la version sur la page de l'instance. Extraire une image ne ré-étiquete pas un nœud en cours d'exécution."
+  },
   "disk": {
     "title": "Disque des validateurs",
     "root": "Répertoire de données",
     "free": "Libre",
     "used": "Utilisé",
+    "fsUsed": "Système de fichiers utilisé",
+    "leftoverTitle": "Données restantes ({{count}})",
+    "leftoverEmpty": "Aucun répertoire d'instance restant",
+    "leftoverDesc": "Répertoires sous la racine des validateurs qui ne sont pas une instance de magasin. Supprimez-les uniquement après avoir confirmé qu'ils ne sont pas utilisés.",
+    "leftoverRemove": "Retirer",
+    "leftoverRemoveTitle": "Supprimer les données restantes du validateur ?",
+    "leftoverRemoveDesc": "Supprimez définitivement {{path}} du disque. Ce n'est pas un nœud répertorié.",
+    "browseRoot": "Ouvrir dans le navigateur de fichiers",
     "none": "Pas encore de données d’instance",
     "warn": "Utilisation du disque élevée (70 %+)",
     "danger": "Utilisation du disque critique (85 %+)",
     "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)",
-    "autoClearRisk": "Destructive: the largest stopped instance is deleted without a further prompt. Default is off. Check audit / logs after it fires.",
-    "autoClearConfirmTitle": "Enable auto-clear?",
-    "autoClearC1": "When disk is critical, the largest stopped instance is deleted without asking again.",
-    "fsUsed": "Filesystem used",
-    "leftoverTitle": "Leftover data ({{count}})",
-    "leftoverDesc": "Directories under the validators root that are not a store instance. Remove only after you confirm they are unused.",
-    "leftoverRemove": "Remove",
-    "leftoverRemoveTitle": "Delete leftover validator data?",
-    "leftoverRemoveDesc": "Permanently delete {{path}} from disk. This is not a listed node.",
-    "autoClearThreshold": "Trigger: filesystem use at or above 85%.",
-    "autoClearCandidate": "Current candidate: {{id}}",
-    "autoClearNone": "No stopped instance is a candidate right now.",
-    "browseRoot": "Open in file browser",
-    "leftoverEmpty": "No leftover instance directories",
-    "autoClearCandidates": "Stopped candidates (largest with data first): {{list}}"
+    "autoClearRisk": "Destructif : la plus grande instance arrêtée est supprimée sans autre invite. La valeur par défaut est désactivée. Vérifiez l'audit/les journaux après le déclenchement.",
+    "autoClearConfirmTitle": "Activer l'effacement automatique ?",
+    "autoClearC1": "Lorsque le disque est critique, la plus grande instance arrêtée est supprimée sans nouvelle demande.",
+    "autoClearThreshold": "Déclencheur : utilisation du système de fichiers à 85 % ou plus.",
+    "autoClearCandidate": "Candidat actuel : {{id}}",
+    "autoClearCandidates": "Candidats arrêtés (le plus grand avec les données en premier) : {{list}}",
+    "autoClearNone": "Aucune instance arrêtée n’est candidate pour le moment."
   },
   "chain": {
     "eth": "Ethereum",
@@ -63,7 +89,7 @@
   "networkKind": {
     "testnet": "Réseau de test",
     "mainnet": "Réseau principal",
-    "mixed": "Mainnet + testnet"
+    "mixed": "Réseau principal + réseau de test"
   },
   "profile": {
     "minimal": "Minimaliste",
@@ -71,41 +97,72 @@
     "validator-ready": "Prêt validateur",
     "rpc": "RPC"
   },
+  "profileHelp": {
+    "title": "Profiles",
+    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
+    "colName": "Profil",
+    "colUse": "Utiliser pour",
+    "colDisk": "Disque",
+    "colStake": "Validateur de jalonnement",
+    "useMinimal": "Testnet ou une première installation. Pas une histoire complète.",
+    "usePruned": "Suivez la pointe de la chaîne à long terme. Conserve uniquement les données récentes (élaguées).",
+    "useValidatorReady": "Dimensionné pour que vous puissiez ultérieurement attester ou proposer. Générez vous-même des clés hors ligne.",
+    "useRpc": "Laissez cet hôte ou d'autres services interroger la chaîne. Écoute sur 127.0.0.1 par défaut.",
+    "diskMinimal": "Le plus petit",
+    "diskPruned": "Moyen (plus que minimal)",
+    "diskValidatorReady": "Le plus grand des quatre",
+    "diskRpc": "Cela dépend de la chaîne",
+    "stakeNo": "Ne convient pas",
+    "stakeYes": "Oui – hors ligne ou mal configuré, vous risquez de perdre votre mise",
+    "stakeRpc": "Pas un validateur",
+    "minimal": "Le plus petit disque. À utiliser pour les testnets ou une première installation. Pas un historique complet, et pas pour un validateur de jalonnement en direct.",
+    "pruned": "Conserve l'état récent de la chaîne et supprime les blocs plus anciens (élagués). Plus de disque que Minimal, moins qu'un nœud complet. Utilisez pour suivre le conseil à long terme.",
+    "validatorReady": "Réserve plus de disque afin que vous puissiez ultérieurement attester ou proposer en tant que validateur. Générez vous-même des clés hors ligne. Être hors ligne ou mal configuré peut perdre votre mise.",
+    "rpc": "Pour que cet hôte ou d’autres services interrogent la chaîne. RPC écoute sur 127.0.0.1 par défaut et n'est pas publié sur Internet."
+  },
   "col": {
     "id": "ID",
     "chain": "Chaîne",
     "network": "Réseau",
     "profile": "Profil",
     "status": "État",
-    "disk": "Disque",
-    "traffic": "Traffic"
+    "traffic": "Trafic",
+    "disk": "Disque"
   },
   "cli": {
-    "usage": "Utilisation : ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "Utilisation : ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "Client d’exécution",
     "cl": "Client de consensus",
     "version": "Version",
-    "pin": "Panel pin",
-    "officialNewer": "Official newer",
-    "olderThanPin": "Older than the panel pin",
-    "prerelease": "Prerelease",
-    "current": "Running now",
-    "source": "Image source"
+    "pin": "Goupille du panneau",
+    "officialNewer": "Officiel plus récent",
+    "olderThanPin": "Plus vieux que la broche du panneau",
+    "prerelease": "Avant-première",
+    "current": "En cours d'exécution maintenant",
+    "source": "Source des images"
   },
   "mithril": {
     "label": "Restaurer d’abord depuis un instantané Mithril (recommandé en testnet)",
-    "action": "Restaurer avec Mithril",
-    "hint": "This is a one-time restore after install. It is not written into compose. You can also run it later from the instance page."
+    "hint": "Il s'agit d'une restauration unique après l'installation. Ce n’est pas écrit dans composer. Vous pouvez également l'exécuter plus tard à partir de la page de l'instance.",
+    "action": "Restaurer avec Mithril"
   },
   "errors": {
     "notFound": "Instance de validateur introuvable",
     "invalidId": "Identifiant d’instance invalide",
     "diskLow": "Pas assez d’espace disque libre pour cette chaîne, ce réseau et ce profil",
+    "memLow": "Pas assez de RAM libre pour la limite de mémoire de cette chaîne",
     "diskUnknownMainnet": "Impossible de mesurer l’espace libre ; création en réseau principal refusée",
     "needDocker": "Docker Compose est requis et introuvable",
     "composeFailed": "docker compose a échoué",
+    "containerNotUp": "Compose a démarré, mais le conteneur n'a pas continué à fonctionner",
+    "probeFailed": "Le nœud ne répond pas encore à RPC. Vérifiez les journaux sur cette page.",
+    "oom": "Plus de mémoire. Définissez une limite de mémoire ou ajoutez de la RAM, puis redémarrez.",
+    "nofile": "Le processus a atteint la limite de fichiers ouverts (nofile). Augmentez ulimits.nofile et redémarrez.",
+    "noContainer": "Aucun conteneur de composition n'existe pour cette instance.",
+    "restarting": "Le conteneur redémarre. Vérifiez les journaux sur cette page.",
+    "restartingCount": "Le conteneur redémarre ({{n}}). Vérifiez les journaux sur cette page.",
     "needConfirm": "Vider exige confirm=identifiant d’instance ou CLEAR",
     "mithrilAdaOnly": "La restauration Mithril n’est disponible que pour Cardano",
     "needMithrilConfirm": "Mithril exige confirm=identifiant d’instance ou MITHRIL",
@@ -119,35 +176,27 @@
     "composeNotManaged": "Refus d’écrire un fichier Compose non géré par YSK",
     "badDataPath": "Le chemin de données doit être un répertoire absolu hors des chemins système",
     "portInUse": "Ce port RPC est déjà utilisé par une autre instance de validateur",
+    "badTag": "Cette version client n'est pas une balise officielle pour cette image",
+    "needVersionConfirm": "Le changement de version nécessite confirmation = identifiant d'instance",
+    "needMainnetVersionAck": "Les modifications de la version du réseau principal nécessitent acceptMainnet",
     "snapshotUnsupported": "Aucune source d’instantané autorisée pour cette chaîne",
     "snapshotLookup": "Impossible de résoudre le pointeur d’instantané officiel",
     "needSnapshotConfirm": "La restauration d’instantané exige confirm=identifiant d’instance ou SNAPSHOT",
     "snapshotBlocked": "Le docker run d’instantané a été bloqué par la liste d’autorisation",
     "snapshotFailed": "Échec du téléchargement ou de l’extraction de l’instantané",
-    "containerNotUp": "Compose started, but the container did not stay running",
-    "probeFailed": "The node is not answering RPC yet. Check logs on this page.",
-    "noContainer": "No compose container exists for this instance.",
-    "restarting": "Container is restarting. Check logs on this page.",
-    "restartingCount": "Container is restarting ({{n}}). Check logs on this page.",
-    "oom": "Out of memory. Set a memory limit or add RAM, then restart.",
-    "nofile": "The process hit the open-files (nofile) limit. Raise ulimits.nofile and restart.",
-    "memLow": "Not enough free RAM for this chain's memory cap",
-    "badTag": "That client version is not an official tag for this image",
-    "needVersionConfirm": "Changing version requires confirm=instance id",
-    "needMainnetVersionAck": "Mainnet version changes require acceptMainnet",
-    "producerAdaOnly": "Producer keys are only for Cardano",
-    "needProducerConfirm": "Attaching producer keys requires confirm=instance id or PRODUCER",
-    "needMainnetProducerAck": "Mainnet producer attach requires acceptMainnet",
-    "producerColdRejected": "Cold or pool-owner signing keys are refused. Keep cold keys offline.",
-    "producerTooLarge": "That key file is larger than 64 KiB",
-    "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
-    "producerEmpty": "Provide at least one of kes, vrf, or opcert",
-    "switchNeedDetachProducer": "Detach producer keys before switching network"
+    "producerAdaOnly": "Les clés du producteur sont uniquement pour Cardano",
+    "needProducerConfirm": "L'attachement de clés de producteur nécessite confirm=identifiant d'instance ou PRODUCER",
+    "needMainnetProducerAck": "L'attachement du producteur au réseau principal nécessite acceptMainnet",
+    "producerColdRejected": "Les clés de signature à froid ou par le propriétaire de la piscine sont refusées. Gardez les touches froides hors ligne.",
+    "producerTooLarge": "Ce fichier de clé fait plus de 64 Ko",
+    "producerBadType": "Ce fichier n'est pas une clé KES, une clé VRF ou un certificat opérationnel",
+    "producerEmpty": "Fournissez au moins un des éléments suivants : kes, vrf ou opcert",
+    "switchNeedDetachProducer": "Détachez les clés du producteur avant de changer de réseau"
   },
   "notes": {
     "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
     "noKeys": "YSK Server ne génère ni n’enregistre jamais de clés de staking.",
-    "dockerSoon": "Install and start from this page wizard. Host changes need root and YSK_EXECUTE=1.",
+    "dockerSoon": "Installez et démarrez à partir de cette page l'assistant. Les modifications d'hôte nécessitent root et YSK_EXECUTE=1.",
     "dryCreate": "Spécification d’instance et compose écrits (dry-run). Passez --execute et YSK_EXECUTE=1 pour démarrer les conteneurs.",
     "dryStart": "Le démarrage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
     "dryStop": "L’arrêt est un dry-run. Passez --execute et YSK_EXECUTE=1.",
@@ -173,67 +222,67 @@
     "snapshotEthCl": "Données CL réinitialisées pour le checkpoint sync officiel",
     "snapshotNear": "Données NEAR effacées ; compose réinitialisera avec le genesis officiel et epoch sync",
     "nativePrune": "Commande d’élagage native du client exécutée",
-    "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "deleted": "Node deleted",
-    "leftoverRemoved": "Removed leftover {{path}}",
-    "dryProducer": "Producer keys are dry-run. Add --execute and YSK_EXECUTE=1.",
-    "dryProducerDetach": "Producer detach is dry-run. Add --execute and YSK_EXECUTE=1.",
-    "producerPartial": "Wrote hot keys. Attach KES, VRF, and opcert before the node starts as a block producer.",
-    "producerAttached": "Hot keys attached; compose rewritten as block producer",
-    "producerDetached": "Hot keys removed; compose rewritten as relay"
+    "dryProducer": "Les clés du producteur sont exécutées à sec. Ajoutez --execute et YSK_EXECUTE=1.",
+    "dryProducerDetach": "Le détachement du producteur est un essai à sec. Ajoutez --execute et YSK_EXECUTE=1.",
+    "producerPartial": "J'ai écrit des touches de raccourci. Attachez KES, VRF et opcert avant que le nœud ne démarre en tant que producteur de blocs.",
+    "producerAttached": "Touches de raccourci attachées ; composer réécrit en tant que producteur de blocs",
+    "producerDetached": "Touches de raccourci supprimées ; composer réécrit en relais",
+    "dryDelete": "La suppression est un essai à sec. Passez --execute et YSK_EXECUTE=1.",
+    "deleted": "Nœud supprimé",
+    "leftoverRemoved": "Suppression des restes {{path}}"
   },
   "create": "Créer un nœud",
   "wizard": {
     "title": "Créer un nœud",
+    "stepOf": "Étape {{n}} / {{total}}",
+    "stepChain": "Chaîne",
+    "stepNetwork": "Réseau",
+    "stepProfile": "Profil",
+    "stepSummary": "Résumé",
+    "needDocker": "Docker Engine n'est pas installé. Installez-le d'abord – ce bouton reste désactivé.",
+    "diskNeed": "Ce profil nécessite environ {{need}} · gratuit {{free}}",
+    "diskNeedNetwork": "Par défaut (minimal) pour ce réseau, il faut environ {{need}} · gratuit {{free}}",
+    "profileHint": {
+      "minimal": "La plus petite synchronisation – disque léger, pas pour le jalonnement.",
+      "pruned": "Conserve uniquement l'historique récent (élagué). Plus petit que l'archive, toujours utilisable pour RPC.",
+      "validator-ready": "Dimensionné pour un validateur de jalonnement. Nécessite plus de disque que Minimal.",
+      "rpc": "Nœud RPC public – pas un validateur de jalonnement."
+    },
+    "diskShort": "Pas assez de disque libre pour cette chaîne/réseau/profil",
+    "diskShortDetail": "Besoin {{need}} · gratuit {{free}} · court {{short}}",
+    "memShort": "Pas assez de RAM libre pour la limite de mémoire de cette chaîne",
+    "memShortDetail": "Besoin {{need}} · gratuit {{free}} · court {{short}}",
+    "needCustomPath": "Entrez un chemin de données absolu",
+    "previewId": "ID du nœud",
+    "previewCompose": "Composer un projet",
+    "profileSeeAbout": "What each profile means is on the About tab.",
     "back": "Retour",
     "next": "Suivant",
     "install": "Installer",
     "mainnetWarn": "Le réseau principal demande beaucoup d’espace libre (ETH souvent 800 Gio+). Le testnet est recommandé.",
     "mainnetAck": "Je comprends le risque disque et slashing. Continuer en réseau principal.",
+    "lowDiskAcked": "Le disque libre est inférieur à la taille recommandée. Vous avez quand même confirmé la création ; la synchronisation peut s'arrêter si le disque se remplit.",
+    "lowMemAcked": "La RAM libre est inférieure à la limite de mémoire de cette chaîne plus 1 Gio de marge. Vous avez quand même confirmé la création ; le nœud peut être MOO ou caler.",
     "heavyWarn": "Cette chaîne est lourde (gros disque et IOPS élevés). Solana en réseau principal demande généralement 2 Tio+.",
     "memory": "Limite mémoire (ex. 4g)",
     "cpus": "Limite CPU (ex. 2.0)",
     "dataPath": "Chemin de données (facultatif)",
     "rpcPort": "Port RPC (facultatif)",
-    "stepOf": "Step {{n}} / {{total}}",
-    "stepChain": "Chain",
-    "stepNetwork": "Network",
-    "stepProfile": "Profile",
-    "stepSummary": "Summary",
-    "needDocker": "Docker Engine is not installed. Install it first — this button stays disabled.",
-    "diskNeed": "This profile needs about {{need}} · free {{free}}",
-    "diskShort": "Not enough free disk for this chain / network / profile",
-    "limitNone": "No limit",
-    "rpcDefault": "Default",
-    "customPath": "Use a custom data path",
-    "installConfirmTitle": "Install this node?",
-    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. About {{disk}} of disk. The image pull can take a long time.",
-    "installC1": "Several gigabytes of images may be downloaded.",
-    "installC2": "You can cancel the panel task; already-pulled images are not deleted automatically.",
-    "lowDiskAcked": "Free disk is below the recommended size. You confirmed create anyway; sync may stop if the disk fills.",
-    "diskNeedNetwork": "Default (Minimal) for this network needs about {{need}} · free {{free}}",
-    "diskShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "needCustomPath": "Enter an absolute data path",
-    "previewId": "Node id",
-    "previewCompose": "Compose project",
-    "profileSeeAbout": "What each profile means is on the About tab.",
-    "dockerAbout": "Docker Engine is required to install and start nodes.",
-    "dockerAboutOk": "Docker Engine is installed.",
-    "dockerAboutMissing": "Docker Engine is not installed. Open Docker to install it.",
-    "rewriteCompose": "Rewrite compose",
-    "rewriteComposeTitle": "Rewrite compose.yml from the current adapter?",
-    "rewriteComposeDesc": "Overwrites the generated compose for {{id}} using the shipped flags for this chain.",
-    "chainMeta": "{{disk}} min · {{clients}} clients",
-    "profileHint": {
-      "minimal": "Smallest sync — light disk, not for staking.",
-      "pruned": "Keeps recent history only (Pruned). Smaller than archive, still usable for RPC.",
-      "validator-ready": "Sized for a staking validator. Needs more disk than Minimal.",
-      "rpc": "Public RPC node — not a staking validator."
-    },
-    "installC3": "Mainnet uses a lot of disk. A staking validator can lose stake if it is offline or misconfigured. Type the node id to confirm.",
-    "memShort": "Not enough free RAM for this chain's memory cap",
-    "memShortDetail": "Need {{need}} · free {{free}} · short {{short}}",
-    "lowMemAcked": "Free RAM is below this chain's memory cap plus 1 GiB headroom. You confirmed create anyway; the node may OOM or stall."
+    "limitNone": "Aucune limite",
+    "rpcDefault": "Défaut",
+    "customPath": "Utiliser un chemin de données personnalisé",
+    "installConfirmTitle": "Installer ce nœud ?",
+    "installConfirmDesc": "{{chain}} · {{network}} · {{profile}}. Environ {{disk}} de disque. L’extraction de l’image peut prendre beaucoup de temps.",
+    "installC1": "Plusieurs gigaoctets d'images peuvent être téléchargés.",
+    "installC2": "Vous pouvez annuler la tâche du panneau ; les images déjà extraites ne sont pas supprimées automatiquement.",
+    "installC3": "Le réseau principal utilise beaucoup de disque. Un validateur de jalonnement peut perdre sa mise s’il est hors ligne ou mal configuré. Tapez l'ID du nœud pour confirmer.",
+    "dockerAbout": "Docker Engine est requis pour installer et démarrer les nœuds.",
+    "dockerAboutOk": "Docker Engine est installé.",
+    "dockerAboutMissing": "Docker Engine n'est pas installé. Ouvrez Docker pour l'installer.",
+    "rewriteCompose": "Réécrire la composition",
+    "rewriteComposeTitle": "Réécrire compose.yml à partir de l'adaptateur actuel ?",
+    "rewriteComposeDesc": "Écrase la composition générée pour {{id}} en utilisant les indicateurs fournis pour cette chaîne.",
+    "chainMeta": "{{disk}} min · {{clients}} clients"
   },
   "actions": {
     "detail": "Détails",
@@ -242,26 +291,26 @@
     "restart": "Redémarrer",
     "clear": "Vider",
     "upgrade": "Mettre à jour",
+    "setVersion": "Changer de version",
     "clearConfirm": "Saisissez l’identifiant d’instance ou CLEAR",
     "prune": "Nettoyer les images",
     "switchNetwork": "Changer de réseau",
     "removeUnit": "Supprimer aussi compose / l’enregistrement d’instance",
     "restoreAfter": "Restaurer l’instantané après vidage",
-    "delete": "Delete",
-    "deleteTitle": "Delete {{id}}",
-    "deleteDesc": "This removes the node from the panel.",
-    "deleteC1": "Docker Compose is stopped and removed",
-    "deleteC2": "Chain data on disk is deleted",
-    "deleteC3": "The instance record is removed",
-    "pruneTitle": "Prune unused images",
-    "pruneDesc": "Type the instance id to prune unused Compose images for this node.",
-    "pruneC1": "Unused images labelled for this Compose project are deleted.",
-    "clearTitle": "Clear {{id}}",
-    "clearC1": "Chain data on disk is deleted.",
-    "clearC2": "The instance stays in the panel, stopped and empty.",
-    "switchTitle": "Switch network",
-    "switchC1": "The node is stopped and chain data is wiped before the new network is written.",
-    "setVersion": "Change version"
+    "delete": "Supprimer",
+    "deleteTitle": "Supprimer {{id}}",
+    "deleteDesc": "Cela supprime le nœud du panneau.",
+    "deleteC1": "Docker Compose est arrêté et supprimé",
+    "deleteC2": "Les données de la chaîne sur le disque sont supprimées",
+    "deleteC3": "L'enregistrement de l'instance est supprimé",
+    "pruneTitle": "Élaguer les images inutilisées",
+    "pruneDesc": "Tapez l'ID d'instance pour élaguer les images Compose inutilisées pour ce nœud.",
+    "pruneC1": "Les images inutilisées étiquetées pour ce projet Compose sont supprimées.",
+    "clearTitle": "Effacer {{id}}",
+    "clearC1": "Les données de la chaîne sur le disque sont supprimées.",
+    "clearC2": "L'instance reste dans le panneau, arrêtée et vide.",
+    "switchTitle": "Changer de réseau",
+    "switchC1": "Le nœud est arrêté et les données de la chaîne sont effacées avant l'écriture du nouveau réseau."
   },
   "policy": {
     "label": "Politique de mise à jour",
@@ -287,12 +336,342 @@
     "near": "Les instantanés tar NEAR gratuits officiels ont été retirés. Restaurer efface les données et utilise le genesis officiel plus epoch sync.",
     "none": "Aucune source d’instantané n’est configurée pour cette chaîne."
   },
+  "producer": {
+    "title": "Bloquer les touches de raccourci du producteur",
+    "hint": "Ce n'est pas une adresse IP. Téléchargez la clé KES, la clé VRF et le certificat opérationnel à partir d'une machine hors ligne. Gardez les touches froides hors de cet hôte.",
+    "warn": "Le même nœud avec un port P2P public signera les blocs. La topologie officielle maintient le producteur hors de l'Internet public. Ces trois fichiers sont des raccourcis clavier.",
+    "kes": "KES",
+    "vrf": "VRF",
+    "opcert": "extrait",
+    "missing": "Non attaché",
+    "present": "Ci-joint {{fp}}",
+    "presentShort": "Sur l'hôte",
+    "queuedShort": "Prêt",
+    "queued": "Sélectionné · {{name}}",
+    "fileHint": "Nom typique {{file}}",
+    "dropOrBrowse": "Déposez {{file}} ici ou parcourez",
+    "dropping": "Déposer pour joindre {{label}}",
+    "browse": "Parcourir",
+    "clearFile": "Retirer",
+    "choose": "Choisir un fichier",
+    "apply": "Appliquer et redémarrer en tant que producteur de blocs",
+    "detach": "Détachez-vous et courez comme relais",
+    "applyTitle": "Attacher les touches de raccourci à {{id}} ?",
+    "applyDesc": "KES, VRF et opcert sont écrits dans le répertoire des clés d'instance. Compose est réécrit. Le conteneur redémarre en tant que producteur de blocs.",
+    "applyC1": "Les touches froides doivent rester hors ligne. Ne téléchargez pas cold.skey.",
+    "applyC2": "Le nœud en cours d'exécution peut signer des blocs si ces fichiers sont valides.",
+    "applyC3": "Mainnet : un producteur hors ligne ou mal configuré manque des blocs.",
+    "detachTitle": "Détacher les clés de producteur de {{id}} ?",
+    "detachDesc": "Les touches de raccourci sont supprimées de cet hôte. Compose revient au relais.",
+    "detachC1": "Le nœud ne produira plus de blocs.",
+    "mainnet": "Réseau principal : je comprends que cet hôte contiendra des touches de raccourci et signera des blocs."
+  },
   "stake": {
     "title": "Préparer le staking (vous gardez les clés)",
     "offlineKeys": "Générez les clés hors ligne. Le panneau ne les stocke jamais.",
     "deposit": "Terminez le dépôt / l’enregistrement sur le launchpad officiel.",
     "withdrawal": "Définissez vous-même les identifiants de retrait.",
     "monitor": "Surveillez disque, pairs et badges de mise à jour sur cette page."
+  },
+  "playbook": {
+    "overviewTitle": "Comment fonctionne le jalonnement sur chaque chaîne",
+    "overviewDesc": "Ce panneau exécute le nœud. Votre portefeuille et vos clés restent avec vous. Liens officiels uniquement – ​​ne partagez jamais de phrase de départ ici.",
+    "colChain": "Chaîne",
+    "colModel": "Comment s'inscrire",
+    "colMin": "Minimum typique",
+    "colWallet": "Votre portefeuille",
+    "colPanel": "Ce que fait ce panneau",
+    "yskDoes": "Ce panneau fait",
+    "youDo": "Tu fais",
+    "steps": "Mesures",
+    "never": "Ne pas",
+    "official": "Liens officiels",
+    "seeAbout": "Les étapes complètes se trouvent dans l’onglet À propos.",
+    "nodeIdReady": "NodeID (de ce nœud)",
+    "nodeIdPending": "NodeID apparaît une fois le nœud synchronisé et répondant au RPC.",
+    "blsReady": "Clé publique BLS",
+    "blsProof": "Preuve de possession BLS",
+    "blsPending": "Les informations d'identification BLS apparaissent une fois que le nœud répond à RPC.",
+    "copyAll": "Copier tout",
+    "copyNamed": "Copier {{label}}",
+    "nearStakeKey": "Clé publique de mise en jeu",
+    "nearStakeKeyPending": "Apparaît après le premier démarrage (près de l'initialisation). RPC n'est pas prêt ne signifie pas que la clé est manquante.",
+    "nearAccountId": "Fichier clé account_id",
+    "nearAccountIdPending": "Souvent vide jusqu'à ce que vous le régliez vous-même sur {pool}{{suffix}}. Ce panneau n'écrit jamais validator_key.json.",
+    "nearFactory": "Usine de pool de jalonnement",
+    "nearPublicAddr": "P2P public (pairs)",
+    "nearPublicAddrPending": "Apparaît après le premier démarrage, écrit WAN:{{port}} dans config.json.",
+    "nearCreateCommand": "Commande create_staking_pool",
+    "nearPointing": "Le contrat de pool ne prend pas l’IP de ce serveur. Il stocke la clé publique de participation de ce nœud. Les pairs utilisent la ligne Public P2P ci-dessus (port hôte {{port}}). RPC reste sur localhost.",
+    "nearAccountIdHint": "Une fois le pool existant, définissez vous-même account_id dans validator_key.json sur {pool}{{suffix}}. Ce panneau n'écrit jamais ce fichier.",
+    "cosmosPubkey": "Clé publique consensuelle",
+    "cosmosPubkeyPending": "Apparaît après que gaiad init ait écrit priv_validator_key.json. RPC n'est pas prêt ne signifie pas que la clé est manquante.",
+    "cosmosChainId": "identifiant de chaîne",
+    "cosmosP2p": "P2P public (adresse_externe)",
+    "cosmosP2pPending": "Apparaît après le premier démarrage, écrit tcp://WAN:{{port}} dans config.toml.",
+    "ethBeacon": "API de balise (localhost)",
+    "ethBeaconPending": "Balise HTTP sur cet hôte. Pointez un client validateur que vous exécutez vous-même sur cette URL : cette composition n'a pas de VC.",
+    "cosmosCreateCommand": "commande create-validator",
+    "solIdentity": "Clé publique d'identité",
+    "solIdentityPending": "Apparaît après que RPC répond à getIdentity. Ce processus est sans vote jusqu'à ce que vous ajoutiez vous-même un compte de vote.",
+    "adaP2pPort": "Port relais P2P",
+    "adaP2pPending": "Mettez l'IPv4 publique de cet hôte et ce port dans topology.json. Ce panneau ne sonde pas le WAN.",
+    "notPosTitle": "Pas de preuve de participation",
+    "notPosBody": "Bitcoin est ici un nœud complet ou élagué. Il n'y a pas de portefeuille de jalonnement sur cette page.",
+    "eth": {
+      "model": "Cette composition exécute uniquement l'exécution + la balise - pas un client validateur. Déposez 32 ETH sur la rampe de lancement officielle.",
+      "min": "32 ETH + gaz",
+      "wallets": "MetaMask, Ledger, Trezor — uniquement sur la rampe de lancement officielle",
+      "panel": "Fonctionne EL + balise. RPC et API de balise sur localhost. Aucun client validateur dans composer.",
+      "honesty": "Cette instance est uniquement une exécution + une balise. Il n'y a aucun client validateur dans le fichier de composition. La copie d'un magasin de clés dans le répertoire de données de balise ne démarrera pas l'attestation. Le contrat de dépôt ne prend pas l’IP de ce serveur.",
+      "yskDoes": [
+        "Installez et démarrez les clients d'exécution et de balise.",
+        "Afficher le disque, les pairs et l'état de la mise à niveau.",
+        "N'exécute pas de client de validation et ne charge pas de magasin de clés de signature."
+      ],
+      "youDo": [
+        "Créez vous-même le magasin de clés et l'adresse de retrait sur la rampe de lancement officielle ou avec staking-deposit-cli.",
+        "Déposez 32 ETH sur la rampe de lancement de ce réseau.",
+        "Exécutez vous-même un client de validation (pas cette composition) sur l'API de balise localhost de cette instance."
+      ],
+      "steps": [
+        "Attendez que l'exécution et la balise soient synchronisées.",
+        "Ouvrez la barre de lancement officielle de ce réseau (Hoodi ou Mainnet sur cette page). Sepolia n'a pas de bouton de tableau de bord ici.",
+        "Hors ligne, générez le magasin de clés. Définissez l'adresse de retrait sur votre propre portefeuille ETH.",
+        "Déposez 32 ETH (gardez un supplément pour le gaz).",
+        "Exécutez vous-même un client validateur. Cette composition n'a pas de VC — mettre un magasin de clés dans le répertoire de données de la balise ne l'atteste pas."
+      ],
+      "never": [
+        "Ne donnez jamais votre phrase de départ ou votre clé de retrait à qui que ce soit, y compris à ce panneau.",
+        "Ne téléchargez jamais un magasin de clés de signature sur un cloud hébergé.",
+        "Ne vous attendez pas à ce que cette page atteste après avoir copié un magasin de clés dans le répertoire de données de la balise."
+      ]
+    },
+    "avax": {
+      "model": "Enregistrez la preuve NodeID et BLS en cours d'exécution sur la P-Chain à partir de Core ou Ledger.",
+      "min": "2 000 AVAX + frais (1 AVAX sur Fuji) ; au moins 14 jours",
+      "wallets": "Noyau, grand livre",
+      "panel": "Exécute avalanchego et peut afficher NodeID et BLS après les réponses RPC",
+      "yskDoes": [
+        "Exécutez avalanchego et conservez RPC sur localhost.",
+        "Afficher les informations d'identification NodeID et BLS une fois que le nœud répond à RPC."
+      ],
+      "youDo": [
+        "Conservez AVAX dans Core ou Ledger.",
+        "Ajoutez le validateur de Core en utilisant la preuve NodeID et BLS de ce nœud."
+      ],
+      "steps": [
+        "Attendez que ce nœud soit synchronisé.",
+        "Copiez le NodeID, la clé publique BLS et la preuve de possession BLS affichées sur la page de l'instance.",
+        "Dans Core web (Staking → Validate), ou avec Ledger via Core, inscrivez-vous sur la P-Chain.",
+        "Mainnet a besoin d'au moins 2 000 AVAX, d'une période minimale de 14 jours et d'une réserve de frais."
+      ],
+      "never": [
+        "N’envoyez pas AVAX à ce panneau.",
+        "Ne partagez pas votre phrase de récupération Core ou Ledger."
+      ]
+    },
+    "ada": {
+      "model": "Gérez un pool de mises avec des clés froides / KES / VRF hors ligne – et non avec un robinet de portefeuille de navigateur.",
+      "min": "L'engagement est votre choix (voir la documentation officielle)",
+      "wallets": "Outils officiels de pool de mises (les touches froides restent hors ligne)",
+      "panel": "Exécute d'abord le nœud cardano en tant que relais ; des touches de raccourci peuvent être jointes sur cette page.",
+      "honesty": "Cette instance démarre en tant que relais. L'enregistrement du pool en chaîne utilise des clés froides que vous conservez hors ligne. Les homologues et la topologie utilisent l'IPv4 public de cet hôte et le port P2P illustré ici : le panneau ne sonde pas le WAN.",
+      "yskDoes": [
+        "Exécutez la restauration d'instantanés Cardano-Node et Mithril là où cela est proposé.",
+        "Joignez KES, VRF et opcert lorsque vous les fournissez. Les touches froides sont refusées."
+      ],
+      "youDo": [
+        "Générez des clés de pool hors ligne.",
+        "Enregistrez la piscine à l'aide de la documentation officielle de Cardano.",
+        "Placez l'IPv4 public de cet hôte et le port relais P2P dans topology.json."
+      ],
+      "steps": [
+        "Lisez le guide officiel d’exploitation d’un pool de participation.",
+        "Générez des clés froides, KES et VRF sur une machine hors ligne.",
+        "Enregistrez le pool en chaîne à partir de ces clés.",
+        "Sur cette page d'instance, joignez KES, VRF et le certificat opérationnel. Ne téléchargez pas de clés froides.",
+        "Annoncez le relais sous le nom public-ip:P2P-port (port indiqué sur cette carte). Ce panneau ne recherche pas l'adresse WAN."
+      ],
+      "never": [
+        "Ne traitez pas cela comme une mise MetaMask en un clic.",
+        "Ne stockez pas de clés froides sur l’hôte du validateur."
+      ]
+    },
+    "near": {
+      "model": "Créez un contrat de pool de jalonnement à l’usine officielle. Le contrat stocke la clé publique de ce nœud, et non l'adresse IP du serveur.",
+      "min": "Voir la documentation officielle du validateur (30 NEAR pour créer le pool, plus la mise)",
+      "wallets": "Portefeuille / verrouillage officiel NEAR",
+      "panel": "Fonctionne à proximité ; affiche la clé publique, l'usine et la commande create_staking_pool après l'initialisation",
+      "yskDoes": [
+        "Exécutez Neard avec RPC sur localhost et P2P sur 24567.",
+        "Après l'initialisation, affichez la clé publique de mise, l'adresse publique P2P, l'usine et une commande create_staking_pool copiable.",
+        "N'écrivez jamais validator_key.json et ne diffusez jamais la transaction."
+      ],
+      "youDo": [
+        "Copiez la clé publique et la commande de cette page d'instance.",
+        "Depuis votre propre compte NEAR, appelez l'usine officielle.",
+        "Une fois le pool existant, définissez vous-même account_id dans validator_key.json sur {pool}.{factory}.",
+        "Misez de votre portefeuille dans ce pool."
+      ],
+      "steps": [
+        "Démarrez le nœud et attendez l'initialisation proche pour que la clé publique apparaisse (RPC non prêt n'est pas la même chose que les clés manquantes).",
+        "Copiez la clé publique de mise et la commande create_staking_pool.",
+        "Depuis votre portefeuille, appelez l'usine (testnet pool.f863973.m0 / mainnet poolv1.near) avec 30 NEAR pour le stockage. La commande copiée utilise --accountId ; si votre CLI proche attend --account_id, suivez l' --help de cette CLI.",
+        "Définissez account_id dans validator_key.json sur votre nouveau compte de pool. Ce panneau n'écrit pas ce fichier.",
+        "Attendez que RPC réponde et que le nœud soit synchronisé avant de miser de grandes quantités. Les pairs utilisent Public P2P :24567 — le contrat ne prend pas d'adresse IP."
+      ],
+      "never": [
+        "Ne collez pas de phrase de départ dans ce panneau.",
+        "Ne mettez pas l’adresse IP de ce serveur dans le contrat.",
+        "Ne vous attendez pas à ce que le panel envoie la transaction create_staking_pool."
+      ]
+    },
+    "cosmos": {
+      "model": "créez un validateur à partir du portefeuille de votre opérateur en utilisant la clé publique de consensus de ce nœud – et non l'adresse IP du serveur.",
+      "min": "Voir la documentation officielle de Cosmos Hub (auto-délégation en uatom)",
+      "wallets": "Keplr ou un autre portefeuille Cosmos que vous contrôlez",
+      "panel": "Exécute gaiad ; affiche la clé publique de consensus et une commande create-validator copiable après l'initialisation",
+      "honesty": "La transaction create-validator stocke la clé publique de consensus de ce nœud. Les pairs utilisent Public P2P sur 26656. RPC reste sur localhost. Ce panneau ne diffuse pas la transaction et ne lit pas priv_key.",
+      "yskDoes": [
+        "Exécutez gaiad avec RPC sur localhost et P2P sur 26656.",
+        "Après l'initialisation, affichez la clé publique de consensus, l'identifiant de chaîne, le P2P public et une commande create-validator copiable.",
+        "N'écrivez jamais priv_validator_key.json et ne diffusez jamais la transaction."
+      ],
+      "youDo": [
+        "Copiez la clé publique et la commande de consensus à partir de cette page d'instance.",
+        "Depuis le portefeuille de votre opérateur (clés Keplr ou gaiad que vous contrôlez), soumettez create-validator.",
+        "Ne mélangez pas ce mnémonique de portefeuille avec la clé de consensus sur cet hôte."
+      ],
+      "steps": [
+        "Démarrez le nœud et attendez gaiad init pour que la clé publique de consensus apparaisse (RPC non prêt n'est pas la même chose que les clés manquantes).",
+        "Copiez la clé publique de consensus et la commande create-validator (chain-id est cosmoshub-4 sur le réseau principal, fournisseur sur testnet).",
+        "Depuis le portefeuille de votre opérateur, diffusez create-validator. Le montant et le surnom vous appartiennent.",
+        "Attendez que RPC réponde et que le nœud soit synchronisé avant de lier de grandes quantités. Les pairs utilisent tcp://WAN:26656 — la transaction ne prend pas d'adresse IP."
+      ],
+      "never": [
+        "Ne mélangez pas le mnémonique du portefeuille de l’opérateur avec la clé de consensus.",
+        "N'entrez pas ici les mnémoniques du portefeuille.",
+        "Ne mettez pas l’adresse IP de ce serveur dans create-validator."
+      ]
+    },
+    "sol": {
+      "model": "Cette composition exécute Agave avec --no-voting. Le compte de vote et le retrait sont créés avec les outils officiels Solana – pas ce panneau.",
+      "min": "Voir la documentation officielle des opérations (le matériel et le disque sont lourds)",
+      "wallets": "CLI/portefeuille Solana officiel que vous contrôlez",
+      "panel": "Exécute Agave en tant que nœud de rattrapage (--no-voting). Peut afficher la clé publique d'identité après les réponses RPC.",
+      "honesty": "Ce processus est sans vote. Il ne votera pas et ne gagnera pas de mise tant que vous n'aurez pas créé un compte de vote avec Agave CLI officiel et modifié la façon dont le processus est démarré. Ce panneau ne supprime pas --no-voting.",
+      "yskDoes": [
+        "Exécutez le client Agave et avertissez du disque.",
+        "Afficher la clé publique d'identité une fois que RPC répond à getIdentity.",
+        "Ne crée pas de compte de vote et ne commence pas à voter."
+      ],
+      "youDo": [
+        "Créez des clés de vote et de retrait autorisé avec les outils officiels Solana sur une machine que vous contrôlez.",
+        "Créez le compte de vote avec la CLI officielle, en utilisant cette clé publique d'identité.",
+        "Ensuite seulement, exécutez un validateur de vote – cette composition reste --no-voting."
+      ],
+      "steps": [
+        "Confirmez que cet hôte dispose de suffisamment de disque et d'IOPS (le réseau principal est généralement de 2 TiB+).",
+        "Attendez que RPC réponde, puis copiez la clé publique d'identité affichée ici.",
+        "Suivez les comptes de vote officiels et les guides de pieu (liens ci-dessous).",
+        "Cette composition conserve --no-voting. Ne vous attendez pas à ce que cette page commence à voter après avoir créé un compte de vote."
+      ],
+      "never": [
+        "Ne vous attendez pas à un bouton de portefeuille de navigateur dans ce panneau.",
+        "Ne collez pas de paires de clés d'identité ou de vote dans ce panneau."
+      ]
+    },
+    "dot": {
+      "model": "Cette composition est un nœud complet (pas de --validator). Les clés de session et setKeys sont des étapes officielles de Polkadot.js – pas ce panneau.",
+      "min": "Voir le wiki officiel",
+      "wallets": "Polkadot.js",
+      "panel": "Exécute polkadot en tant que nœud complet. RPC sur localhost. Pas d'indicateur --validator.",
+      "honesty": "Ce processus n'est pas démarré avec --validator. Le panneau n'appelle pas author_rotateKeys (cela modifierait le magasin de clés). Devenir validateur nécessite l'indicateur de nœud officiel et un appel rotateKeys que vous effectuez contre localhost RPC.",
+      "yskDoes": [
+        "Exécutez polkadot et exposez RPC sur localhost.",
+        "Ne transmet pas --validator et ne fait pas pivoter les clés de session."
+      ],
+      "youDo": [
+        "Suivez le guide officiel de configuration d'un validateur.",
+        "Si vous ajoutez --validator vous-même, appelez rotateKeys sur localhost RPC et liez le résultat dans Polkadot.js à partir de votre réserve."
+      ],
+      "steps": [
+        "Synchronisez ce nœud complet.",
+        "Lisez le guide de validation officiel. Cette composition n'est pas un processus de validation.",
+        "Ne collez pas le mnémonique de cache ici. Si vous exécutez ultérieurement avec --validator, faites vous-même la rotation des clés sur http://127.0.0.1 (port RPC sur cette instance).",
+        "Dans Polkadot.js, définissez ces clés de session sur votre réserve/contrôleur, puis suivez les étapes de liaison officielles."
+      ],
+      "never": [
+        "Ne collez pas le mnémonique de cache dans ce panneau.",
+        "Ne vous attendez pas à ce que cette page génère des clés de session ou ait démarré --validator."
+      ]
+    },
+    "sui": {
+      "model": "Cette composition est un nœud complet Sui (fullnode.yaml), pas un nœud de validation.",
+      "min": "Voir la documentation officielle de Sui",
+      "wallets": "Portefeuille officiel de l'opérateur Sui",
+      "panel": "Exécute sui-node en tant que nœud complet. RPC sur localhost.",
+      "honesty": "Ce processus ne peut pas signer en tant que validateur Sui. La configuration du validateur utilise une configuration et des clés différentes. Les documents officiels du validateur sont liés ; ce panneau ne fait pas passer le nœud en mode validateur.",
+      "yskDoes": [
+        "Exécutez l'image sui-node livrée en tant que nœud complet."
+      ],
+      "youDo": [
+        "Utilisez cette instance comme nœud complet.",
+        "Pour devenir validateur, suivez la documentation officielle du validateur Sui sur une configuration de validateur - pas cette composition."
+      ],
+      "steps": [
+        "Synchronisez ce nœud complet.",
+        "Traitez-le comme un fullnode : il réexécute les points de contrôle mais ne signe pas de consensus.",
+        "Ouvrez le guide officiel de l'opérateur du validateur uniquement si vous créez un processus de validation distinct."
+      ],
+      "never": [
+        "N’envoyez pas de SUI à ce panneau.",
+        "Ne vous attendez pas à ce que ce processus de nœud complet s'enregistre en tant que validateur."
+      ]
+    },
+    "aptos": {
+      "model": "Cette composition est un fullnode public Aptos (rôle full_node), pas un validateur.",
+      "min": "Voir la documentation officielle d'Aptos",
+      "wallets": "Portefeuille officiel de l'opérateur Aptos",
+      "panel": "Exécute aptos-node en tant que nœud complet public. RPC sur localhost.",
+      "honesty": "Les fullnodes publics ne participent pas au consensus. Un validateur a besoin d'un rôle différent, de clés et généralement d'un nœud complet de validateur. Ce panneau ne fait pas passer le nœud en mode validateur.",
+      "yskDoes": [
+        "Exécutez l’image Aptos livrée en tant que nœud complet public."
+      ],
+      "youDo": [
+        "Utilisez cette instance comme nœud complet public.",
+        "Pour exécuter un validateur, suivez la documentation officielle du nœud de validation Aptos – et non cette composition."
+      ],
+      "steps": [
+        "Synchronisez ce fullnode public.",
+        "Traitez-le comme un PFN : il sert les données du grand livre, il ne vote pas.",
+        "Ouvrez les documents officiels du validateur uniquement si vous créez une paire validateur + VFN distincte."
+      ],
+      "never": [
+        "N'entrez pas les clés de l'opérateur dans ce panneau.",
+        "Ne vous attendez pas à ce que ce processus de nœud complet s'enregistre en tant que validateur."
+      ]
+    },
+    "btc": {
+      "model": "Pas une preuve de participation. Il s’agit d’un nœud Bitcoin complet ou élagué.",
+      "min": "—",
+      "wallets": "Sans objet",
+      "panel": "Exécute Bitcoind",
+      "yskDoes": [
+        "Exécutez un nœud Bitcoin complet ou élagué."
+      ],
+      "youDo": [
+        "Utilisez n’importe quel portefeuille Bitcoin séparément. L'exploitation minière et la foudre sont hors de portée."
+      ],
+      "steps": [
+        "Traitez cette instance uniquement comme un nœud Bitcoin.",
+        "Il n’y a pas de dépôt de jalonnement ni de magasin de clés de validateur."
+      ],
+      "never": [
+        "Ne cherchez pas de portefeuille de jalonnement sur cette page."
+      ]
+    }
   },
   "alerts": {
     "diskTitle": "Disque validateur critique",
@@ -313,358 +692,39 @@
     "dockerMissing": "Des instances de validateur existent mais la commande docker est introuvable"
   },
   "detail": {
-    "status": "Status",
-    "sync": "Sync",
-    "peers": "Peers",
+    "status": "Statut",
+    "sync": "Synchroniser",
+    "peers": "Pairs",
+    "traffic": "Trafic",
     "version": "Version",
-    "access": "Access",
-    "upgrade": "Updates",
-    "upgradeHint": "How this node tracks client versions.",
-    "network": "Network",
-    "networkHint": "Switching network stops the node and clears chain data. Confirm under Clear data first.",
-    "maintain": "Maintenance",
-    "danger": "Clear data",
-    "dangerHint": "Type the instance id or CLEAR. This deletes chain data on disk.",
+    "access": "Accéder",
+    "upgrade": "Mises à jour",
+    "upgradeHint": "Comment ce nœud suit les versions client.",
+    "setVersion": "Changer de version",
+    "setVersionHint": "Choisissez une balise Docker officielle pour un client sur ce nœud. Compose est réécrit, puis extrait et redémarré.",
+    "setVersionConfirmTitle": "Changer {{id}} en {{tag}} ?",
+    "setVersionConfirmDesc": "Réécrit la composition, extrait {{ref}} et redémarre le nœud.",
+    "setVersionC1": "Le conteneur en cours d'exécution est remplacé par la balise sélectionnée.",
+    "setVersionC2": "Tapez l'ID de l'instance pour confirmer.",
+    "setVersionMainnet": "Mainnet : une mauvaise version peut mettre le nœud hors ligne. Je comprends.",
+    "releaseNotes": "Notes de version",
+    "network": "Réseau",
+    "networkHint": "Le réseau de commutation arrête le nœud et efface les données de la chaîne. Confirmez d'abord sous Effacer les données.",
+    "maintain": "Entretien",
+    "danger": "Effacer les données",
+    "dangerHint": "Tapez l'identifiant de l'instance ou CLEAR. Cela supprime les données de la chaîne sur le disque.",
     "compose": "Compose",
-    "logs": "Logs",
-    "traffic": "Traffic",
-    "setVersion": "Change version",
-    "setVersionHint": "Pick an official Docker tag for a client on this node. Compose is rewritten, then pulled and restarted.",
-    "setVersionConfirmTitle": "Change {{id}} to {{tag}}?",
-    "setVersionConfirmDesc": "Rewrites compose, pulls {{ref}}, and restarts the node.",
-    "setVersionC1": "The running container is replaced with the selected tag.",
-    "setVersionC2": "Type the instance id to confirm.",
-    "setVersionMainnet": "Mainnet: a bad version can take the node offline. I understand.",
-    "releaseNotes": "Release notes"
+    "logs": "Journaux"
   },
   "state": {
-    "unknown": "Unknown",
-    "stopped": "Stopped",
-    "running": "Running",
-    "syncing": "Syncing",
-    "error": "Error",
-    "starting": "Starting",
-    "created": "Created (never started)",
-    "missing": "No container",
-    "rpc_wait": "Running — RPC not ready"
-  },
-  "profileHelp": {
-    "title": "Profiles",
-    "desc": "The four choices on wizard step 3 are mainly disk budget and role. Each chain shows its recommended size in the wizard. The panel never holds staking keys.",
-    "minimal": "Smallest disk. Use for testnets or a first install. Not a full history, and not for a live staking validator.",
-    "pruned": "Keeps recent chain state and drops older blocks (Pruned). More disk than Minimal, less than a full node. Use to follow the tip long-term.",
-    "validatorReady": "Reserves more disk so you can later attest or propose as a validator. Generate keys offline yourself. Being offline or misconfigured can lose stake.",
-    "rpc": "For this host or other services to query the chain. RPC listens on 127.0.0.1 by default and is not published to the internet.",
-    "colName": "Profile",
-    "colUse": "Use for",
-    "colDisk": "Disk",
-    "colStake": "Staking validator",
-    "useMinimal": "Testnet or a first install. Not a full history.",
-    "usePruned": "Follow the chain tip long-term. Keeps recent data only (Pruned).",
-    "useValidatorReady": "Sized so you can later attest or propose. Generate keys offline yourself.",
-    "useRpc": "Let this host or other services query the chain. Listens on 127.0.0.1 by default.",
-    "diskMinimal": "Smallest",
-    "diskPruned": "Medium (more than Minimal)",
-    "diskValidatorReady": "Largest of the four",
-    "diskRpc": "Depends on the chain",
-    "stakeNo": "Not suitable",
-    "stakeYes": "Yes — offline or misconfigured can lose stake",
-    "stakeRpc": "Not a validator"
-  },
-  "software": {
-    "engine": "Docker Engine",
-    "engineDesc": "Validator nodes run as Compose projects. Install Docker here if it is missing. Image prune stays on the Docker page.",
-    "client": "Client",
-    "image": "Image",
-    "present": "Local",
-    "local": "Pulled",
-    "missing": "Not pulled",
-    "size": "Size",
-    "usedBy": "Used by",
-    "unused": "No instance",
-    "pull": "Pull",
-    "pulling": "Pull {{ref}}",
-    "empty": "No pinned client images",
-    "emptyDesc": "The catalog is empty. This should not happen.",
-    "daemonDown": "Docker Engine is not running",
-    "pulled": "On this host",
-    "source": "Source",
-    "official": "Official latest",
-    "officialNewer": "Official newer",
-    "stale": "Behind pin",
-    "staleItem": "{{id}} ({{tag}})",
-    "pin": "Panel pin",
-    "openRelease": "Release notes",
-    "chooseOnInstance": "Change the version on the instance page. Pulling an image does not retag a running node."
-  },
-  "playbook": {
-    "overviewTitle": "How staking works on each chain",
-    "overviewDesc": "This panel runs the node. Your wallet and keys stay with you. Official links only — never share a seed phrase here.",
-    "colChain": "Chain",
-    "colModel": "How you register",
-    "colMin": "Typical minimum",
-    "colWallet": "Your wallet",
-    "colPanel": "What this panel does",
-    "yskDoes": "This panel does",
-    "youDo": "You do",
-    "steps": "Steps",
-    "never": "Do not",
-    "official": "Official links",
-    "seeAbout": "Full steps are on the About tab.",
-    "nodeIdReady": "NodeID (from this node)",
-    "nodeIdPending": "NodeID appears after the node is synced and answering RPC.",
-    "blsReady": "BLS public key",
-    "blsProof": "BLS proof of possession",
-    "blsPending": "BLS credentials appear after the node answers RPC.",
-    "notPosTitle": "Not proof-of-stake",
-    "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
-    "eth": {
-      "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
-      "min": "32 ETH + gas",
-      "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
-      "panel": "Runs the execution and consensus clients",
-      "yskDoes": [
-        "Install and start the execution and consensus clients.",
-        "Show disk, peers, and upgrade status."
-      ],
-      "youDo": [
-        "Create the keystore and withdrawal address yourself.",
-        "Deposit 32 ETH on the official launchpad.",
-        "Copy the keystore into this node’s data directory."
-      ],
-      "steps": [
-        "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
-        "On the official launchpad, deposit 32 ETH (keep extra for gas).",
-        "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
-        "Watch sync, disk, and upgrade badges on this page."
-      ],
-      "never": [
-        "Never give your seed phrase or withdrawal key to anyone, including this panel.",
-        "Never upload a signing keystore to a hosted cloud."
-      ]
-    },
-    "avax": {
-      "model": "Register the running NodeID and BLS proof on the P-Chain from Core or Ledger.",
-      "min": "2,000 AVAX + fee (1 AVAX on Fuji); at least 14 days",
-      "wallets": "Core, Ledger",
-      "panel": "Runs avalanchego and can show NodeID and BLS after RPC answers",
-      "yskDoes": [
-        "Run avalanchego and keep RPC on localhost.",
-        "Show NodeID and BLS credentials once the node answers RPC."
-      ],
-      "youDo": [
-        "Hold AVAX in Core or Ledger.",
-        "Add the validator from Core using this node’s NodeID and BLS proof."
-      ],
-      "steps": [
-        "Wait until this node is synced.",
-        "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
-        "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
-        "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
-      ],
-      "never": [
-        "Do not send AVAX to this panel.",
-        "Do not share your Core or Ledger recovery phrase."
-      ]
-    },
-    "ada": {
-      "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
-      "min": "Pledge is your choice (see official docs)",
-      "wallets": "Official stake-pool tooling (cold keys stay offline)",
-      "panel": "Runs cardano-node",
-      "yskDoes": [
-        "Run cardano-node and Mithril snapshot restore where offered."
-      ],
-      "youDo": [
-        "Generate pool keys offline.",
-        "Register the pool using official Cardano documentation."
-      ],
-      "steps": [
-        "Read the official operate-a-stake-pool guide.",
-        "Generate cold, KES, and VRF keys on an offline machine.",
-        "Register the pool on-chain from those keys.",
-        "Point the running cardano-node at your operational certificates."
-      ],
-      "never": [
-        "Do not treat this as a MetaMask one-click stake.",
-        "Do not store cold keys on the validator host."
-      ]
-    },
-    "near": {
-      "model": "Stake from your NEAR account into a staking pool contract.",
-      "min": "See official validator docs",
-      "wallets": "Official NEAR wallet / lockup",
-      "panel": "Runs neard",
-      "yskDoes": [
-        "Run neard and show disk / sync."
-      ],
-      "youDo": [
-        "Stake from your NEAR account to your pool using official docs."
-      ],
-      "steps": [
-        "Bring the node to sync.",
-        "Follow official NEAR validator documentation.",
-        "Stake from your own wallet or lockup into the pool."
-      ],
-      "never": [
-        "Do not paste a seed phrase into this panel."
-      ]
-    },
-    "cosmos": {
-      "model": "create-validator from your operator wallet. Consensus key stays on the node.",
-      "min": "See official Cosmos Hub docs",
-      "wallets": "Keplr or another Cosmos wallet you control",
-      "panel": "Runs gaiad",
-      "yskDoes": [
-        "Run gaiad."
-      ],
-      "youDo": [
-        "Keep the operator wallet yourself.",
-        "Broadcast create-validator from that wallet."
-      ],
-      "steps": [
-        "Sync gaiad.",
-        "Keep the consensus key on this host only.",
-        "From Keplr (or equivalent), submit create-validator.",
-        "Monitor the node so it does not miss too many blocks."
-      ],
-      "never": [
-        "Do not mix the operator wallet mnemonic with the consensus key.",
-        "Do not enter wallet mnemonics here."
-      ]
-    },
-    "sol": {
-      "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
-      "min": "See official operations docs (hardware and disk are heavy)",
-      "wallets": "Official Solana CLI / wallet you control",
-      "panel": "Runs Agave; mainnet needs multiple tebibytes",
-      "yskDoes": [
-        "Run the Agave client and warn about disk."
-      ],
-      "youDo": [
-        "Create vote and withdrawer keys with official Solana tools."
-      ],
-      "steps": [
-        "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
-        "Follow official Solana operations documentation.",
-        "Create the vote account and authorized withdrawer yourself.",
-        "Point the running validator at those keys on disk."
-      ],
-      "never": [
-        "Do not expect a browser wallet button in this panel."
-      ]
-    },
-    "dot": {
-      "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
-      "min": "See the official wiki",
-      "wallets": "Polkadot.js",
-      "panel": "Runs the Polkadot client",
-      "yskDoes": [
-        "Run polkadot and expose RPC on localhost."
-      ],
-      "youDo": [
-        "Rotate session keys on the node and set them from Polkadot.js."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Generate session keys on this host.",
-        "In Polkadot.js, set those keys on your stash / controller.",
-        "Follow the official validate guide for bonding."
-      ],
-      "never": [
-        "Do not paste the stash mnemonic into this panel."
-      ]
-    },
-    "sui": {
-      "model": "Follow official Sui validator operator docs with your operator wallet.",
-      "min": "See official Sui docs",
-      "wallets": "Official Sui operator wallet",
-      "panel": "Runs sui-node",
-      "yskDoes": [
-        "Run the shipped sui-node image."
-      ],
-      "youDo": [
-        "Complete registration using official Sui validator docs."
-      ],
-      "steps": [
-        "Sync sui-node.",
-        "Open the official validator operator guide.",
-        "Use your own operator wallet — not this panel — to register."
-      ],
-      "never": [
-        "Do not send SUI to this panel."
-      ]
-    },
-    "aptos": {
-      "model": "Follow official Aptos staking / validator docs with your operator wallet.",
-      "min": "See official Aptos docs",
-      "wallets": "Official Aptos operator wallet",
-      "panel": "Runs the Aptos validator image",
-      "yskDoes": [
-        "Run the shipped Aptos image."
-      ],
-      "youDo": [
-        "Stake and operate from official Aptos documentation."
-      ],
-      "steps": [
-        "Sync the node.",
-        "Read official Aptos staking documentation.",
-        "Use your own operator wallet to register."
-      ],
-      "never": [
-        "Do not enter operator keys in this panel."
-      ]
-    },
-    "btc": {
-      "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
-      "min": "—",
-      "wallets": "Not applicable",
-      "panel": "Runs bitcoind",
-      "yskDoes": [
-        "Run a Bitcoin full or pruned node."
-      ],
-      "youDo": [
-        "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
-      ],
-      "steps": [
-        "Treat this instance as a Bitcoin node only.",
-        "There is no staking deposit and no validator keystore."
-      ],
-      "never": [
-        "Do not look for a staking wallet on this page."
-      ]
-    },
-    "copyAll": "Copy all",
-    "copyNamed": "Copy {{label}}"
-  },
-  "producer": {
-    "title": "Block producer hot keys",
-    "hint": "This is not an IP address. Upload the KES key, VRF key, and operational certificate from an offline machine. Keep cold keys off this host.",
-    "warn": "The same node with a public P2P port will sign blocks. Official topology keeps the producer off the public internet. These three files are hot keys.",
-    "kes": "KES",
-    "vrf": "VRF",
-    "opcert": "opcert",
-    "missing": "Not attached",
-    "present": "Attached {{fp}}",
-    "choose": "Choose file",
-    "apply": "Apply and restart as block producer",
-    "detach": "Detach and run as relay",
-    "applyTitle": "Attach hot keys to {{id}}?",
-    "applyDesc": "KES, VRF, and opcert are written under the instance keys directory. Compose is rewritten. The container restarts as a block producer.",
-    "applyC1": "Cold keys must stay offline. Do not upload cold.skey.",
-    "applyC2": "The running node can sign blocks if these files are valid.",
-    "applyC3": "Mainnet: an offline or misconfigured producer misses blocks.",
-    "detachTitle": "Detach producer keys from {{id}}?",
-    "detachDesc": "Hot keys are deleted from this host. Compose goes back to relay.",
-    "detachC1": "The node will no longer produce blocks.",
-    "mainnet": "Mainnet: I understand this host will hold hot keys and sign blocks.",
-    "presentShort": "On host",
-    "queuedShort": "Ready",
-    "queued": "Selected · {{name}}",
-    "fileHint": "Typical name {{file}}",
-    "dropOrBrowse": "Drop {{file}} here or browse",
-    "dropping": "Drop to attach {{label}}",
-    "browse": "Browse",
-    "clearFile": "Remove"
+    "unknown": "Inconnu",
+    "stopped": "Arrêté",
+    "created": "Créé (jamais commencé)",
+    "missing": "Pas de conteneur",
+    "starting": "Départ",
+    "rpc_wait": "En cours d'exécution : RPC n'est pas prêt",
+    "running": "En cours d'exécution",
+    "syncing": "Synchronisation",
+    "error": "Erreur"
   }
 }

@@ -102,12 +102,12 @@
   "capabilitiesHint": "이 역할이 수행할 수 있는 작업 전환",
   "enabledCount": "{{total}} 중 {{enabled}} 활성화됨",
   "bandAboveMax": "최대 레벨 이상",
+  "roleUnavailable": "이 역할에는 사용할 수 없습니다.",
   "dirtyHint": "맞춤형(공장마다 다름)",
   "unsaved": "저장되지 않음",
   "unsavedHint": "이 역할에 대한 저장되지 않은 수정사항",
   "nothingToSave": "저장할 항목이 없습니다.",
   "saveRole": "{{role}} 정책 저장",
   "discardTitle": "저장되지 않은 정책을 삭제하시겠습니까?",
-  "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "역할을 전환하면 저장되지 않은 기능 편집 내용이 삭제됩니다."
 }

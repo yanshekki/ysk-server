@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "وارننگ",
+    "bad": "مسئلہ"
+  },
   "title": "ڈیش بورڈ",
   "health": "صحت",
   "protection": "پروٹیکشن موڈ",
@@ -38,12 +44,13 @@
   "readinessCheck": "تیاری:",
   "prodOk": "پیداوار تیار ہے۔",
   "notFullyReady": "پوری طرح تیار نہیں۔",
+  "readinessBlocked": "{{n}} بلاکر",
   "modeScore": "موڈ {{mode}} · سکور {{ready}}/{{total}}",
   "mode": {
     "degraded": "تنزلی",
     "production_capable": "پیداوار تیار ہے",
-    "normal": "عام",
-    "blocked": "blocked"
+    "blocked": "مسدود",
+    "normal": "عام"
   },
   "details": "تفصیلات",
   "certExpiryTitle": "سرٹیفکیٹ کی میعاد:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "آڈٹ کا اطلاق کریں · ٹھیک ہے {{ok}} · تنبیہ {{warn}} · خراب {{bad}}",
   "executeBadge": "عمل درآمد {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "یہ پینل تمام انٹرفیس پر سنتا ہے اور آپ کے ایڈمن اکاؤنٹ میں کوئی 2FA نہیں ہے۔",
   "go": "کھولیں۔",
   "open": "کھولیں۔",
   "noCriticalWarn": "کوئی اہم یا انتباہی انتباہات نہیں۔",
@@ -81,6 +89,7 @@
   "wizardDesc": "ایک پروجیکٹ بنائیں اور اختیاری طور پر DNS/میل/ڈیٹا بیس کا مسودہ تیار کریں (ہر فیچر پیج پر درخواست دیں)",
   "projectName": "پروجیکٹ کا نام",
   "projectNameHint": "ڈسپلے کا نام؛ مماثل ڈائریکٹری بناتا ہے۔",
+  "nameRequired": "پروجیکٹ کا نام درج کریں۔",
   "domainOptional": "ڈومین (اختیاری)",
   "domainHint": "DNS اور میل کے اختیارات کو فعال کرنے کے لیے درکار ہے۔",
   "runtime": "رن ٹائم",
@@ -93,6 +102,7 @@
   "serverIpv6": "سرور IPv6 (اختیاری)",
   "serverIpv6Hint": "AAAA / ip6 لکھتا ہے: جب سیٹ ہوتا ہے۔",
   "serverIpv6Ph": "عوامی IPv6 (اختیاری)",
+  "needDomainFirst": "پہلے ڈومین بھریں",
   "withDns": "DNS زون بھی بنائیں",
   "withDnsDesc": "ڈومین کی ضرورت ہے؛ صرف رجسٹریشن - DNS صفحہ پر زون کا اطلاق کریں۔",
   "withMail": "میل ڈومین بھی رجسٹر کریں۔",
@@ -119,15 +129,5 @@
   "notifSearch": "انتباہات تلاش کریں۔",
   "notifAll": "تمام",
   "notifDismiss": "چھپائیں",
-  "goFix": "درست کریں۔",
-  "needDomainFirst": "پہلے ڈومین بھریں",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "درست کریں۔"
 }

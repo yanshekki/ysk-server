@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "শুদ্ধি নিশ্চিত করবেন? নিবন্ধিত ডেটা পাথ (ডাটাবেস/মেইল) স্থায়ীভাবে মুছে ফেলা হবে।",
   "installedCount": "ইনস্টল করা হয়েছে {{installed}} · অনুপস্থিত {{missing}}",
+  "countHint": "এই গণনাগুলি সফ্টওয়্যার পরিকল্পনার OS প্যাকেজ - অন্য ট্যাবে পরিষেবা-ম্যাট্রিক্স ইউনিট নয়।",
+  "executeRoot": "সিস্টেম পরিবর্তন {{execute}} · প্রশাসক {{root}}",
+  "manifestPlan": "পরিকল্পনা {{plan}} ({{bundles}})",
+  "manifestHint": "সর্বশেষ নির্বাচিত সফ্টওয়্যার পরিকল্পনা এবং বান্ডিল",
   "needRootExecute": "লাইভ ইনস্টল/মুছে ফেলার জন্য প্রশাসকের অধিকার এবং সিস্টেম পরিবর্তনের অনুমতি প্রয়োজন। আপনি এখনও ড্রাই-রান করতে পারেন।",
   "modeInstall": "প্ল্যান ইনস্টল করুন",
   "modeUninstall": "আনইনস্টল করুন",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "অন্তত একটি বান্ডিল নির্বাচন করুন. খালি নির্বাচন আর মানে সব মুছে ফেলা।",
   "uninstallConfirmTitle": "নির্বাচিত বান্ডিলগুলি সরাতে চান?",
   "uninstallConfirmDesc": "{{count}} বান্ডিল(গুলি) সরানো হবে। নিশ্চিত করতে REMOVE টাইপ করুন।",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "কন্ট্রোল প্লেন",
+    "web": "ওয়েব হোস্টিং",
+    "database": "ডাটাবেস",
+    "email": "মেল স্ট্যাক",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "এফটিপি/এফটিপিএস",
+    "defense": "হোস্ট ডিফেন্স",
+    "runtimes": "ভাষার রানটাইম"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "শুধুমাত্র কন্ট্রোল প্লেন",
+    "recommended": "প্রস্তাবিত হোস্টিং",
+    "full": "সব সফটওয়্যার"
   }
 }

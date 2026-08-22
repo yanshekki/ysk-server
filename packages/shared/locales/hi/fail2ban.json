@@ -36,6 +36,10 @@
   "emptyBansDesc": "या फ़ेल2बैन-क्लाइंट को पढ़ने की अनुमति नहीं है",
   "ignoreipTitle": "श्वेतसूची को अनदेखा करें",
   "ignoreipDesc": "आईपी ​​पर कभी प्रतिबंध नहीं लगाया गया (पैनल फ़ाइल + वैकल्पिक लाइव फ़ेल2बैन-क्लाइंट)",
+  "whitelistEmptyWarn": "श्वेतसूची खाली है; jail आपको प्रतिबंधित कर सकते हैं। ignoreip लागू करने से पहले लॉगिन IP जोड़ें।",
+  "suggestIgnoreLogin": "आपका लॉगिन IP {{ip}}",
+  "applyIgnoreEmptyWarn": "खाली श्वेतसूची से लागू करने पर ignoreip साफ़ होगा",
+  "applyIgnoreNeedConfirm": "jail ignoreip फिर लिखता है और fail2ban रीलोड करता है",
   "addIp": "आईपी ​​जोड़ें",
   "addWhitelist": "श्वेतसूची में जोड़ें",
   "applyPolicyIgnoreip": "नीति लागू करें (अनदेखा सहित)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "यह होस्ट या आपका लॉगिन आईपी है - इसे प्रतिबंधित करने के बजाय इग्नोरिप में जोड़ें",
   "suggestIgnoreHint": "सुझाए गए व्यवस्थापक आईपी (पैनल फ़ाइल केवल तब तक जब तक आप नीति लागू नहीं करते):",
-  "suggestIgnoreAdd": "{{ip}} जोड़ें",
-  "whitelistEmptyWarn": "श्वेतसूची खाली है; jail आपको प्रतिबंधित कर सकते हैं। ignoreip लागू करने से पहले लॉगिन IP जोड़ें।",
-  "suggestIgnoreLogin": "आपका लॉगिन IP {{ip}}",
-  "applyIgnoreEmptyWarn": "खाली श्वेतसूची से लागू करने पर ignoreip साफ़ होगा",
-  "applyIgnoreNeedConfirm": "jail ignoreip फिर लिखता है और fail2ban रीलोड करता है"
+  "suggestIgnoreAdd": "{{ip}} जोड़ें"
 }

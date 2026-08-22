@@ -36,6 +36,10 @@
   "emptyBansDesc": "または、fail2ban-client を読み取る権限がありません",
   "ignoreipTitle": "IP ホワイトリストを無視する",
   "ignoreipDesc": "禁止されていない IP (パネル ファイル + オプションのライブfail2ban-client)",
+  "whitelistEmptyWarn": "ホワイトリストが空です。jail が自分を禁止する恐れがあります。ignoreip 適用前にログイン IP を追加してください。",
+  "suggestIgnoreLogin": "あなたのログイン IP {{ip}}",
+  "applyIgnoreEmptyWarn": "ホワイトリストが空のまま適用すると ignoreip が空になります",
+  "applyIgnoreNeedConfirm": "jail の ignoreip を書き直し fail2ban を再読み込みします",
   "addIp": "IPを追加",
   "addWhitelist": "ホワイトリストに追加",
   "applyPolicyIgnoreip": "ポリシーの適用 (ignoreip を含む)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "これはホストまたはログイン IP です。禁止する代わりに、ignoreip に追加します。",
   "suggestIgnoreHint": "推奨される管理者 IP (ポリシーを適用するまでのパネル ファイルのみ):",
-  "suggestIgnoreAdd": "{{ip}}を追加",
-  "whitelistEmptyWarn": "ホワイトリストが空です。jail が自分を禁止する恐れがあります。ignoreip 適用前にログイン IP を追加してください。",
-  "suggestIgnoreLogin": "あなたのログイン IP {{ip}}",
-  "applyIgnoreEmptyWarn": "ホワイトリストが空のまま適用すると ignoreip が空になります",
-  "applyIgnoreNeedConfirm": "jail の ignoreip を書き直し fail2ban を再読み込みします"
+  "suggestIgnoreAdd": "{{ip}}を追加"
 }

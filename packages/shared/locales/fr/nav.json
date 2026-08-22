@@ -21,6 +21,7 @@
   "postgresService": "Service PostgreSQL",
   "redis": "Redis",
   "redisService": "Service Redis",
+  "cluster": "Groupes",
   "dns": "DNS",
   "ssl": "Certificats SSL",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
   "backToDashboard": "Retour au tableau de bord",
   "validators": "Validateurs (Beta)",
-  "docker": "Docker",
-  "cluster": "Clusters"
+  "docker": "Docker"
 }

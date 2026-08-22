@@ -20,8 +20,8 @@
   "stepTuningApplied": "رن ٹائم ٹیوننگ لاگو کر دی گئی۔",
   "stepUnitWritten": "سروس یونٹ لکھا گیا۔",
   "stepSystemdStartFailed": "سسٹمڈ اسٹارٹ ناکام ہو گیا — عمل فال بیک کا استعمال کرتے ہوئے",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
-  "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "portListening": "پورٹ {{port}} سن رہا ہے۔",
+  "portNotListening": "پورٹ {{port}} سن نہیں رہا ہے۔",
+  "httpOk": "HTTP ٹھیک ہے {{status}}",
+  "httpFail": "HTTP ناکام ہو گیا: {{detail}}"
 }

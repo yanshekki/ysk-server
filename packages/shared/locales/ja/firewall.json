@@ -20,6 +20,8 @@
   "statAllow": "許可",
   "statDeny": "拒否する",
   "statDefaultIn": "デフォルトの受信",
+  "defaultNotApplied": "該当なし (UFW オフ)",
+  "ufwOffHint": "UFW がオフの場合、デフォルトの着信は適用されません",
   "executeOn": "オン",
   "executeOff": "オフ",
   "ufwDisabled": "UFWは無効です",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "基礎となるツール:",
   "toolHintBody": "UFW = ポート / 恒久的なルール · 攻撃への対応と自動禁止の使用用",
   "toolHintfail2ban": "failed2ban = 一時的なログベースの禁止",
+  "toolHintFail2ban": "failed2ban = 一時的なログベースの禁止",
   "executeOffHint": "システムがオフになります - ステータスは読み取り可能です。",
   "tabs": {
     "rules": "ルール",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "その UFW ルール番号を削除します (システム変更許可が必要です)。",
   "servicesTitle": "マネージドサービス",
   "servicesHint": "YSK サービスの望ましいネットワーク公開。サービスを開くと、これらのルールが自動的に同期されます。",
+  "servicesUfwOff": "UFWはオフです。このリストは望ましい暴露であり、ホストが強制するルールではありません。",
   "servicesEmpty": "サービスエクスポージャーデータはまだありません",
   "servicesEmptyDesc": "マネージド サービス (Web、FTPS、VPN、DB など) を開始して、このリストに入力します。",
   "servicesManualHint": "手動ポート チップは [ポート] タブの下にあります。ルールがタグ付けされたままになるように、ここでアクセスを管理することをお勧めします (ysk-svc)。",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "UFW を無効にしますか？",
   "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
   "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
-  "toolHintFail2ban": "failed2ban = 一時的なログベースの禁止",
-  "servicesUfwOff": "UFWはオフです。このリストは望ましい暴露であり、ホストが強制するルールではありません。",
   "desiredOnlyUfwOff": "望ましい: {{mode}} · UFW オフ (適用されません)",
-  "syncNotApplied": "UFWオフ・未適用",
-  "defaultNotApplied": "該当なし (UFW オフ)",
-  "ufwOffHint": "UFW がオフの場合、デフォルトの着信は適用されません"
+  "syncNotApplied": "UFWオフ・未適用"
 }

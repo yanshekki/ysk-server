@@ -102,12 +102,12 @@
   "capabilitiesHint": "Alternar qué puede hacer este rol",
   "enabledCount": "{{enabled}} de {{total}} habilitado",
   "bandAboveMax": "Por encima del nivel máximo",
+  "roleUnavailable": "No disponible para este rol",
   "dirtyHint": "Personalizado (difiere de fábrica)",
   "unsaved": "No guardado",
   "unsavedHint": "Ediciones no guardadas en este rol",
   "nothingToSave": "Nada que salvar",
   "saveRole": "Guardar política {{role}}",
   "discardTitle": "¿Descartar la política no guardada?",
-  "discardDesc": "El cambio de roles elimina las ediciones de capacidades no guardadas.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "El cambio de roles elimina las ediciones de capacidades no guardadas."
 }

@@ -217,10 +217,24 @@ describe('near + ada adapters', () => {
     expect(y).toContain('127.0.0.1:3030:3030');
     expect(y).toContain('ifconfig.me');
     expect(y).toContain('public_addr');
+    expect(y).toContain('$PUB:24567');
     expect(y).toContain('$$PUB');
     expect(y).toContain('$$(wget');
     expect(y).not.toMatch(/(^|[^$])\$PUB\b/);
     expect(y).not.toMatch(/mnemonic|private.?key/i);
+    const remapped = buildNearComposeYaml({
+      ...ethSpec,
+      id: 'near-testnet-2',
+      chain: 'near',
+      network: 'testnet',
+      clients: {
+        node: { id: 'neard', image: 'nearprotocol/nearcore', tag: '2.5.0' },
+      },
+      ports: { rpc: 3031, p2p: 24568 },
+    });
+    expect(remapped).toContain('$PUB:24568');
+    expect(remapped).toContain('0.0.0.0:24568:24567');
+    expect(remapped).not.toContain('$PUB:24567');
     expect(parseNearStatus({ sync_info: { syncing: false }, version: { version: '2.5.0' }, peers: [1, 2] })).toEqual({
       syncProgress: 1,
       peers: 2,

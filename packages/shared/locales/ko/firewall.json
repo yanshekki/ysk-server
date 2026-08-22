@@ -20,6 +20,8 @@
   "statAllow": "허용하다",
   "statDeny": "부인하다",
   "statDefaultIn": "기본 수신",
+  "defaultNotApplied": "해당 없음(UFW 꺼짐)",
+  "ufwOffHint": "UFW가 꺼진 동안에는 기본 수신이 적용되지 않습니다.",
   "executeOn": "켜짐",
   "executeOff": "꺼짐",
   "ufwDisabled": "UFW 비활성화",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "기본 도구:",
   "toolHintBody": "UFW = 포트/영구 규칙 · 공격 대응 및 자동 금지 사용",
   "toolHintfail2ban": "failure2ban = 임시 로그 기반 금지",
+  "toolHintFail2ban": "failure2ban = 임시 로그 기반 금지",
   "executeOffHint": "시스템 변경 꺼짐 — 상태를 읽을 수 있습니다.",
   "tabs": {
     "rules": "규칙",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "해당 UFW 규칙 번호를 제거합니다(시스템 변경 권한이 필요함).",
   "servicesTitle": "관리형 서비스",
   "servicesHint": "YSK 서비스에 대한 원하는 네트워크 노출입니다. 서비스를 열면 이러한 규칙이 자동으로 동기화됩니다.",
+  "servicesUfwOff": "UFW는 꺼져있습니다. 이 목록은 호스트가 시행하는 규칙이 아니라 원하는 노출입니다.",
   "servicesEmpty": "아직 서비스 노출 데이터가 없습니다.",
   "servicesEmptyDesc": "이 목록을 채우려면 관리형 서비스(웹, FTPS, VPN, DB…)를 시작하세요.",
   "servicesManualHint": "수동 포트 칩은 포트 탭 아래에 있습니다. 규칙이 태그된 상태로 유지되도록 여기에서 액세스를 관리하는 것이 좋습니다(ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "UFW를 사용 중지할까요?",
   "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
   "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다.",
-  "toolHintFail2ban": "failure2ban = 임시 로그 기반 금지",
-  "servicesUfwOff": "UFW는 꺼져있습니다. 이 목록은 호스트가 시행하는 규칙이 아니라 원하는 노출입니다.",
   "desiredOnlyUfwOff": "원하는: {{mode}} · UFW 꺼짐(적용되지 않음)",
-  "syncNotApplied": "UFW 꺼짐 · 적용되지 않음",
-  "defaultNotApplied": "해당 없음(UFW 꺼짐)",
-  "ufwOffHint": "UFW가 꺼진 동안에는 기본 수신이 적용되지 않습니다."
+  "syncNotApplied": "UFW 꺼짐 · 적용되지 않음"
 }

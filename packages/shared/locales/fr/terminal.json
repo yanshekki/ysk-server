@@ -15,7 +15,11 @@
   "wsError": "Échec WebSocket",
   "exitCode": "Code de sortie {{code}}",
   "needRootExecute": "Nécessite root + YSK_EXECUTE=1 pour les shells système.",
+  "groupSystem": "Système",
+  "groupProject": "Projet",
   "unavailable": "indisponible",
+  "copyAll": "Copier tout",
+  "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté",
   "placeholder": "Choisissez une identité, puis Connecter",
   "aboutTitle": "À propos du terminal",
   "aboutSub": "Shell OS interactif dans le navigateur (utilisateurs locaux). Pas un client SSH distant arbitraire.",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "Un live shell est toujours connecté pendant que vous lisez cette page.",
   "rootConfirmTitle": "Ouvrir un shell racine ?",
   "rootConfirmDesc": "Cette session est un PTY racine sans restriction sur l'hôte. Les commandes sont auditées.",
-  "rootConfirmBody": "Continuez uniquement si vous avez l'intention d'exécuter des commandes d'hôte privilégiées.",
-  "copyAll": "Copier tout",
-  "copyAllNeedConn": "Connectez-vous d'abord - le tampon est vide lorsqu'il est déconnecté",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "Continuez uniquement si vous avez l'intention d'exécuter des commandes d'hôte privilégiées."
 }

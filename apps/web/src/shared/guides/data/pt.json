@@ -1,0 +1,1827 @@
+{
+  "dashboard": {
+    "id": "dashboard",
+    "title": "Painel",
+    "summary": "Visão geral da integridade do host, tarefas abertas e atalhos – o local habitual para iniciar verificações diárias.",
+    "canDo": [
+      "Resumo de integridade: status principal para serviços, disco, modo de proteção e muito mais.",
+      "Links rápidos: acesse páginas comuns sem procurar no menu.",
+      "Alertas e tarefas：Itens que precisam de atenção (atualizações, cotas e similares).",
+      "Verificação diária da integridade do host",
+      "Quando algo parecer errado, comece aqui e depois analise um subsistema"
+    ],
+    "notes": [
+      "Esta é apenas uma visualização resumida – detalhes e resultados de aplicação são oficiais em cada página de recurso"
+    ],
+    "related": [
+      {
+        "label": "Serviços",
+        "to": "/services"
+      },
+      {
+        "label": "Atualizações",
+        "to": "/updates"
+      },
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server health --json"
+    ]
+  },
+  "projects": {
+    "id": "projects",
+    "title": "Projetos de sites",
+    "summary": "Gerencie raízes de documentos, tempos de execução, domínios e implante o ciclo de vida por site.",
+    "canDo": [
+      "Lista de projetos: Crie, pesquise e abra cada site.",
+      "Isolamento de usuário do sistema operacional: usuário Linux dedicado opcional e home por projeto.",
+      "Modelos: Crie um novo site a partir de um modelo predefinido.",
+      "Hospede vários sites em uma máquina",
+      "Separe os usuários do sistema para um isolamento mais forte"
+    ],
+    "notes": [
+      "Excluir um projeto afeta arquivos e serviços – faça backup primeiro",
+      "publicado ≠ publicamente resolvível; O DNS deve estar correto"
+    ],
+    "related": [
+      {
+        "label": "Arquivos",
+        "to": "/files"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server projects list --json",
+      "ysk-server projects create --name demo --runtime node"
+    ]
+  },
+  "projectDetail": {
+    "id": "projectDetail",
+    "title": "Detalhe do projeto",
+    "summary": "Centro de controle para um site: implantação, ambiente, integridade, backups e endpoints de rede.",
+    "canDo": [
+      "Implantar:Inicie ou atualize o tempo de execução deste site.",
+      "Ambiente: Edite os ambientes do projeto com segurança.",
+      "Integridade e registros: Prontidão da sonda e registros relacionados abertos.",
+      "Controle Git: status, busca, checkout, redefinição; URL de gancho de entrada para GitHub/Gitea/GitLab (não Slack).",
+      "Gire segredos sem tocar em outros projetos"
+    ],
+    "notes": [
+      "Aplicar/executar regras ainda se aplicam – bloqueado significa que o host não foi alterado",
+      "O gancho Git de entrada responde sem uma sessão de painel; clonar/implantar ainda precisa de YSK_EXECUTE=1"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Registros",
+        "to": "/logs"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server projects get --id <ID> --json",
+      "ysk-server projects deploy --id <ID> --execute"
+    ]
+  },
+  "email": {
+    "id": "email",
+    "title": "Correspondência",
+    "summary": "Domínios de correio, caixas de correio e configurações de entrega, com orientação de lista de verificação de DNS.",
+    "canDo": [
+      "Domínios de correio: Domínios que enviam e recebem correio.",
+      "Sugestões de DNS: registros MX / SPF / DKIM / DMARC para publicação.",
+      "Saúde e reputação:Verificações de prontidão de entrega (alguns itens são externos).",
+      "Crie um novo domínio de e-mail",
+      "Depurar soft-fail/rejeitar após alterações de DNS"
+    ],
+    "notes": [
+      "PTR, porta 25 e reputação de IP geralmente precisam do host ou proprietário do IP",
+      "O painel não pode substituir um provedor de DNS externo ou removê-lo das listas de bloqueio"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server email domains --json",
+      "ysk-server email bootstrap --domain example.com --ip A.B.C.D --execute"
+    ]
+  },
+  "emailDomain": {
+    "id": "emailDomain",
+    "title": "Detalhe do domínio de correio",
+    "summary": "Caixas de correio, aliases, DKIM, encaminhamento e integridade para um único domínio de correio.",
+    "canDo": [
+      "Gerenciamento de caixa de correio: Crie caixas de correio, cotas e senhas.",
+      "DNS / DKIM：Mostra chaves e registros que devem ser publicados.",
+      "Políticas avançadas: Encaminhamento, limites de taxa, anti-spam e similares (conforme implementado).",
+      "Crie caixas de correio para funcionários",
+      "Gire o DKIM ou corrija falhas nas verificações de DNS"
+    ],
+    "notes": [
+      "A propagação do DNS depende do TTL",
+      "Se o SSO do webmail estiver ativado, defina senhas e plug-ins separadamente"
+    ],
+    "related": [
+      {
+        "label": "Visão geral do correio",
+        "to": "/email"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server email mailboxes --domain example.com --json",
+      "ysk-server email deliverability --domain example.com --json"
+    ]
+  },
+  "files": {
+    "id": "files",
+    "title": "Arquivos",
+    "summary": "Navegue, carregue, baixe e gerencie arquivos dentro de caminhos autorizados.",
+    "canDo": [
+      "Navegador de diretório: navegue apenas nas raízes permitidas.",
+      "Upload/download：Mova ativos do site ou arquivos de backup.",
+      "Atalhos do projeto: Salta de um projeto para seu diretório inicial.",
+      "Corrija um ativo estático sem SSH",
+      "Extraia um arquivo de backup do host"
+    ],
+    "notes": [
+      "Somente caminhos permitidos – sem acesso arbitrário ao disco completo",
+      "As exclusões podem derrubar um site; faça backup dos arquivos importantes primeiro"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Cópias de segurança",
+        "to": "/backups"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server files list --root public --json",
+      "ysk-server files shares list --root public --json"
+    ]
+  },
+  "publicFiles": {
+    "id": "publicFiles",
+    "title": "Arquivos públicos",
+    "summary": "Área de download pública controlada (por exemplo, pacotes de lançamento ou ativos estáticos).",
+    "canDo": [
+      "Gerenciamento de área pública:Gerencie arquivos acessíveis via HTTP.",
+      "Cota: Limitar o uso da área pública.",
+      "Publicar pacotes de download do cliente",
+      "Compartilhe ativos não confidenciais",
+      "Confirme o prefixo público e a cota"
+    ],
+    "notes": [
+      "Nunca coloque chaves privadas ou dados pessoais de clientes em área pública"
+    ],
+    "related": [
+      {
+        "label": "Arquivos",
+        "to": "/files"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting public-files --domain files.example.com --reload"
+    ]
+  },
+  "ftp": {
+    "id": "ftp",
+    "title": "FTPS",
+    "summary": "Gerencie contas FTPS, chaves SFTP e configurações de serviço vsftpd em um só lugar.",
+    "canDo": [
+      "Conta CRUD: Crie, desative e exclua usuários FTP.",
+      "Diretório inicial: confina cada conta a um caminho especificado.",
+      "Permita que os designers carreguem arquivos estáticos",
+      "Contas de contratantes temporários",
+      "Confirme se o serviço FTPS está instalado e em execução"
+    ],
+    "notes": [
+      "O FTP simples é inseguro; prefira FTPS/SFTP",
+      "As contas entram em vigor somente após a aplicação de um serviço bem-sucedido"
+    ],
+    "related": [
+      {
+        "label": "Arquivos",
+        "to": "/files"
+      },
+      {
+        "label": "Centro de proteção",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
+    ]
+  },
+  "ftpService": {
+    "id": "ftpService",
+    "title": "Serviço FTPS",
+    "summary": "Instale e controle vsftpd/FTPS a partir do painel: ciclo de vida, TLS, PASV e portas de firewall do host.",
+    "canDo": [
+      "Instale e inicie o FTPS",
+      "Aplicar configuração e reiniciar",
+      "Abra portas listen + PASV via firewall do painel",
+      "Definir IP PASV público e domínio TLS"
+    ],
+    "notes": [
+      "Mesclado em /ftp (guia de serviço).",
+      "Abra as portas do firewall em Visão geral (precisa de root + EXECUTE) - não use SSH para executar o ufw",
+      "Defina o IP público PASV em Rede se estiver atrás de NAT",
+      "Os grupos de segurança em nuvem ainda devem permitir as mesmas portas TCP, se usadas"
+    ],
+    "related": [
+      {
+        "label": "FTPS",
+        "to": "/ftp"
+      },
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
+    ]
+  },
+  "mysql": {
+    "id": "mysql",
+    "title": "Bancos de dados MySQL",
+    "summary": "Gerencie bancos de dados MySQL locais, usuários e configurações de conexão com status honesto sobre o que realmente foi gravado no sistema.",
+    "canDo": [
+      "Banco de dados CRUD: Crie, liste e exclua bancos de dados MySQL (esquema).",
+      "Usuários e concessões: Crie contas de banco de dados e vincule direitos de acesso.",
+      "Aplicar e status: Distinguir rascunho, escrito, aplicado e bloqueado – evita falso sucesso.",
+      "Provisionar um banco de dados MySQL isolado e contabilizar um novo projeto de site",
+      "Alterne senhas de aplicativos ou recupere bancos de dados de sites desativados"
+    ],
+    "notes": [
+      "Sucesso do painel ≠ o aplicativo pode se conectar – verifique o host, a porta, o firewall e as concessões da conta",
+      "Excluir um banco de dados é de alto risco; confirme nenhuma dependência de produção antes de aplicar"
+    ],
+    "related": [
+      {
+        "label": "Serviço MySQL",
+        "to": "/databases/mysql/service"
+      },
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "mysqlService": {
+    "id": "mysqlService",
+    "title": "Serviço MySQL",
+    "summary": "Instale, inicie, pare e ajuste o próprio serviço MySQL (não o conteúdo do banco de dados) — pré-requisito para a página de dados.",
+    "canDo": [
+      "Instalação com um clique: instala pacotes MySQL no host (requer permissão de alteração do sistema).",
+      "Iniciar/parar/recarregar:Controle a unidade do systemd e relate resultados reais.",
+      "Sonda de conexão:Verifique se a porta está acessível e o serviço está pronto.",
+      "MySQL pela primeira vez em um novo host",
+      "Reinicie o serviço de banco de dados em uma janela de manutenção e confirme a recuperação"
+    ],
+    "notes": [
+      "Sem EXECUTE, apenas planos/scripts são escritos - nenhum apt / systemctl real",
+      "os recursos raiz e não raiz diferem; algumas ações são honestamente marcadas como bloqueadas"
+    ],
+    "related": [
+      {
+        "label": "Dados MySQL",
+        "to": "/databases/mysql"
+      },
+      {
+        "label": "Visão geral dos serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "mariadb": {
+    "id": "mariadb",
+    "title": "Bancos de dados MariaDB",
+    "summary": "Gerencie bancos de dados MariaDB locais, usuários e configurações de conexão com um status honesto sobre o que realmente foi gravado no sistema.",
+    "canDo": [
+      "Banco de dados CRUD: Crie, liste e exclua bancos de dados MariaDB (esquema).",
+      "Usuários e concessões: Crie contas de banco de dados e vincule direitos de acesso.",
+      "Aplicar e status: Distinguir rascunho, escrito, aplicado e bloqueado – evita falso sucesso.",
+      "Provisionar um banco de dados MariaDB isolado e contabilizar um novo projeto de site",
+      "Alterne senhas de aplicativos ou recupere bancos de dados de sites desativados"
+    ],
+    "notes": [
+      "Sucesso do painel ≠ o aplicativo pode se conectar – verifique o host, a porta, o firewall e as concessões da conta",
+      "Excluir um banco de dados é de alto risco; confirme nenhuma dependência de produção antes de aplicar"
+    ],
+    "related": [
+      {
+        "label": "Serviço MariaDB",
+        "to": "/databases/mariadb/service"
+      },
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "mariadbService": {
+    "id": "mariadbService",
+    "title": "Serviço MariaDB",
+    "summary": "Instale, inicie, pare e ajuste o próprio serviço MariaDB (não o conteúdo do banco de dados) — pré-requisito para a página de dados.",
+    "canDo": [
+      "Instalação com um clique: instala pacotes MariaDB no host (requer permissão de alteração do sistema).",
+      "Iniciar/parar/recarregar:Controle a unidade do systemd e relate resultados reais.",
+      "Sonda de conexão:Verifique se a porta está acessível e o serviço está pronto.",
+      "MariaDB pela primeira vez em um novo host",
+      "Reinicie o serviço de banco de dados em uma janela de manutenção e confirme a recuperação"
+    ],
+    "notes": [
+      "Sem EXECUTE, apenas planos/scripts são escritos - nenhum apt / systemctl real",
+      "os recursos raiz e não raiz diferem; algumas ações são honestamente marcadas como bloqueadas"
+    ],
+    "related": [
+      {
+        "label": "Dados MariaDB",
+        "to": "/databases/mariadb"
+      },
+      {
+        "label": "Visão geral dos serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "postgres": {
+    "id": "postgres",
+    "title": "Bancos de dados PostgreSQL",
+    "summary": "Gerencie bancos de dados PostgreSQL locais, usuários e configurações de conexão com status honesto sobre o que realmente foi gravado no sistema.",
+    "canDo": [
+      "Banco de dados CRUD: Crie, liste e exclua bancos de dados PostgreSQL (esquema).",
+      "Usuários e concessões: Crie contas de banco de dados e vincule direitos de acesso.",
+      "Aplicar e status: Distinguir rascunho, escrito, aplicado e bloqueado – evita falso sucesso.",
+      "Provisionar um banco de dados PostgreSQL isolado e contabilizar um novo projeto de site",
+      "Alterne senhas de aplicativos ou recupere bancos de dados de sites desativados"
+    ],
+    "notes": [
+      "Sucesso do painel ≠ o aplicativo pode se conectar – verifique o host, a porta, o firewall e as concessões da conta",
+      "Excluir um banco de dados é de alto risco; confirme nenhuma dependência de produção antes de aplicar"
+    ],
+    "related": [
+      {
+        "label": "Serviço PostgreSQL",
+        "to": "/databases/postgres/service"
+      },
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting postgres-provision --db NAME --user U --password P --execute"
+    ]
+  },
+  "postgresService": {
+    "id": "postgresService",
+    "title": "Serviço PostgreSQL",
+    "summary": "Instale, inicie, pare e ajuste o próprio serviço PostgreSQL (não o conteúdo do banco de dados) — pré-requisito para a página de dados.",
+    "canDo": [
+      "Instalação com um clique: instala pacotes PostgreSQL no host (requer permissão de alteração do sistema).",
+      "Iniciar/parar/recarregar:Controle a unidade do systemd e relate resultados reais.",
+      "Sonda de conexão:Verifique se a porta está acessível e o serviço está pronto.",
+      "PostgreSQL pela primeira vez em um novo host",
+      "Reinicie o serviço de banco de dados em uma janela de manutenção e confirme a recuperação"
+    ],
+    "notes": [
+      "Sem EXECUTE, apenas planos/scripts são escritos - nenhum apt / systemctl real",
+      "os recursos raiz e não raiz diferem; algumas ações são honestamente marcadas como bloqueadas"
+    ],
+    "related": [
+      {
+        "label": "Dados PostgreSQL",
+        "to": "/databases/postgres"
+      },
+      {
+        "label": "Visão geral dos serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
+    ]
+  },
+  "redis": {
+    "id": "redis",
+    "title": "Redis",
+    "summary": "Navegue e gerencie chaves Redis e índices de banco de dados; aplicar configurações relacionadas à conexão.",
+    "canDo": [
+      "Navegador de chaves:Inspecione chaves e valores por banco de dados (sujeito a permissão e limites de tamanho).",
+      "Configurações de instância:Gerencie o destino da conexão Redis.",
+      "Inspecione o cache da sessão",
+      "Limpar chaves de fila inválidas",
+      "Confirme se o serviço Redis está em execução"
+    ],
+    "notes": [
+      "Excluir chaves na produção requer extremo cuidado",
+      "Chaves grandes podem ficar truncadas na IU"
+    ],
+    "related": [
+      {
+        "label": "Serviço Redis",
+        "to": "/databases/redis/service"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
+    ]
+  },
+  "redisService": {
+    "id": "redisService",
+    "title": "Serviço Redis",
+    "summary": "Instale, inicie, pare e ajuste o próprio serviço Redis (não o conteúdo dos dados) — pré-requisito para a página de dados.",
+    "canDo": [
+      "Instalação com um clique: instala pacotes Redis no host (requer permissão de alteração do sistema).",
+      "Iniciar/parar/recarregar:Controle a unidade do systemd e relate resultados reais.",
+      "Sonda de conexão:Verifique se a porta está acessível e o serviço está pronto.",
+      "Redis pela primeira vez em um novo host",
+      "Reinicie o serviço em uma janela de manutenção e confirme a recuperação"
+    ],
+    "notes": [
+      "Sem EXECUTE, apenas planos/scripts são escritos - nenhum apt / systemctl real",
+      "os recursos raiz e não raiz diferem; algumas ações são honestamente marcadas como bloqueadas"
+    ],
+    "related": [
+      {
+        "label": "Dados Redis",
+        "to": "/databases/redis"
+      },
+      {
+        "label": "Visão geral dos serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
+    ]
+  },
+  "dns": {
+    "id": "dns",
+    "title": "DNS",
+    "summary": "Zonas e registros autoritativos, sincronização de cluster, DNSSEC e ferramentas de consulta.",
+    "canDo": [
+      "Zonas e registros: dados oficiais que o host atende ou planeja.",
+      "Sincronização / DNSSEC: pares de cluster e assinatura quando habilitado.",
+      "Ferramentas de consulta: verificações rápidas no estilo escavação no painel.",
+      "Publique A/MX para um novo site ou domínio de email",
+      "Verifique se as arestas e a origem são resolvidas conforme o esperado"
+    ],
+    "notes": [
+      "TTL e caches externos atrasam o que o público vê",
+      "Configurações erradas de apex/NS podem deixar todo o domínio off-line"
+    ],
+    "related": [
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      },
+      {
+        "label": "Correspondência",
+        "to": "/email"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server dns zones --json",
+      "ysk-server hosting dns-zone --zone example.com --ip A.B.C.D"
+    ]
+  },
+  "cdn": {
+    "id": "cdn",
+    "title": "CDN (borda auto-hospedada)",
+    "summary": "Aceleração de borda de vários nós com YSK: bordas de registro, origem/cache, push Nginx, DNS multi-A/failover, distribuição TLS opcional.",
+    "canDo": [
+      "Registro de borda: rastreie nós de borda e integridade.",
+      "Push do site: Empurre a política Nginx / cache para as bordas.",
+      "Auxiliares de DNS: Padrões Multi-A/failover para IPs de borda.",
+      "Acelere um site público de várias bordas VPS",
+      "Failover quando uma borda não está íntegra"
+    ],
+    "notes": [
+      "Trabalhos de borda em fila ≠ aplicados em todos os nós – leia o status honesto",
+      "Apply não inventa root@publicIpv4; SSH precisa de identidade/nome de usuário/sshHost. O probe classifica o tempo limite/DNS/TLS."
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      },
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server cdn nodes --json",
+      "ysk-server cdn sites --json"
+    ]
+  },
+  "ssl": {
+    "id": "ssl",
+    "title": "Certificados SSL",
+    "summary": "Solicite, carregue e anexe certificados TLS para sites, correio ou nomes de host de painel.",
+    "canDo": [
+      "Emitir / fazer upload: emita ACME ou cole arquivos PEM.",
+      "Anexar: Vincule um certificado a um nome de host de site ou serviço.",
+      "Habilite HTTPS para um novo domínio",
+      "Substituir um certificado expirado",
+      "Adicione ou selecione o nome do host"
+    ],
+    "notes": [
+      "ACME precisa de DNS correto e geralmente acessibilidade da porta 80",
+      "Certificado em disco ≠ os navegadores confiam em toda a cadeia – verifique de ponta a ponta"
+    ],
+    "related": [
+      {
+        "label": "Nginx",
+        "to": "/nginx"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server ssl list --json",
+      "ysk-server ssl get --domain example.com --json"
+    ]
+  },
+  "nginx": {
+    "id": "nginx",
+    "title": "Nginx",
+    "summary": "Gerencie vhosts independentes e revise a configuração gerenciada pelo projeto.",
+    "canDo": [
+      "Listar sites de projetos (configuração gerenciada de publicar/goLive)",
+      "Crie sites independentes e aplique ao sistema",
+      "Pré-visualização conf; edite o projeto Nginx em Projeto → Rede",
+      "Execute nginx -t /reload quando permitido",
+      "Limpe o cache Nginx gerenciado pelo painel quando disponível"
+    ],
+    "notes": [
+      "Os sites do projeto e os sites independentes são listados separadamente; alterar a configuração do projeto na Rede do Projeto",
+      "Aplique após criar para escrever a configuração do sistema; falhou nginx -t nunca marcas aplicadas",
+      "O conf gerenciado por CDN tem um ciclo de vida separado – não misture com edições manuais"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "SSL",
+        "to": "/ssl"
+      },
+      {
+        "label": "CDN",
+        "to": "/cdn"
+      }
+    ]
+  },
+  "node": {
+    "id": "node",
+    "title": "Node.js",
+    "summary": "Gerencie versões de tempo de execução, conjunto de ferramentas e recursos do Node.js usados ​​pelas implantações do projeto neste host.",
+    "canDo": [
+      "Sonda de ambiente: detecta Node.js instalado e se CLIs comuns estão disponíveis.",
+      "Auxiliares de instalação/atualização:Instale ou alterne os tempos de execução quando a permissão permitir.",
+      "Integração do projeto: as implantações do projeto usam o tempo de execução confirmado nesta página.",
+      "Prepare a versão correta do Node.js para sites correspondentes",
+      "Inicialize o tempo de execução em um novo host antes de criar projetos"
+    ],
+    "notes": [
+      "Mudanças globais no tempo de execução podem afetar todos os projetos que usam esse tempo de execução",
+      "O estado real do processo é oficial nas páginas de detalhes do projeto e serviços"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind node --version 22 --execute"
+    ]
+  },
+  "php": {
+    "id": "php",
+    "title": "PHP",
+    "summary": "Gerencie versões de tempo de execução do PHP, conjunto de ferramentas e recursos usados ​​pelas implantações de projetos neste host.",
+    "canDo": [
+      "Sonda de ambiente: detecta PHP instalado e se CLIs comuns estão disponíveis.",
+      "Auxiliares de instalação/atualização:Instale ou alterne os tempos de execução quando a permissão permitir.",
+      "Integração do projeto: as implantações do projeto usam o tempo de execução confirmado nesta página.",
+      "Prepare a versão correta do PHP para sites correspondentes",
+      "Inicialize o tempo de execução em um novo host antes de criar projetos"
+    ],
+    "notes": [
+      "Mudanças globais no tempo de execução podem afetar todos os projetos que usam esse tempo de execução",
+      "O estado real do processo é oficial nas páginas de detalhes do projeto e serviços"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind php --version 8.3 --execute"
+    ]
+  },
+  "python": {
+    "id": "python",
+    "title": "Pitão",
+    "summary": "Gerencie versões de tempo de execução do Python, conjunto de ferramentas e recursos usados ​​pelas implantações de projetos neste host.",
+    "canDo": [
+      "Sonda de ambiente: detecta o Python instalado e se CLIs comuns estão disponíveis.",
+      "Auxiliares de instalação/atualização:Instale ou alterne os tempos de execução quando a permissão permitir.",
+      "Integração do projeto: as implantações do projeto usam o tempo de execução confirmado nesta página.",
+      "Prepare a versão correta do Python para sites correspondentes",
+      "Inicialize o tempo de execução em um novo host antes de criar projetos"
+    ],
+    "notes": [
+      "Mudanças globais no tempo de execução podem afetar todos os projetos que usam esse tempo de execução",
+      "O estado real do processo é oficial nas páginas de detalhes do projeto e serviços"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind python --version 3.12 --execute"
+    ]
+  },
+  "go": {
+    "id": "go",
+    "title": "Ir",
+    "summary": "Gerencie versões de tempo de execução, conjunto de ferramentas e recursos do Go usados ​​pelas implantações de projetos neste host.",
+    "canDo": [
+      "Sonda de ambiente: detecta Go instalado e se CLIs comuns estão disponíveis.",
+      "Auxiliares de instalação/atualização:Instale ou alterne os tempos de execução quando a permissão permitir.",
+      "Integração do projeto: as implantações do projeto usam o tempo de execução confirmado nesta página.",
+      "Prepare a versão Go correta para sites correspondentes",
+      "Inicialize o tempo de execução em um novo host antes de criar projetos"
+    ],
+    "notes": [
+      "Mudanças globais no tempo de execução podem afetar todos os projetos que usam esse tempo de execução",
+      "O estado real do processo é oficial nas páginas de detalhes do projeto e serviços"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind go --version 1.24 --execute"
+    ]
+  },
+  "rust": {
+    "id": "rust",
+    "title": "Ferrugem",
+    "summary": "Gerencie versões de tempo de execução do Rust, conjunto de ferramentas e recursos usados ​​pelas implantações de projetos neste host.",
+    "canDo": [
+      "Sonda de ambiente: detecta Rust instalado e se CLIs comuns estão disponíveis.",
+      "Auxiliares de instalação/atualização:Instale ou alterne os tempos de execução quando a permissão permitir.",
+      "Integração do projeto: as implantações do projeto usam o tempo de execução confirmado nesta página.",
+      "Prepare a versão correta do Rust para sites correspondentes",
+      "Inicialize o tempo de execução em um novo host antes de criar projetos"
+    ],
+    "notes": [
+      "Mudanças globais no tempo de execução podem afetar todos os projetos que usam esse tempo de execução",
+      "O estado real do processo é oficial nas páginas de detalhes do projeto e serviços"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind rust --version stable --execute"
+    ]
+  },
+  "protection": {
+    "id": "protection",
+    "title": "Centro de proteção",
+    "summary": "Local único para firewall de host, Fail2ban, proibições automatizadas e política de defesa.",
+    "canDo": [
+      "Modo de proteção: Força geral de defesa e política de automação.",
+      "Bloqueios e lista de permissões: Revise banimentos, cancele o banimento e mantenha IPs confiáveis.",
+      "Pilha inferior: ferramentas UFW e Fail2ban aninhadas neste centro (não na navegação de nível superior).",
+      "Responda à força bruta ou verifique o tráfego",
+      "Fortaleça a política de entrada sem sair do painel"
+    ],
+    "notes": [
+      "Regras muito rígidas podem bloquear você – mantenha um caminho de recuperação fora da banda",
+      "Aplicar precisa de EXECUTAR; caso contrário, apenas um plano é escrito"
+    ],
+    "related": [
+      {
+        "label": "Firewall (UFW)",
+        "to": "/protection/firewall"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      },
+      {
+        "label": "Segurança",
+        "to": "/security"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json",
+      "ysk-server defense ban --ip 1.2.3.4 --json"
+    ]
+  },
+  "firewall": {
+    "id": "firewall",
+    "title": "Firewall (UFW)",
+    "summary": "Camada inferior de proteção: regras UFW e política de entrada/saída.",
+    "canDo": [
+      "Regras: Permitir/negar por porta e origem.",
+      "Aplicar: Enviar política quando EXECUTE permitir.",
+      "Abra 443 apenas em redes conhecidas",
+      "Fechar portas totalmente abertas acidentais",
+      "Revise as regras atuais"
+    ],
+    "notes": [
+      "Uma regra de negação incorreta pode bloquear o SSH – manter o acesso ao console",
+      "Aninhado em Proteção; não é uma segunda entrada de produto IA"
+    ],
+    "related": [
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      },
+      {
+        "label": "Fail2ban",
+        "to": "/protection/fail2ban"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting firewall-apply --execute"
+    ]
+  },
+  "fail2ban": {
+    "id": "fail2ban",
+    "title": "Fail2ban",
+    "summary": "Camada inferior de proteção: bane fontes hostis dos padrões de log.",
+    "canDo": [
+      "Prisões: Quais serviços alimentam proibições.",
+      "Lista de banimentos: Banimentos ativos e cancelamento manual.",
+      "Corte a força bruta SSH",
+      "Desbanir um falso positivo",
+      "Verifique o status do serviço"
+    ],
+    "notes": [
+      "Precisa da unidade instalada e funcionando para banimentos ao vivo",
+      "Aplicar honestidade ainda se aplica sem EXECUTE"
+    ],
+    "related": [
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      },
+      {
+        "label": "Firewall",
+        "to": "/protection/firewall"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json"
+    ]
+  },
+  "security": {
+    "id": "security",
+    "title": "Segurança da conta",
+    "summary": "Segurança de login do painel: senha, TOTP e sessões.",
+    "canDo": [
+      "Senha: altere a senha de login do painel.",
+      "TOTP: senhas de uso único baseadas em tempo para login.",
+      "Sessões:listar ou revogar sessões conectadas.",
+      "Ative o TOTP para contas de administrador",
+      "Revogar uma sessão roubada ou compartilhada"
+    ],
+    "notes": [
+      "A perda de um dispositivo TOTP pode exigir recuperação fora de banda – backup de códigos de recuperação."
+    ],
+    "related": [
+      {
+        "label": "Usuários",
+        "to": "/users"
+      },
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server security status --json",
+      "ysk-server security sessions list --json"
+    ]
+  },
+  "users": {
+    "id": "users",
+    "title": "Usuários e planos",
+    "summary": "Usuários do painel, funções e cotas do plano de recursos.",
+    "canDo": [
+      "Usuários: crie contas e atribua funções.",
+      "Planos：Pacotes de recursos/cotas para locatários.",
+      "Integrar um novo operador",
+      "Limitar disco ou sites por plano",
+      "Criar usuário"
+    ],
+    "notes": [
+      "Não remova o último administrador",
+      "A suspensão é imediata para novas sessões"
+    ],
+    "related": [
+      {
+        "label": "Segurança",
+        "to": "/security"
+      },
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server users list --json"
+    ]
+  },
+  "services": {
+    "id": "services",
+    "title": "Serviços",
+    "summary": "Visão geral das principais unidades do systemd; iniciar, parar e ações relacionadas.",
+    "canDo": [
+      "Matriz de serviço:Status ativo para muitas unidades ao mesmo tempo.",
+      "Ações: iniciar/parar/reiniciar um único serviço.",
+      "Veja quais componentes da pilha estão inativos",
+      "Reinicie uma unidade travada durante a manutenção",
+      "Serviços abertos"
+    ],
+    "notes": [
+      "Reiniciar bancos de dados e serviços semelhantes interrompe conexões"
+    ],
+    "related": [
+      {
+        "label": "Painel",
+        "to": "/"
+      },
+      {
+        "label": "Registros",
+        "to": "/logs"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
+    ]
+  },
+  "metrics": {
+    "id": "metrics",
+    "title": "Métricas",
+    "summary": "Métricas operacionais para uso de CPU, memória, disco e projeto.",
+    "canDo": [
+      "Métricas de host: uso de recursos em tempo real ou recente.",
+      "Uso do projeto: disco por site e resumos de uso relacionados.",
+      "Decida se deseja aumentar",
+      "Encontre projetos preenchendo o disco",
+      "Revise a visão geral"
+    ],
+    "notes": [
+      "O intervalo e a precisão da amostra dependem da implementação – não de um APM completo"
+    ],
+    "related": [
+      {
+        "label": "Painel",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server host metrics --json"
+    ]
+  },
+  "network": {
+    "id": "network",
+    "title": "Rede",
+    "summary": "Inspecione interfaces, rotas, resolvedores de DNS e detalhes avançados de rede.",
+    "canDo": [
+      "Interfaces e endereços: Visualize ligações IPv4/IPv6.",
+      "Rotas:Verifique o gateway padrão e a tabela de roteamento.",
+      "Resolvedores:Como este host resolve domínios.",
+      "Confirme o IP público depois que um host entrar no ar",
+      "Solucionar problemas de rotas ruins"
+    ],
+    "notes": [
+      "Algumas alterações precisam de permissão do sistema e podem interromper a conectividade"
+    ],
+    "related": [
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server host overview --json"
+    ]
+  },
+  "logs": {
+    "id": "logs",
+    "title": "Centro de registro",
+    "summary": "diário e fontes de log permitidas dentro de um limite seguro.",
+    "canDo": [
+      "Fontes:Apenas caminhos/unidades de log aprovados.",
+      "Visualizador: Tail e destaque sem lição de casa.",
+      "Depurar uma implantação com falha",
+      "Inspecione falhas de autenticação ou email",
+      "Escolha uma fonte"
+    ],
+    "notes": [
+      "Não é um SIEM completo – o escopo é permitido na lista propositalmente"
+    ],
+    "related": [
+      {
+        "label": "Serviços",
+        "to": "/services"
+      },
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server logs sources --json",
+      "ysk-server logs query --source journal: --lines 50 --json"
+    ]
+  },
+  "cron": {
+    "title": "Cron",
+    "summary": "Inspecione crontabs reais por usuário e gerencie trabalhos registrados no painel.",
+    "canDo": [
+      "Listar trabalhos crontab para usuários root e de projeto do Linux",
+      "Filtrar por usuário (mesma identidade definida como Terminal)",
+      "Crie trabalhos de painel e instale no crontab do sistema",
+      "Informe as linhas marcadas no painel (# ysk:id) das linhas nativas do host",
+      "Execute um trabalho de painel uma vez para teste"
+    ],
+    "notes": [
+      "A leitura dos crontabs de outros usuários requer o plano de controle como root",
+      "Instalar mescla trabalhos de painel no crontab do usuário do plano de controle (trabalhos de projeto geralmente usam runuser)",
+      "As linhas nativas do host são visíveis; v1 não edita linhas não-YSK no painel"
+    ],
+    "related": [
+      {
+        "label": "Cópias de segurança",
+        "to": "/backups"
+      }
+    ],
+    "id": "cron"
+  },
+  "backups": {
+    "id": "backups",
+    "title": "Cópias de segurança",
+    "summary": "Agendar e executar backups de projetos/dados; gerenciar artefatos de backup.",
+    "canDo": [
+      "Trabalhos:Defina o que será feito backup e quando.",
+      "Artefatos:Liste e baixe produtos de backup.",
+      "Instantâneo noturno do projeto",
+      "Faça um backup antes de uma migração arriscada",
+      "Definir configurações de backup"
+    ],
+    "notes": [
+      "Um trabalho listado ≠ uma restauração verificada – teste a recuperação regularmente",
+      "O teste SFTP remoto usa a identidade de saída; a chave faltante não está EXECUTE-off",
+      "A visualização do plano de controle lista o arquivo (tar -tzf) sem uma linha do projeto"
+    ],
+    "related": [
+      {
+        "label": "Projetos",
+        "to": "/projects"
+      },
+      {
+        "label": "Arquivos",
+        "to": "/files"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server backup list --json",
+      "ysk-server backup status --json"
+    ]
+  },
+  "migrate": {
+    "id": "migrate",
+    "title": "Migração de host completo",
+    "summary": "Faça um inventário do ambiente YSK deste host e, em seguida, migre por SSH para um novo host (por exemplo, alteração de IP público).",
+    "canDo": [
+      "Inventário: verifica recursos gerenciados e software neste host.",
+      "Pré-verificar e executar: Conecte-se ao destino, transfira e restaure.",
+      "Verificar:Verifique os serviços críticos após a migração.",
+      "Remover um VPS expirado",
+      "Remova o restante /home/ysk-server-<uuid> (confirme + EXECUTE)"
+    ],
+    "notes": [
+      "Precisa de capacidade root e EXECUTE no destino",
+      "Lares órfãos são diretórios de disco restantes, não falsos positivos"
+    ],
+    "related": [
+      {
+        "label": "Cópias de segurança",
+        "to": "/backups"
+      },
+      {
+        "label": "DNS",
+        "to": "/dns"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server migrate inventory --json",
+      "ysk-server migrate orphan-homes --json"
+    ]
+  },
+  "updates": {
+    "id": "updates",
+    "title": "Atualizações",
+    "summary": "Conselhos sobre pacotes de sistema operacional e status de atualização automática do painel – honestos sobre o que pode ser aplicado.",
+    "canDo": [
+      "Inventário: O que está instalado e o que parece atualizável.",
+      "Aplicar caminho: atualização ao vivo apenas com EXECUTE (e geralmente root).",
+      "Patch antes de um CVE conhecido",
+      "Verifique se a construção do painel é atual",
+      "Atualizar inventário"
+    ],
+    "notes": [
+      "Sem EXECUTE, os resultados permanecem planejados/bloqueados",
+      "As atualizações de pacotes podem reiniciar serviços"
+    ],
+    "related": [
+      {
+        "label": "Serviços",
+        "to": "/services"
+      },
+      {
+        "label": "Painel",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server update --json"
+    ]
+  },
+  "systemd": {
+    "id": "systemd",
+    "title": "unidades do sistema",
+    "summary": "Inspecione e opere detalhes individuais da unidade do sistema.",
+    "canDo": [
+      "Status da unidade: estado ativo, habilitado e relacionado.",
+      "Ações: iniciar/parar/reiniciar/ativar.",
+      "Ajustar unidades personalizadas",
+      "Procure uma unidade",
+      "Rever estado"
+    ],
+    "notes": [
+      "Erros podem deixar serviços críticos off-line"
+    ],
+    "related": [
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server system unit-install --enable --execute"
+    ]
+  },
+  "readiness": {
+    "id": "readiness",
+    "title": "Prontidão",
+    "summary": "Verifique a produção em relação à lista de disponibilidade do produto para obter os componentes e configurações necessários.",
+    "canDo": [
+      "Verificação de itens: Binários, serviços e integridade das configurações.",
+      "Orientação para correção: Links para a página do recurso correspondente para preencher lacunas.",
+      "Aceitação de pré-produção",
+      "Verifique novamente após a migração",
+      "Execute a verificação"
+    ],
+    "notes": [
+      "Pronto ≠ aprovado no teste de carga comercial"
+    ],
+    "related": [
+      {
+        "label": "Painel",
+        "to": "/"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server doctor --json"
+    ]
+  },
+  "systemIndex": {
+    "id": "systemIndex",
+    "title": "Ferramentas do sistema",
+    "summary": "Ponto de entrada para utilitários de nível de sistema e informações de host.",
+    "canDo": [
+      "Informações do host: nome do host, fuso horário e fatos relacionados.",
+      "Links de ferramentas: vá para unidades, prepare-se, migre e muito mais.",
+      "Encontre recursos no nível do sistema rapidamente",
+      "Revise as informações do anfitrião",
+      "Abra a subferramenta necessária"
+    ],
+    "notes": [
+      "Alterar o nome do host/fuso horário pode afetar certificados e registros de data e hora"
+    ],
+    "related": [
+      {
+        "label": "Rede",
+        "to": "/network"
+      },
+      {
+        "label": "Atualizações",
+        "to": "/updates"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server status --json"
+    ]
+  },
+  "ai": {
+    "id": "ai",
+    "title": "Tarefas de IA",
+    "summary": "Execute tarefas controladas assistidas por IA dentro do painel (requer configuração do provedor).",
+    "canDo": [
+      "Tarefas:Enviar prompts e revisar resultados.",
+      "Configurações: Vincule o provedor do modelo e as chaves quando aplicável.",
+      "Rascunhos de notas de configuração",
+      "Ajude a interpretar logs de erros",
+      "Confirme se a IA está configurada"
+    ],
+    "notes": [
+      "Os resultados da IA ​​precisam de revisão humana – nunca os trate como comandos de produção no estado em que se encontram",
+      "Pode incorrer em custos de API"
+    ],
+    "related": [
+      {
+        "label": "Agentes",
+        "to": "/agents"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server ask \"…\" --json",
+      "ysk-server tools --json"
+    ]
+  },
+  "agents": {
+    "id": "agents",
+    "title": "Agentes de IA",
+    "summary": "Registre agentes de borda, enfileire comandos, leia o histórico e investigue tempos de execução de IA.",
+    "canDo": [
+      "Registrar: adiciona um agente de borda à lista do plano de controle (registrado ≠ online).",
+      "Comando: enfileirar predefinições CLI ou argv personalizado; a borda puxa e ataca.",
+      "Histórico: enfileirado/concluído/erro, código de saída e JSON.",
+      "Tempos de execução: teste, escreva unidades do systemd e instale OpenClaw / Hermes / IonClaw.",
+      "Status: registrado → online → obsoleto (>60 anos) → offline."
+    ],
+    "notes": [
+      "O registro não inicia um processo. O nó deve executar o agente de saída.",
+      "Os comandos de mudança de host ainda precisam de EXECUTE no limite."
+    ],
+    "related": [
+      {
+        "label": "Tarefas de IA",
+        "to": "/ai"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server agents runtimes --json",
+      "ysk-server agent run --json"
+    ]
+  },
+  "servicesConsole": {
+    "id": "servicesConsole",
+    "title": "Console de serviço",
+    "summary": "Console de operações e status para um único tipo de serviço.",
+    "canDo": [
+      "Status: estado ativo/instalado ao vivo.",
+      "Ações:Instalar, iniciar, recarregar e similares.",
+      "Opere vários serviços de back-end em um só lugar",
+      "Selecione um serviço",
+      "Rever estado"
+    ],
+    "notes": [
+      "Confirme o raio da explosão antes de ações de alto risco"
+    ],
+    "related": [
+      {
+        "label": "Visão geral dos serviços",
+        "to": "/services"
+      }
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
+    ]
+  },
+  "java": {
+    "id": "java",
+    "title": "Java",
+    "summary": "Gerenciar a instalação do host OpenJDK.",
+    "canDo": [
+      "Instale ou troque o OpenJDK",
+      "Verifique se o Java está disponível"
+    ],
+    "notes": [
+      "Os projetos usam o host JDK para compilações"
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind java --version 21 --execute"
+    ]
+  },
+  "kotlin": {
+    "id": "kotlin",
+    "title": "Kotlin",
+    "summary": "Gerencie o compilador Kotlin (requer JDK).",
+    "canDo": [
+      "Instale o compilador Kotlin",
+      "Confirme se um JDK está presente"
+    ],
+    "notes": [
+      "Kotlin requer um JDK local"
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind kotlin --version 2.0 --execute"
+    ]
+  },
+  "bun": {
+    "id": "bun",
+    "title": "Pão",
+    "summary": "Gerencie a instalação e atualizações do tempo de execução do Bun.",
+    "canDo": [
+      "Instale ou atualize o Bun",
+      "Verifique a versão do pão"
+    ],
+    "notes": [
+      "Usado quando o tempo de execução de um projeto é Bun"
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind bun --version latest --execute"
+    ]
+  },
+  "terminal": {
+    "id": "terminal",
+    "title": "terminal",
+    "summary": "Shell PTY real no navegador como root ou usuário do projeto Linux.",
+    "canDo": [
+      "Abra o shell interativo como usuário root ou do projeto",
+      "Sensação completa do terminal (cores, vim, redimensionamento)",
+      "Desconectar mata o PTY"
+    ],
+    "notes": [
+      "SSH remoto arbitrário (v1 é apenas host local)",
+      "Conecte sem root + EXECUTE"
+    ],
+    "workflow": [
+      "Revise o status nesta página",
+      "Aplicar alterações com ações do painel",
+      "Confirme com prontidão/saúde se houver mudança de host"
+    ],
+    "cliHints": [
+      "# browser PTY only — no remote SSH required"
+    ]
+  },
+  "hostBrowse": {
+    "id": "hostBrowse",
+    "title": "Navegação no host",
+    "summary": "Navegue por este host com Proxy (reescrita) ou navegador Real (screencast do Chromium). Os alvos nunca veem a identidade do navegador do seu desktop.",
+    "canDo": [
+      "Modos Internet/intranet com política SSRF",
+      "Mecanismo proxy para páginas estáticas e de formulário",
+      "Mecanismo de navegador real para renderização completa do Chromium",
+      "Apenas cookies do lado do servidor"
+    ],
+    "notes": [
+      "Proxy: reescrita de HTML + formulário POST; Navegador real precisa do sistema Chrome",
+      "Metadados da nuvem sempre bloqueados",
+      "Requer capacidade network.browse"
+    ],
+    "workflow": [
+      "Abra a navegação no host",
+      "Escolha proxy ou navegador real",
+      "Digite o URL e vá"
+    ],
+    "cliHints": [
+      "# panel only — install google-chrome for real browser engine"
+    ],
+    "related": [
+      {
+        "label": "Rede",
+        "to": "/network"
+      },
+      {
+        "label": "terminal",
+        "to": "/terminal"
+      }
+    ]
+  },
+  "vpn": {
+    "id": "vpn",
+    "title": "VPN",
+    "summary": "Hospede WireGuard, OpenVPN ou Shadowsocks como um servidor para telefones/laptops ou conecte este host como um cliente a outra VPN.",
+    "canDo": [
+      "Instale WireGuard, OpenVPN e Shadowsocks na guia Software",
+      "Inicie um servidor e abra a porta de escuta",
+      "Crie clientes — baixe conf; WireGuard e Shadowsocks também mostram um QR",
+      "Importe um conf e conecte este host como cliente"
+    ],
+    "workflow": [
+      "Guia Software → instalar o mecanismo",
+      "Guia Mecanismo → definir endpoint/porta → Aplicar servidor",
+      "Adicione um peer/cliente → baixe conf (QR para WireGuard / Shadowsocks)",
+      "Guia Cliente → colar conf → Conectar"
+    ],
+    "notes": [
+      "Requer root e YSK_EXECUTE para instalação, aplicação de servidor e conexão de cliente",
+      "Defina um endpoint público real (IP ou domínio) ou os clientes móveis não poderão acessar o servidor",
+      "As interfaces de servidor (wg0) e cliente (wg-c-*) podem coexistir; assistir IPs permitidos/roteamento"
+    ],
+    "cliHints": [
+      "wg show",
+      "systemctl status wg-quick@wg0"
+    ],
+    "related": [
+      {
+        "label": "Proteção",
+        "to": "/protection"
+      },
+      {
+        "label": "Rede",
+        "to": "/network"
+      }
+    ]
+  },
+  "vnc": {
+    "id": "vnc",
+    "title": "Área de trabalho remota VNC",
+    "summary": "Execute sessões TigerVNC multiusuário (um usuário Linux cada), abra-as no navegador com noVNC ou conecte-se como cliente por meio do proxy do servidor ou de sua própria rede.",
+    "canDo": [
+      "Instalação com um clique de TigerVNC, noVNC, XFCE opcional e visualizador",
+      "Crie usuários Linux independentes para cada conta VNC",
+      "Prefira localhost RFB + noVNC; portas diretas opcionais com firewall",
+      "Escolha o caminho do cliente: acessível pelo usuário ou via proxy do servidor"
+    ],
+    "workflow": [
+      "Guia Instalar → TigerVNC (então noVNC)",
+      "Configurações → área de trabalho padrão / resolução / vinculação RFB",
+      "Contas → criar sessão de usuário",
+      "Abra no navegador ou forneça ao usuário host:port"
+    ],
+    "notes": [
+      "Abrir no navegador precisa de noVNC. Instale-o na guia Instalar antes de abrir os controles remotos aqui.",
+      "Ambos os caminhos do cliente abrem o VNC no navegador por meio do painel proxy TCP. Eles diferem por endereço de destino.",
+      "Acessível pelo usuário: nome de host público (por exemplo, hermes.example.com:5901). Proxy do servidor: endereço LAN/DC que somente este host pode alcançar; O TCP é investigado primeiro neste servidor.",
+      "A instalação e o provisionamento do usuário precisam de root + YSK_EXECUTE. O RFB padrão é somente localhost; prefira VPN ao expor desktops."
+    ],
+    "cliHints": [
+      "vncserver -list",
+      "ss -lntp | grep 590"
+    ],
+    "related": [
+      {
+        "label": "VPN",
+        "to": "/vpn"
+      },
+      {
+        "label": "Firewall",
+        "to": "/protection/firewall"
+      }
+    ]
+  },
+  "apache": {
+    "id": "apache",
+    "title": "Apache",
+    "summary": "Gerencie sites e configurações do Apache.",
+    "canDo": [
+      "Criar vhosts proxy/estático/PHP",
+      "Configurações globais e do site",
+      "Aplicar com configtest"
+    ],
+    "workflow": [
+      "Instale o Apache",
+      "Criar site",
+      "Aplicar"
+    ],
+    "notes": [
+      "A inscrição no host precisa de permissão de alteração do sistema"
+    ]
+  },
+  "btTracker": {
+    "id": "btTracker",
+    "title": "Rastreador BT",
+    "summary": "Rastreador BitTorrent/WebTorrent auto-hospedado para compartilhamentos de arquivos. Crie sementes .torrent e permita que os visitantes baixem via magnet ou .torrent.",
+    "canDo": [
+      "Iniciar e parar o rastreador em processo",
+      "Definir porta HTTP/WS e host de anúncio público",
+      "Observe sementes de enxame, sanguessugas e velocidades",
+      "Crie compartilhamentos de arquivos com modos direto, BT ou ambos",
+      "Expor portas do rastreador por meio de exposição de rede/chips de firewall"
+    ],
+    "workflow": [
+      "Abra o BT Tracker → definir host de anúncio público → Iniciar",
+      "Abra portas se os downloaders estiverem fora do host",
+      "Em Arquivos → Compartilhar, escolha BitTorrent ou ambos",
+      "Copie magnet / .torrent da página compartilhada ou pública"
+    ],
+    "notes": [
+      "O rastreador é um nó empacotado (não um pacote apt)",
+      "Host público vazio usa 127.0.0.1 – apenas testes no mesmo host",
+      "BT sem um rastreador em execução pode falhar na descoberta de pares"
+    ],
+    "cliHints": [
+      "ysk-server bt-tracker status --json",
+      "ysk-server bt-tracker start --execute --json",
+      "ysk-server files shares create --path FILE --mode both --root public --json"
+    ],
+    "related": [
+      {
+        "label": "Arquivos",
+        "to": "/files"
+      },
+      {
+        "label": "Rede",
+        "to": "/network"
+      }
+    ]
+  },
+  "validators": {
+    "id": "validators",
+    "title": "Validadores (Beta)",
+    "summary": "Instale e gerencie nós L1 com um clique (Ethereum, Avalanche, NEAR, Cardano, Bitcoin, Cosmos, Sui, Aptos, Polkadot, Solana) neste host. Sem custódia – o painel nunca possui chaves de piquetagem.",
+    "canDo": [
+      "Listar instâncias de nós e cadeias recomendadas",
+      "Crie, inicie, pare e limpe nós no assistente de painel",
+      "Veja o disco usado pelos dados do validador",
+      "Use a CLI: ysk-server validators list|create|start --json"
+    ],
+    "workflow": [
+      "Leia a guia do disco antes de criar um nó",
+      "Prefira testnet + Minimal em discos pequenos",
+      "Mínimo / podado / pronto para validador / RPC são explicados abaixo",
+      "Mutações precisam de root e YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Beta: instale e inicie quando Docker Engine, root e YSK_EXECUTE=1 estiverem disponíveis",
+      "Mainnet precisa de centenas de GB livres (ETH) – o fluxo de criação será recusado se o espaço for curto",
+      "RPC se liga ao localhost por padrão"
+    ],
+    "cliHints": [
+      "ysk-server validators list --json",
+      "ysk-server validators chains --json",
+      "ysk-server validators disk --json"
+    ],
+    "related": [
+      {
+        "label": "Docker",
+        "to": "/docker"
+      },
+      {
+        "label": "Atualizações",
+        "to": "/updates"
+      },
+      {
+        "label": "Rede",
+        "to": "/network"
+      }
+    ]
+  },
+  "docker": {
+    "id": "docker",
+    "title": "Docker",
+    "summary": "Instale e controle o Docker Engine neste host – contêineres, imagens, Compose (incluindo pilhas de validadores), volumes, redes e remoção.",
+    "canDo": [
+      "Instale docker.io + docker-compose-v2 do painel",
+      "Inicie e pare docker.service",
+      "Execute uma imagem restrita, extraia, remova e inspecione projetos do Compose",
+      "CLI: ysk-server docker status|ps|images|compose --json"
+    ],
+    "workflow": [
+      "Instale se o banner disser que o Docker está faltando",
+      "Mantenha o RPC e as portas publicadas em 127.0.0.1, a menos que pretenda exposição pública",
+      "Mutações precisam de root e YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Esta página gerencia o Docker em um host. Use Kubernetes externo para orquestração de cluster. Nenhuma execução privilegiada, nenhum upload arbitrário do Compose.",
+      "Parar o mecanismo também interrompe as pilhas do validador."
+    ],
+    "cliHints": [
+      "ysk-server docker status --json",
+      "ysk-server docker ps --json",
+      "ysk-server docker compose ls --json"
+    ],
+    "related": [
+      {
+        "label": "Validadores",
+        "to": "/validators"
+      },
+      {
+        "label": "Serviços",
+        "to": "/services"
+      }
+    ]
+  }
+}

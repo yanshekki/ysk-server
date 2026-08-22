@@ -36,6 +36,10 @@
   "emptyBansDesc": "O no hay permiso para leer el cliente fail2ban",
   "ignoreipTitle": "ignorar la lista blanca de IP",
   "ignoreipDesc": "IP nunca prohibidas (archivo de panel + cliente fail2ban en vivo opcional)",
+  "whitelistEmptyWarn": "La lista blanca está vacía y las jails pueden bloquearle. Añada su IP de inicio antes de aplicar ignoreip.",
+  "suggestIgnoreLogin": "Su IP de inicio {{ip}}",
+  "applyIgnoreEmptyWarn": "Aplicar con lista blanca vacía borra ignoreip",
+  "applyIgnoreNeedConfirm": "Reescribe ignoreip del jail y recarga fail2ban",
   "addIp": "Agregar IP",
   "addWhitelist": "Agregar a la lista blanca",
   "applyPolicyIgnoreip": "Aplicar política (incl. ignoreip)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "Este es el host o su IP de inicio de sesión: agréguelo a ignoreip en lugar de prohibirlo.",
   "suggestIgnoreHint": "IP de administrador sugeridas (archivo de panel solo hasta que aplique la política):",
-  "suggestIgnoreAdd": "Añadir {{ip}}",
-  "whitelistEmptyWarn": "La lista blanca está vacía y las jails pueden bloquearle. Añada su IP de inicio antes de aplicar ignoreip.",
-  "suggestIgnoreLogin": "Su IP de inicio {{ip}}",
-  "applyIgnoreEmptyWarn": "Aplicar con lista blanca vacía borra ignoreip",
-  "applyIgnoreNeedConfirm": "Reescribe ignoreip del jail y recarga fail2ban"
+  "suggestIgnoreAdd": "Añadir {{ip}}"
 }

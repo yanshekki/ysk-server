@@ -21,6 +21,7 @@
   "postgresService": "Servicio PostgreSQL",
   "redis": "Redis",
   "redisService": "servicio redis",
+  "cluster": "Clústeres",
   "dns": "DNS",
   "ssl": "Certificados SSL",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "Su rol no incluye esta página. Pida acceso a un administrador si la necesita.",
   "backToDashboard": "Volver al panel",
   "validators": "Validadores (Beta)",
-  "docker": "Estibador",
-  "cluster": "Clusters"
+  "docker": "Estibador"
 }

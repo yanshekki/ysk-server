@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "퍼지를 확인하시겠습니까? 등록된 데이터 경로(데이터베이스/메일)가 영구적으로 삭제됩니다.",
   "installedCount": "설치됨 {{installed}} · 누락 {{missing}}",
+  "countHint": "이러한 개수는 다른 탭의 서비스 매트릭스 단위가 아닌 소프트웨어 계획의 OS 패키지입니다.",
+  "executeRoot": "시스템 변경 {{execute}} · 관리자 {{root}}",
+  "manifestPlan": "계획 {{plan}} ({{bundles}})",
+  "manifestHint": "마지막으로 선택한 소프트웨어 계획 및 번들",
   "needRootExecute": "라이브 설치/제거에는 관리자 권한과 시스템 변경 권한이 필요합니다. 여전히 테스트 실행이 가능합니다.",
   "modeInstall": "설치 계획",
   "modeUninstall": "제거",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "번들을 하나 이상 선택하세요. 빈 선택은 더 이상 모두 제거를 의미하지 않습니다.",
   "uninstallConfirmTitle": "선택한 번들을 삭제하시겠습니까?",
   "uninstallConfirmDesc": "{{count}} 번들이 제거됩니다. 확인하려면 REMOVE를 입력하세요.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "제어 영역",
+    "web": "웹 호스팅",
+    "database": "데이터베이스",
+    "email": "메일 스택",
     "dns": "DNS",
     "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "defense": "호스트 방어",
+    "runtimes": "언어 런타임"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "제어 영역만",
+    "recommended": "추천 호스팅",
+    "full": "모든 소프트웨어"
   }
 }

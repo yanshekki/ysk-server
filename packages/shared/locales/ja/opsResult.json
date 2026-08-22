@@ -20,8 +20,8 @@
   "stepTuningApplied": "実行時チューニングが適用されました",
   "stepUnitWritten": "サービスユニットの書き込み",
   "stepSystemdStartFailed": "Systemd の起動に失敗しました — プロセス フォールバックを使用しています",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
+  "portListening": "ポート {{port}} がリッスンしています",
+  "portNotListening": "ポート {{port}} がリッスンしていません",
   "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "httpFail": "HTTP に失敗しました: {{detail}}"
 }

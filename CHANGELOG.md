@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.1.25 — 2026-08-22
+
+### Add
+- Cron: in-place edit / disable / enable / run / adopt for live host crontab lines (`source=host`). Not `installCrontab`. Confirm dialogs use `data-confirm`.
+- Validators: instance page lists next steps after the node is up. Copyable public identity for NEAR (stake public key + factory + `create_staking_pool`), Cosmos (consensus pubkey + `create-validator`), Avalanche (NodeID + BLS). ETH shows localhost beacon URL (no validator client in compose). Solana shows `getIdentity` pubkey (`--no-voting`). Honest copy: Sui/Aptos are fullnodes; Polkadot has no `--validator`; `validator-ready` is disk only. CLI: `ysk-server validators checklist --id` (read), `rewrite-compose --id [--execute]`, `compose-write --file`, `software`, `pull`, `leftover-remove`, `stats`.
+- Cron: `ysk-server cron update --id` patches managed job fields (same as panel PATCH). Host crontab CLI already had edit/disable/enable/delete/run/adopt.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.25**.
+
+### Fix
+- NEAR / Cosmos advertise **host** P2P port in `public_addr` / `external_address` (not the container listen port). Rewrite compose on older instances.
+- Cosmos `create-validator` template gas matches the node (`0.005uatom`).
+- Staking command rows wrap instead of a single nowrap line.
+
+### Improve
+- Locales: operator strings and About-tab guides for all 13 languages. zh-HK stays Hong Kong written Chinese. Product names (Docker, Compose, RPC, WireGuard, chain names, …) stay English. Do not machine-translate zh-HK via zh-TW.
+
 ## 1.1.24 — 2026-08-22
 
 ### Add

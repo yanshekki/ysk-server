@@ -70,6 +70,8 @@
   "policyNotEqualFull": "ٹیمپلیٹ لکھیں ≠ سروس فعال ≠ سننا",
   "controlPlaneUnit": "کنٹرول ہوائی جہاز یونٹ",
   "kpiRuntime": "رن ٹائم",
+  "rawStateHint": "ٹول ٹپ میں خام یونٹ کی حالت",
+  "bootHint": "آیا یونٹ بوٹ پر شروع ہوتا ہے۔",
   "kpiBoot": "بوٹ کو فعال کریں۔",
   "kpiCaps": "قابلیت کا اطلاق کریں۔",
   "capsReady": "سسٹم میں انسٹال کر سکتے ہیں۔",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "ٹیمپلیٹ لکھنا اور سسٹم انسٹال کرنا الگ الگ مراحل ہیں۔ انسٹال کرنے کے بعد دوبارہ چلنا معمول کے آپریشنز ہیں، کوئی گمشدہ قدم نہیں۔",
   "policyInstallFull": "انسٹال اور فعال کریں: کاپی /etc/systemd/system، deemon-reload، enable --now۔ روٹ + EXECUTE کی ضرورت ہے۔",
   "policyBlockedTitle": "بغیر استحقاق کے بلاک کر دیا گیا۔",
-  "policyNotEqualTitle": "ریاستیں برابر نہیں ہیں۔",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "ریاستیں برابر نہیں ہیں۔"
 }

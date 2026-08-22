@@ -102,12 +102,12 @@
   "capabilitiesHint": "この役割ができることを切り替える",
   "enabledCount": "{{enabled}}/{{total}} が有効になりました",
   "bandAboveMax": "最大レベル以上",
+  "roleUnavailable": "この役割には使用できません",
   "dirtyHint": "カスタマイズされた（工場とは異なります）",
   "unsaved": "未保存",
   "unsavedHint": "このロールの未保存の編集",
   "nothingToSave": "保存するものは何もありません",
   "saveRole": "{{role}} ポリシーを保存",
   "discardTitle": "保存されていないポリシーを破棄しますか?",
-  "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "役割を切り替えると、保存されていない機能編集が削除されます。"
 }

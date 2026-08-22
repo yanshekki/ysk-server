@@ -50,11 +50,11 @@
     "vnc": "Les services VNC s'arrêteront",
     "controlPlane": "Runtime du plan de contrôle (protégé)",
     "generic": "Les services associés peuvent s'arrêter",
+    "containers": "Les conteneurs en cours s’arrêteront",
+    "validators": "Les piles validateur qui utilisent Docker Compose s’arrêteront",
     "purgeData": "Les chemins de données seront supprimés",
     "protectedSkipped": "Les composants protégés sont ignorés",
-    "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées",
-    "containers": "Les conteneurs en cours s’arrêteront",
-    "validators": "Les piles validateur qui utilisent Docker Compose s’arrêteront"
+    "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées"
   },
   "requestCancel": "Demande d'annulation",
   "cancelling": "Annulation…",

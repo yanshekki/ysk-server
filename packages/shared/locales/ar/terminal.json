@@ -15,7 +15,11 @@
   "wsError": "فشل WebSocket",
   "exitCode": "كود الخروج {{code}}",
   "needRootExecute": "يتطلب الجذر + YSK_EXECUTE=1 لأصداف النظام.",
+  "groupSystem": "نظام",
+  "groupProject": "مشروع",
   "unavailable": "غير متاح",
+  "copyAll": "انسخ الكل",
+  "copyAllNeedConn": "الاتصال أولاً - المخزن المؤقت فارغ أثناء قطع الاتصال",
   "placeholder": "اختر هوية، ثم اتصل",
   "aboutTitle": "حول المحطة",
   "aboutSub": "غلاف نظام التشغيل التفاعلي في المتصفح (المستخدمون المحليون). ليس عميل SSH عن بعد تعسفيًا.",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "لا يزال الغلاف المباشر متصلاً أثناء قراءة هذه الصفحة.",
   "rootConfirmTitle": "فتح قذيفة الجذر؟",
   "rootConfirmDesc": "هذه الجلسة عبارة عن جذر PTY غير مقيد على المضيف. يتم تدقيق الأوامر.",
-  "rootConfirmBody": "تابع فقط إذا كنت تنوي تشغيل أوامر المضيف المميزة.",
-  "copyAll": "انسخ الكل",
-  "copyAllNeedConn": "الاتصال أولاً - المخزن المؤقت فارغ أثناء قطع الاتصال",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "تابع فقط إذا كنت تنوي تشغيل أوامر المضيف المميزة."
 }

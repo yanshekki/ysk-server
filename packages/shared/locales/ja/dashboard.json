@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "警告",
+    "bad": "問題"
+  },
   "title": "ダッシュボード",
   "health": "健康",
   "protection": "保護モード",
@@ -38,12 +44,13 @@
   "readinessCheck": "用意周到",
   "prodOk": "生産準備完了",
   "notFullyReady": "完全に準備ができていない",
+  "readinessBlocked": "{{n}} ブロッカー",
   "modeScore": "モード {{mode}} · スコア {{ready}}/{{total}}",
   "mode": {
     "degraded": "貶められた",
     "production_capable": "生産準備完了",
-    "normal": "通常",
-    "blocked": "blocked"
+    "blocked": "ブロックされました",
+    "normal": "通常"
   },
   "details": "詳細",
   "certExpiryTitle": "証明書の有効期限:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "監査を適用します · OK {{ok}} · 警告 {{warn}} · 悪い {{bad}}",
   "executeBadge": "実行 {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "このパネルはすべてのインターフェイスをリッスンし、管理者アカウントには 2FA がありません。",
   "go": "未解決",
   "open": "未解決",
   "noCriticalWarn": "重大または警告のアラートはありません",
@@ -81,6 +89,7 @@
   "wizardDesc": "プロジェクトを作成し、必要に応じて DNS / メール / データベースの下書きを作成します (各機能ページで適用します)。",
   "projectName": "項　　目　　名",
   "projectNameHint": "表示名;一致するディレクトリを作成します",
+  "nameRequired": "プロジェクト名を入力してください",
   "domainOptional": "ドメイン (オプション)",
   "domainHint": "DNS およびメール オプションを有効にするために必要です",
   "runtime": "処理時間",
@@ -93,6 +102,7 @@
   "serverIpv6": "サーバーIPv6 (オプション)",
   "serverIpv6Hint": "設定時に AAAA / ip6: を書き込みます",
   "serverIpv6Ph": "パブリックIPv6 (オプション)",
+  "needDomainFirst": "先にドメインを入力してください",
   "withDns": "DNSゾーンも作成します",
   "withDnsDesc": "ドメインが必要です。登録のみ - DNS ページでゾーンを適用",
   "withMail": "メールドメインも登録してください",
@@ -119,15 +129,5 @@
   "notifSearch": "検索アラート",
   "notifAll": "すべて",
   "notifDismiss": "隠れる",
-  "goFix": "修理",
-  "needDomainFirst": "先にドメインを入力してください",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "修理"
 }

@@ -157,8 +157,14 @@ GLOSSARY: dict[str, dict[str, str]] = {
 
 PLACEHOLDER_RE = re.compile(r"(\{\{[^}]+\}\}|\{[a-zA-Z0-9_]+\}|%[sdif]|\$\{[^}]+\})")
 CODEISH_RE = re.compile(
-    r"^(YSK Server|ysk-server|vsftpd|nginx|redis|MySQL|MariaDB|PostgreSQL|pm2|"
-    r"systemd|SSH|SFTP|FTPS|SSL|TLS|DNS|CDN|API|HTTP|HTTPS|JSON|CLI|"
+    r"^(YSK Server|YSK Limited|ysk-server|YSK|vsftpd|nginx|Nginx|redis|Redis|"
+    r"MySQL|MariaDB|PostgreSQL|pm2|PM2|Docker|Compose|WireGuard|OpenVPN|"
+    r"Shadowsocks|Cloudflare|Linktree|Linux|Ubuntu|Debian|Cron|Pruned|"
+    r"systemd|SSH|SFTP|FTPS|SSL|TLS|DNS|CDN|API|HTTP|HTTPS|JSON|CLI|RPC|P2P|"
+    r"SSE|VPN|VNC|UDP|TCP|IP|WAN|URL|OK|ID|"
+    r"Ethereum|NEAR|neard|Avalanche|AVAX|Cardano|Cosmos|gaiad|Solana|Agave|"
+    r"Polkadot|Sui|Aptos|Bitcoin|bitcoind|MetaMask|Ledger|Trezor|Keplr|"
+    r"Polkadot\.js|Core|Hoodi|Sepolia|NodeID|BLS|KES|VRF|"
     r"[A-Z0-9_]{2,}|[a-z]+(?:\.[a-z0-9_]+)+|/[a-z0-9_./-]+)$"
 )
 

@@ -84,13 +84,13 @@
     "latest": "El último",
     "upToDate": "Actualizado / repositorio más reciente",
     "refresh": "Vuelva a comprobar lo último",
+    "refreshHasUpdate": "Versión más nueva disponible",
+    "refreshLatest": "Ya la última versión grabada.",
     "pick": "Elegir versión",
     "noTarget": "Sin objetivo de actualización",
     "needRuntimePage": "Instale esta versión en la página de tiempo de ejecución",
     "noAptCandidate": "No hay versión candidata apta",
-    "sourceLabel": "Fuente",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "Fuente"
   },
   "install": {
     "progress": "Instalando: {{list}}…",

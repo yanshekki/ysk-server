@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "Konfirmasikan pembersihan? Jalur data yang terdaftar (database/mail) akan dihapus secara permanen.",
   "installedCount": "Terpasang {{installed}} · Hilang {{missing}}",
+  "countHint": "Jumlah ini adalah paket OS dalam paket perangkat lunak — bukan unit matriks layanan di tab lain.",
+  "executeRoot": "Perubahan sistem {{execute}} · administrator {{root}}",
+  "manifestPlan": "Rencana {{plan}} ({{bundles}})",
+  "manifestHint": "Paket dan paket perangkat lunak yang terakhir dipilih",
   "needRootExecute": "Instal/hapus langsung memerlukan hak administrator dan izin perubahan sistem. Anda masih bisa melakukan uji coba.",
   "modeInstall": "Instal rencana",
   "modeUninstall": "Copot pemasangan",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "Pilih setidaknya satu paket. Pilihan kosong bukan lagi berarti menghapus semua.",
   "uninstallConfirmTitle": "Hapus paket yang dipilih?",
   "uninstallConfirmDesc": "{{count}} bundel akan dihapus. Ketik HAPUS untuk mengonfirmasi.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "Pesawat kendali",
+    "web": "hosting web",
+    "database": "Basis Data",
+    "email": "Tumpukan surat",
     "dns": "DNS",
     "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "defense": "Pertahanan tuan rumah",
+    "runtimes": "Waktu proses bahasa"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "Kontrol pesawat saja",
+    "recommended": "Hosting yang direkomendasikan",
+    "full": "Semua perangkat lunak"
   }
 }

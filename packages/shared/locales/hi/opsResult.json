@@ -20,8 +20,8 @@
   "stepTuningApplied": "रनटाइम ट्यूनिंग लागू की गई",
   "stepUnitWritten": "सेवा इकाई लिखित",
   "stepSystemdStartFailed": "सिस्टमडी प्रारंभ विफल - प्रक्रिया फ़ॉलबैक का उपयोग करना",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
-  "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "portListening": "पोर्ट {{port}} सुन रहा है",
+  "portNotListening": "पोर्ट {{port}} सुन नहीं रहा है",
+  "httpOk": "HTTP ठीक है {{status}}",
+  "httpFail": "HTTP विफल: {{detail}}"
 }

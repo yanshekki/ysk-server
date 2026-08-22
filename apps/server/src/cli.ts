@@ -981,6 +981,41 @@ async function mainInner(
         printJson({ ok: true, job });
         return 0;
       }
+      if (sub === 'update' || sub === 'edit' || sub === 'patch') {
+        const id = getOpt(args, '--id');
+        if (!id) {
+          process.stderr.write(`${tl('cli.usage.cron.sub.--id.job.id.99cfdf', { sub })}\n`);
+          return 2;
+        }
+        const patch: {
+          schedule?: string;
+          command?: string;
+          user?: string;
+          projectId?: string;
+          enabled?: boolean;
+        } = {};
+        const schedulePatch = getOpt(args, '--schedule') ?? getOpt(args, '--cron');
+        const commandPatch = getOpt(args, '--command') ?? getOpt(args, '--cmd');
+        const userPatch = getOpt(args, '--user');
+        const projectPatch = getOpt(args, '--project-id') ?? getOpt(args, '--project');
+        if (schedulePatch != null) patch.schedule = schedulePatch;
+        if (commandPatch != null) patch.command = commandPatch;
+        if (userPatch != null) patch.user = userPatch;
+        if (projectPatch != null) patch.projectId = projectPatch;
+        if (hasFlag(args, '--enable')) patch.enabled = true;
+        if (hasFlag(args, '--disable')) patch.enabled = false;
+        if (Object.keys(patch).length === 0) {
+          process.stderr.write(`${tl('cli.usage.cron.sub.--data-dir.path.--json.0349e6')}\n`);
+          return 2;
+        }
+        const job = ctx.cron.update(id, patch);
+        if (!job) {
+          printJson({ ok: false, code: ErrorCodes.NOT_FOUND });
+          return 4;
+        }
+        printJson({ ok: true, job });
+        return 0;
+      }
       if (sub === 'delete' || sub === 'rm') {
         const id = getOpt(args, '--id');
         if (!id) {
@@ -1032,17 +1067,93 @@ async function mainInner(
         return 0;
       }
       if (sub === 'host-list' || sub === 'host' || sub === 'host-scan') {
+        const act = sub === 'host' ? (cliPositionals(args).slice(2)[0] ?? 'list') : 'list';
         const projects = (ctx.db.snapshot.projects ?? []).map((p) => ({
           id: String(p.id ?? ''),
           name: String(p.name ?? p.id ?? ''),
           linuxUser: String(p.linux_user ?? ''),
           linux_user: String(p.linux_user ?? ''),
         }));
+        const hostUser = (getOpt(args, '--user') ?? '').trim();
+        const loadRaw = async (): Promise<{ ok: true; raw: string } | { ok: false; notes: string[] }> => {
+          const oldRaw = getOpt(args, '--old-raw');
+          if (oldRaw) return { ok: true, raw: oldRaw };
+          const oldSched = getOpt(args, '--old-schedule');
+          const oldCmd = getOpt(args, '--old-command');
+          if (!hostUser || !oldSched || !oldCmd) {
+            return { ok: false, notes: ['need --user and --old-raw, or --old-schedule and --old-command'] };
+          }
+          return ctx.cron.resolveHostJobRaw({
+            user: hostUser,
+            schedule: oldSched,
+            command: oldCmd,
+          });
+        };
+        if (act === 'edit' || act === 'replace') {
+          const ident = await loadRaw();
+          if (!ident.ok) {
+            printJson({ ok: false, notes: ident.notes });
+            return 2;
+          }
+          const r = await ctx.cron.rewriteHostLine({
+            user: hostUser || 'current',
+            oldRaw: ident.raw,
+            next: {
+              type: 'replace',
+              schedule: getOpt(args, '--schedule') ?? '',
+              command: getOpt(args, '--command') ?? getOpt(args, '--cmd') ?? '',
+            },
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        if (act === 'disable' || act === 'enable' || act === 'delete') {
+          const ident = await loadRaw();
+          if (!ident.ok) {
+            printJson({ ok: false, notes: ident.notes });
+            return 2;
+          }
+          if (act === 'delete') {
+            const cmd = getOpt(args, '--old-command') ?? getOpt(args, '--command') ?? '';
+            const confirm = getOpt(args, '--confirm') ?? '';
+            if (!cmd || confirm !== cmd) {
+              printJson({ ok: false, notes: ['--confirm must match the command'] });
+              return 2;
+            }
+          }
+          const r = await ctx.cron.rewriteHostLine({
+            user: hostUser || 'current',
+            oldRaw: ident.raw,
+            next:
+              act === 'disable' ? { type: 'comment' } : act === 'enable' ? { type: 'uncomment' } : { type: 'delete' },
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        if (act === 'run') {
+          const cmd = getOpt(args, '--command') ?? getOpt(args, '--cmd') ?? getOpt(args, '--old-command') ?? '';
+          const r = await ctx.cron.runHostLine(hostUser || 'current', cmd);
+          printJson(r);
+          return exitFromResult(r);
+        }
+        if (act === 'adopt') {
+          const ident = await loadRaw();
+          if (!ident.ok) {
+            printJson({ ok: false, notes: ident.notes });
+            return 2;
+          }
+          const r = await ctx.cron.adoptHostLine({
+            user: hostUser || 'current',
+            oldRaw: ident.raw,
+            actor: 'cli',
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
         const inv = await ctx.cron.listHostCrontabs(projects);
-        const userFilter = (getOpt(args, '--user') ?? '').trim();
         let lines = inv.lines;
-        if (userFilter) {
-          lines = lines.filter((l) => l.user === userFilter);
+        if (hostUser) {
+          lines = lines.filter((l) => l.user === hostUser);
         }
         const jobsOnly = hasFlag(args, '--jobs-only');
         if (jobsOnly) {

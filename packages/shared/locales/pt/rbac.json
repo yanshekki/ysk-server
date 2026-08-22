@@ -102,12 +102,12 @@
   "capabilitiesHint": "Alternar o que esta função pode fazer",
   "enabledCount": "{{enabled}} de {{total}} ativado",
   "bandAboveMax": "Acima do nível máximo",
+  "roleUnavailable": "Não disponível para esta função",
   "dirtyHint": "Personalizado (diferente da fábrica)",
   "unsaved": "Não salvo",
   "unsavedHint": "Edições não salvas nesta função",
   "nothingToSave": "Nada para salvar",
   "saveRole": "Salvar política {{role}}",
   "discardTitle": "Descartar política não salva?",
-  "discardDesc": "A troca de funções descarta edições de recursos não salvas.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "A troca de funções descarta edições de recursos não salvas."
 }

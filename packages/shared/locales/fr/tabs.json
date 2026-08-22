@@ -4,6 +4,6 @@
   "about": "À propos",
   "main": "Actes",
   "stack": "Logiciels",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "Aucun onglet de ce type",
+  "unknownHint": "Cette page n'a pas d'onglet nommé {{tab}}."
 }

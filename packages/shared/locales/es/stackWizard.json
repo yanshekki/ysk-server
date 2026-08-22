@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "¿Confirmar purga? Las rutas de datos registradas (bases de datos/correo) se eliminarán permanentemente.",
   "installedCount": "Instalado {{installed}} · Falta {{missing}}",
+  "countHint": "Estos recuentos son paquetes de sistema operativo en el plan de software, no las unidades de matriz de servicios en la otra pestaña.",
+  "executeRoot": "Cambios del sistema {{execute}} · administrador {{root}}",
+  "manifestPlan": "Planificar {{plan}} ({{bundles}})",
+  "manifestHint": "Último plan de software y paquetes elegidos",
   "needRootExecute": "La instalación/eliminación en vivo necesita derechos de administrador y permiso de cambio de sistema. Todavía puedes realizar un funcionamiento en seco.",
   "modeInstall": "Instalar plan",
   "modeUninstall": "Desinstalar",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "Seleccione al menos un paquete. La selección vacía ya no significa eliminar todo.",
   "uninstallConfirmTitle": "¿Eliminar paquetes seleccionados?",
   "uninstallConfirmDesc": "{{count}} se eliminarán los paquetes. Escriba ELIMINAR para confirmar.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "Plano de control",
+    "web": "alojamiento web",
+    "database": "Bases de datos",
+    "email": "pila de correo",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "FTP/FTPS",
+    "defense": "Defensa del anfitrión",
+    "runtimes": "Tiempos de ejecución del idioma"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "Solo plano de control",
+    "recommended": "Alojamiento recomendado",
+    "full": "Todo el software"
   }
 }

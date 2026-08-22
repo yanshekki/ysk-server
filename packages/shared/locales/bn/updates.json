@@ -13,7 +13,9 @@
   "hourAgo": "{{n}}ঘণ্টা আগে",
   "highRiskN": "{{count}} উচ্চ-ঝুঁকি",
   "panelUpdate": "প্যানেল আপডেট উপলব্ধ",
+  "footerNewVersion": "নতুন সংস্করণ {{version}}",
   "riskOk": "ঝুঁকি ব্যবস্থাপনাযোগ্য",
+  "riskUnevaluated": "মূল্যায়ন করা হয়নি — স্ক্যান + ওএসভি চালান",
   "pendingScan": "স্ক্যানের অপেক্ষায়",
   "packages": "প্যাকেজ",
   "highRisk": "উচ্চ ঝুঁকি",
@@ -24,6 +26,7 @@
   "reload": "পুনরায় লোড করুন",
   "osvTitle": "সেরা 12টি প্রস্তাবিত প্যাকেজের জন্য OSV কোয়েরি করুন (নেটওয়ার্ক প্রয়োজন)",
   "scanOsv": "স্ক্যান + OSV",
+  "cveNotChecked": "চেক করা হয়নি",
   "scanPkgs": "প্যাকেজ স্ক্যান করুন",
   "tabInventory": "প্যাকেজ ইনভেন্টরি",
   "tabSelf": "প্যানেল স্ব",
@@ -72,6 +75,8 @@
   "policyTitle": "আপডেট নীতি",
   "policyBody": "উচ্চ-ঝুঁকি এবং CVE প্যাকেজ আবেদন করার আগে অনুমোদনের প্রয়োজন",
   "applyPkg": "প্যাকেজ আপগ্রেড প্রয়োগ করুন",
+  "rebootNeeded": "রিবুট",
+  "kernelRebootHint": "প্রয়োগ করার পরে কার্নেল প্যাকেজগুলিকে পুনরায় বুট করতে হবে",
   "applyPkgConfirm": "আপগ্রেড {{name}}?",
   "applyPkgDesc": "হোস্টে এই প্যাকেজের জন্য উপযুক্ত আপগ্রেড চালায়। রুট + YSK_EXECUTE প্রয়োজন।",
   "lastScan": "শেষ স্ক্যান",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "কারেন্ট",
   "selfLatestShort": "সর্বশেষ",
   "applyPanelUpdate": "প্যানেল আপডেট প্রয়োগ করুন",
+  "applySelfConfirmTitle": "প্যানেল আপডেট প্রয়োগ করবেন?",
+  "applySelfConfirmDesc": "{{from}} → {{to}} ইনস্টল করুন এবং প্যানেল পরিষেবা পুনরায় চালু করুন। ড্রাই-রান নেই।",
+  "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ",
   "recheck": "পুনরায় পরীক্ষা করুন",
   "aboutScope": "ব্যাপ্তি",
   "aboutScopeV": "ysk-সার্ভার প্যানেল + ক্যাটালগ পরিষেবা + রানটাইম + অবশিষ্ট উপযুক্ত প্যাকেজ",
@@ -98,6 +106,51 @@
   "scanPolicyV": "স্ক্যান ≠ আপগ্রেড করা হয়েছে; সিস্টেম পরিবর্তন প্রয়োগ করুন",
   "highRiskPolicy": "উচ্চ ঝুঁকি",
   "highRiskPolicyV": "অনুমোদন প্রয়োজন: পাঠানোর আগে দ্বিতীয় নিশ্চিত করুন",
+  "needApprovalHint": "উপলব্ধ খুলুন এবং অনুমোদন প্রয়োজন প্যাকেজ ফিল্টার",
+  "applyNeedConfirm": "আবেদন করার আগে একটি নিশ্চিত ডায়ালগ খোলে",
+  "probeFailed": "তদন্ত ব্যর্থ হয়েছে",
+  "notViaApt": "apt দ্বারা পরিচালিত হয় না — কোন প্রার্থী",
+  "noCandidate": "কোন প্রার্থী সংস্করণ নেই",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "জিওআইপি পৃষ্ঠা",
+  "job": {
+    "protection_probe": {
+      "name": "সুরক্ষা তদন্ত",
+      "hint": "পর্যায়ক্রমিক প্রতিরক্ষা সংকেত"
+    },
+    "updates_scan": {
+      "name": "আপডেট স্ক্যান",
+      "hint": "প্যাকেজ তালিকা রিফ্রেশ করুন"
+    },
+    "daily_backup": {
+      "name": "দৈনিক ব্যাকআপ",
+      "hint": "নির্ধারিত ব্যাকআপ সব"
+    },
+    "db_temp_expire": {
+      "name": "টেম্প ডিবি ব্যবহারকারীদের মেয়াদ শেষ",
+      "hint": "মেয়াদোত্তীর্ণ অস্থায়ী ডাটাবেস ব্যবহারকারীদের বাদ দিন"
+    },
+    "defense_auto_ban": {
+      "name": "প্রতিরক্ষা স্বয়ংক্রিয় নিষেধাজ্ঞা",
+      "hint": "অটো-ব্যান টিক প্রয়োগ করুন"
+    },
+    "defense_geoip_update": {
+      "name": "জিওআইপি আপডেট",
+      "hint": "জিওআইপি ডাটাবেস ডাউনলোড করুন"
+    },
+    "log_auto_vacuum": {
+      "name": "লগ ভ্যাকুয়াম",
+      "hint": "জার্নাল্ড ধরে রাখা"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL ইমেল করুন",
+      "hint": "মেল DNSBL চেক"
+    },
+    "validators_upgrade_scan": {
+      "name": "যাচাইকারীরা স্ক্যান আপগ্রেড করে",
+      "hint": "যাচাইকারী ইমেজ / বাইনারি আপডেট পরীক্ষা করুন"
+    }
+  },
   "permPolicy": "অনুমতি",
   "permPolicyV": "EXECUTE/root ছাড়া → অবরুদ্ধ (কোন জাল সাফল্য নেই)",
   "osvPolicyV": "নেটওয়ার্ক প্রয়োজন; শুধুমাত্র শীর্ষ 12 টি পরামর্শ সমৃদ্ধ করে",
@@ -122,6 +175,12 @@
   "updateFailed": "আপডেট ব্যর্থ হয়েছে",
   "updateIncomplete": "আপডেট অসম্পূর্ণ",
   "appliedUpdate": "আপডেট প্রয়োগ করা হয়েছে",
+  "panelRestarting": "নতুন সংস্করণ লোড করতে প্যানেল পুনরায় চালু হচ্ছে…",
+  "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
+  "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।",
+  "reloadUi": "UI পুনরায় লোড করুন",
+  "reloadUiTitle": "প্যানেল UI পুনরায় লোড করবেন?",
+  "reloadUiDesc": "প্যানেল পরিষেবা হল {{version}}। আপনি পুনরায় লোড না হওয়া পর্যন্ত এই ট্যাবে এখনও পূর্ববর্তী ফ্রন্টএন্ড রয়েছে। এই পৃষ্ঠার অসংরক্ষিত ক্ষেত্রগুলি হারিয়ে যাবে৷",
   "aptCandidate": "উপযুক্ত প্রার্থী",
   "advice": {
     "update": "আপডেট প্রস্তাবিত",
@@ -182,64 +241,5 @@
   "needsReboot": "রিবুট প্রয়োজন",
   "kernelRebootWarn": "একটি নতুন কার্নেল ইনস্টল করার জন্য সাধারণত এটি ব্যবহার করার আগে একটি রিবুট প্রয়োজন।",
   "neverRun": "এখনও চালান না",
-  "scanOsvN": "স্ক্যান + OSV (প্রথম {{n}})",
-  "rebootNeeded": "রিবুট",
-  "kernelRebootHint": "প্রয়োগ করার পরে কার্নেল প্যাকেজগুলিকে পুনরায় বুট করতে হবে",
-  "needApprovalHint": "উপলব্ধ খুলুন এবং অনুমোদন প্রয়োজন প্যাকেজ ফিল্টার",
-  "applyNeedConfirm": "আবেদন করার আগে একটি নিশ্চিত ডায়ালগ খোলে",
-  "probeFailed": "তদন্ত ব্যর্থ হয়েছে",
-  "notViaApt": "apt দ্বারা পরিচালিত হয় না — কোন প্রার্থী",
-  "noCandidate": "কোন প্রার্থী সংস্করণ নেই",
-  "jobOpenGeo": "জিওআইপি পৃষ্ঠা",
-  "job": {
-    "protection_probe": {
-      "name": "সুরক্ষা তদন্ত",
-      "hint": "পর্যায়ক্রমিক প্রতিরক্ষা সংকেত"
-    },
-    "updates_scan": {
-      "name": "আপডেট স্ক্যান",
-      "hint": "প্যাকেজ তালিকা রিফ্রেশ করুন"
-    },
-    "daily_backup": {
-      "name": "দৈনিক ব্যাকআপ",
-      "hint": "নির্ধারিত ব্যাকআপ সব"
-    },
-    "db_temp_expire": {
-      "name": "টেম্প ডিবি ব্যবহারকারীদের মেয়াদ শেষ",
-      "hint": "মেয়াদোত্তীর্ণ অস্থায়ী ডাটাবেস ব্যবহারকারীদের বাদ দিন"
-    },
-    "defense_auto_ban": {
-      "name": "প্রতিরক্ষা স্বয়ংক্রিয় নিষেধাজ্ঞা",
-      "hint": "অটো-ব্যান টিক প্রয়োগ করুন"
-    },
-    "defense_geoip_update": {
-      "name": "জিওআইপি আপডেট",
-      "hint": "জিওআইপি ডাটাবেস ডাউনলোড করুন"
-    },
-    "log_auto_vacuum": {
-      "name": "লগ ভ্যাকুয়াম",
-      "hint": "জার্নাল্ড ধরে রাখা"
-    },
-    "email_dnsbl": {
-      "name": "DNSBL ইমেল করুন",
-      "hint": "মেল DNSBL চেক"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "ইতিমধ্যেই সর্বশেষ প্যানেল সংস্করণ",
-  "panelRestarting": "নতুন সংস্করণ লোড করতে প্যানেল পুনরায় চালু হচ্ছে…",
-  "panelRestarted": "প্যানেল ফিরেছে · {{version}}",
-  "panelRestartWait": "আপডেট প্রয়োগ হয়েছে। এই পৃষ্ঠা না বদলালে কয়েক সেকেন্ড পর আবার লোড করুন।",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "স্ক্যান + OSV (প্রথম {{n}})"
 }

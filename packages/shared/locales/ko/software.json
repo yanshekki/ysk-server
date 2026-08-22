@@ -84,13 +84,13 @@
     "latest": "최신",
     "upToDate": "최신/repo 최신",
     "refresh": "최신 다시 확인",
+    "refreshHasUpdate": "최신 버전 사용 가능",
+    "refreshLatest": "이미 가장 최근에 녹음된 버전입니다.",
     "pick": "버전 선택",
     "noTarget": "업데이트 대상 없음",
     "needRuntimePage": "런타임 페이지에 이 버전을 설치하세요.",
     "noAptCandidate": "적절한 후보 버전 없음",
-    "sourceLabel": "원천",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "원천"
   },
   "install": {
     "progress": "설치 중: {{list}}…",

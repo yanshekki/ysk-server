@@ -115,7 +115,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "الاستخدام: ysk-server cron <sub> [--data-dir PATH] [--json]\n  قائمة [--معرف معرف المشروع] [--نص q]\n  إنشاء --جدول \"0 3 * * *\" --command CMD [--معرف معرف المشروع] [--مستخدم المستخدم]\n  حذف --id JOB_ID\n  تمكين|تعطيل --id JOB_ID\n  تشغيل --id JOB_ID # التشغيل الآن (يحتاج YSK_EXECUTE=1)\n  تثبيت # تحميل crontab المُدار (يحتاج إلى تنفيذ)\n  الحالة # التحقيق في الملف المُدار مقابل المضيف crontab\nالصدق: تم حظر التثبيت بدون YSK_EXECUTE=1 (لا يزال الملف مكتوبًا)."
+              "0349e6": "الاستخدام: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  update --id JOB_ID [--schedule S] [--command CMD] [--user USER] [--project-id ID] [--enable|--disable]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\n  host [list] [--user USER] [--jobs-only]\n  host edit --user USER --old-schedule S --old-command C --schedule S --command C --execute\n  host disable|enable|delete|adopt --user USER --old-schedule S --old-command C --execute\n  host run --user USER --command C --execute\nHonesty: install / host write blocked without YSK_EXECUTE=1.\n"
             }
           }
         }

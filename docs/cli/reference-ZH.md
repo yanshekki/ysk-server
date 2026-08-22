@@ -116,11 +116,12 @@ ysk-server hosting ftps-apply|firewall-apply|runtimes|runtime-install|runtime-sw
 ysk-server nginx status|list|test|sync [--execute]
 ysk-server ssl list|get|bootstrap|panel-tls status|enable|disable|issue …
 ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
+ysk-server dns ddns status|probe|update|add|delete|enable|disable|settings …
 ```
 
 空的或非法 Nginx `server_name` **會被拒絕**（fail-closed）。套用**不會**退回寫入 `localhost`。面板與 `POST /api/v1` nginx／資源套用同一規則。
 
-`dns` 涵蓋託管 zone、DNSSEC、PowerDNS heal、lookup／validate。
+`dns` 涵蓋託管 zone、DNSSEC、PowerDNS heal、lookup／validate，以及主機 WAN DDNS。
 
 ## backup
 
@@ -212,10 +213,15 @@ ysk-server bt-tracker trackers add|remove|enable|disable --url URL
 ## cron
 
 ```bash
-ysk-server cron list|create|delete|enable|disable|run|install|status …
+ysk-server cron list|create|update|delete|enable|disable|run|install|status …
+ysk-server cron update --id JOB_ID --schedule '0 4 * * *' --command '/usr/bin/true' --json
+ysk-server cron host list [--user USER] [--jobs-only]
+YSK_EXECUTE=1 ysk-server cron host edit --user root --old-schedule '*/15 * * * *' --old-command '/usr/bin/true' --schedule '0 * * * *' --command '/usr/bin/true' --execute --json
+YSK_EXECUTE=1 ysk-server cron host disable|enable|delete|adopt --user USER --old-schedule S --old-command C --execute
+YSK_EXECUTE=1 ysk-server cron host run --user USER --command C --execute
 ```
 
-安裝 crontab 需 EXECUTE。
+安裝 crontab 與主機 crontab 寫入需 EXECUTE。主機修改是對該用戶就地 `crontab -u`，不是 `install`。
 
 ## email
 
@@ -348,6 +354,9 @@ ysk-server validators list --json
 ysk-server validators chains --json
 ysk-server validators disk --json
 ysk-server validators get --id eth-hoodi-1 --json
+ysk-server validators checklist --id near-testnet-1 --json
+ysk-server validators rewrite-compose --id near-testnet-1 --json
+YSK_EXECUTE=1 ysk-server validators rewrite-compose --id near-testnet-1 --execute --json
 ysk-server validators create --chain eth --network hoodi --profile minimal --json
 YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile minimal --execute --json
 YSK_EXECUTE=1 ysk-server validators start --id eth-hoodi-1 --execute --json
@@ -355,13 +364,18 @@ YSK_EXECUTE=1 ysk-server validators stop --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json
 YSK_EXECUTE=1 ysk-server validators delete --id eth-hoodi-1 --confirm --execute --json
 ysk-server validators logs --id eth-hoodi-1 --json
+ysk-server validators stats --id eth-hoodi-1 --json
+ysk-server validators software --json
+YSK_EXECUTE=1 ysk-server validators pull --image nearprotocol/nearcore --tag 2.5.0 --execute --json
+YSK_EXECUTE=1 ysk-server validators leftover-remove --path /var/lib/ysk-server/validators/orphan --confirm orphan --execute --json
 ysk-server validators policy --id eth-hoodi-1 --upgrade notify --json
 YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json
 ysk-server validators create --chain eth --network hoodi --el geth --cl prysm --json
+ysk-server validators compose-write --id near-testnet-1 --file ./compose.yml --json
 ```
 
-沒有 `--execute` 的 create 只寫入實例規格與 compose（`written`）。start／stop／clear 在 `YSK_EXECUTE=1` 加 `--execute` 之前維持 **blocked**。真正套用需要 Docker Compose。
+沒有 `--execute` 的 create 只寫入實例規格與 compose（`written`）。start／stop／clear 在 `YSK_EXECUTE=1` 加 `--execute` 之前維持 **blocked**。真正套用需要 Docker Compose。`checklist` 只讀公開身份（不含密鑰）。`rewrite-compose` 與 `compose-write` 沒有 `--execute` 時為 dry-run（`written`）。`leftover-remove` 與 `pull` 在 execute 之前維持 **blocked**。
 
 見 [../features/validators-ZH.md](../features/validators-ZH.md)。
 

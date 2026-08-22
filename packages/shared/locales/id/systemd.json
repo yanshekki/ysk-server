@@ -70,6 +70,8 @@
   "policyNotEqualFull": "Tulis template ≠ layanan diaktifkan ≠ mendengarkan",
   "controlPlaneUnit": "Unit bidang kendali",
   "kpiRuntime": "Waktu proses",
+  "rawStateHint": "Status unit mentah di tooltip",
+  "bootHint": "Apakah unit menyala saat boot",
   "kpiBoot": "Aktifkan booting",
   "kpiCaps": "Terapkan kemampuan",
   "capsReady": "Dapat menginstal ke sistem",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "Penulisan templat dan pemasangan sistem merupakan langkah terpisah. Menjalankan kembali setelah instalasi adalah operasi normal, bukan langkah yang hilang.",
   "policyInstallFull": "Instal & aktifkan: salin ke /etc/systemd/system, muat ulang daemon, aktifkan --sekarang. Membutuhkan root + EXECUTE.",
   "policyBlockedTitle": "Diblokir tanpa hak istimewa",
-  "policyNotEqualTitle": "Negara-negara tidak setara",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "Negara-negara tidak setara"
 }

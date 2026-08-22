@@ -37,6 +37,13 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.25 新內容
+
+- **Cron** — 就地修改主機 crontab 行（`source=host`）。管理式任務：`ysk-server cron update --id`。
+- **驗證者** — 節點起來後提供可複製的公開身份與後續步驟（NEAR `create_staking_pool`、Cosmos `create-validator`、host P2P 寫入 `public_addr`）。CLI：`checklist`、`rewrite-compose`、`compose-write`、`software`、`pull`、`leftover-remove`、`stats`。
+- **語言** — 13 種語言的操作字串與說明分頁。zh-HK 為香港書面語。產品名稱維持英文。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.25**。
+
 ## 1.1.24 新內容
 
 - **DNS** — 主機 WAN DDNS：本機公網位址變更時 upsert 指定 A／AAAA（Cloudflare、RFC 2136、本機 PowerDNS）。探測只偵測。VPN 主機名稱預設 DNS only（orange cloud 須確認）。VPN Endpoint 可填入 DDNS 主機名稱，不會改寫現有 peers。

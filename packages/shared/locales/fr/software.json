@@ -84,13 +84,13 @@
     "latest": "Dernière",
     "upToDate": "À jour / dépôt à jour",
     "refresh": "Revérifier la dernière version",
+    "refreshHasUpdate": "Version plus récente disponible",
+    "refreshLatest": "Déjà la dernière version enregistrée",
     "pick": "Choisir la version",
     "noTarget": "Aucune cible de mise à jour",
     "needRuntimePage": "Installez cette version sur la page du runtime",
     "noAptCandidate": "Aucune version candidate apt",
-    "sourceLabel": "Source",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "Source"
   },
   "install": {
     "progress": "Installation : {{list}}…",

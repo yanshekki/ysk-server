@@ -20,6 +20,8 @@
   "statAllow": "يسمح",
   "statDeny": "ينكر",
   "statDefaultIn": "الوارد الافتراضي",
+  "defaultNotApplied": "غير متوفر (إيقاف تشغيل UFW)",
+  "ufwOffHint": "لا يتم تطبيق الوارد الافتراضي أثناء إيقاف تشغيل UFW",
   "executeOn": "على",
   "executeOff": "عن",
   "ufwDisabled": "تم تعطيل UFW",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "الأدوات الأساسية:",
   "toolHintBody": "UFW = المنافذ / القواعد الدائمة · للرد على الهجوم واستخدام الحظر التلقائي",
   "toolHintfail2ban": "fail2ban = الحظر المؤقت القائم على السجل",
+  "toolHintFail2ban": "Fail2ban = الحظر المؤقت القائم على السجل",
   "executeOffHint": "تم إيقاف تغييرات النظام — الحالة قابلة للقراءة؛",
   "tabs": {
     "rules": "قواعد",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "يزيل رقم قاعدة UFW هذا (يحتاج إلى إذن لتغيير النظام).",
   "servicesTitle": "الخدمات المدارة",
   "servicesHint": "تعرض الشبكة المطلوب لخدمات YSK. يؤدي فتح الخدمة إلى مزامنة هذه القواعد تلقائيًا.",
+  "servicesUfwOff": "UFW معطل. هذه القائمة هي التعرض المطلوب، وليست القواعد التي يفرضها المضيف.",
   "servicesEmpty": "لا توجد بيانات التعرض للخدمة حتى الآن",
   "servicesEmptyDesc": "ابدأ خدمة مُدارة (الويب، FTPS، VPN، DB...) لملء هذه القائمة.",
   "servicesManualHint": "توجد شرائح المنافذ اليدوية ضمن علامة التبويب \"المنافذ\" - تفضل إدارة الوصول هنا حتى تظل القواعد مميزة (ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "تعطيل UFW؟",
   "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
   "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW.",
-  "toolHintFail2ban": "Fail2ban = الحظر المؤقت القائم على السجل",
-  "servicesUfwOff": "UFW معطل. هذه القائمة هي التعرض المطلوب، وليست القواعد التي يفرضها المضيف.",
   "desiredOnlyUfwOff": "المطلوب: {{mode}} · إيقاف UFW (غير مطبق)",
-  "syncNotApplied": "UFW متوقف · لم يتم تطبيقه",
-  "defaultNotApplied": "غير متوفر (إيقاف تشغيل UFW)",
-  "ufwOffHint": "لا يتم تطبيق الوارد الافتراضي أثناء إيقاف تشغيل UFW"
+  "syncNotApplied": "UFW متوقف · لم يتم تطبيقه"
 }

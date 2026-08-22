@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Peringatan",
+    "bad": "Masalah"
+  },
   "title": "Dasbor",
   "health": "Kesehatan",
   "protection": "Modus perlindungan",
@@ -38,12 +44,13 @@
   "readinessCheck": "Kesiapan:",
   "prodOk": "Produksi siap",
   "notFullyReady": "Belum sepenuhnya siap",
+  "readinessBlocked": "{{n}} pemblokir",
   "modeScore": "Modus {{mode}} · skor {{ready}}/{{total}}",
   "mode": {
     "degraded": "terdegradasi",
     "production_capable": "siap produksi",
-    "normal": "normal",
-    "blocked": "blocked"
+    "blocked": "diblokir",
+    "normal": "normal"
   },
   "details": "Detail",
   "certExpiryTitle": "Masa berlaku sertifikat:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "Terapkan audit · oke {{ok}} · peringatkan {{warn}} · buruk {{bad}}",
   "executeBadge": "JALANKAN {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "Panel ini mendengarkan semua antarmuka dan akun admin Anda tidak memiliki 2FA.",
   "go": "Membuka",
   "open": "Membuka",
   "noCriticalWarn": "Tidak ada peringatan kritis atau peringatan",
@@ -81,6 +89,7 @@
   "wizardDesc": "Buat proyek dan opsional draf DNS/mail/database (terapkan pada setiap halaman fitur)",
   "projectName": "Nama proyek",
   "projectNameHint": "Nama tampilan; membuat direktori yang cocok",
+  "nameRequired": "Masukkan nama proyek",
   "domainOptional": "Domain (opsional)",
   "domainHint": "Diperlukan untuk mengaktifkan opsi DNS dan email",
   "runtime": "Waktu proses",
@@ -93,6 +102,7 @@
   "serverIpv6": "Server IPv6 (opsional)",
   "serverIpv6Hint": "Menulis AAAA / ip6: saat disetel",
   "serverIpv6Ph": "IPv6 Publik (opsional)",
+  "needDomainFirst": "Isi domain dulu",
   "withDns": "Buat juga zona DNS",
   "withDnsDesc": "Membutuhkan domain; registrasi saja — terapkan zona pada halaman DNS",
   "withMail": "Daftarkan juga domain email",
@@ -119,15 +129,5 @@
   "notifSearch": "Peringatan pencarian",
   "notifAll": "Semua",
   "notifDismiss": "Bersembunyi",
-  "goFix": "Memperbaiki",
-  "needDomainFirst": "Isi domain dulu",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "Memperbaiki"
 }

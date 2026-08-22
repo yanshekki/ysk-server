@@ -13,7 +13,9 @@
   "hourAgo": "il y a {{n}} h",
   "highRiskN": "{{count}} à haut risque",
   "panelUpdate": "Mise à jour du panneau disponible",
+  "footerNewVersion": "Nouvelle version {{version}}",
   "riskOk": "Risque maîtrisable",
+  "riskUnevaluated": "Non évalué - exécutez Scan + OSV",
   "pendingScan": "En attente d'analyse",
   "packages": "Paquets",
   "highRisk": "Risque élevé",
@@ -24,6 +26,7 @@
   "reload": "Recharger",
   "osvTitle": "Interroger OSV pour les 12 paquets suggérés prioritaires (réseau requis)",
   "scanOsv": "Analyse + OSV",
+  "cveNotChecked": "Non vérifié",
   "scanPkgs": "Analyser les paquets",
   "tabInventory": "Inventaire des paquets",
   "tabSelf": "Panneau lui-même",
@@ -72,6 +75,8 @@
   "policyTitle": "Politique de mise à jour",
   "policyBody": "Les paquets à haut risque et CVE nécessitent une approbation avant application",
   "applyPkg": "Appliquer la mise à niveau du paquet",
+  "rebootNeeded": "redémarrer",
+  "kernelRebootHint": "Les packages du noyau nécessitent un redémarrage après l'application",
   "applyPkgConfirm": "Mettre à niveau {{name}} ?",
   "applyPkgDesc": "Exécute apt upgrade pour ce paquet sur l'hôte. Nécessite root + YSK_EXECUTE.",
   "lastScan": "Dernière analyse",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "Actuel",
   "selfLatestShort": "Dernière",
   "applyPanelUpdate": "Appliquer la mise à jour du panneau",
+  "applySelfConfirmTitle": "Appliquer la mise à jour du panneau ?",
+  "applySelfConfirmDesc": "Installez {{from}} → {{to}} et redémarrez le service du panneau. Il n’y a pas de test à sec.",
+  "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
   "recheck": "Revérifier",
   "aboutScope": "Portée",
   "aboutScopeV": "panneau du serveur ysk + services de catalogue + environnements d'exécution + packages apt restants",
@@ -98,6 +106,51 @@
   "scanPolicyV": "Analyser ≠ mis à niveau ; appliquer modifie le système",
   "highRiskPolicy": "Risque élevé",
   "highRiskPolicyV": "Approbation requise : seconde confirmation avant envoi",
+  "needApprovalHint": "Ouvrez Disponible et filtrez les packages qui nécessitent une approbation",
+  "applyNeedConfirm": "Ouvre une boîte de dialogue de confirmation avant d'appliquer",
+  "probeFailed": "La sonde a échoué",
+  "notViaApt": "Non géré par apt — aucun candidat",
+  "noCandidate": "Aucune version candidate",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "Page GéoIP",
+  "job": {
+    "protection_probe": {
+      "name": "Sonde de protection",
+      "hint": "Signaux de défense périodiques"
+    },
+    "updates_scan": {
+      "name": "Analyse des mises à jour",
+      "hint": "Actualiser l'inventaire des packages"
+    },
+    "daily_backup": {
+      "name": "Sauvegarde quotidienne",
+      "hint": "Sauvegarde planifiée tout"
+    },
+    "db_temp_expire": {
+      "name": "Expiration des utilisateurs de base de données temporaires",
+      "hint": "Supprimer les utilisateurs de base de données temporaires expirés"
+    },
+    "defense_auto_ban": {
+      "name": "Interdiction automatique de la défense",
+      "hint": "Appliquer une coche d'interdiction automatique"
+    },
+    "defense_geoip_update": {
+      "name": "Mise à jour GeoIP",
+      "hint": "Télécharger les bases de données GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "Aspirateur à bûches",
+      "hint": "conservation du journal"
+    },
+    "email_dnsbl": {
+      "name": "Envoyer un e-mail à DNSBL",
+      "hint": "Vérification DNSBL par courrier"
+    },
+    "validators_upgrade_scan": {
+      "name": "Analyse de mise à niveau des validateurs",
+      "hint": "Vérifier l'image du validateur/les mises à jour binaires"
+    }
+  },
   "permPolicy": "Autorisations",
   "permPolicyV": "Sans EXECUTE/root → bloqué (pas de faux succès)",
   "osvPolicyV": "Nécessite le réseau ; enrichit uniquement les 12 premières suggestions",
@@ -122,6 +175,12 @@
   "updateFailed": "Échec de la mise à jour",
   "updateIncomplete": "Mise à jour incomplète",
   "appliedUpdate": "Mise à jour appliquée",
+  "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
+  "panelRestarted": "Panneau de retour · {{version}}",
+  "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes.",
+  "reloadUi": "Recharger l'interface utilisateur",
+  "reloadUiTitle": "Recharger l'interface utilisateur du panneau ?",
+  "reloadUiDesc": "Le service du panneau est {{version}}. Cet onglet a toujours l'interface précédente jusqu'à ce que vous rechargez. Les champs non enregistrés sur cette page seront perdus.",
   "aptCandidate": "candidat compétent",
   "advice": {
     "update": "Mise à jour recommandée",
@@ -182,64 +241,5 @@
   "needsReboot": "Redémarrage nécessaire",
   "kernelRebootWarn": "L'installation d'un nouveau noyau nécessite généralement un redémarrage avant son utilisation.",
   "neverRun": "pas encore couru",
-  "scanOsvN": "Scan + OSV (premier {{n}})",
-  "rebootNeeded": "redémarrer",
-  "kernelRebootHint": "Les packages du noyau nécessitent un redémarrage après l'application",
-  "needApprovalHint": "Ouvrez Disponible et filtrez les packages qui nécessitent une approbation",
-  "applyNeedConfirm": "Ouvre une boîte de dialogue de confirmation avant d'appliquer",
-  "probeFailed": "La sonde a échoué",
-  "notViaApt": "Non géré par apt — aucun candidat",
-  "noCandidate": "Aucune version candidate",
-  "jobOpenGeo": "Page GéoIP",
-  "job": {
-    "protection_probe": {
-      "name": "Sonde de protection",
-      "hint": "Signaux de défense périodiques"
-    },
-    "updates_scan": {
-      "name": "Analyse des mises à jour",
-      "hint": "Actualiser l'inventaire des packages"
-    },
-    "daily_backup": {
-      "name": "Sauvegarde quotidienne",
-      "hint": "Sauvegarde planifiée tout"
-    },
-    "db_temp_expire": {
-      "name": "Expiration des utilisateurs de base de données temporaires",
-      "hint": "Supprimer les utilisateurs de base de données temporaires expirés"
-    },
-    "defense_auto_ban": {
-      "name": "Interdiction automatique de la défense",
-      "hint": "Appliquer une coche d'interdiction automatique"
-    },
-    "defense_geoip_update": {
-      "name": "Mise à jour GeoIP",
-      "hint": "Télécharger les bases de données GeoIP"
-    },
-    "log_auto_vacuum": {
-      "name": "Aspirateur à bûches",
-      "hint": "conservation du journal"
-    },
-    "email_dnsbl": {
-      "name": "Envoyer un e-mail à DNSBL",
-      "hint": "Vérification DNSBL par courrier"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "Déjà la dernière version du panneau",
-  "panelRestarting": "Le panneau redémarre pour charger la nouvelle version…",
-  "panelRestarted": "Panneau de retour · {{version}}",
-  "panelRestartWait": "Mise à jour appliquée. Si la page ne se rafraîchit pas, rechargez dans quelques secondes.",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "Scan + OSV (premier {{n}})"
 }

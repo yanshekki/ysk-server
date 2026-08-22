@@ -70,6 +70,8 @@
   "policyNotEqualFull": "টেমপ্লেট লিখুন ≠ পরিষেবা সক্রিয় ≠ শোনা",
   "controlPlaneUnit": "কন্ট্রোল-প্লেন ইউনিট",
   "kpiRuntime": "রানটাইম",
+  "rawStateHint": "টুলটিপে কাঁচা ইউনিটের অবস্থা",
+  "bootHint": "ইউনিট বুট শুরু হয় কিনা",
   "kpiBoot": "বুট সক্ষম করুন",
   "kpiCaps": "ক্ষমতা প্রয়োগ করুন",
   "capsReady": "সিস্টেমে ইনস্টল করতে পারেন",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "টেমপ্লেট লেখা এবং সিস্টেম ইনস্টল আলাদা ধাপ। ইন্সটল করার পর পুনরায় চালানো স্বাভাবিক অপারেশন, একটি অনুপস্থিত পদক্ষেপ নয়।",
   "policyInstallFull": "ইনস্টল করুন এবং সক্রিয় করুন: /etc/systemd/system-এ অনুলিপি করুন, ডেমন-রিলোড করুন, সক্রিয় করুন --now। রুট + EXECUTE প্রয়োজন।",
   "policyBlockedTitle": "বিশেষাধিকার ছাড়া অবরুদ্ধ",
-  "policyNotEqualTitle": "রাজ্য সমতুল্য নয়",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "রাজ্য সমতুল্য নয়"
 }

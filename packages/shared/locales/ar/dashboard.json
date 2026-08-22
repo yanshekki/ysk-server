@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "تحذير",
+    "bad": "مشكلة"
+  },
   "title": "لوحة القيادة",
   "health": "صحة",
   "protection": "وضع الحماية",
@@ -38,12 +44,13 @@
   "readinessCheck": "استعداد:",
   "prodOk": "الإنتاج جاهز",
   "notFullyReady": "ليس جاهزا تماما",
+  "readinessBlocked": "{{n}} مانع (موانع)",
   "modeScore": "الوضع {{mode}} · النتيجة {{ready}}/{{total}}",
   "mode": {
     "degraded": "متدهورة",
     "production_capable": "الإنتاج جاهز",
-    "normal": "طبيعي",
-    "blocked": "blocked"
+    "blocked": "محظور",
+    "normal": "طبيعي"
   },
   "details": "تفاصيل",
   "certExpiryTitle": "انتهاء الشهادة:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "تطبيق التدقيق · حسنًا {{ok}} · تحذير {{warn}} · سيء {{bad}}",
   "executeBadge": "تنفيذ {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "تستمع هذه اللوحة إلى جميع الواجهات ولا يحتوي حساب المسؤول الخاص بك على 2FA.",
   "go": "يفتح",
   "open": "يفتح",
   "noCriticalWarn": "لا توجد تنبيهات حرجة أو تحذيرية",
@@ -81,6 +89,7 @@
   "wizardDesc": "قم بإنشاء مشروع وقم بصياغة DNS / البريد / قاعدة البيانات اختياريًا (تنطبق على كل صفحة ميزات)",
   "projectName": "اسم المشروع",
   "projectNameHint": "اسم العرض؛ يقوم بإنشاء دليل مطابق",
+  "nameRequired": "أدخل اسم المشروع",
   "domainOptional": "المجال (اختياري)",
   "domainHint": "مطلوب لتمكين خيارات DNS والبريد",
   "runtime": "وقت التشغيل",
@@ -93,6 +102,7 @@
   "serverIpv6": "خادم IPv6 (اختياري)",
   "serverIpv6Hint": "يكتب AAAA / ip6: عند التعيين",
   "serverIpv6Ph": "IPv6 العام (اختياري)",
+  "needDomainFirst": "أدخل نطاقاً أولاً",
   "withDns": "قم أيضًا بإنشاء منطقة DNS",
   "withDnsDesc": "يحتاج المجال؛ التسجيل فقط - تطبيق المنطقة على صفحة DNS",
   "withMail": "سجل أيضًا مجال البريد",
@@ -119,15 +129,5 @@
   "notifSearch": "تنبيهات البحث",
   "notifAll": "الجميع",
   "notifDismiss": "يخفي",
-  "goFix": "يصلح",
-  "needDomainFirst": "أدخل نطاقاً أولاً",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "يصلح"
 }

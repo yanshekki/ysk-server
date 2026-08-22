@@ -84,13 +84,13 @@
     "latest": "تازہ ترین",
     "upToDate": "تازہ ترین / تازہ ترین ریپو",
     "refresh": "تازہ ترین دوبارہ چیک کریں۔",
+    "refreshHasUpdate": "نیا ورژن دستیاب ہے۔",
+    "refreshLatest": "پہلے سے ہی تازہ ترین ریکارڈ شدہ ورژن",
     "pick": "ورژن چنیں۔",
     "noTarget": "اپ ڈیٹ کا کوئی ہدف نہیں۔",
     "needRuntimePage": "اس ورژن کو رن ٹائم پیج پر انسٹال کریں۔",
     "noAptCandidate": "کوئی موزوں امیدوار ورژن نہیں۔",
-    "sourceLabel": "ماخذ",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "ماخذ"
   },
   "install": {
     "progress": "انسٹال ہو رہا ہے: {{list}}…",

@@ -10,6 +10,9 @@ import {
   parseDockerNetIo,
   stakingPlaybookMeta,
   tl,
+  type CosmosStakingIdentityDto,
+  type NearStakingIdentityDto,
+  type SolStakingIdentityDto,
   type ValidatorInstanceDto,
   type ValidatorNetIoDto,
   type ValidatorSummaryDto,
@@ -17,6 +20,9 @@ import {
 import type { HostExecutor } from '../../host/executor.js';
 import { getValidatorNetwork } from './registry.js';
 import { probeAvaxStakingIdentity } from './adapters/avax.js';
+import { readNearStakingIdentity } from './adapters/near.js';
+import { readCosmosStakingIdentity } from './adapters/cosmos-identity.js';
+import { probeSolIdentity } from './adapters/phase2.js';
 import {
   appliedValidatorOp,
   blockedValidatorOp,
@@ -836,9 +842,15 @@ export async function stakingChecklistForInstance(
   blsPublicKey?: string | null;
   blsProofOfPossession?: string | null;
   cardanoProducer?: ValidatorInstanceDto['cardanoProducer'];
+  near?: NearStakingIdentityDto;
+  cosmos?: CosmosStakingIdentityDto;
+  sol?: SolStakingIdentityDto;
 }> {
   const base = stakingChecklist(inst.chain);
   if (inst.chain === 'avax') return { ...base, ...(await probeAvaxStakingIdentity(inst)) };
+  if (inst.chain === 'near') return { ...base, near: readNearStakingIdentity(inst) };
+  if (inst.chain === 'cosmos') return { ...base, cosmos: readCosmosStakingIdentity(inst) };
+  if (inst.chain === 'sol') return { ...base, sol: await probeSolIdentity(inst) };
   if (inst.chain === 'ada' && dataDir) {
     return {
       ...base,

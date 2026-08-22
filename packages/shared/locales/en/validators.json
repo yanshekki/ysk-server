@@ -130,7 +130,7 @@
     "disk": "Disk"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+    "usage": "Usage: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "Execution client",
@@ -394,31 +394,57 @@
     "blsPending": "BLS credentials appear after the node answers RPC.",
     "copyAll": "Copy all",
     "copyNamed": "Copy {{label}}",
+    "nearStakeKey": "Stake public key",
+    "nearStakeKeyPending": "Appears after first start (neard init). RPC not ready does not mean the key is missing.",
+    "nearAccountId": "Key file account_id",
+    "nearAccountIdPending": "Often empty until you set it to {pool}{{suffix}} yourself. This panel never writes validator_key.json.",
+    "nearFactory": "Staking-pool factory",
+    "nearPublicAddr": "Public P2P (peers)",
+    "nearPublicAddrPending": "Appears after first start writes WAN:{{port}} into config.json.",
+    "nearCreateCommand": "create_staking_pool command",
+    "nearPointing": "The pool contract does not take this server’s IP. It stores this node’s stake public key. Peers use the Public P2P row above (host port {{port}}). RPC stays on localhost.",
+    "nearAccountIdHint": "After the pool exists, set account_id in validator_key.json to {pool}{{suffix}} yourself. This panel never writes that file.",
+    "cosmosPubkey": "Consensus public key",
+    "cosmosPubkeyPending": "Appears after gaiad init writes priv_validator_key.json. RPC not ready does not mean the key is missing.",
+    "cosmosChainId": "chain-id",
+    "cosmosP2p": "Public P2P (external_address)",
+    "cosmosP2pPending": "Appears after first start writes tcp://WAN:{{port}} into config.toml.",
+    "ethBeacon": "Beacon API (localhost)",
+    "ethBeaconPending": "Beacon HTTP on this host. Point a validator client you run yourself at this URL — this compose has no VC.",
+    "cosmosCreateCommand": "create-validator command",
+    "solIdentity": "Identity pubkey",
+    "solIdentityPending": "Appears after RPC answers getIdentity. This process is --no-voting until you add a vote account yourself.",
+    "adaP2pPort": "Relay P2P port",
+    "adaP2pPending": "Put this host’s public IPv4 and this port in topology.json. This panel does not probe WAN.",
     "notPosTitle": "Not proof-of-stake",
     "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
     "eth": {
-      "model": "Deposit 32 ETH on the official launchpad. Signing keystore is not a withdrawal key.",
+      "model": "This compose runs execution + beacon only — not a validator client. Deposit 32 ETH on the official launchpad.",
       "min": "32 ETH + gas",
       "wallets": "MetaMask, Ledger, Trezor — only on the official launchpad",
-      "panel": "Runs the execution and consensus clients",
+      "panel": "Runs EL + beacon. RPC and beacon API on localhost. No validator client in compose.",
+      "honesty": "This instance is execution + beacon only. There is no validator client in the compose file. Copying a keystore into the beacon data directory will not start attesting. The deposit contract does not take this server’s IP.",
       "yskDoes": [
-        "Install and start the execution and consensus clients.",
-        "Show disk, peers, and upgrade status."
+        "Install and start the execution and beacon clients.",
+        "Show disk, peers, and upgrade status.",
+        "Does not run a validator client and does not load a signing keystore."
       ],
       "youDo": [
-        "Create the keystore and withdrawal address yourself.",
-        "Deposit 32 ETH on the official launchpad.",
-        "Copy the keystore into this node’s data directory."
+        "Create the keystore and withdrawal address yourself on the official launchpad or with staking-deposit-cli.",
+        "Deposit 32 ETH on the launchpad for this network.",
+        "Run a validator client yourself (not this compose) against this instance’s localhost beacon API."
       ],
       "steps": [
-        "Offline, use the official launchpad or staking-deposit-cli. Set the withdrawal address to your own ETH wallet.",
-        "On the official launchpad, deposit 32 ETH (keep extra for gas).",
-        "Copy the keystore file into this node’s data directory yourself. The panel never uploads or stores it.",
-        "Watch sync, disk, and upgrade badges on this page."
+        "Wait until execution and beacon are synced.",
+        "Open the official launchpad for this network (Hoodi or Mainnet on this page). Sepolia has no launchpad button here.",
+        "Offline, generate the keystore. Set the withdrawal address to your own ETH wallet.",
+        "Deposit 32 ETH (keep extra for gas).",
+        "Run a validator client yourself. This compose has no VC — putting a keystore in the beacon datadir does not attest."
       ],
       "never": [
         "Never give your seed phrase or withdrawal key to anyone, including this panel.",
-        "Never upload a signing keystore to a hosted cloud."
+        "Never upload a signing keystore to a hosted cloud.",
+        "Do not expect this page to attest after you copy a keystore into the beacon datadir."
       ]
     },
     "avax": {
@@ -449,17 +475,23 @@
       "model": "Operate a stake pool with offline cold / KES / VRF keys — not a browser wallet tap.",
       "min": "Pledge is your choice (see official docs)",
       "wallets": "Official stake-pool tooling (cold keys stay offline)",
-      "panel": "Runs cardano-node",
-      "yskDoes": ["Run cardano-node and Mithril snapshot restore where offered."],
+      "panel": "Runs cardano-node as a relay first; hot keys can be attached on this page.",
+      "honesty": "This instance starts as a relay. On-chain pool registration uses cold keys you keep offline. Peers and topology use this host’s public IPv4 and the P2P port shown here — the panel does not probe WAN.",
+      "yskDoes": [
+        "Run cardano-node and Mithril snapshot restore where offered.",
+        "Attach KES, VRF, and opcert when you provide them. Cold keys are refused."
+      ],
       "youDo": [
         "Generate pool keys offline.",
-        "Register the pool using official Cardano documentation."
+        "Register the pool using official Cardano documentation.",
+        "Put this host’s public IPv4 and the relay P2P port into topology.json."
       ],
       "steps": [
         "Read the official operate-a-stake-pool guide.",
         "Generate cold, KES, and VRF keys on an offline machine.",
         "Register the pool on-chain from those keys.",
-        "On this instance page, attach KES, VRF, and the operational certificate. Do not upload cold keys."
+        "On this instance page, attach KES, VRF, and the operational certificate. Do not upload cold keys.",
+        "Advertise the relay as public-ip:P2P-port (port shown on this card). This panel does not look up the WAN address."
       ],
       "never": [
         "Do not treat this as a MetaMask one-click stake.",
@@ -467,110 +499,178 @@
       ]
     },
     "near": {
-      "model": "Stake from your NEAR account into a staking pool contract.",
-      "min": "See official validator docs",
+      "model": "Create a staking-pool contract at the official factory. The contract stores this node’s public key — not the server IP.",
+      "min": "See official validator docs (30 NEAR to create the pool, plus stake)",
       "wallets": "Official NEAR wallet / lockup",
-      "panel": "Runs neard",
-      "yskDoes": ["Run neard and show disk / sync."],
-      "youDo": ["Stake from your NEAR account to your pool using official docs."],
-      "steps": [
-        "Bring the node to sync.",
-        "Follow official NEAR validator documentation.",
-        "Stake from your own wallet or lockup into the pool."
+      "panel": "Runs neard; shows the public key, factory, and create_staking_pool command after init",
+      "yskDoes": [
+        "Run neard with RPC on localhost and P2P on 24567.",
+        "After init, show the stake public key, public P2P address, factory, and a copyable create_staking_pool command.",
+        "Never write validator_key.json or broadcast the transaction."
       ],
-      "never": ["Do not paste a seed phrase into this panel."]
+      "youDo": [
+        "Copy the public key and command from this instance page.",
+        "From your own NEAR account, call the official factory.",
+        "After the pool exists, set account_id in validator_key.json to {pool}.{factory} yourself.",
+        "Stake from your wallet into that pool."
+      ],
+      "steps": [
+        "Start the node and wait for neard init so the public key appears (RPC not ready is not the same as missing keys).",
+        "Copy the stake public key and the create_staking_pool command.",
+        "From your wallet, call the factory (testnet pool.f863973.m0 / mainnet poolv1.near) with 30 NEAR for storage. The copied command uses --accountId; if your near CLI expects --account_id, follow that CLI’s --help.",
+        "Set account_id in validator_key.json to your new pool account. This panel does not write that file.",
+        "Wait until RPC answers and the node is synced before staking large amounts. Peers use Public P2P :24567 — the contract does not take an IP."
+      ],
+      "never": [
+        "Do not paste a seed phrase into this panel.",
+        "Do not put this server’s IP into the contract.",
+        "Do not expect the panel to send the create_staking_pool transaction."
+      ]
     },
     "cosmos": {
-      "model": "create-validator from your operator wallet. Consensus key stays on the node.",
-      "min": "See official Cosmos Hub docs",
+      "model": "create-validator from your operator wallet using this node’s consensus public key — not the server IP.",
+      "min": "See official Cosmos Hub docs (self-delegation in uatom)",
       "wallets": "Keplr or another Cosmos wallet you control",
-      "panel": "Runs gaiad",
-      "yskDoes": ["Run gaiad."],
+      "panel": "Runs gaiad; shows consensus pubkey and a copyable create-validator command after init",
+      "honesty": "The create-validator transaction stores this node’s consensus public key. Peers use Public P2P on 26656. RPC stays on localhost. This panel does not broadcast the transaction or read priv_key.",
+      "yskDoes": [
+        "Run gaiad with RPC on localhost and P2P on 26656.",
+        "After init, show the consensus public key, chain-id, public P2P, and a copyable create-validator command.",
+        "Never write priv_validator_key.json or broadcast the transaction."
+      ],
       "youDo": [
-        "Keep the operator wallet yourself.",
-        "Broadcast create-validator from that wallet."
+        "Copy the consensus public key and command from this instance page.",
+        "From your operator wallet (Keplr or gaiad keys you control), submit create-validator.",
+        "Do not mix that wallet mnemonic with the consensus key on this host."
       ],
       "steps": [
-        "Sync gaiad.",
-        "Keep the consensus key on this host only.",
-        "From Keplr (or equivalent), submit create-validator.",
-        "Monitor the node so it does not miss too many blocks."
+        "Start the node and wait for gaiad init so the consensus public key appears (RPC not ready is not the same as missing keys).",
+        "Copy the consensus public key and the create-validator command (chain-id is cosmoshub-4 on mainnet, provider on testnet).",
+        "From your operator wallet, broadcast create-validator. Amount and moniker are yours.",
+        "Wait until RPC answers and the node is synced before bonding large amounts. Peers use tcp://WAN:26656 — the transaction does not take an IP."
       ],
       "never": [
         "Do not mix the operator wallet mnemonic with the consensus key.",
-        "Do not enter wallet mnemonics here."
+        "Do not enter wallet mnemonics here.",
+        "Do not put this server’s IP into create-validator."
       ]
     },
     "sol": {
-      "model": "Vote account, identity, and authorized withdrawer — created with official Solana tools.",
+      "model": "This compose runs Agave with --no-voting. Vote account and withdrawer are created with official Solana tools — not this panel.",
       "min": "See official operations docs (hardware and disk are heavy)",
       "wallets": "Official Solana CLI / wallet you control",
-      "panel": "Runs Agave; mainnet needs multiple tebibytes",
-      "yskDoes": ["Run the Agave client and warn about disk."],
-      "youDo": ["Create vote and withdrawer keys with official Solana tools."],
+      "panel": "Runs Agave as a catch-up node (--no-voting). Can show identity pubkey after RPC answers.",
+      "honesty": "This process is --no-voting. It will not vote or earn stake until you create a vote account with official Agave CLI and change how the process is started. This panel does not remove --no-voting.",
+      "yskDoes": [
+        "Run the Agave client and warn about disk.",
+        "Show the identity pubkey once RPC answers getIdentity.",
+        "Does not create a vote account and does not start voting."
+      ],
+      "youDo": [
+        "Create vote and authorized-withdrawer keys with official Solana tools on a machine you control.",
+        "Create the vote account with the official CLI, using this identity pubkey.",
+        "Only then run a voting validator — this compose stays --no-voting."
+      ],
       "steps": [
         "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
-        "Follow official Solana operations documentation.",
-        "Create the vote account and authorized withdrawer yourself.",
-        "Point the running validator at those keys on disk."
+        "Wait until RPC answers, then copy the identity pubkey shown here.",
+        "Follow official vote-account and stake guides (links below).",
+        "This compose keeps --no-voting. Do not expect this page to start voting after you create a vote account."
       ],
-      "never": ["Do not expect a browser wallet button in this panel."]
+      "never": [
+        "Do not expect a browser wallet button in this panel.",
+        "Do not paste identity or vote keypairs into this panel."
+      ]
     },
     "dot": {
-      "model": "Session keys from the node; bind them in Polkadot.js from your stash.",
+      "model": "This compose is a full node (no --validator). Session keys and setKeys are official Polkadot.js steps — not this panel.",
       "min": "See the official wiki",
       "wallets": "Polkadot.js",
-      "panel": "Runs the Polkadot client",
-      "yskDoes": ["Run polkadot and expose RPC on localhost."],
-      "youDo": ["Rotate session keys on the node and set them from Polkadot.js."],
-      "steps": [
-        "Sync the node.",
-        "Generate session keys on this host.",
-        "In Polkadot.js, set those keys on your stash / controller.",
-        "Follow the official validate guide for bonding."
+      "panel": "Runs polkadot as a full node. RPC on localhost. No --validator flag.",
+      "honesty": "This process is not started with --validator. The panel does not call author_rotateKeys (that would change the keystore). Becoming a validator needs the official node flag and a rotateKeys call you make against localhost RPC.",
+      "yskDoes": [
+        "Run polkadot and expose RPC on localhost.",
+        "Does not pass --validator and does not rotate session keys."
       ],
-      "never": ["Do not paste the stash mnemonic into this panel."]
+      "youDo": [
+        "Follow the official set-up-a-validator guide.",
+        "If you add --validator yourself, call rotateKeys on localhost RPC and bind the result in Polkadot.js from your stash."
+      ],
+      "steps": [
+        "Sync this full node.",
+        "Read the official validate guide. This compose is not a validator process.",
+        "Do not paste the stash mnemonic here. If you later run with --validator, rotate keys yourself on http://127.0.0.1 (RPC port on this instance).",
+        "In Polkadot.js, set those session keys on your stash / controller, then follow official bonding steps."
+      ],
+      "never": [
+        "Do not paste the stash mnemonic into this panel.",
+        "Do not expect this page to generate session keys or to have started --validator."
+      ]
     },
     "sui": {
-      "model": "Follow official Sui validator operator docs with your operator wallet.",
+      "model": "This compose is a Sui fullnode (fullnode.yaml), not a validator node.",
       "min": "See official Sui docs",
       "wallets": "Official Sui operator wallet",
-      "panel": "Runs sui-node",
-      "yskDoes": ["Run the shipped sui-node image."],
-      "youDo": ["Complete registration using official Sui validator docs."],
-      "steps": [
-        "Sync sui-node.",
-        "Open the official validator operator guide.",
-        "Use your own operator wallet — not this panel — to register."
+      "panel": "Runs sui-node as a fullnode. RPC on localhost.",
+      "honesty": "This process cannot sign as a Sui validator. Validator setup uses a different config and keys. Official validator docs are linked; this panel does not switch the node to validator mode.",
+      "yskDoes": [
+        "Run the shipped sui-node image as a fullnode."
       ],
-      "never": ["Do not send SUI to this panel."]
+      "youDo": [
+        "Use this instance as a fullnode.",
+        "To become a validator, follow official Sui validator docs on a validator config — not this compose."
+      ],
+      "steps": [
+        "Sync this fullnode.",
+        "Treat it as a fullnode: it re-executes checkpoints but does not sign consensus.",
+        "Open the official validator operator guide only if you are building a separate validator process."
+      ],
+      "never": [
+        "Do not send SUI to this panel.",
+        "Do not expect this fullnode process to register as a validator."
+      ]
     },
     "aptos": {
-      "model": "Follow official Aptos staking / validator docs with your operator wallet.",
+      "model": "This compose is an Aptos public fullnode (role full_node), not a validator.",
       "min": "See official Aptos docs",
       "wallets": "Official Aptos operator wallet",
-      "panel": "Runs the Aptos validator image",
-      "yskDoes": ["Run the shipped Aptos image."],
-      "youDo": ["Stake and operate from official Aptos documentation."],
-      "steps": [
-        "Sync the node.",
-        "Read official Aptos staking documentation.",
-        "Use your own operator wallet to register."
+      "panel": "Runs aptos-node as a public fullnode. RPC on localhost.",
+      "honesty": "Public fullnodes do not participate in consensus. A validator needs a different role, keys, and usually a validator fullnode. This panel does not switch the node to validator mode.",
+      "yskDoes": [
+        "Run the shipped Aptos image as a public fullnode."
       ],
-      "never": ["Do not enter operator keys in this panel."]
+      "youDo": [
+        "Use this instance as a public fullnode.",
+        "To run a validator, follow official Aptos validator-node docs — not this compose."
+      ],
+      "steps": [
+        "Sync this public fullnode.",
+        "Treat it as a PFN: it serves ledger data, it does not vote.",
+        "Open official validator docs only if you are building a separate validator + VFN pair."
+      ],
+      "never": [
+        "Do not enter operator keys in this panel.",
+        "Do not expect this fullnode process to register as a validator."
+      ]
     },
     "btc": {
       "model": "Not proof-of-stake. This is a Bitcoin full or pruned node.",
       "min": "—",
       "wallets": "Not applicable",
       "panel": "Runs bitcoind",
-      "yskDoes": ["Run a Bitcoin full or pruned node."],
-      "youDo": ["Use any Bitcoin wallet separately. Mining and Lightning are out of scope."],
+      "yskDoes": [
+        "Run a Bitcoin full or pruned node."
+      ],
+      "youDo": [
+        "Use any Bitcoin wallet separately. Mining and Lightning are out of scope."
+      ],
       "steps": [
         "Treat this instance as a Bitcoin node only.",
         "There is no staking deposit and no validator keystore."
       ],
-      "never": ["Do not look for a staking wallet on this page."]
+      "never": [
+        "Do not look for a staking wallet on this page."
+      ]
     }
   },
   "alerts": {

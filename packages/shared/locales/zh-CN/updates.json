@@ -13,7 +13,9 @@
   "hourAgo": "{{n}} 小时前",
   "highRiskN": "{{count}} 项高风险",
   "panelUpdate": "面板有更新",
+  "footerNewVersion": "有新版本 {{version}}",
   "riskOk": "风险可控",
+  "riskUnevaluated": "未评估 — 请先扫描 + OSV",
   "pendingScan": "待扫描",
   "packages": "软件包",
   "highRisk": "高风险",
@@ -24,6 +26,7 @@
   "reload": "重新加载",
   "osvTitle": "对前 12 个建议软件包查 OSV（需外网）",
   "scanOsv": "扫描 + OSV",
+  "cveNotChecked": "未检查",
   "scanPkgs": "扫描软件包",
   "tabInventory": "软件包清点",
   "tabSelf": "面板自身",
@@ -72,6 +75,8 @@
   "policyTitle": "更新政策",
   "policyBody": "高风险与有 CVE 的软件包默认需审批后才可套用。面板自身更新与系统 apt 升级分开处理。",
   "applyPkg": "套用软件包升级",
+  "rebootNeeded": "重新启动",
+  "kernelRebootHint": "内核包应用后需要重新启动",
   "applyPkgConfirm": "确认升级 {{name}}？",
   "applyPkgDesc": "将对此主机执行 apt 升级。需 root + YSK_EXECUTE。",
   "lastScan": "上次扫描",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "当前",
   "selfLatestShort": "最新",
   "applyPanelUpdate": "套用面板更新",
+  "applySelfConfirmTitle": "套用面板更新？",
+  "applySelfConfirmDesc": "将面板由 {{from}} 升到 {{to}} 并重启服务。没有试行。",
+  "applyPanelAlreadyLatest": "已经是最新的面板版本了",
   "recheck": "重新检查",
   "aboutScope": "范围",
   "aboutScopeV": "ysk-server 控制面 + catalog 服務 + runtime + 其餘 apt 套件",
@@ -98,6 +106,51 @@
   "scanPolicyV": "扫描 ≠ 已升级；套用才会改系统",
   "highRiskPolicy": "高风险",
   "highRiskPolicyV": "需审批：二次确认后才送出",
+  "needApprovalHint": "打开“可用”并筛选需要批准的软件包",
+  "applyNeedConfirm": "申请前打开确认对话框",
+  "probeFailed": "探测失败",
+  "notViaApt": "不由 apt 管理 — 没有候选人",
+  "noCandidate": "无候选版本",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "地理IP页面",
+  "job": {
+    "protection_probe": {
+      "name": "保护探头",
+      "hint": "周期性防御信号"
+    },
+    "updates_scan": {
+      "name": "更新扫描",
+      "hint": "刷新包裹库存"
+    },
+    "daily_backup": {
+      "name": "每日备份",
+      "hint": "计划备份全部"
+    },
+    "db_temp_expire": {
+      "name": "使临时数据库用户过期",
+      "hint": "删除过期的临时数据库用户"
+    },
+    "defense_auto_ban": {
+      "name": "国防自动禁令",
+      "hint": "应用自动禁止勾选"
+    },
+    "defense_geoip_update": {
+      "name": "地理IP更新",
+      "hint": "下载 GeoIP 数据库"
+    },
+    "log_auto_vacuum": {
+      "name": "原木真空",
+      "hint": "日记保留"
+    },
+    "email_dnsbl": {
+      "name": "电子邮件 DNSBL",
+      "hint": "邮件 DNSBL 检查"
+    },
+    "validators_upgrade_scan": {
+      "name": "验证者升级扫描",
+      "hint": "检查验证者映像／二进制更新"
+    }
+  },
   "permPolicy": "权限",
   "permPolicyV": "无 EXECUTE／root → blocked，不假成功",
   "osvPolicyV": "需外网，只补强前 12 项建议",
@@ -122,6 +175,12 @@
   "updateFailed": "更新失败",
   "updateIncomplete": "更新未完成",
   "appliedUpdate": "已应用更新",
+  "panelRestarting": "面板正在重启以加载新版本…",
+  "panelRestarted": "面板已恢复 · {{version}}",
+  "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
+  "reloadUi": "重新载入界面",
+  "reloadUiTitle": "重新载入面板界面？",
+  "reloadUiDesc": "面板服务已是 {{version}}。此分页仍是旧前端，须重新载入才会换成新画面。此页未储存的字段会消失。",
   "aptCandidate": "apt Candidate（候选版本）",
   "advice": {
     "update": "建议更新",
@@ -182,64 +241,5 @@
   "needsReboot": "需重启",
   "kernelRebootWarn": "安装新 kernel 后通常要重启才会生效。",
   "neverRun": "尚未执行",
-  "scanOsvN": "扫描 + OSV（前 {{n}} 个）",
-  "rebootNeeded": "重新启动",
-  "kernelRebootHint": "内核包应用后需要重新启动",
-  "needApprovalHint": "打开“可用”并筛选需要批准的软件包",
-  "applyNeedConfirm": "申请前打开确认对话框",
-  "probeFailed": "探测失败",
-  "notViaApt": "不由 apt 管理 — 没有候选人",
-  "noCandidate": "无候选版本",
-  "jobOpenGeo": "地理IP页面",
-  "job": {
-    "protection_probe": {
-      "name": "保护探头",
-      "hint": "周期性防御信号"
-    },
-    "updates_scan": {
-      "name": "更新扫描",
-      "hint": "刷新包裹库存"
-    },
-    "daily_backup": {
-      "name": "每日备份",
-      "hint": "计划备份全部"
-    },
-    "db_temp_expire": {
-      "name": "使临时数据库用户过期",
-      "hint": "删除过期的临时数据库用户"
-    },
-    "defense_auto_ban": {
-      "name": "国防自动禁令",
-      "hint": "应用自动禁止勾选"
-    },
-    "defense_geoip_update": {
-      "name": "地理IP更新",
-      "hint": "下载 GeoIP 数据库"
-    },
-    "log_auto_vacuum": {
-      "name": "原木真空",
-      "hint": "日记保留"
-    },
-    "email_dnsbl": {
-      "name": "电子邮件 DNSBL",
-      "hint": "邮件 DNSBL 检查"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "已经是最新的面板版本了",
-  "panelRestarting": "面板正在重启以加载新版本…",
-  "panelRestarted": "面板已恢复 · {{version}}",
-  "panelRestartWait": "已套用更新。若本页未刷新，请数秒后重新加载。",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "扫描 + OSV（前 {{n}} 个）"
 }

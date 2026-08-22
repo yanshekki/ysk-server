@@ -4,6 +4,6 @@
   "about": "के बारे में",
   "main": "कार्रवाई",
   "stack": "सॉफ़्टवेयर",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "ऐसा कोई टैब नहीं",
+  "unknownHint": "इस पेज पर {{tab}} नाम का कोई टैब नहीं है।"
 }

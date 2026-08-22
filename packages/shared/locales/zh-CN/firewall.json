@@ -20,6 +20,8 @@
   "statAllow": "允许",
   "statDeny": "拒绝",
   "statDefaultIn": "入站默认",
+  "defaultNotApplied": "不适用（UFW 关闭）",
+  "ufwOffHint": "UFW 关闭时不应用默认传入",
   "executeOn": "开",
   "executeOff": "关",
   "ufwDisabled": "已停用 UFW",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "底层工具：",
   "toolHintBody": "UFW = 端口／永久规则 · 攻击应变与自动 ban 请用",
   "toolHintfail2ban": "fail2ban = 日志临时 ban",
+  "toolHintFail2ban": "fail2ban = 基于日志的临时禁令",
   "executeOffHint": "系统变更未开 — 可看状态，改规则需 root + YSK_EXECUTE=1",
   "tabs": {
     "rules": "规则表",
@@ -103,9 +106,6 @@
   "disableConfirmTitle": "停用 UFW？",
   "disableConfirmDesc": "主机防火墙将停止过滤流量。若主机在公众网络上，SSH 与面板可能直接暴露。",
   "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
-  "toolHintFail2ban": "fail2ban = 基于日志的临时禁令",
   "desiredOnlyUfwOff": "设定：{{mode}} · UFW 关闭（未套用）",
-  "syncNotApplied": "UFW 关闭 · 未套用",
-  "defaultNotApplied": "不适用（UFW 关闭）",
-  "ufwOffHint": "UFW 关闭时不应用默认传入"
+  "syncNotApplied": "UFW 关闭 · 未套用"
 }

@@ -13,7 +13,9 @@
   "hourAgo": "時間前",
   "highRiskN": "{{count}} 高リスク",
   "panelUpdate": "パネルのアップデートが利用可能",
+  "footerNewVersion": "新しいバージョン {{version}}",
   "riskOk": "リスク管理可能",
+  "riskUnevaluated": "未評価 — スキャン + OSV を実行",
   "pendingScan": "スキャン待ち",
   "packages": "パッケージ",
   "highRisk": "高リスク",
@@ -24,6 +26,7 @@
   "reload": "再読み込み",
   "osvTitle": "OSV にクエリを実行して上位 12 個の推奨パッケージを取得します (ネットワークが必要)",
   "scanOsv": "スキャン+ OSV",
+  "cveNotChecked": "未チェック",
   "scanPkgs": "パッケージをスキャンする",
   "tabInventory": "パッケージの在庫",
   "tabSelf": "パネルセルフ",
@@ -72,6 +75,8 @@
   "policyTitle": "ポリシーの更新",
   "policyBody": "高リスクおよび CVE パッケージは適用前に承認が必要です",
   "applyPkg": "パッケージのアップグレードを適用する",
+  "rebootNeeded": "リブート",
+  "kernelRebootHint": "カーネルパッケージは適用後に再起動が必要です",
   "applyPkgConfirm": "{{name}} をアップグレードしますか?",
   "applyPkgDesc": "ホスト上でこのパッケージの apt アップグレードを実行します。 root + YSK_EXECUTE が必要です。",
   "lastScan": "前回のスキャン",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "現在",
   "selfLatestShort": "最新",
   "applyPanelUpdate": "パネルの更新を適用する",
+  "applySelfConfirmTitle": "パネル更新を適用しますか?",
+  "applySelfConfirmDesc": "{{from}} → {{to}} をインストールし、パネルサービスを再起動します。予行演習はありません。",
+  "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
   "recheck": "再チェック",
   "aboutScope": "範囲",
   "aboutScopeV": "ysk-server パネル + カタログ サービス + ランタイム + 残りの apt パッケージ",
@@ -98,6 +106,51 @@
   "scanPolicyV": "スキャン≠アップグレード。システムの変更を適用する",
   "highRiskPolicy": "高リスク",
   "highRiskPolicyV": "承認が必要: 送信前に 2 回目の確認",
+  "needApprovalHint": "[利用可能] を開き、承認が必要なパッケージにフィルターします",
+  "applyNeedConfirm": "適用する前に確認ダイアログを開きます",
+  "probeFailed": "プローブが失敗しました",
+  "notViaApt": "apt によって管理されていない - 候補者なし",
+  "noCandidate": "候補バージョンなし",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "地域IPページ",
+  "job": {
+    "protection_probe": {
+      "name": "保護プローブ",
+      "hint": "定期的な防御信号"
+    },
+    "updates_scan": {
+      "name": "アップデートスキャン",
+      "hint": "パッケージインベントリを更新する"
+    },
+    "daily_backup": {
+      "name": "毎日のバックアップ",
+      "hint": "すべてのスケジュールされたバックアップ"
+    },
+    "db_temp_expire": {
+      "name": "一時 DB ユーザーを期限切れにする",
+      "hint": "期限切れの一時データベース ユーザーを削除する"
+    },
+    "defense_auto_ban": {
+      "name": "防衛自動禁止",
+      "hint": "自動禁止チェックを適用する"
+    },
+    "defense_geoip_update": {
+      "name": "地域IPの更新",
+      "hint": "GeoIP データベースをダウンロードする"
+    },
+    "log_auto_vacuum": {
+      "name": "対数真空",
+      "hint": "ジャーナルの保持"
+    },
+    "email_dnsbl": {
+      "name": "DNSBL にメールを送信する",
+      "hint": "メールDNSBLチェック"
+    },
+    "validators_upgrade_scan": {
+      "name": "バリデーターのアップグレードスキャン",
+      "hint": "バリデーターイメージ/バイナリ更新を確認する"
+    }
+  },
   "permPolicy": "権限",
   "permPolicyV": "EXECUTE/root なし → ブロック (偽成功なし)",
   "osvPolicyV": "ネットワークが必要です。上位 12 件の提案のみを充実させます",
@@ -122,6 +175,12 @@
   "updateFailed": "アップデートに失敗しました",
   "updateIncomplete": "更新が完了していません",
   "appliedUpdate": "アップデートが適用されました",
+  "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
+  "panelRestarted": "パネルが復帰しました · {{version}}",
+  "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
+  "reloadUi": "UIをリロードする",
+  "reloadUiTitle": "パネル UI をリロードしますか?",
+  "reloadUiDesc": "パネルサービスは{{version}}です。このタブには、リロードするまで以前のフロントエンドが残ります。このページの保存されていないフィールドは失われます。",
   "aptCandidate": "適任候補者",
   "advice": {
     "update": "アップデートを推奨",
@@ -182,64 +241,5 @@
   "needsReboot": "再起動が必要です",
   "kernelRebootWarn": "新しいカーネルをインストールするには、通常、使用する前に再起動が必要です。",
   "neverRun": "まだ実行されていません",
-  "scanOsvN": "スキャン + OSV (最初の {{n}})",
-  "rebootNeeded": "リブート",
-  "kernelRebootHint": "カーネルパッケージは適用後に再起動が必要です",
-  "needApprovalHint": "[利用可能] を開き、承認が必要なパッケージにフィルターします",
-  "applyNeedConfirm": "適用する前に確認ダイアログを開きます",
-  "probeFailed": "プローブが失敗しました",
-  "notViaApt": "apt によって管理されていない - 候補者なし",
-  "noCandidate": "候補バージョンなし",
-  "jobOpenGeo": "地域IPページ",
-  "job": {
-    "protection_probe": {
-      "name": "保護プローブ",
-      "hint": "定期的な防御信号"
-    },
-    "updates_scan": {
-      "name": "アップデートスキャン",
-      "hint": "パッケージインベントリを更新する"
-    },
-    "daily_backup": {
-      "name": "毎日のバックアップ",
-      "hint": "すべてのスケジュールされたバックアップ"
-    },
-    "db_temp_expire": {
-      "name": "一時 DB ユーザーを期限切れにする",
-      "hint": "期限切れの一時データベース ユーザーを削除する"
-    },
-    "defense_auto_ban": {
-      "name": "防衛自動禁止",
-      "hint": "自動禁止チェックを適用する"
-    },
-    "defense_geoip_update": {
-      "name": "地域IPの更新",
-      "hint": "GeoIP データベースをダウンロードする"
-    },
-    "log_auto_vacuum": {
-      "name": "対数真空",
-      "hint": "ジャーナルの保持"
-    },
-    "email_dnsbl": {
-      "name": "DNSBL にメールを送信する",
-      "hint": "メールDNSBLチェック"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "すでに最新のパネルバージョン",
-  "panelRestarting": "新しいバージョンを読み込むためパネルを再起動しています…",
-  "panelRestarted": "パネルが復帰しました · {{version}}",
-  "panelRestartWait": "適用は完了しました。画面が更新されない場合は数秒後に再読み込みしてください。",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "スキャン + OSV (最初の {{n}})"
 }

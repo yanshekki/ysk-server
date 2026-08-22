@@ -4,6 +4,6 @@
   "about": "Sobre",
   "main": "Ações",
   "stack": "Programas",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "Não existe essa guia",
+  "unknownHint": "Esta página não possui nenhuma guia chamada {{tab}}."
 }

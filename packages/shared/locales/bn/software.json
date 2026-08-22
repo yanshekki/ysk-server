@@ -84,13 +84,13 @@
     "latest": "সর্বশেষ",
     "upToDate": "আপ টু ডেট / রেপো সর্বশেষ",
     "refresh": "সর্বশেষ পুনরায় পরীক্ষা করুন",
+    "refreshHasUpdate": "নতুন সংস্করণ উপলব্ধ",
+    "refreshLatest": "ইতিমধ্যে সর্বশেষ রেকর্ড করা সংস্করণ",
     "pick": "সংস্করণ চয়ন করুন",
     "noTarget": "কোন আপডেট টার্গেট নেই",
     "needRuntimePage": "রানটাইম পৃষ্ঠায় এই সংস্করণটি ইনস্টল করুন",
     "noAptCandidate": "কোন উপযুক্ত প্রার্থী সংস্করণ",
-    "sourceLabel": "উৎস",
-    "refreshHasUpdate": "Newer version available",
-    "refreshLatest": "Already the latest recorded version"
+    "sourceLabel": "উৎস"
   },
   "install": {
     "progress": "ইনস্টল করা হচ্ছে: {{list}}…",

@@ -13,7 +13,9 @@
   "hourAgo": "{{n}}시간 전",
   "highRiskN": "{{count}} 고위험",
   "panelUpdate": "패널 업데이트 가능",
+  "footerNewVersion": "새 버전 {{version}}",
   "riskOk": "위험 관리 가능",
+  "riskUnevaluated": "평가되지 않음 — Scan + OSV 실행",
   "pendingScan": "스캔 대기 중",
   "packages": "패키지",
   "highRisk": "위험",
@@ -24,6 +26,7 @@
   "reload": "새로고침",
   "osvTitle": "상위 12개 제안 패키지에 대한 OSV 쿼리(네트워크 필요)",
   "scanOsv": "스캔 + OSV",
+  "cveNotChecked": "체크하지 않음",
   "scanPkgs": "패키지 스캔",
   "tabInventory": "패키지 재고",
   "tabSelf": "패널 자체",
@@ -72,6 +75,8 @@
   "policyTitle": "정책 업데이트",
   "policyBody": "고위험 및 CVE 패키지는 적용 전 승인이 필요합니다.",
   "applyPkg": "패키지 업그레이드 적용",
+  "rebootNeeded": "재부팅",
+  "kernelRebootHint": "커널 패키지를 적용한 후 재부팅해야 함",
   "applyPkgConfirm": "업그레이드 {{name}}?",
   "applyPkgDesc": "호스트에서 이 패키지에 대한 적절한 업그레이드를 실행합니다. 루트 + YSK_EXECUTE가 필요합니다.",
   "lastScan": "마지막 스캔",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "현재의",
   "selfLatestShort": "최신",
   "applyPanelUpdate": "패널 업데이트 적용",
+  "applySelfConfirmTitle": "패널 업데이트를 적용하시겠습니까?",
+  "applySelfConfirmDesc": "{{from}} → {{to}}를 설치하고 패널 서비스를 다시 시작하세요. 드라이런은 없습니다.",
+  "applyPanelAlreadyLatest": "이미 최신 패널 버전",
   "recheck": "재확인",
   "aboutScope": "범위",
   "aboutScopeV": "ysk-server 패널 + 카탈로그 서비스 + 런타임 + 나머지 적절한 패키지",
@@ -98,6 +106,51 @@
   "scanPolicyV": "스캔 ≠ 업그레이드됨; 적용 시스템 변경",
   "highRiskPolicy": "위험",
   "highRiskPolicyV": "승인 필요: 보내기 전 두 번째 확인",
+  "needApprovalHint": "사용 가능을 열고 승인이 필요한 패키지로 필터링합니다.",
+  "applyNeedConfirm": "적용하기 전에 확인 대화상자를 엽니다.",
+  "probeFailed": "프로브 실패",
+  "notViaApt": "apt에서 관리하지 않음 — 후보자 없음",
+  "noCandidate": "후보 버전 없음",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "GeoIP 페이지",
+  "job": {
+    "protection_probe": {
+      "name": "보호 프로브",
+      "hint": "주기적 방어 신호"
+    },
+    "updates_scan": {
+      "name": "업데이트 검사",
+      "hint": "패키지 인벤토리 새로 고침"
+    },
+    "daily_backup": {
+      "name": "일일 백업",
+      "hint": "전체 백업 예약"
+    },
+    "db_temp_expire": {
+      "name": "임시 DB 사용자 만료",
+      "hint": "만료된 임시 데이터베이스 사용자 삭제"
+    },
+    "defense_auto_ban": {
+      "name": "방어 자동 금지",
+      "hint": "자동 차단 체크 적용"
+    },
+    "defense_geoip_update": {
+      "name": "GeoIP 업데이트",
+      "hint": "GeoIP 데이터베이스 다운로드"
+    },
+    "log_auto_vacuum": {
+      "name": "로그 진공",
+      "hint": "저널링 보존"
+    },
+    "email_dnsbl": {
+      "name": "이메일 DNSBL",
+      "hint": "메일 DNSBL 확인"
+    },
+    "validators_upgrade_scan": {
+      "name": "검증인 업그레이드 스캔",
+      "hint": "유효성 검사기 이미지/바이너리 업데이트 확인"
+    }
+  },
   "permPolicy": "권한",
   "permPolicyV": "EXECUTE/root 없이 → 차단됨(가짜 성공 없음)",
   "osvPolicyV": "네트워크가 필요합니다. 상위 12개 제안만 강화",
@@ -122,6 +175,12 @@
   "updateFailed": "업데이트 실패",
   "updateIncomplete": "업데이트가 완료되지 않았습니다.",
   "appliedUpdate": "업데이트 적용됨",
+  "panelRestarting": "새 버전을 불러오려고 패널을 다시 시작하는 중…",
+  "panelRestarted": "패널이 복구됨 · {{version}}",
+  "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
+  "reloadUi": "UI 새로고침",
+  "reloadUiTitle": "패널 UI를 다시 로드하시겠습니까?",
+  "reloadUiDesc": "패널 서비스는 {{version}} 입니다. 다시 로드할 때까지 이 탭에는 여전히 이전 프런트엔드가 있습니다. 이 페이지의 저장되지 않은 필드는 손실됩니다.",
   "aptCandidate": "적합한 후보자",
   "advice": {
     "update": "업데이트 권장",
@@ -182,64 +241,5 @@
   "needsReboot": "재부팅 필요",
   "kernelRebootWarn": "새 커널을 설치하려면 일반적으로 사용하기 전에 재부팅해야 합니다.",
   "neverRun": "아직 실행되지 않음",
-  "scanOsvN": "스캔 + OSV(첫 번째 {{n}})",
-  "rebootNeeded": "재부팅",
-  "kernelRebootHint": "커널 패키지를 적용한 후 재부팅해야 함",
-  "needApprovalHint": "사용 가능을 열고 승인이 필요한 패키지로 필터링합니다.",
-  "applyNeedConfirm": "적용하기 전에 확인 대화상자를 엽니다.",
-  "probeFailed": "프로브 실패",
-  "notViaApt": "apt에서 관리하지 않음 — 후보자 없음",
-  "noCandidate": "후보 버전 없음",
-  "jobOpenGeo": "GeoIP 페이지",
-  "job": {
-    "protection_probe": {
-      "name": "보호 프로브",
-      "hint": "주기적 방어 신호"
-    },
-    "updates_scan": {
-      "name": "업데이트 검사",
-      "hint": "패키지 인벤토리 새로 고침"
-    },
-    "daily_backup": {
-      "name": "일일 백업",
-      "hint": "전체 백업 예약"
-    },
-    "db_temp_expire": {
-      "name": "임시 DB 사용자 만료",
-      "hint": "만료된 임시 데이터베이스 사용자 삭제"
-    },
-    "defense_auto_ban": {
-      "name": "방어 자동 금지",
-      "hint": "자동 차단 체크 적용"
-    },
-    "defense_geoip_update": {
-      "name": "GeoIP 업데이트",
-      "hint": "GeoIP 데이터베이스 다운로드"
-    },
-    "log_auto_vacuum": {
-      "name": "로그 진공",
-      "hint": "저널링 보존"
-    },
-    "email_dnsbl": {
-      "name": "이메일 DNSBL",
-      "hint": "메일 DNSBL 확인"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "이미 최신 패널 버전",
-  "panelRestarting": "새 버전을 불러오려고 패널을 다시 시작하는 중…",
-  "panelRestarted": "패널이 복구됨 · {{version}}",
-  "panelRestartWait": "적용이 끝났습니다. 이 페이지가 갱신되지 않으면 몇 초 후 다시 불러오세요.",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "스캔 + OSV(첫 번째 {{n}})"
 }

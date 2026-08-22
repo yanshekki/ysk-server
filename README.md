@@ -37,6 +37,13 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.25
+
+- **Cron** — in-place edit for live host crontab lines (`source=host`). Managed jobs: `ysk-server cron update --id`.
+- **Validators** — after the node is up, copyable public identity and next steps (NEAR `create_staking_pool`, Cosmos `create-validator`, host P2P in `public_addr`). CLI: `checklist`, `rewrite-compose`, `compose-write`, `software`, `pull`, `leftover-remove`, `stats`.
+- **Locales** — operator strings and About-tab guides for all 13 languages. zh-HK is Hong Kong written Chinese. Product names stay English.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.25** together.
+
 ## What's new in 1.1.24
 
 - **DNS** — Host WAN DDNS upserts named A/AAAA when this host’s public address changes (Cloudflare, RFC 2136, local PowerDNS). Probe is detect-only. Orange-cloud VPN hostnames stay DNS-only unless you confirm. VPN Endpoint can fill the DDNS hostname without rewriting peers.

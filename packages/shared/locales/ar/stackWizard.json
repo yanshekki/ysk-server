@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "تأكيد التطهير؟ سيتم حذف مسارات البيانات المسجلة (قواعد البيانات/البريد) نهائيًا.",
   "installedCount": "تم التثبيت {{installed}} · مفقود {{missing}}",
+  "countHint": "هذه الأعداد عبارة عن حزم نظام التشغيل في خطة البرنامج - وليست وحدات مصفوفة الخدمة الموجودة في علامة التبويب الأخرى.",
+  "executeRoot": "تغييرات النظام {{execute}} · المسؤول {{root}}",
+  "manifestPlan": "الخطة {{plan}} ({{bundles}})",
+  "manifestHint": "آخر خطة وحزم البرامج التي تم اختيارها",
   "needRootExecute": "يحتاج التثبيت/الإزالة المباشرة إلى حقوق المسؤول وإذن تغيير النظام. لا يزال بإمكانك التشغيل الجاف.",
   "modeInstall": "خطة التثبيت",
   "modeUninstall": "إلغاء التثبيت",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "حدد حزمة واحدة على الأقل. التحديد الفارغ لم يعد يعني إزالة الكل.",
   "uninstallConfirmTitle": "هل تريد إزالة الحزم المحددة؟",
   "uninstallConfirmDesc": "{{count}} سيتم إزالة الحزمة (الحزم). اكتب إزالة للتأكيد.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "طائرة التحكم",
+    "web": "استضافة الويب",
+    "database": "قواعد البيانات",
+    "email": "كومة البريد",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "بروتوكول نقل الملفات / بروتوكول نقل الملفات في الثانية",
+    "defense": "دفاع المضيف",
+    "runtimes": "أوقات تشغيل اللغة"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "طائرة التحكم فقط",
+    "recommended": "الاستضافة الموصى بها",
+    "full": "جميع البرامج"
   }
 }

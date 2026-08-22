@@ -9,7 +9,21 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = join(root, 'apps/web/src/shared/guides/data');
-const LOCALES = ['zh-HK', 'zh-CN', 'en'];
+const LOCALES = [
+  'zh-HK',
+  'zh-CN',
+  'en',
+  'ja',
+  'ko',
+  'hi',
+  'es',
+  'ar',
+  'fr',
+  'bn',
+  'pt',
+  'id',
+  'ur',
+];
 
 function load(code) {
   const p = join(dataDir, `${code}.json`);

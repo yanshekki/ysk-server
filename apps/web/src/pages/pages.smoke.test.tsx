@@ -233,6 +233,10 @@ describe('page smoke tests (honesty fixtures)', () => {
       name: /install|host|apply|push/i });
     if (installCandidates.length > 0) {
       await user.click(installCandidates[0]!);
+      const dialogInstall = await screen.findAllByRole('button', {
+        name: /install to system/i,
+      });
+      await user.click(dialogInstall[dialogInstall.length - 1]!);
       await waitFor(() => {
         expect(screen.getByText(/cannot run/i)).toBeInTheDocument();
       });

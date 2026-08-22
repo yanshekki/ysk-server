@@ -4,6 +4,6 @@
   "about": "عن",
   "main": "الإجراءات",
   "stack": "برمجة",
-  "unknown": "No such tab",
-  "unknownHint": "This page has no tab named {{tab}}."
+  "unknown": "لا يوجد مثل هذا التبويب",
+  "unknownHint": "لا تحتوي هذه الصفحة على علامة تبويب باسم {{tab}}."
 }

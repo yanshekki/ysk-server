@@ -28,6 +28,7 @@ import {
   parseSolHealth,
   parseSuiHealth,
   probeBtcStatus,
+  probeSolIdentity,
 } from './phase2.js';
 
 function spec(over: Partial<ValidatorInstanceDto> & Pick<ValidatorInstanceDto, 'id' | 'chain' | 'network'>): ValidatorInstanceDto {
@@ -114,6 +115,7 @@ describe('phase 2 compose + status parsers', () => {
     expect(y).toContain('refusing InitChain');
     expect(y).toContain('ifconfig.me');
     expect(y).toContain('external_address');
+    expect(y).toContain('$PUB:26656');
     expect(y).toContain('$$PUB');
     expect(y).toContain('$$TRUST_HEIGHT');
     expect(y).toContain('$$TRUST_HASH');
@@ -127,6 +129,12 @@ describe('phase 2 compose + status parsers', () => {
     expect(cosmosStateSyncRpcs('testnet')[0]).toContain('provider-state-sync-01');
     expect(cosmosStateSyncRpcs('mainnet')).toEqual([]);
     expect(parseCosmosStatus({ result: { sync_info: { catching_up: false }, node_info: { version: '23' } } }).syncProgress).toBe(1);
+    const remapped = buildCosmosComposeYaml(
+      spec({ id: 'cosmos-testnet-2', chain: 'cosmos', network: 'testnet', ports: { rpc: 26658, p2p: 26699 } }),
+    );
+    expect(remapped).toContain('$PUB:26699');
+    expect(remapped).toContain('0.0.0.0:26699:26656');
+    expect(remapped).not.toContain('$PUB:26656');
   });
 
   it('writes official Cosmos genesis instead of empty gaiad init', async () => {
@@ -208,5 +216,18 @@ describe('phase 2 compose + status parsers', () => {
     expect(suiFullnodeYaml('testnet')).toContain('ewr-tnt-ssfn');
     expect(suiFullnodeYaml('testnet')).toContain('seed-peers');
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('reads Solana identity pubkey from RPC and never returns a keypair array', async () => {
+    const fetchFn = (async () =>
+      new Response(JSON.stringify({ result: { identity: 'Ident111111111111111111111111111111111' } }), {
+        status: 200,
+      })) as unknown as typeof fetch;
+    const ident = await probeSolIdentity(
+      spec({ id: 'sol-testnet-1', chain: 'sol', network: 'testnet', ports: { rpc: 8899 } }),
+      fetchFn,
+    );
+    expect(ident.identityPubkey).toBe('Ident111111111111111111111111111111111');
+    expect(JSON.stringify(ident)).not.toMatch(/\[1,|secret|private/i);
   });
 });

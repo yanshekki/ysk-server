@@ -102,12 +102,12 @@
   "capabilitiesHint": "Activer/désactiver ce que ce rôle peut faire",
   "enabledCount": "{{enabled}} sur {{total}} activées",
   "bandAboveMax": "Au-dessus du niveau max",
+  "roleUnavailable": "Non disponible pour ce rôle",
   "dirtyHint": "Personnalisé (diffère de l'usine)",
   "unsaved": "Non enregistré",
   "unsavedHint": "Modifications non enregistrées sur ce rôle",
   "nothingToSave": "Rien à sauver",
   "saveRole": "Enregistrer la politique {{role}}",
   "discardTitle": "Supprimer la stratégie non enregistrée ?",
-  "discardDesc": "Le changement de rôle supprime les modifications de fonctionnalités non enregistrées.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "Le changement de rôle supprime les modifications de fonctionnalités non enregistrées."
 }

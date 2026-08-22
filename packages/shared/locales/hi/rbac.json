@@ -102,12 +102,12 @@
   "capabilitiesHint": "टॉगल करें कि यह भूमिका क्या कर सकती है",
   "enabledCount": "{{total}} में से {{enabled}} सक्षम",
   "bandAboveMax": "अधिकतम स्तर से ऊपर",
+  "roleUnavailable": "इस भूमिका के लिए उपलब्ध नहीं है",
   "dirtyHint": "अनुकूलित (कारखाने से अलग)",
   "unsaved": "न सहेजा गया",
   "unsavedHint": "इस भूमिका पर सहेजे न गए संपादन",
   "nothingToSave": "बचाने के लिए कुछ भी नहीं",
   "saveRole": "{{role}} पॉलिसी सहेजें",
   "discardTitle": "सहेजी न गई नीति त्यागें?",
-  "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "भूमिकाएँ बदलने से सहेजे न गए क्षमता संपादन समाप्त हो जाते हैं।"
 }

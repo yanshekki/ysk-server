@@ -30,6 +30,11 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.25
+
+- Cron: in-place host crontab edit (`source=host`); `cron update` for managed jobs. Validators: staking next steps + CLI `checklist` / `rewrite-compose` / `compose-write` / `software` / `pull` / `leftover-remove` / `stats`. Host P2P in `public_addr`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.25**.
+
 ## What's new in 1.1.24
 
 - Host WAN DDNS: Cloudflare / RFC 2136 / local PowerDNS upsert when the host public address changes. Probe is detect-only. Publish needs execute.
@@ -117,8 +122,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.24) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.24) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.25) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.25) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

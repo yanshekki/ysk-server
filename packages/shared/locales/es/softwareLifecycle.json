@@ -50,11 +50,11 @@
     "vnc": "Los servicios VNC se detendrán",
     "controlPlane": "Tiempo de ejecución del plano de control (protegido)",
     "generic": "Los servicios relacionados pueden detenerse",
+    "containers": "Los contenedores en ejecución se detendrán",
+    "validators": "Las pilas de validador que usan Docker Compose se detendrán",
     "purgeData": "Las rutas de datos se eliminarán",
     "protectedSkipped": "Se omiten los componentes protegidos",
-    "runtimeStack": "Se eliminarán todas las versiones administradas por panel de este tiempo de ejecución.",
-    "containers": "Los contenedores en ejecución se detendrán",
-    "validators": "Las pilas de validador que usan Docker Compose se detendrán"
+    "runtimeStack": "Se eliminarán todas las versiones administradas por panel de este tiempo de ejecución."
   },
   "requestCancel": "Solicitar cancelar",
   "cancelling": "Cancelado…",

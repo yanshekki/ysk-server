@@ -115,7 +115,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "ব্যবহার: ysk-server cron <sub> [-data-dir PATH] [--json]\n  তালিকা [--প্রকল্প-আইডি আইডি] [--q TEXT]\n  তৈরি করুন --সূচি \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  --id JOB_ID মুছে দিন\n  সক্রিয় করুন | নিষ্ক্রিয় --id JOB_ID\n  চালান --id JOB_ID # এখনই চালান (YSK_EXECUTE=1 প্রয়োজন)\n  # লোড ম্যানেজড ক্রনট্যাব ইনস্টল করুন (চালনা প্রয়োজন)\n  অবস্থা # প্রোব পরিচালিত ফাইল বনাম হোস্ট ক্রনট্যাব\nসততা: YSK_EXECUTE=1 ছাড়া অবরুদ্ধ ইনস্টল করুন (ফাইল এখনও লেখা আছে)।"
+              "0349e6": "ব্যবহার: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  update --id JOB_ID [--schedule S] [--command CMD] [--user USER] [--project-id ID] [--enable|--disable]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\n  host [list] [--user USER] [--jobs-only]\n  host edit --user USER --old-schedule S --old-command C --schedule S --command C --execute\n  host disable|enable|delete|adopt --user USER --old-schedule S --old-command C --execute\n  host run --user USER --command C --execute\nHonesty: install / host write blocked without YSK_EXECUTE=1.\n"
             }
           }
         }

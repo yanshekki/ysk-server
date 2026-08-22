@@ -12,7 +12,7 @@ YSK Server 操作員可見文字的統一規則（Web、API、notes）。
 | **zh-CN** | 规范简体。 |
 | **en** | 簡潔英文，無行銷腔。多語擴展時 key 的 SSOT。 |
 
-Tier-1 必須同一 key 樹。**Tier-2**（`hi`、`es`、`ar`、`fr`、`bn`、`pt`、`id`、`ur`）以英文 scaffold 出貨、key 相同；之後可只改譯文。`ar`／`ur` 為 RTL。
+Tier-1 必須同一 key 樹。**Tier-2**（`hi`、`es`、`ar`、`fr`、`bn`、`pt`、`id`、`ur`）key 相同。剩餘英文用 `python3 scripts/i18n-fill-still-en.py` 填上；產品名維持英文。`ar`／`ur` 為 RTL。
 
 ## 唯一真相來源
 
@@ -20,7 +20,7 @@ Tier-1 必須同一 key 樹。**Tier-2**（`hi`、`es`、`ar`、`fr`、`bn`、`p
 packages/shared/locales/{locale}/{namespace}.json   ← 只改這裡
 pnpm i18n:rebuild                                   ← 改完必跑
 packages/shared/locales/{locale}/translation.json   ← 產物，勿手改
-apps/web/src/shared/guides/data/{locale}.json       ← 說明 tab 正文
+apps/web/src/shared/guides/data/{locale}.json       ← 說明 tab 正文（13 種語言）
 ```
 
 後端：`tl()`。前端：`t()`。禁止硬編碼使用者可見字串。

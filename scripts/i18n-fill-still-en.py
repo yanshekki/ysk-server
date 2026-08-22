@@ -4,51 +4,63 @@ from __future__ import annotations
 
 import json
 import sys
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCALES = ROOT / "packages" / "shared" / "locales"
 SKIP_NS = {"translation.json", "locales.json"}
-LANGS = ["ja", "ko", "hi", "es", "ar", "fr", "bn", "pt", "id", "ur"]
+LANGS = ["zh-CN", "ja", "ko", "hi", "es", "ar", "fr", "bn", "pt", "id", "ur"]
 
-# reuse skip rules from mt script
 sys.path.insert(0, str(ROOT / "scripts"))
 from importlib.machinery import SourceFileLoader
 
 mt = SourceFileLoader("i18n_mt", str(ROOT / "scripts" / "i18n-mt-from-en.py")).load_module()
 
 
-def walk_pairs(en, cur, path=""):
+def walk_strings(en, cur, acc: list[str]) -> None:
     if isinstance(en, str):
-        yield path, en, cur if isinstance(cur, str) else en
+        if isinstance(cur, str) and cur == en and not mt.should_skip_mt(en):
+            acc.append(en)
+        return
+    if isinstance(en, list):
+        cur = cur if isinstance(cur, list) else []
+        for i, v in enumerate(en):
+            walk_strings(v, cur[i] if i < len(cur) else v, acc)
         return
     if isinstance(en, dict):
         cur = cur if isinstance(cur, dict) else {}
         for k, v in en.items():
-            yield from walk_pairs(v, cur.get(k), f"{path}.{k}" if path else k)
+            walk_strings(v, cur.get(k, v), acc)
 
 
-def set_path(obj, path, value):
-    parts = path.split(".")
-    cur = obj
-    for p in parts[:-1]:
-        if p not in cur or not isinstance(cur[p], dict):
-            cur[p] = {}
-        cur = cur[p]
-    cur[parts[-1]] = value
+def fill_tree(en, cur, cache: dict[str, str], gloss: dict[str, str]):
+    if isinstance(en, str):
+        if not isinstance(cur, str) or cur != en:
+            return cur if isinstance(cur, str) else en
+        if en in gloss:
+            return gloss[en]
+        if mt.should_skip_mt(en):
+            return en
+        tr = cache.get(en)
+        return tr if tr and tr != en else en
+    if isinstance(en, list):
+        cur = cur if isinstance(cur, list) else []
+        return [fill_tree(v, cur[i] if i < len(cur) else v, cache, gloss) for i, v in enumerate(en)]
+    if isinstance(en, dict):
+        cur = cur if isinstance(cur, dict) else {}
+        return {k: fill_tree(v, cur.get(k, v), cache, gloss) for k, v in en.items()}
+    return cur
 
 
 def main() -> int:
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-
     workers = 6
     for lang in LANGS:
         pair = mt.LANG_MAP[lang]
         gloss = mt.GLOSSARY.get(lang, {})
         cache = mt.load_cache(lang)
-        todo: list[tuple[str, str, str]] = []  # file, path, en
         files = []
+        todo: list[str] = []
         for f in sorted((LOCALES / "en").glob("*.json")):
             if f.name in SKIP_NS:
                 continue
@@ -56,21 +68,11 @@ def main() -> int:
             tgt_p = LOCALES / lang / f.name
             cur = json.loads(tgt_p.read_text(encoding="utf-8")) if tgt_p.exists() else {}
             files.append((f.name, en, cur))
-            for path, en_s, cur_s in walk_pairs(en, cur):
-                if not isinstance(en_s, str):
-                    continue
-                if cur_s != en_s:
-                    continue
-                if mt.should_skip_mt(en_s):
-                    continue
-                if en_s in gloss:
-                    continue
-                if en_s in cache and cache[en_s] != en_s:
-                    continue
-                todo.append((f.name, path, en_s))
+            walk_strings(en, cur, todo)
 
-        uniq = list(dict.fromkeys(s for _, _, s in todo))
-        print(f"[{lang}] still-en leaves={len(todo)} unique={len(uniq)}", flush=True)
+        uniq = list(dict.fromkeys(todo))
+        uniq = [s for s in uniq if s not in gloss and not (s in cache and cache[s] != s)]
+        print(f"[{lang}] still-en leaves={len(todo)} unique_need_mt={len(uniq)}", flush=True)
         if uniq:
             done = 0
             with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -91,20 +93,13 @@ def main() -> int:
 
         changed = 0
         for name, en, cur in files:
-            for path, en_s, cur_s in walk_pairs(en, cur):
-                if cur_s != en_s:
-                    continue
-                if en_s in gloss:
-                    set_path(cur, path, gloss[en_s])
-                    changed += 1
-                    continue
-                if en_s in cache and cache[en_s] != en_s:
-                    set_path(cur, path, cache[en_s])
-                    changed += 1
+            nxt = fill_tree(en, cur, cache, gloss)
+            if nxt != cur:
+                changed += 1
             (LOCALES / lang / name).write_text(
-                json.dumps(cur, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+                json.dumps(nxt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
-        print(f"[{lang}] wrote changed={changed}", flush=True)
+        print(f"[{lang}] wrote files_touched={changed}", flush=True)
     return 0
 
 

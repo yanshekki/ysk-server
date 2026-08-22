@@ -36,6 +36,10 @@
   "emptyBansDesc": "Atau tidak ada izin untuk membaca klien fail2ban",
   "ignoreipTitle": "abaikan daftar putih",
   "ignoreipDesc": "IP tidak pernah dilarang (file panel + klien fail2ban langsung opsional)",
+  "whitelistEmptyWarn": "Daftar putih kosong; jail bisa memblokir Anda. Tambahkan IP login sebelum menerapkan ignoreip.",
+  "suggestIgnoreLogin": "IP login Anda {{ip}}",
+  "applyIgnoreEmptyWarn": "Menerapkan dengan daftar putih kosong mengosongkan ignoreip",
+  "applyIgnoreNeedConfirm": "Menulis ulang ignoreip jail dan memuat ulang fail2ban",
   "addIp": "Tambahkan alamat IP",
   "addWhitelist": "Tambahkan ke daftar putih",
   "applyPolicyIgnoreip": "Terapkan kebijakan (termasuk abaikan)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "Ini adalah host atau IP login Anda — tambahkan ke abaikan alih-alih melarang",
   "suggestIgnoreHint": "IP admin yang disarankan (file panel hanya sampai Anda menerapkan kebijakan):",
-  "suggestIgnoreAdd": "Tambahkan {{ip}}",
-  "whitelistEmptyWarn": "Daftar putih kosong; jail bisa memblokir Anda. Tambahkan IP login sebelum menerapkan ignoreip.",
-  "suggestIgnoreLogin": "IP login Anda {{ip}}",
-  "applyIgnoreEmptyWarn": "Menerapkan dengan daftar putih kosong mengosongkan ignoreip",
-  "applyIgnoreNeedConfirm": "Menulis ulang ignoreip jail dan memuat ulang fail2ban"
+  "suggestIgnoreAdd": "Tambahkan {{ip}}"
 }

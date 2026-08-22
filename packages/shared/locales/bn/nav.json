@@ -21,6 +21,7 @@
   "postgresService": "PostgreSQL পরিষেবা",
   "redis": "Redis",
   "redisService": "রেডিস পরিষেবা",
+  "cluster": "ক্লাস্টার",
   "dns": "DNS",
   "ssl": "SSL সার্টিফিকেট",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "আপনার ভূমিকায় এই পৃষ্ঠা নেই। প্রয়োজন হলে অ্যাডমিনকে জানান।",
   "backToDashboard": "ড্যাশবোর্ডে ফিরুন",
   "validators": "ভ্যালিডেটর (Beta)",
-  "docker": "ডকার",
-  "cluster": "Clusters"
+  "docker": "ডকার"
 }

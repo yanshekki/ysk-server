@@ -17,7 +17,8 @@ import {
   OpsResultPanel,
   PageTabs,
   Modal,
-  ConfirmDialog } from '../../shared/components/ui';
+  ConfirmDialog,
+  TableMore } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
@@ -168,6 +169,7 @@ type HostCronLine = {
   kind: string;
   source: string;
   managedJobId?: string;
+  disabled?: boolean;
 };
 
 type HostCronInventory = {
@@ -227,6 +229,11 @@ export function CronPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [installOpen, setInstallOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [hostEditing, setHostEditing] = useState<HostCronLine | null>(null);
+  const [hostOp, setHostOp] = useState<{
+    type: 'save' | 'disable' | 'enable' | 'delete' | 'run' | 'adopt';
+    line: HostCronLine;
+  } | null>(null);
   const [delCron, setDelCron] = useState<{ id: string; label: string } | null>(null);
   const { busy, error: actErr, result, msg, run: runRaw, setMsg } = useFeatureAction();
   const [tab, setTab, unknownTab] = usePageTab(CRON_TABS, 'jobs');
@@ -246,6 +253,19 @@ export function CronPage() {
   function openCreate() {
     setError(null);
     setEditingId(null);
+    setHostEditing(null);
+    setCreateOpen(true);
+  }
+
+  function openHostEdit(line: HostCronLine) {
+    setError(null);
+    setEditingId(null);
+    setHostEditing(line);
+    setSchedState(parseCronToState(String(line.schedule || '')));
+    setCommand(String(line.command || ''));
+    setCommandTouched(true);
+    setProjectId('');
+    setSystemUser(String(line.user || 'root'));
     setCreateOpen(true);
   }
 
@@ -394,7 +414,8 @@ export function CronPage() {
   const canCreate =
     Boolean(command.trim()) &&
     scheduleOk &&
-    Boolean(projectId || systemUser.trim());
+    Boolean(hostEditing || projectId || systemUser.trim()) &&
+    !/[\r\n]/.test(command);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -406,6 +427,14 @@ export function CronPage() {
     }
     if (!scheduleOk) {
       setError(t('cron.invalidExpr'));
+      return;
+    }
+    if (/[\r\n]/.test(command)) {
+      setError(t('cron.invalidExpr'));
+      return;
+    }
+    if (hostEditing) {
+      setHostOp({ type: 'save', line: hostEditing });
       return;
     }
     if (!projectId && !systemUser.trim()) {
@@ -469,6 +498,53 @@ export function CronPage() {
         return { ok: false, blocked: true, blockMessage: m, notes: [m] };
       }
     }, t('cron.installedSystem'));
+  }
+
+  const hostSavePreview = (() => {
+    if (!hostEditing && hostOp?.type !== 'save') return '';
+    const live = `${schedule} ${command.trim()}`;
+    const disabled = Boolean(hostEditing?.disabled || hostOp?.line.disabled);
+    return disabled ? `# ${live}` : live;
+  })();
+
+  async function runHostOp() {
+    const op = hostOp;
+    if (!op) return;
+    const line = op.line;
+    await run(async () => {
+      const body: Record<string, unknown> = {
+        user: line.user,
+        oldRaw: line.raw,
+        command: line.command,
+        schedule: line.schedule,
+      };
+      if (op.type === 'save') {
+        body.schedule = schedule;
+        body.command = command.trim();
+      }
+      if (op.type === 'delete') body.confirm = line.command;
+      if (op.type === 'run') body.command = line.command;
+      const action =
+        op.type === 'save'
+          ? 'replace'
+          : op.type === 'disable'
+            ? 'disable'
+            : op.type === 'enable'
+              ? 'enable'
+              : op.type;
+      const r = await api.cronHostOp(action, body);
+      setCreateOpen(false);
+      setHostEditing(null);
+      await refresh();
+      return r as OpsResultLike;
+    }, op.type === 'save'
+      ? t('cron.writtenHost')
+      : op.type === 'run'
+        ? t('cron.runOnceOk')
+        : op.type === 'adopt'
+          ? t('cron.adoptedHost')
+          : t('cron.success'));
+    setHostOp(null);
   }
 
   const hostOk = status?.hostHasYskEntries === true;
@@ -627,8 +703,9 @@ export function CronPage() {
                     const managed = line.managedJobId
                       ? managedById.get(line.managedJobId)
                       : undefined;
-                    const tone =
-                      line.source === 'ysk'
+                    const tone = line.disabled
+                      ? 'warn'
+                      : line.source === 'ysk'
                         ? managed?.enabled === false
                           ? 'warn'
                           : 'ok'
@@ -657,6 +734,9 @@ export function CronPage() {
                                 ? t('cron.sourceYsk')
                                 : t('cron.sourceHost')}
                             </Badge>
+                            {line.disabled ? (
+                              <Badge tone="warn">{t('cron.disabledJob')}</Badge>
+                            ) : null}
                             {line.projectName ? (
                               <Badge tone="info">{line.projectName}</Badge>
                             ) : null}
@@ -664,71 +744,147 @@ export function CronPage() {
                           <div className="ops-svc__meta">
                             {line.schedule ? <code>{line.schedule}</code> : null}
                           </div>
-                          <p className="ops-svc__cmd">
+                          <p className="ops-svc__cmd" title={line.command || line.raw}>
                             {line.command || line.raw}
                           </p>
                         </div>
-                        {managed ? (
-                          <div className="ops-svc__actions">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              loading={busy}
-                              onClick={() =>
-                                void run(async () => {
-                                  const r = await api.runCronNow(managed.id);
-                                  return r as unknown as OpsResultLike;
-                                }, t('cron.runOnceOk'))
-                              }
-                            >
-                              {t('cron.runOnce')}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              loading={busy}
-                              onClick={() =>
-                                void run(async () => {
-                                  await api.requestRaw(`/api/v1/cron/${managed.id}`, {
-                                    method: 'PATCH',
-                                    body: JSON.stringify({
-                                      enabled: managed.enabled === false,
-                                    }),
-                                  });
-                                  setNeedsInstallHint(true);
-                                  await refresh();
-                                  return {
-                                    ok: true,
-                                    notes: [t('cron.updatedManage')],
-                                  };
-                                }, t('cron.updatedManageShort'))
-                              }
-                            >
-                              {managed.enabled === false
-                                ? t('protection.enable')
-                                : t('files.disable')}
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              loading={busy}
-                              title={t('cron.deleteTitle')}
-                              data-confirm={String(
-                                managed.command || managed.schedule || managed.id,
-                              )}
-                              onClick={() =>
-                                setDelCron({
-                                  id: managed.id,
-                                  label: String(
+                        <div className="ops-svc__actions">
+                          {managed ? (
+                            <>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={busy}
+                                onClick={() => openEdit(managed)}
+                              >
+                                {t('common.edit')}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                loading={busy}
+                                onClick={() =>
+                                  void run(async () => {
+                                    const r = await api.runCronNow(managed.id);
+                                    return r as unknown as OpsResultLike;
+                                  }, t('cron.runOnceOk'))
+                                }
+                              >
+                                {t('cron.runOnce')}
+                              </Button>
+                              <TableMore label={t('common.more')}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  loading={busy}
+                                  onClick={() =>
+                                    void run(async () => {
+                                      await api.requestRaw(`/api/v1/cron/${managed.id}`, {
+                                        method: 'PATCH',
+                                        body: JSON.stringify({
+                                          enabled: managed.enabled === false,
+                                        }),
+                                      });
+                                      setNeedsInstallHint(true);
+                                      await refresh();
+                                      return {
+                                        ok: true,
+                                        notes: [t('cron.updatedManage')],
+                                      };
+                                    }, t('cron.updatedManageShort'))
+                                  }
+                                >
+                                  {managed.enabled === false
+                                    ? t('protection.enable')
+                                    : t('files.disable')}
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  loading={busy}
+                                  title={t('cron.deleteTitle')}
+                                  data-confirm={String(
                                     managed.command || managed.schedule || managed.id,
-                                  ),
-                                })
-                              }
-                            >
-                              {t('common.delete')}
-                            </Button>
-                          </div>
-                        ) : null}
+                                  )}
+                                  onClick={() =>
+                                    setDelCron({
+                                      id: managed.id,
+                                      label: String(
+                                        managed.command || managed.schedule || managed.id,
+                                      ),
+                                    })
+                                  }
+                                >
+                                  {t('common.delete')}
+                                </Button>
+                              </TableMore>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={busy}
+                                onClick={() => openHostEdit(line)}
+                              >
+                                {t('cron.hostEdit')}
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                data-confirm
+                                disabled={busy}
+                                onClick={() => setHostOp({ type: 'run', line })}
+                              >
+                                {t('cron.runOnce')}
+                              </Button>
+                              <TableMore label={t('common.more')}>
+                                {line.disabled ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    data-confirm
+                                    disabled={busy}
+                                    onClick={() => setHostOp({ type: 'enable', line })}
+                                  >
+                                    {t('cron.hostEnable')}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    data-confirm
+                                    disabled={busy}
+                                    onClick={() => setHostOp({ type: 'disable', line })}
+                                  >
+                                    {t('cron.hostDisable')}
+                                  </Button>
+                                )}
+                                {line.user === 'root' || line.user === 'current' ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  data-confirm
+                                  disabled={busy || Boolean(line.disabled)}
+                                  onClick={() => setHostOp({ type: 'adopt', line })}
+                                >
+                                  {t('cron.hostAdopt')}
+                                </Button>
+                                ) : null}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  data-confirm
+                                  disabled={busy}
+                                  title={t('cron.hostDeleteTitle')}
+                                  onClick={() => setHostOp({ type: 'delete', line })}
+                                >
+                                  {t('common.delete')}
+                                </Button>
+                              </TableMore>
+                            </>
+                          )}
+                        </div>
                       </article>
                     );
                   })}
@@ -925,16 +1081,34 @@ export function CronPage() {
 
       <Modal
         open={createOpen}
-        onClose={bindSet(setCreateOpen, false)}
-        title={editingId ? t('cron.editJobTitle') : t('cron.addJobTitle')}
-        description={editingId ? t('cron.editJobDesc') : t('cron.addJobDesc')}
+        onClose={() => {
+          setCreateOpen(false);
+          setHostEditing(null);
+        }}
+        title={
+          hostEditing
+            ? t('cron.hostEditTitle')
+            : editingId
+              ? t('cron.editJobTitle')
+              : t('cron.addJobTitle')
+        }
+        description={
+          hostEditing
+            ? t('cron.hostEditDesc')
+            : editingId
+              ? t('cron.editJobDesc')
+              : t('cron.addJobDesc')
+        }
         size="lg"
         footer={
           <>
             <Button
               variant="secondary"
               size="md"
-              onClick={bindSet(setCreateOpen, false)}
+              onClick={() => {
+                setCreateOpen(false);
+                setHostEditing(null);
+              }}
             >
               {t('common.cancel')}
             </Button>
@@ -950,12 +1124,18 @@ export function CronPage() {
                   ? t('cron.invalidExpr')
                   : !command.trim()
                     ? t('cron.needCommand')
+                    : hostEditing
+                      ? undefined
                     : !projectId && !systemUser.trim()
                       ? t('cron.needUser')
                       : undefined
               }
             >
-              {editingId ? t('cron.saveJob') : t('cron.createManageOnlyParen')}
+              {hostEditing
+                ? t('cron.hostSave')
+                : editingId
+                  ? t('cron.saveJob')
+                  : t('cron.createManageOnlyParen')}
             </Button>
           </>
         }
@@ -980,6 +1160,17 @@ export function CronPage() {
           </Field>
 
           <FormLayout columns={2}>
+            {hostEditing ? (
+              <Field
+                label={t('cron.runAsUser')}
+                htmlFor="cron-host-user"
+                flush
+                hint={t('cron.hostUserLocked')}
+              >
+                <input id="cron-host-user" value={hostEditing.user} readOnly />
+              </Field>
+            ) : (
+            <>
             <Field
               label={t('common.project')}
               htmlFor="cron-pid"
@@ -1033,6 +1224,8 @@ export function CronPage() {
                 </optgroup>
               </select>
             </Field>
+            </>
+            )}
             <Field
               label={t('metrics.command')}
               htmlFor="cron-cmd"
@@ -1040,16 +1233,24 @@ export function CronPage() {
               flush
               required
               hint={
-                selectedProject
-                  ? t('cron.runInHome', { home: selectedProject.homeDir })
-                  : t('cron.absPath')
+                hostEditing
+                  ? t('cron.hostLinePreview')
+                  : selectedProject
+                    ? t('cron.runInHome', { home: selectedProject.homeDir })
+                    : t('cron.absPath')
               }
               error={
-                commandTouched && !command.trim() ? t('cron.needCommand') : undefined
+                commandTouched && !command.trim()
+                  ? t('cron.needCommand')
+                  : commandTouched && /[\r\n]/.test(command)
+                    ? t('cron.invalidExpr')
+                    : undefined
               }
             >
-              <input
+              <textarea
                 id="cron-cmd"
+                className="u-mono-input"
+                rows={hostEditing ? 4 : 3}
                 value={command}
                 onChange={(e) => {
                   setCommandTouched(true);
@@ -1065,7 +1266,18 @@ export function CronPage() {
               />
             </Field>
           </FormLayout>
-          {selectedProject && commandPresets.length > 0 ? (
+          {hostEditing ? (
+            <>
+              {hostEditing.disabled ? (
+                <Alert variant="warn">{t('cron.keepDisabledHint')}</Alert>
+              ) : null}
+              <p className="form-hint">
+                {t('cron.hostLinePreview')}:{' '}
+                <code className="u-break-all">{hostSavePreview}</code>
+              </p>
+            </>
+          ) : null}
+          {!hostEditing && selectedProject && commandPresets.length > 0 ? (
             <div className="cron-cmd-presets">
               <span className="cron-cmd-presets__label">
                 {t('cron.commonCmds', { runtime: selectedProject.runtime })}
@@ -1085,7 +1297,7 @@ export function CronPage() {
               </div>
             </div>
           ) : null}
-          {selectedProject ? (
+          {!hostEditing && selectedProject ? (
             <div className="cron-sched__preview u-max-w-full">
               <div className="cron-sched__preview-human">
                 <span className="cron-sched__preview-label">
@@ -1099,34 +1311,36 @@ export function CronPage() {
               </div>
             </div>
           ) : null}
-          {projects.length === 0 ? (
+          {!hostEditing && projects.length === 0 ? (
             <EmptyState
               title={t('dashboard.noProjects')}
               description={t('cron.noProjectsHint')}
             />
           ) : null}
-          {selectedProject && !selectedProject.linuxUser ? (
+          {!hostEditing && selectedProject && !selectedProject.linuxUser ? (
             <Alert variant="error">
               {t('cron.noLinuxName')}
             </Alert>
           ) : null}
-          {!projectId ? (
+          {!hostEditing && !projectId ? (
             <p className="u-mb-2">
               <Badge tone="warn">{t('cron.systemJobBadge')}</Badge>
             </p>
           ) : null}
           <p className="form-hint u-mb-0">
-            {[
-              t('cron.afterCreate'),
-              scheduleHuman,
-              runAsUser ? `${t('cron.userSuffix')} ${runAsUser}` : '',
-              selectedProject
-                ? t('cron.projectParen', { name: selectedProject.name })
-                : t('cron.systemParenFull'),
-            ]
-              .map((s) => String(s || '').trim())
-              .filter((s) => s && s !== '·')
-              .join(' · ')}
+            {hostEditing
+              ? [scheduleHuman, hostEditing.user].filter(Boolean).join(' · ')
+              : [
+                  t('cron.afterCreate'),
+                  scheduleHuman,
+                  runAsUser ? `${t('cron.userSuffix')} ${runAsUser}` : '',
+                  selectedProject
+                    ? t('cron.projectParen', { name: selectedProject.name })
+                    : t('cron.systemParenFull'),
+                ]
+                  .map((s) => String(s || '').trim())
+                  .filter((s) => s && s !== '·')
+                  .join(' · ')}
           </p>
         </form>
       </Modal>
@@ -1202,6 +1416,86 @@ export function CronPage() {
         dataConfirm={delCron?.label}
         confirmLabel={t('common.delete')}
         severity="standard"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={hostOp?.type === 'save'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostSaveTitle')}
+        description={t('cron.hostSaveDesc', {
+          user: hostOp?.line.user ?? '',
+        })}
+        confirmLabel={t('cron.hostSave')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm="EDIT"
+        confirmText="EDIT"
+        busy={busy}
+      >
+        <p className="u-text-sm u-mt-0">{t('cron.currentLine')}</p>
+        <code className="u-mono-input u-pre-wrap u-break-all">{hostOp?.line.raw ?? ''}</code>
+        <p className="u-text-sm">{t('cron.nextLine')}</p>
+        <code className="u-mono-input u-pre-wrap u-break-all">{hostSavePreview}</code>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={hostOp?.type === 'disable'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostDisableTitle')}
+        description={t('cron.hostDisableDesc', { user: hostOp?.line.user ?? '' })}
+        confirmLabel={t('cron.hostDisable')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm="DISABLE"
+        confirmText="DISABLE"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={hostOp?.type === 'enable'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostEnableTitle')}
+        description={t('cron.hostEnableDesc', { user: hostOp?.line.user ?? '' })}
+        confirmLabel={t('cron.hostEnable')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm="ENABLE"
+        confirmText="ENABLE"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={hostOp?.type === 'run'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostRunTitle')}
+        description={t('cron.hostRunDesc', { user: hostOp?.line.user ?? '' })}
+        confirmLabel={t('cron.runOnce')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm="RUN"
+        confirmText="RUN"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={hostOp?.type === 'adopt'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostAdoptTitle')}
+        description={t('cron.hostAdoptDesc')}
+        confirmLabel={t('cron.hostAdopt')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm="ADOPT"
+        confirmText="ADOPT"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={hostOp?.type === 'delete'}
+        onClose={() => !busy && setHostOp(null)}
+        onConfirm={() => void runHostOp()}
+        title={t('cron.hostDeleteTitle')}
+        description={t('cron.hostDeleteDesc', { user: hostOp?.line.user ?? '' })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        dataConfirm={hostOp?.line.command}
+        confirmText={hostOp?.line.command}
+        danger
         busy={busy}
       />
     </FeaturePageLayout>

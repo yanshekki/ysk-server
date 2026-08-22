@@ -20,6 +20,8 @@
   "statAllow": "Autoriser",
   "statDeny": "Refuser",
   "statDefaultIn": "Entrant par défaut",
+  "defaultNotApplied": "n/a (UFW désactivé)",
+  "ufwOffHint": "Les messages entrants par défaut ne sont pas appliqués lorsque UFW est désactivé",
   "executeOn": "Activé",
   "executeOff": "Désactivé",
   "ufwDisabled": "UFW désactivé",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "Outils sous-jacents :",
   "toolHintBody": "UFW = ports / règles permanentes · pour la réponse aux attaques et le bannissement auto, utilisez",
   "toolHintfail2ban": "fail2ban = bannissements temporaires basés sur les journaux",
+  "toolHintFail2ban": "fail2ban = bannissements temporaires basés sur les journaux",
   "executeOffHint": "Modifications système désactivées — le statut est lisible ;",
   "tabs": {
     "rules": "Règles",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "Supprime ce numéro de règle UFW (nécessite la permission system-change).",
   "servicesTitle": "Services gérés",
   "servicesHint": "Exposition réseau souhaitée pour les services YSK. L'ouverture d'un service synchronise automatiquement ces règles.",
+  "servicesUfwOff": "UFW est éteint. Cette liste représente l'exposition souhaitée, et non les règles que l'hôte applique.",
   "servicesEmpty": "Aucune donnée d'exposition au service pour l'instant",
   "servicesEmptyDesc": "Démarrez un service géré (web, FTPS, VPN, DB…) pour remplir cette liste.",
   "servicesManualHint": "Les puces de port manuel se trouvent sous l'onglet Ports – préférez gérer l'accès ici afin que les règles restent étiquetées (ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "Désactiver UFW ?",
   "disableConfirmDesc": "Le pare-feu de l’hôte cessera de filtrer le trafic. Sur un réseau public, SSH et le panneau peuvent être exposés.",
   "disableConfirmConsequence": "Les règles d’autorisation/refus restent enregistrées mais ne s’appliquent plus tant que UFW n’est pas réactivé.",
-  "toolHintFail2ban": "fail2ban = bannissements temporaires basés sur les journaux",
-  "servicesUfwOff": "UFW est éteint. Cette liste représente l'exposition souhaitée, et non les règles que l'hôte applique.",
   "desiredOnlyUfwOff": "Souhaité : {{mode}} · UFW désactivé (non appliqué)",
-  "syncNotApplied": "UFW désactivé · non appliqué",
-  "defaultNotApplied": "n/a (UFW désactivé)",
-  "ufwOffHint": "Les messages entrants par défaut ne sont pas appliqués lorsque UFW est désactivé"
+  "syncNotApplied": "UFW désactivé · non appliqué"
 }

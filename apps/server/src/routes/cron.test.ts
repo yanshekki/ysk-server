@@ -52,6 +52,16 @@ describe('cron routes (HTTP)', () => {
     const en = await apiJson(ts, 'PATCH', `/api/v1/cron/${id}`, { enabled: true });
     expect(en.status).toBe(200);
 
+    const edited = await apiJson(ts, 'PATCH', `/api/v1/cron/${id}`, {
+      schedule: '0 5 * * *',
+      command: 'echo patched-http-cron',
+    });
+    expect(edited.status).toBe(200);
+    expect((edited.body as { job?: { schedule?: string; command?: string } }).job?.schedule).toBe(
+      '0 5 * * *',
+    );
+    expect((edited.body as { job?: { command?: string } }).job?.command).toBe('echo patched-http-cron');
+
     const missPatch = await apiJson(ts, 'PATCH', '/api/v1/cron/no-such-job', {
       enabled: true,
     });
@@ -89,5 +99,37 @@ describe('cron routes (HTTP)', () => {
 
     const delMiss = await apiJson(ts, 'DELETE', '/api/v1/cron/no-such-job');
     expect(delMiss.status).toBe(404);
+  });
+
+  it('host crontab mutate requires auth and confirm', async () => {
+    ts = await startTestServer();
+    const unauth = await apiJson(ts, 'POST', '/api/v1/cron/host/replace', {}, { auth: false });
+    expect(unauth.status).toBeGreaterThanOrEqual(401);
+
+    const badDel = await apiJson(ts, 'POST', '/api/v1/cron/host/delete', {
+      user: 'root',
+      oldRaw: '0 1 * * * /usr/bin/true',
+      command: '/usr/bin/true',
+      confirm: 'nope',
+    });
+    expect(badDel.status).toBeLessThan(500);
+    expect((badDel.body as { ok?: boolean }).ok).toBe(false);
+
+    const replace = await apiJson(ts, 'POST', '/api/v1/cron/host/replace', {
+      user: 'root',
+      oldRaw: '0 1 * * * /usr/bin/true',
+      schedule: '0 2 * * *',
+      command: '/usr/bin/true',
+    });
+    expect(replace.status).toBeLessThan(500);
+    const body = replace.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      requiresExecute?: boolean;
+      notes?: string[];
+    };
+    if (typeof body.ok === 'boolean') {
+      expectHonestOps(body);
+    }
   });
 });

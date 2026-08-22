@@ -36,6 +36,10 @@
   "emptyBansDesc": "Ou pas d'autorisation pour lire fail2ban-client",
   "ignoreipTitle": "liste blanche ignoreip",
   "ignoreipDesc": "IP jamais bannies (fichier du panneau + fail2ban-client live optionnel)",
+  "whitelistEmptyWarn": "La liste blanche est vide ; les jails peuvent vous interdire. Ajoutez votre IP de connexion avant d’appliquer ignoreip.",
+  "suggestIgnoreLogin": "Votre IP de connexion {{ip}}",
+  "applyIgnoreEmptyWarn": "Appliquer avec une liste blanche vide vide ignoreip",
+  "applyIgnoreNeedConfirm": "Réécrit ignoreip du jail et recharge fail2ban",
   "addIp": "Ajouter une IP",
   "addWhitelist": "Ajouter à la liste blanche",
   "applyPolicyIgnoreip": "Appliquer la politique (ignoreip inclus)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "Il s'agit de l'hôte ou de votre adresse IP de connexion : ajoutez-le à ignoreip au lieu de le bannir.",
   "suggestIgnoreHint": "Adresses IP d'administrateur suggérées (fichier de panneau uniquement jusqu'à ce que vous appliquiez la stratégie) :",
-  "suggestIgnoreAdd": "Ajouter {{ip}}",
-  "whitelistEmptyWarn": "La liste blanche est vide ; les jails peuvent vous interdire. Ajoutez votre IP de connexion avant d’appliquer ignoreip.",
-  "suggestIgnoreLogin": "Votre IP de connexion {{ip}}",
-  "applyIgnoreEmptyWarn": "Appliquer avec une liste blanche vide vide ignoreip",
-  "applyIgnoreNeedConfirm": "Réécrit ignoreip du jail et recharge fail2ban"
+  "suggestIgnoreAdd": "Ajouter {{ip}}"
 }

@@ -102,12 +102,12 @@
   "capabilitiesHint": "Alihkan fungsi peran ini",
   "enabledCount": "{{enabled}} dari {{total}} diaktifkan",
   "bandAboveMax": "Di atas level maksimal",
+  "roleUnavailable": "Tidak tersedia untuk peran ini",
   "dirtyHint": "Disesuaikan (berbeda dari pabrik)",
   "unsaved": "Belum disimpan",
   "unsavedHint": "Pengeditan yang belum disimpan pada peran ini",
   "nothingToSave": "Tidak ada yang perlu disimpan",
   "saveRole": "Simpan kebijakan {{role}}",
   "discardTitle": "Hapus kebijakan yang belum disimpan?",
-  "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan.",
-  "roleUnavailable": "Not available for this role"
+  "discardDesc": "Beralih peran akan menghilangkan pengeditan kemampuan yang belum disimpan."
 }

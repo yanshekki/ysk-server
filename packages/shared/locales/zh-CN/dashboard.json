@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}：{{state}}",
+  "sev": {
+    "ok": "成功",
+    "warn": "警告",
+    "bad": "异常"
+  },
   "title": "控制台",
   "health": "健康状态",
   "protection": "保护模式",
@@ -38,12 +44,13 @@
   "readinessCheck": "就绪检查：",
   "prodOk": "可作生产",
   "notFullyReady": "尚未完全就绪",
+  "readinessBlocked": "有 {{n}} 项阻挡",
   "modeScore": "模式 {{mode}} · 分数 {{ready}}/{{total}}",
   "mode": {
     "degraded": "降级",
     "production_capable": "可生产",
-    "normal": "正常",
-    "blocked": "blocked"
+    "blocked": "有阻挡",
+    "normal": "正常"
   },
   "details": "详情",
   "certExpiryTitle": "证书到期：",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "套用 audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
   "executeBadge": "系统变更 {{state}}",
   "executeLabel": "系统变更",
+  "publicNo2fa": "面板正听全部界面，而你的管理员账号未开 2FA。",
   "go": "前往",
   "open": "打开",
   "noCriticalWarn": "目前无严重／警告通知",
@@ -81,6 +89,7 @@
   "wizardDesc": "创建项目，并可选一并登记 DNS／邮件／数据库草稿（各项需再到对应页套用）",
   "projectName": "项目名称",
   "projectNameHint": "控制台显示名称；会生成对应目录",
+  "nameRequired": "请输入专案名称",
   "domainOptional": "域名（可留空）",
   "domainHint": "填写后才可勾选 DNS 与邮件",
   "runtime": "运行环境",
@@ -93,6 +102,7 @@
   "serverIpv6": "服务器 IPv6（可选）",
   "serverIpv6Hint": "有则写 AAAA／ip6:",
   "serverIpv6Ph": "公网 IPv6（可留空）",
+  "needDomainFirst": "请先填域名",
   "withDns": "一并创建 DNS 区域",
   "withDnsDesc": "需填写域名；仅登记，需到 DNS 页写入区域文件",
   "withMail": "一并登记邮件域名",
@@ -119,15 +129,5 @@
   "notifSearch": "搜索通知",
   "notifAll": "全部",
   "notifDismiss": "隐藏",
-  "goFix": "前往处理",
-  "needDomainFirst": "请先填域名",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "前往处理"
 }

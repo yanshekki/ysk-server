@@ -36,6 +36,10 @@
   "emptyBansDesc": "أو لا يوجد إذن لقراءة fail2ban-client",
   "ignoreipTitle": "تجاهل القائمة البيضاء",
   "ignoreipDesc": "لم يتم حظر عناوين IP مطلقًا (ملف اللوحة + العميل المباشر fail2ban الاختياري)",
+  "whitelistEmptyWarn": "القائمة البيضاء فارغة وقد تحظرك الـ jail. أضف IP الدخول قبل تطبيق ignoreip.",
+  "suggestIgnoreLogin": "IP تسجيل الدخول {{ip}}",
+  "applyIgnoreEmptyWarn": "التطبيق بقائمة بيضاء فارغة يفرّغ ignoreip",
+  "applyIgnoreNeedConfirm": "يعيد كتابة ignoreip للـ jail ويعيد تحميل fail2ban",
   "addIp": "أضف IP",
   "addWhitelist": "أضف إلى القائمة البيضاء",
   "applyPolicyIgnoreip": "تطبيق السياسة (بما في ذلك التجاهل)",
@@ -99,9 +103,5 @@
   },
   "cannotBanSelf": "هذا هو المضيف أو عنوان IP لتسجيل الدخول الخاص بك - قم بإضافته إلى تجاهل بدلاً من الحظر",
   "suggestIgnoreHint": "عناوين IP للمشرف المقترحة (ملف اللوحة فقط حتى تقوم بتطبيق السياسة):",
-  "suggestIgnoreAdd": "إضافة {{ip}}",
-  "whitelistEmptyWarn": "القائمة البيضاء فارغة وقد تحظرك الـ jail. أضف IP الدخول قبل تطبيق ignoreip.",
-  "suggestIgnoreLogin": "IP تسجيل الدخول {{ip}}",
-  "applyIgnoreEmptyWarn": "التطبيق بقائمة بيضاء فارغة يفرّغ ignoreip",
-  "applyIgnoreNeedConfirm": "يعيد كتابة ignoreip للـ jail ويعيد تحميل fail2ban"
+  "suggestIgnoreAdd": "إضافة {{ip}}"
 }

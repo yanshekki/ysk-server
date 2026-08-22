@@ -288,7 +288,7 @@ export function assertSafeCronCommand(command: string): string {
   if (/(?<!\\)%/.test(c)) {
     throw new YskError(
       ErrorCodes.VALIDATION,
-      'crontab treats unescaped % as a newline. Write date formats as \\%Y (or avoid %).',
+      tl('notes.cron.hostPercentNewline'),
       {
         httpStatus: 400,
         details: { reason: 'cron_percent_newline' },

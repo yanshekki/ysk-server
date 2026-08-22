@@ -23,8 +23,8 @@
     "project.suspend": "Suspender projeto",
     "software.install": "Instalar software",
     "software.update": "Atualizar software",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "Restauração de backup",
+    "backup.run": "Execução de backup",
+    "backup.delete": "Backup excluído"
   }
 }

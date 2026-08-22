@@ -23,8 +23,8 @@
     "project.suspend": "प्रोजेक्ट स्थगित करें",
     "software.install": "सॉफ़्टवेयर इंस्टॉल करें",
     "software.update": "सॉफ़्टवेयर अद्यतन करें",
-    "backup.restore": "Backup restore",
-    "backup.run": "Backup run",
-    "backup.delete": "Backup deleted"
+    "backup.restore": "बैकअप पुनर्स्थापना",
+    "backup.run": "बैकअप रन",
+    "backup.delete": "बैकअप हटा दिया गया"
   }
 }

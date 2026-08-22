@@ -15,7 +15,11 @@
   "wsError": "WebSocket gagal",
   "exitCode": "Kode keluar {{code}}",
   "needRootExecute": "Membutuhkan root + YSK_EXECUTE=1 untuk shell sistem.",
+  "groupSystem": "Sistem",
+  "groupProject": "Proyek",
   "unavailable": "tidak tersedia",
+  "copyAll": "Salin semua",
+  "copyAllNeedConn": "Hubungkan dulu — buffer kosong saat terputus",
   "placeholder": "Pilih identitas, lalu Hubungkan",
   "aboutTitle": "Tentang terminal",
   "aboutSub": "Shell OS interaktif di browser (pengguna lokal). Bukan klien SSH jarak jauh yang sembarangan.",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "Shell aktif masih terhubung saat Anda membaca halaman ini.",
   "rootConfirmTitle": "Buka shell root?",
   "rootConfirmDesc": "Sesi ini adalah PTY root yang tidak dibatasi pada host. Perintah diaudit.",
-  "rootConfirmBody": "Lanjutkan hanya jika Anda ingin menjalankan perintah host yang memiliki hak istimewa.",
-  "copyAll": "Salin semua",
-  "copyAllNeedConn": "Hubungkan dulu — buffer kosong saat terputus",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "Lanjutkan hanya jika Anda ingin menjalankan perintah host yang memiliki hak istimewa."
 }

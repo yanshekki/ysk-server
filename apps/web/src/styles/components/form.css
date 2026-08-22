@@ -427,6 +427,12 @@ textarea:disabled {
   white-space: nowrap;
 }
 
+.cred-row__body--wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .cred-row__body--pending {
   font-family: inherit;
   font-weight: 500;

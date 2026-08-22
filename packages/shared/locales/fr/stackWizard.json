@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "Confirmer la purge ? Les chemins de données enregistrés (bases de données/courriel) seront supprimés définitivement.",
   "installedCount": "Installé {{installed}} · Manquant {{missing}}",
+  "countHint": "Ces décomptes correspondent aux packages de système d'exploitation dans le plan logiciel, et non aux unités de matrice de service de l'autre onglet.",
+  "executeRoot": "Modifications du système {{execute}} · administrateur {{root}}",
+  "manifestPlan": "Plan {{plan}} ({{bundles}})",
+  "manifestHint": "Dernier plan logiciel et offres groupées choisis",
   "needRootExecute": "L’installation/suppression en direct nécessite les droits administrateur et l’autorisation de modification système. Vous pouvez toujours faire un dry-run.",
   "modeInstall": "Plan d’installation",
   "modeUninstall": "Désinstaller",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "Sélectionnez au moins un forfait. Une sélection vide ne signifie plus tout supprimer.",
   "uninstallConfirmTitle": "Supprimer les groupes sélectionnés ?",
   "uninstallConfirmDesc": "{{count}} le ou les bundles seront supprimés. Tapez SUPPRIMER pour confirmer.",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "Plan de contrôle",
+    "web": "Hébergement Web",
+    "database": "Bases de données",
+    "email": "Pile de courrier",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "FTP/FTPS",
+    "defense": "Défense de l'hôte",
+    "runtimes": "Durées d'exécution du langage"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "Plan de contrôle uniquement",
+    "recommended": "Hébergement recommandé",
+    "full": "Tous les logiciels"
   }
 }

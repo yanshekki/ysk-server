@@ -21,6 +21,7 @@
   "postgresService": "PostgreSQL 服务",
   "redis": "Redis",
   "redisService": "Redis 服务",
+  "cluster": "丛集",
   "dns": "DNS",
   "ssl": "SSL 证书",
   "nginx": "Nginx",
@@ -80,6 +81,5 @@
   "noAccessDesc": "你的角色不能开启此页。如需使用，请向管理员申请。",
   "backToDashboard": "返回仪表板",
   "validators": "验证者节点 (Beta)",
-  "docker": "Docker",
-  "cluster": "Clusters"
+  "docker": "Docker"
 }

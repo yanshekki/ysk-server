@@ -20,6 +20,8 @@
   "statAllow": "Permitir",
   "statDeny": "Denegar",
   "statDefaultIn": "Entrante predeterminado",
+  "defaultNotApplied": "n/a (UFW desactivado)",
+  "ufwOffHint": "La entrada predeterminada no se aplica mientras UFW está desactivado",
   "executeOn": "En",
   "executeOff": "Apagado",
   "ufwDisabled": "UFW deshabilitado",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "Herramientas subyacentes:",
   "toolHintBody": "UFW = puertos/reglas permanentes · para respuesta a ataques y uso de prohibición automática",
   "toolHintfail2ban": "fail2ban = prohibiciones temporales basadas en registros",
+  "toolHintFail2ban": "fail2ban = prohibiciones temporales basadas en registros",
   "executeOffHint": "El sistema se apaga: el estado es legible;",
   "tabs": {
     "rules": "Normas",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "Elimina ese número de regla UFW (necesita permiso de cambio de sistema).",
   "servicesTitle": "Servicios gestionados",
   "servicesHint": "Exposición de red deseada para los servicios de YSK. Al abrir un servicio se sincronizan estas reglas automáticamente.",
+  "servicesUfwOff": "La UFW está cancelada. Esta lista es la exposición deseada, no las reglas que el anfitrión impone.",
   "servicesEmpty": "Aún no hay datos de exposición al servicio",
   "servicesEmptyDesc": "Inicie un servicio administrado (web, FTPS, VPN, DB…) para completar esta lista.",
   "servicesManualHint": "Los chips de puerto manuales se encuentran en la pestaña Puertos; prefiera administrar el acceso aquí para que las reglas permanezcan etiquetadas (ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "¿Desactivar UFW?",
   "disableConfirmDesc": "El cortafuegos del host dejará de filtrar el tráfico. En una red pública, SSH y el panel pueden quedar expuestos.",
   "disableConfirmConsequence": "Las reglas de permitir/denegar se conservan, pero no se aplican hasta volver a activar UFW.",
-  "toolHintFail2ban": "fail2ban = prohibiciones temporales basadas en registros",
-  "servicesUfwOff": "La UFW está cancelada. Esta lista es la exposición deseada, no las reglas que el anfitrión impone.",
   "desiredOnlyUfwOff": "Deseado: {{mode}} · UFW desactivado (no aplicado)",
-  "syncNotApplied": "UFW desactivado · no aplicado",
-  "defaultNotApplied": "n/a (UFW desactivado)",
-  "ufwOffHint": "La entrada predeterminada no se aplica mientras UFW está desactivado"
+  "syncNotApplied": "UFW desactivado · no aplicado"
 }

@@ -20,6 +20,8 @@
   "statAllow": "Mengizinkan",
   "statDeny": "Membantah",
   "statDefaultIn": "Bawaan masuk",
+  "defaultNotApplied": "tidak ada (UFW nonaktif)",
+  "ufwOffHint": "Masuk default tidak diterapkan saat UFW mati",
   "executeOn": "Pada",
   "executeOff": "Mati",
   "ufwDisabled": "UFW dinonaktifkan",
@@ -30,6 +32,7 @@
   "toolHintPrefix": "Alat yang mendasari:",
   "toolHintBody": "UFW = port / aturan permanen · untuk respon serangan dan penggunaan larangan otomatis",
   "toolHintfail2ban": "fail2ban = larangan sementara berbasis log",
+  "toolHintFail2ban": "fail2ban = larangan sementara berbasis log",
   "executeOffHint": "Sistem berubah nonaktif — status dapat dibaca;",
   "tabs": {
     "rules": "Aturan",
@@ -89,6 +92,7 @@
   "deleteRuleDesc": "Menghapus nomor aturan UFW (membutuhkan izin perubahan sistem).",
   "servicesTitle": "Layanan terkelola",
   "servicesHint": "Eksposur jaringan yang diinginkan untuk layanan YSK. Membuka layanan akan menyinkronkan aturan ini secara otomatis.",
+  "servicesUfwOff": "UFW tidak aktif. Daftar ini adalah paparan yang diinginkan, bukan aturan yang diterapkan oleh tuan rumah.",
   "servicesEmpty": "Belum ada data paparan layanan",
   "servicesEmptyDesc": "Mulai layanan terkelola (web, FTPS, VPN, DB…) untuk mengisi daftar ini.",
   "servicesManualHint": "Chip port manual ada di tab Ports — lebih suka mengelola akses di sini sehingga aturan tetap diberi tag (ysk-svc).",
@@ -102,10 +106,6 @@
   "disableConfirmTitle": "Nonaktifkan UFW?",
   "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
   "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi.",
-  "toolHintFail2ban": "fail2ban = larangan sementara berbasis log",
-  "servicesUfwOff": "UFW tidak aktif. Daftar ini adalah paparan yang diinginkan, bukan aturan yang diterapkan oleh tuan rumah.",
   "desiredOnlyUfwOff": "Diinginkan: {{mode}} · UFW nonaktif (tidak diterapkan)",
-  "syncNotApplied": "UFW mati · tidak diterapkan",
-  "defaultNotApplied": "tidak ada (UFW nonaktif)",
-  "ufwOffHint": "Masuk default tidak diterapkan saat UFW mati"
+  "syncNotApplied": "UFW mati · tidak diterapkan"
 }

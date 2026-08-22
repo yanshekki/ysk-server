@@ -13,7 +13,9 @@
   "hourAgo": "{{n}}h منذ",
   "highRiskN": "{{count}} شديدة الخطورة",
   "panelUpdate": "تحديث اللوحة متاح",
+  "footerNewVersion": "النسخة الجديدة {{version}}",
   "riskOk": "يمكن التحكم في المخاطر",
+  "riskUnevaluated": "لم يتم تقييمه - قم بتشغيل Scan + OSV",
   "pendingScan": "في انتظار المسح",
   "packages": "الحزم",
   "highRisk": "مخاطر عالية",
@@ -24,6 +26,7 @@
   "reload": "إعادة تحميل",
   "osvTitle": "الاستعلام عن OSV لأفضل 12 حزمة مقترحة (تحتاج إلى شبكة)",
   "scanOsv": "مسح + OSV",
+  "cveNotChecked": "لم يتم التحقق منها",
   "scanPkgs": "حزم المسح",
   "tabInventory": "مخزون الحزمة",
   "tabSelf": "لوحة النفس",
@@ -72,6 +75,8 @@
   "policyTitle": "تحديث السياسة",
   "policyBody": "تتطلب الحزم عالية المخاطر ومكافحة التطرف العنيف الموافقة قبل التقديم",
   "applyPkg": "تطبيق ترقية الحزمة",
+  "rebootNeeded": "إعادة التشغيل",
+  "kernelRebootHint": "تحتاج حزم Kernel إلى إعادة التشغيل بعد التطبيق",
   "applyPkgConfirm": "ترقية {{name}}؟",
   "applyPkgDesc": "يقوم بتشغيل ترقية مناسبة لهذه الحزمة على المضيف. يحتاج إلى الجذر + YSK_EXECUTE.",
   "lastScan": "المسح الأخير",
@@ -82,6 +87,9 @@
   "selfCurrentShort": "حاضِر",
   "selfLatestShort": "أحدث",
   "applyPanelUpdate": "تطبيق تحديث اللوحة",
+  "applySelfConfirmTitle": "هل تريد تطبيق تحديث اللوحة؟",
+  "applySelfConfirmDesc": "قم بتثبيت {{from}} → {{to}} وأعد تشغيل خدمة اللوحة. لا يوجد تشغيل جاف.",
+  "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
   "recheck": "إعادة الفحص",
   "aboutScope": "نِطَاق",
   "aboutScopeV": "لوحة خادم ysk + خدمات الكتالوج + أوقات التشغيل + الحزم الملائمة المتبقية",
@@ -98,6 +106,51 @@
   "scanPolicyV": "مسح ≠ ترقية؛ تطبيق تغييرات النظام",
   "highRiskPolicy": "مخاطر عالية",
   "highRiskPolicyV": "يحتاج إلى موافقة: التأكيد الثاني قبل الإرسال",
+  "needApprovalHint": "افتح متاح وقم بالتصفية حسب الحزم التي تحتاج إلى موافقة",
+  "applyNeedConfirm": "يفتح مربع حوار التأكيد قبل التقديم",
+  "probeFailed": "فشل التحقيق",
+  "notViaApt": "لا تتم إدارته بواسطة apt - لا يوجد مرشح",
+  "noCandidate": "لا توجد نسخة مرشحة",
+  "cveLabel": "CVE",
+  "jobOpenGeo": "صفحة GeoIP",
+  "job": {
+    "protection_probe": {
+      "name": "مسبار الحماية",
+      "hint": "إشارات الدفاع الدورية"
+    },
+    "updates_scan": {
+      "name": "فحص التحديثات",
+      "hint": "تحديث مخزون الحزمة"
+    },
+    "daily_backup": {
+      "name": "النسخ الاحتياطي اليومي",
+      "hint": "النسخ الاحتياطي المقرر كافة"
+    },
+    "db_temp_expire": {
+      "name": "انتهاء صلاحية مستخدمي قاعدة البيانات المؤقتة",
+      "hint": "إسقاط مستخدمي قاعدة البيانات المؤقتة منتهية الصلاحية"
+    },
+    "defense_auto_ban": {
+      "name": "الحظر التلقائي للدفاع",
+      "hint": "تطبيق علامة الحظر التلقائي"
+    },
+    "defense_geoip_update": {
+      "name": "تحديث GeoIP",
+      "hint": "تحميل قواعد بيانات GeoIP"
+    },
+    "log_auto_vacuum": {
+      "name": "سجل الفراغ",
+      "hint": "الاحتفاظ بالمجلة"
+    },
+    "email_dnsbl": {
+      "name": "البريد الإلكتروني DNSBL",
+      "hint": "التحقق من البريد DNSBL"
+    },
+    "validators_upgrade_scan": {
+      "name": "فحص ترقية المدققين",
+      "hint": "تحقق من صورة المدقق / التحديثات الثنائية"
+    }
+  },
   "permPolicy": "الأذونات",
   "permPolicyV": "بدون التنفيذ/الجذر → محظور (لا يوجد نجاح وهمي)",
   "osvPolicyV": "يحتاج إلى شبكة؛ يثري أفضل 12 اقتراحًا فقط",
@@ -122,6 +175,12 @@
   "updateFailed": "فشل التحديث",
   "updateIncomplete": "التحديث غير مكتمل",
   "appliedUpdate": "تم تطبيق التحديث",
+  "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
+  "panelRestarted": "عادت اللوحة · {{version}}",
+  "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
+  "reloadUi": "إعادة تحميل واجهة المستخدم",
+  "reloadUiTitle": "هل تريد إعادة تحميل واجهة مستخدم اللوحة؟",
+  "reloadUiDesc": "خدمة اللوحة هي {{version}}. لا تزال علامة التبويب هذه تحتوي على الواجهة الأمامية السابقة حتى تقوم بإعادة التحميل. سيتم فقدان الحقول غير المحفوظة في هذه الصفحة.",
   "aptCandidate": "المرشح المناسب",
   "advice": {
     "update": "يوصى بالتحديث",
@@ -182,64 +241,5 @@
   "needsReboot": "هناك حاجة إلى إعادة التشغيل",
   "kernelRebootWarn": "عادةً ما يحتاج تثبيت نواة جديدة إلى إعادة التشغيل قبل استخدامها.",
   "neverRun": "لم يتم تشغيله بعد",
-  "scanOsvN": "مسح + OSV (الأول {{n}})",
-  "rebootNeeded": "إعادة التشغيل",
-  "kernelRebootHint": "تحتاج حزم Kernel إلى إعادة التشغيل بعد التطبيق",
-  "needApprovalHint": "افتح متاح وقم بالتصفية حسب الحزم التي تحتاج إلى موافقة",
-  "applyNeedConfirm": "يفتح مربع حوار التأكيد قبل التقديم",
-  "probeFailed": "فشل التحقيق",
-  "notViaApt": "لا تتم إدارته بواسطة apt - لا يوجد مرشح",
-  "noCandidate": "لا توجد نسخة مرشحة",
-  "jobOpenGeo": "صفحة GeoIP",
-  "job": {
-    "protection_probe": {
-      "name": "مسبار الحماية",
-      "hint": "إشارات الدفاع الدورية"
-    },
-    "updates_scan": {
-      "name": "فحص التحديثات",
-      "hint": "تحديث مخزون الحزمة"
-    },
-    "daily_backup": {
-      "name": "النسخ الاحتياطي اليومي",
-      "hint": "النسخ الاحتياطي المقرر كافة"
-    },
-    "db_temp_expire": {
-      "name": "انتهاء صلاحية مستخدمي قاعدة البيانات المؤقتة",
-      "hint": "إسقاط مستخدمي قاعدة البيانات المؤقتة منتهية الصلاحية"
-    },
-    "defense_auto_ban": {
-      "name": "الحظر التلقائي للدفاع",
-      "hint": "تطبيق علامة الحظر التلقائي"
-    },
-    "defense_geoip_update": {
-      "name": "تحديث GeoIP",
-      "hint": "تحميل قواعد بيانات GeoIP"
-    },
-    "log_auto_vacuum": {
-      "name": "سجل الفراغ",
-      "hint": "الاحتفاظ بالمجلة"
-    },
-    "email_dnsbl": {
-      "name": "البريد الإلكتروني DNSBL",
-      "hint": "التحقق من البريد DNSBL"
-    },
-    "validators_upgrade_scan": {
-      "name": "Validators upgrade scan",
-      "hint": "Check validator image / binary updates"
-    }
-  },
-  "applyPanelAlreadyLatest": "بالفعل أحدث إصدار من اللوحة",
-  "panelRestarting": "يعاد تشغيل اللوحة لتحميل الإصدار الجديد…",
-  "panelRestarted": "عادت اللوحة · {{version}}",
-  "panelRestartWait": "تم التطبيق. إن لم تتحدث هذه الصفحة، أعد التحميل بعد ثوان.",
-  "cveNotChecked": "Not checked",
-  "cveLabel": "CVE",
-  "riskUnevaluated": "Not evaluated — run Scan + OSV",
-  "footerNewVersion": "New version {{version}}",
-  "applySelfConfirmTitle": "Apply panel update?",
-  "applySelfConfirmDesc": "Install {{from}} → {{to}} and restart the panel service. There is no dry-run.",
-  "reloadUi": "Reload UI",
-  "reloadUiTitle": "Reload the panel UI?",
-  "reloadUiDesc": "The panel service is {{version}}. This tab still has the previous frontend until you reload. Unsaved fields on this page will be lost."
+  "scanOsvN": "مسح + OSV (الأول {{n}})"
 }

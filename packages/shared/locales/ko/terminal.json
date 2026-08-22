@@ -15,7 +15,11 @@
   "wsError": "웹소켓 실패",
   "exitCode": "종료 코드 {{code}}",
   "needRootExecute": "시스템 셸에는 루트 + YSK_EXECUTE=1이 필요합니다.",
+  "groupSystem": "시스템",
+  "groupProject": "프로젝트",
   "unavailable": "없는",
+  "copyAll": "모두 복사",
+  "copyAllNeedConn": "먼저 연결 - 연결이 끊어진 동안 버퍼는 비어 있습니다.",
   "placeholder": "ID를 선택한 다음 연결하세요.",
   "aboutTitle": "터미널 정보",
   "aboutSub": "브라우저의 대화형 OS 셸(로컬 사용자) 임의의 원격 SSH 클라이언트가 아닙니다.",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "이 페이지를 읽는 동안 라이브 셸은 계속 연결되어 있습니다.",
   "rootConfirmTitle": "루트 쉘을 여시겠습니까?",
   "rootConfirmDesc": "이 세션은 호스트의 무제한 루트 PTY입니다. 명령이 감사됩니다.",
-  "rootConfirmBody": "권한 있는 호스트 명령을 실행하려는 경우에만 계속하십시오.",
-  "copyAll": "모두 복사",
-  "copyAllNeedConn": "먼저 연결 - 연결이 끊어진 동안 버퍼는 비어 있습니다.",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "권한 있는 호스트 명령을 실행하려는 경우에만 계속하십시오."
 }

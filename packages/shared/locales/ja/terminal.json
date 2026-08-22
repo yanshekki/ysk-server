@@ -15,7 +15,11 @@
   "wsError": "WebSocketが失敗しました",
   "exitCode": "終了コード {{code}}",
   "needRootExecute": "システム シェルには root + YSK_EXECUTE=1 が必要です。",
+  "groupSystem": "システム",
+  "groupProject": "プロジェクト",
   "unavailable": "空きがありません。",
+  "copyAll": "すべてコピー",
+  "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です",
   "placeholder": "ID を選択してから接続します",
   "aboutTitle": "端末について",
   "aboutSub": "ブラウザーの対話型 OS シェル (ローカル ユーザー)。任意のリモート SSH クライアントではありません。",
@@ -33,9 +37,5 @@
   "sessionStillOpen": "このページを読んでいる間、ライブ シェルはまだ接続されています。",
   "rootConfirmTitle": "ルートシェルを開きますか?",
   "rootConfirmDesc": "このセッションは、ホスト上の無制限のルート PTY です。コマンドは監査されます。",
-  "rootConfirmBody": "特権ホスト コマンドを実行する場合にのみ続行してください。",
-  "copyAll": "すべてコピー",
-  "copyAllNeedConn": "最初に接続します - 切断中はバッファは空です",
-  "groupSystem": "System",
-  "groupProject": "Project"
+  "rootConfirmBody": "特権ホスト コマンドを実行する場合にのみ続行してください。"
 }

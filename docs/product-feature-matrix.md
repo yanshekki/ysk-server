@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-22 — **1.1.24** (host WAN DDNS: Cloudflare / RFC2136 / local `managedBy=ddns`). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-22 — **1.1.25** (cron host crontab edit; validator staking playbook; CLI parity). Official links only; no wallet connect. shared/core/product same version. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 
@@ -262,6 +262,7 @@ Each engine: **data page** + **service page**.
 | K4 | Job notifications on/off | H | D | ✗ | P1 |
 | K5 | Run once from UI (test) | 弱 | 弱 | ✓ | Better |
 | K6 | Managed file vs system crontab split | 弱 | 弱 | ✓ | Better |
+| K7 | Host crontab line edit (in-place, per user) | 弱 | 弱 | ✓ | Better |
 
 ---
 
@@ -448,7 +449,7 @@ Remaining **✗** are P1 / P2 / Out (or Better extras).
 | Smart updates | CVE advice + approvable apply |
 | Mail deliverability | structured external todos + live checks |
 | UI | no fluff; buttons = ops or preset only |
-| L1 nodes (Beta) | Validators page + CLI; Docker Compose; no key custody |
+| L1 nodes (Beta) | Validators page + CLI; Docker Compose; no key custody; instance page shows next steps and public identity (NEAR/Cosmos/AVAX) |
 | Docker engine | `/docker` + `ysk-server docker`; apt docker.io; honesty-gated |
 
 ---

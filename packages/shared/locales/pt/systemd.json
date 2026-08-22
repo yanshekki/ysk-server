@@ -70,6 +70,8 @@
   "policyNotEqualFull": "Modelo de gravação ≠ serviço habilitado ≠ escuta",
   "controlPlaneUnit": "Unidade de plano de controle",
   "kpiRuntime": "Tempo de execução",
+  "rawStateHint": "Estado bruto da unidade na dica de ferramenta",
+  "bootHint": "Se a unidade inicia na inicialização",
   "kpiBoot": "Habilitação de inicialização",
   "kpiCaps": "Aplicar capacidade",
   "capsReady": "Pode instalar no sistema",
@@ -90,7 +92,5 @@
   "aboutPolicySub": "A gravação do modelo e a instalação do sistema são etapas separadas. A nova execução após a instalação é uma operação normal, não uma etapa perdida.",
   "policyInstallFull": "Instale e habilite: copie para /etc/systemd/system, daemon-reload, habilite --now. Precisa de root + EXECUTE.",
   "policyBlockedTitle": "Bloqueado sem privilégio",
-  "policyNotEqualTitle": "Estados não são equivalentes",
-  "rawStateHint": "Raw unit state in tooltip",
-  "bootHint": "Whether the unit starts at boot"
+  "policyNotEqualTitle": "Estados não são equivalentes"
 }

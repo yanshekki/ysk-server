@@ -12,7 +12,7 @@ Operator-facing text rules for YSK Server (Web + API + notes).
 | **zh-CN** | Simplified Chinese (standard PRC UI wording). |
 | **en** | Concise English. No marketing fluff. Key SSOT for multi-locale expansion. |
 
-Tier-1 must share the same key tree. **Tier-2** (`hi`, `es`, `ar`, `fr`, `bn`, `pt`, `id`, `ur`) ship as English scaffolds with the same keys; native translation may replace values later. `ar` / `ur` are RTL.
+Tier-1 must share the same key tree. **Tier-2** (`hi`, `es`, `ar`, `fr`, `bn`, `pt`, `id`, `ur`) share the same keys. Fill leftover English with `python3 scripts/i18n-fill-still-en.py`; product names stay English. `ar` / `ur` are RTL.
 
 ## SSOT
 
@@ -20,7 +20,7 @@ Tier-1 must share the same key tree. **Tier-2** (`hi`, `es`, `ar`, `fr`, `bn`, `
 packages/shared/locales/{locale}/{namespace}.json   ← edit only here
 pnpm i18n:rebuild                                   ← required after edits
 packages/shared/locales/{locale}/translation.json   ← generated; never hand-edit
-apps/web/src/shared/guides/data/{locale}.json       ← About-tab bodies (3 locales)
+apps/web/src/shared/guides/data/{locale}.json       ← About-tab bodies (all 13 locales)
 ```
 
 Backend: `tl()` / `t(locale, key)`. Frontend: `t('ns.key')`. Never hardcode user-visible strings.

@@ -1,6 +1,10 @@
 {
   "purgeConfirm": "صاف کرنے کی تصدیق کریں؟ رجسٹرڈ ڈیٹا پاتھ (ڈیٹا بیس/میل) کو مستقل طور پر حذف کر دیا جائے گا۔",
   "installedCount": "انسٹال شدہ {{installed}} · غائب {{missing}}",
+  "countHint": "یہ شمار سافٹ ویئر پلان میں OS پیکجز ہیں — دوسرے ٹیب پر سروس میٹرکس یونٹ نہیں۔",
+  "executeRoot": "سسٹم کی تبدیلیاں {{execute}} · ایڈمنسٹریٹر {{root}}",
+  "manifestPlan": "منصوبہ {{plan}} ({{bundles}})",
+  "manifestHint": "آخری منتخب کردہ سافٹ ویئر پلان اور بنڈلز",
   "needRootExecute": "لائیو انسٹال/ہٹانے کے لیے ایڈمنسٹریٹر کے حقوق اور سسٹم میں تبدیلی کی اجازت درکار ہوتی ہے۔ آپ اب بھی ڈرائی رن کر سکتے ہیں۔",
   "modeInstall": "پلان انسٹال کریں۔",
   "modeUninstall": "ان انسٹال کریں۔",
@@ -19,23 +23,19 @@
   "uninstallNeedSelect": "کم از کم ایک بنڈل منتخب کریں۔ خالی انتخاب کا مطلب اب سب کو ہٹانا نہیں ہے۔",
   "uninstallConfirmTitle": "منتخب بنڈلز کو ہٹائیں؟",
   "uninstallConfirmDesc": "{{count}} بنڈل ہٹا دیے جائیں گے۔ تصدیق کرنے کے لیے REMOVE ٹائپ کریں۔",
-  "countHint": "These counts are OS packages in the software plan — not the service-matrix units on the other tab.",
-  "executeRoot": "System changes {{execute}} · administrator {{root}}",
-  "manifestPlan": "Plan {{plan}} ({{bundles}})",
-  "manifestHint": "Last chosen software plan and bundles",
   "bundle": {
-    "control-plane": "Control plane",
-    "web": "Web hosting",
-    "database": "Databases",
-    "email": "Mail stack",
+    "control-plane": "کنٹرول طیارہ",
+    "web": "ویب ہوسٹنگ",
+    "database": "ڈیٹا بیس",
+    "email": "میل اسٹیک",
     "dns": "DNS",
-    "ftp": "FTP / FTPS",
-    "defense": "Host defense",
-    "runtimes": "Language runtimes"
+    "ftp": "ایف ٹی پی / ایف ٹی پی ایس",
+    "defense": "میزبان دفاع",
+    "runtimes": "زبان کے رن ٹائمز"
   },
   "planTitle": {
-    "minimal": "Control plane only",
-    "recommended": "Recommended hosting",
-    "full": "All software"
+    "minimal": "صرف ہوائی جہاز کو کنٹرول کریں۔",
+    "recommended": "تجویز کردہ ہوسٹنگ",
+    "full": "تمام سافٹ ویئر"
   }
 }

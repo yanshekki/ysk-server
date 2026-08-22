@@ -206,6 +206,9 @@ export function ValidatorsPage() {
     blsPublicKey?: string | null;
     blsProofOfPossession?: string | null;
     cardanoProducer?: import('ysk-server-shared').CardanoProducerStatusDto;
+    near?: import('ysk-server-shared').NearStakingIdentityDto;
+    cosmos?: import('ysk-server-shared').CosmosStakingIdentityDto;
+    sol?: import('ysk-server-shared').SolStakingIdentityDto;
   } | null>(null);
   const [switchNet, setSwitchNet] = useState('');
   const [removeUnit, setRemoveUnit] = useState(false);
@@ -1759,6 +1762,9 @@ export function ValidatorsPage() {
                   ...(detail.ports.rpc
                     ? [{ role: 'rpc', port: String(detail.ports.rpc), proto: 'tcp' }]
                     : []),
+                  ...(detail.ports.beacon
+                    ? [{ role: 'beacon', port: String(detail.ports.beacon), proto: 'tcp' }]
+                    : []),
                 ]}
                 compact
               />
@@ -1965,6 +1971,19 @@ export function ValidatorsPage() {
               nodeId={checklist?.nodeId}
               blsPublicKey={checklist?.blsPublicKey}
               blsProofOfPossession={checklist?.blsProofOfPossession}
+              near={checklist?.near}
+              cosmos={checklist?.cosmos}
+              sol={checklist?.sol}
+              adaP2pPort={detail.chain === 'ada' ? (detail.ports?.p2p ?? 3001) : undefined}
+              p2pPort={detail.ports?.p2p}
+              ethBeaconUrl={
+                detail.chain === 'eth' && detail.ports?.beacon
+                  ? `http://127.0.0.1:${detail.ports.beacon}`
+                  : detail.chain === 'eth'
+                    ? 'http://127.0.0.1:5052'
+                    : undefined
+              }
+              network={detail.network}
               cardanoProducer={detail.cardanoProducer ?? checklist?.cardanoProducer}
               producerMainnet={
                 chains.find((c) => c.id === detail.chain)?.networks.find((n) => n.id === detail.network)

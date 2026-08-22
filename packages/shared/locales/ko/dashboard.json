@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "경고",
+    "bad": "문제"
+  },
   "title": "대시보드",
   "health": "건강",
   "protection": "보호 모드",
@@ -38,12 +44,13 @@
   "readinessCheck": "준비:",
   "prodOk": "생산 준비 완료",
   "notFullyReady": "완전히 준비되지 않았습니다",
+  "readinessBlocked": "{{n}} 차단제",
   "modeScore": "모드 {{mode}} · 점수 {{ready}}/{{total}}",
   "mode": {
     "degraded": "타락한",
     "production_capable": "생산 준비 완료",
-    "normal": "정상",
-    "blocked": "blocked"
+    "blocked": "막힌",
+    "normal": "정상"
   },
   "details": "세부",
   "certExpiryTitle": "인증서 만료:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "감사 적용 · 확인 {{ok}} · 경고 {{warn}} · 나쁨 {{bad}}",
   "executeBadge": "실행 {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "이 패널은 모든 인터페이스를 수신하며 관리자 계정에는 2FA가 없습니다.",
   "go": "열려 있는",
   "open": "열려 있는",
   "noCriticalWarn": "중요 또는 경고 알림 없음",
@@ -81,6 +89,7 @@
   "wizardDesc": "프로젝트를 생성하고 선택적으로 DNS/메일/데이터베이스 초안을 작성합니다(각 기능 페이지에 적용).",
   "projectName": "프로젝트 이름",
   "projectNameHint": "표시 이름 일치하는 디렉토리를 생성합니다",
+  "nameRequired": "프로젝트 이름을 입력하세요.",
   "domainOptional": "도메인(선택사항)",
   "domainHint": "DNS 및 메일 옵션을 활성화하는 데 필요합니다.",
   "runtime": "실행 시간",
@@ -93,6 +102,7 @@
   "serverIpv6": "서버 IPv6(선택 사항)",
   "serverIpv6Hint": "AAAA / ip6 쓰기: 설정 시",
   "serverIpv6Ph": "공용 IPv6(선택사항)",
+  "needDomainFirst": "먼저 도메인을 입력하세요",
   "withDns": "DNS 영역도 생성",
   "withDnsDesc": "도메인이 필요합니다. 등록 전용 — DNS 페이지에서 영역 적용",
   "withMail": "메일 도메인도 등록하세요",
@@ -119,15 +129,5 @@
   "notifSearch": "알림 검색",
   "notifAll": "전체",
   "notifDismiss": "숨다",
-  "goFix": "고치다",
-  "needDomainFirst": "먼저 도메인을 입력하세요",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "고치다"
 }

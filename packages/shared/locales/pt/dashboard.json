@@ -1,4 +1,10 @@
 {
+  "serviceAria": "{{name}}: {{state}}",
+  "sev": {
+    "ok": "OK",
+    "warn": "Aviso",
+    "bad": "Problema"
+  },
   "title": "Painel",
   "health": "Saúde",
   "protection": "Modo de proteção",
@@ -38,12 +44,13 @@
   "readinessCheck": "Prontidão:",
   "prodOk": "Produção pronta",
   "notFullyReady": "Não totalmente pronto",
+  "readinessBlocked": "{{n}} bloqueador(es)",
   "modeScore": "Modo {{mode}} · pontuação {{ready}}/{{total}}",
   "mode": {
     "degraded": "degradado",
     "production_capable": "produção pronta",
-    "normal": "normal",
-    "blocked": "blocked"
+    "blocked": "bloqueado",
+    "normal": "normal"
   },
   "details": "Detalhes",
   "certExpiryTitle": "Expiração do certificado:",
@@ -57,6 +64,7 @@
   "applyAuditBadge": "Aplicar auditoria · ok {{ok}} · avisar {{warn}} · ruim {{bad}}",
   "executeBadge": "EXECUTAR {{state}}",
   "executeLabel": "EXECUTE",
+  "publicNo2fa": "Este painel escuta todas as interfaces e sua conta de administrador não possui 2FA.",
   "go": "Abrir",
   "open": "Abrir",
   "noCriticalWarn": "Sem alertas críticos ou de aviso",
@@ -81,6 +89,7 @@
   "wizardDesc": "Crie um projeto e, opcionalmente, rascunhe DNS/mail/banco de dados (aplicar em cada página de recurso)",
   "projectName": "Nome do projeto",
   "projectNameHint": "Nome de exibição; cria um diretório correspondente",
+  "nameRequired": "Insira um nome de projeto",
   "domainOptional": "Domínio (opcional)",
   "domainHint": "Necessário para ativar opções de DNS e email",
   "runtime": "Tempo de execução",
@@ -93,6 +102,7 @@
   "serverIpv6": "Servidor IPv6 (opcional)",
   "serverIpv6Hint": "Grava AAAA/ip6: quando definido",
   "serverIpv6Ph": "IPv6 público (opcional)",
+  "needDomainFirst": "Introduza primeiro um domínio",
   "withDns": "Crie também uma zona DNS",
   "withDnsDesc": "Necessita domínio; somente registro – aplicar zona na página DNS",
   "withMail": "Registre também o domínio de correio",
@@ -119,15 +129,5 @@
   "notifSearch": "Alertas de pesquisa",
   "notifAll": "Todos",
   "notifDismiss": "Esconder",
-  "goFix": "Consertar",
-  "needDomainFirst": "Introduza primeiro um domínio",
-  "serviceAria": "{{name}}: {{state}}",
-  "sev": {
-    "ok": "OK",
-    "warn": "Warning",
-    "bad": "Problem"
-  },
-  "publicNo2fa": "This panel listens on all interfaces and your admin account has no 2FA.",
-  "readinessBlocked": "{{n}} blocker(s)",
-  "nameRequired": "Enter a project name"
+  "goFix": "Consertar"
 }

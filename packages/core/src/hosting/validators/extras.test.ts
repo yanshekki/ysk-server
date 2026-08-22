@@ -7,6 +7,7 @@ import {
   rankValidatorAutoClearCandidates,
   snapshotOffer,
   stakingChecklist,
+  stakingChecklistForInstance,
   switchValidatorNetwork,
 } from './extras.js';
 import { producerKeysDir } from './ada-producer.js';
@@ -15,7 +16,7 @@ import { buildValidatorInstance, getValidatorInstance, upsertValidatorInstance }
 import type { HostExecutor } from '../../host/executor.js';
 import { buildEthComposeYaml } from './adapters/eth.js';
 import { buildNearComposeYaml } from './adapters/near.js';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -178,6 +179,101 @@ describe('validator extras', () => {
     const c = stakingChecklist('avax');
     expect(c.links.some((l) => l.href === 'https://core.app')).toBe(true);
     expect(c.links.some((l) => l.href.includes('build.avax.network'))).toBe(true);
+  });
+
+  it('NEAR checklist reads public_key from disk and omits secret_key', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-near-check-'));
+    const pub = 'ed25519:CE3QAXyVLeScmY9YeEyR3Tw9yXfjBPzFLzroTranYtVb';
+    writeFileSync(
+      join(dir, 'validator_key.json'),
+      JSON.stringify({
+        account_id: '',
+        public_key: pub,
+        secret_key: 'ed25519:3D4YudUQk3jWtvzkNY7337sFFnM67Jeo8ZZh8eEVzxQK',
+      }),
+    );
+    const c = await stakingChecklistForInstance({
+      id: 'near-testnet-1',
+      chain: 'near',
+      network: 'testnet',
+      profile: 'pruned',
+      slug: '1',
+      dataPath: dir,
+      rpcHost: '127.0.0.1',
+      upgradePolicy: 'notify',
+      desiredState: 'stopped',
+      createdAt: '',
+      updatedAt: '',
+      clients: { node: { id: 'neard', image: 'nearprotocol/nearcore', tag: '2.5.0' } },
+      ports: { rpc: 3030, p2p: 24567 },
+    } as never);
+    expect(c.near?.stakePublicKey).toBe(pub);
+    expect(c.near?.factoryAccount).toBe('pool.f863973.m0');
+    expect(c.near?.createCommand).toContain('create_staking_pool');
+    expect(JSON.stringify(c)).not.toMatch(/secret_key|3D4YudUQk3jWtvzkNY7337sFFnM67Jeo8ZZh8eEVzxQK/i);
+    expect(c.nodeId).toBeUndefined();
+  });
+
+  it('Cosmos checklist reads consensus pubkey and omits priv_key', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cosmos-check-'));
+    mkdirSync(join(dir, 'config'), { recursive: true });
+    const pub = 'AtbAQs/I3FBJ0P9qz9pPjM6qGz8w0n8kP1n6s8kQe1A=';
+    writeFileSync(
+      join(dir, 'config', 'priv_validator_key.json'),
+      JSON.stringify({
+        pub_key: { type: 'tendermint/PubKeyEd25519', value: pub },
+        priv_key: { type: 'tendermint/PrivKeyEd25519', value: 'SECRETPRIVKEYVALUE====' },
+      }),
+    );
+    const c = await stakingChecklistForInstance({
+      id: 'cosmos-testnet-1',
+      chain: 'cosmos',
+      network: 'testnet',
+      profile: 'pruned',
+      slug: '1',
+      dataPath: dir,
+      rpcHost: '127.0.0.1',
+      upgradePolicy: 'notify',
+      desiredState: 'stopped',
+      createdAt: '',
+      updatedAt: '',
+      clients: { node: { id: 'gaiad', image: 'ghcr.io/cosmos/gaia', tag: 'v28.0.0-rc0' } },
+      ports: { rpc: 26657, p2p: 26656 },
+    } as never);
+    expect(c.cosmos?.chainId).toBe('provider');
+    expect(c.cosmos?.consensusPubkey).toContain(pub);
+    expect(c.cosmos?.createCommand).toContain('create-validator');
+    expect(JSON.stringify(c)).not.toContain('SECRETPRIVKEYVALUE');
+    expect(JSON.stringify(c)).not.toMatch(/priv_key/i);
+  });
+
+  it('Solana checklist uses getIdentity and never returns a keypair', async () => {
+    const prev = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ result: { identity: 'Ident111111111111111111111111111111111' } }), {
+        status: 200,
+      })) as typeof fetch;
+    try {
+      const c = await stakingChecklistForInstance({
+        id: 'sol-testnet-1',
+        chain: 'sol',
+        network: 'testnet',
+        profile: 'pruned',
+        slug: '1',
+        dataPath: '/tmp',
+        rpcHost: '127.0.0.1',
+        upgradePolicy: 'notify',
+        desiredState: 'running',
+        createdAt: '',
+        updatedAt: '',
+        clients: { node: { id: 'agave', image: 'anzaxyz/agave', tag: 'v2.1.11' } },
+        ports: { rpc: 8899, p2p: 8000 },
+      } as never);
+      expect(c.sol?.identityPubkey).toBe('Ident111111111111111111111111111111111');
+      expect(JSON.stringify(c)).not.toMatch(/\[1,|secret|private_key/i);
+    } finally {
+      globalThis.fetch = prev;
+    }
   });
 
   it('sums docker stats NetIO per validator instance', () => {

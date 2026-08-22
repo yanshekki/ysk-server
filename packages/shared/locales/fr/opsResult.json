@@ -20,8 +20,8 @@
   "stepTuningApplied": "Réglages d’exécution appliqués",
   "stepUnitWritten": "Unité de service écrite",
   "stepSystemdStartFailed": "Échec du démarrage systemd — bascule sur le processus de secours",
-  "portListening": "Port {{port}} is listening",
-  "portNotListening": "Port {{port}} is not listening",
+  "portListening": "Le port {{port}} écoute",
+  "portNotListening": "Le port {{port}} n'écoute pas",
   "httpOk": "HTTP OK {{status}}",
-  "httpFail": "HTTP failed: {{detail}}"
+  "httpFail": "Échec du HTTP : {{detail}}"
 }
