@@ -46,6 +46,7 @@ import {
   validatorChainLabel,
   validatorNetworkLabel,
   validatorNetworkLabelFor,
+  nearStakingFactory,
   VALIDATOR_DISK_DANGER_PCT,
   VALIDATOR_RUNTIME_STATUSES,
   type ValidatorDiskLeftover,
@@ -227,6 +228,10 @@ export function ValidatorsPage() {
     opcert?: string;
   } | null>(null);
   const [pendingProducerDetach, setPendingProducerDetach] = useState(false);
+  const [pendingNearAccount, setPendingNearAccount] = useState<{
+    poolSlug: string;
+    restart: boolean;
+  } | null>(null);
   const [producerMainnetOk, setProducerMainnetOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
@@ -1983,7 +1988,10 @@ export function ValidatorsPage() {
                     ? 'http://127.0.0.1:5052'
                     : undefined
               }
+              ethCl={detail.chain === 'eth' ? detail.clients.cl?.id : undefined}
               network={detail.network}
+              instanceId={detail.id}
+              onNearAccount={(input) => setPendingNearAccount(input)}
               cardanoProducer={detail.cardanoProducer ?? checklist?.cardanoProducer}
               producerMainnet={
                 chains.find((c) => c.id === detail.chain)?.networks.find((n) => n.id === detail.network)
@@ -2317,6 +2325,40 @@ export function ValidatorsPage() {
           </label>
         ) : null}
       </ConfirmDialog>
+      <ConfirmDialog
+        open={Boolean(pendingNearAccount && detail)}
+        onClose={() => setPendingNearAccount(null)}
+        title={t('validators.playbook.nearWriteTitle', { id: detail?.id ?? '' })}
+        description={t('validators.playbook.nearWriteDesc')}
+        confirmText={detail?.id}
+        confirmLabel={t('validators.playbook.nearWriteAccount')}
+        severity="critical"
+        busy={busy}
+        dataConfirm={detail?.id}
+        consequences={[
+          t('validators.playbook.nearWriteC1', {
+            pool: pendingNearAccount?.poolSlug ?? '',
+            suffix: nearStakingFactory(detail?.network ?? 'testnet').poolAccountSuffix,
+          }),
+          t('validators.playbook.nearWriteC2'),
+        ]}
+        onConfirm={() => {
+          if (!detail || !pendingNearAccount) return;
+          const body = {
+            poolSlug: pendingNearAccount.poolSlug,
+            confirm: detail.id,
+            restart: pendingNearAccount.restart,
+            execute: true,
+          };
+          setPendingNearAccount(null);
+          void runAction(
+            () => validatorsApi.nearAccount(detail.id, body),
+            t('validators.playbook.nearWriteAccount'),
+          ).then(() => {
+            void openDetail(detail);
+          });
+        }}
+      />
       <ConfirmDialog
         open={pendingProducerDetach && Boolean(detail)}
         onClose={() => setPendingProducerDetach(false)}

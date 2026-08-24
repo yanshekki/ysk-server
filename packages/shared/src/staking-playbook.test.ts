@@ -2,11 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { VALIDATOR_CHAIN_IDS } from './validators.js';
 import {
   buildCosmosCreateValidatorCommand,
+  buildCosmosCreateValidatorJson,
+  cosmosAmountAtomLabel,
+  ethValidatorClientCommand,
+  parseCosmosAmountUatom,
   buildNearCreateStakingPoolCommand,
   cosmosStakingChainId,
   ethLaunchpadHref,
   isOfficialStakingHref,
   nearStakingFactory,
+  resolveNearPoolAccountId,
   stakingPlaybookAnchor,
   stakingPlaybookCoversAllChains,
   stakingPlaybookLinksForInstance,
@@ -70,20 +75,67 @@ describe('staking playbook catalog', () => {
     const pending = buildNearCreateStakingPoolCommand({ network: 'mainnet' });
     expect(pending).toContain('poolv1.near');
     expect(pending).toContain('<STAKE_PUBLIC_KEY>');
+    const filled = buildNearCreateStakingPoolCommand({
+      network: 'testnet',
+      stakePublicKey: 'ed25519:AbC123',
+      poolId: 'demo',
+      ownerId: 'alice.testnet',
+    });
+    expect(filled).toContain('"staking_pool_id":"demo"');
+    expect(filled).toContain('"owner_id":"alice.testnet"');
+    expect(filled).toContain('--accountId="alice.testnet"');
+    expect(filled).not.toContain('<POOL_ID>');
+  });
+
+  it('resolves NEAR pool slug to the factory account', () => {
+    expect(resolveNearPoolAccountId({ network: 'testnet', poolSlug: 'Demo' })).toEqual({
+      ok: true,
+      poolSlug: 'demo',
+      accountId: 'demo.pool.f863973.m0',
+    });
+    expect(
+      resolveNearPoolAccountId({
+        network: 'mainnet',
+        accountId: 'demo.poolv1.near',
+      }),
+    ).toEqual({ ok: true, poolSlug: 'demo', accountId: 'demo.poolv1.near' });
+    expect(resolveNearPoolAccountId({ network: 'testnet', poolSlug: 'Bad.Name' }).ok).toBe(false);
+    expect(resolveNearPoolAccountId({ network: 'testnet', poolSlug: '' }).ok).toBe(false);
   });
 
   it('points Cosmos create-validator at consensus pubkey, not an IP', () => {
     expect(cosmosStakingChainId('mainnet')).toBe('cosmoshub-4');
     expect(cosmosStakingChainId('testnet')).toBe('provider');
+    const pub = '{"@type":"/cosmos.crypto.ed25519.PubKey","key":"abc"}';
     const cmd = buildCosmosCreateValidatorCommand({
       network: 'testnet',
-      consensusPubkey: '{"@type":"/cosmos.crypto.ed25519.PubKey","key":"abc"}',
+      consensusPubkey: pub,
     });
     expect(cmd).toContain('--chain-id=provider');
-    expect(cmd).toContain('create-validator');
+    expect(cmd).toContain('create-validator validator.json');
     expect(cmd).toContain('--gas-prices="0.005uatom"');
     expect(cmd).not.toContain('0.0025uatom');
+    expect(cmd).not.toContain('--pubkey=');
     expect(cmd).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
+    const json = buildCosmosCreateValidatorJson({
+      consensusPubkey: pub,
+      amountUatom: '1atom',
+      moniker: 'demo',
+    });
+    expect(json).toContain('"key": "abc"');
+    expect(json).toContain('"amount": "1000000uatom"');
+    expect(json).toContain('"moniker": "demo"');
+    expect(json).toContain('"min-self-delegation": "1"');
+    expect(json).not.toContain('<MONIKER>');
+    const filled = buildCosmosCreateValidatorCommand({
+      network: 'mainnet',
+      fromKey: 'operator',
+    });
+    expect(filled).toContain('--from=operator');
+    expect(filled).toContain('--chain-id=cosmoshub-4');
+    expect(parseCosmosAmountUatom('1 ATOM')).toBe('1000000uatom');
+    expect(parseCosmosAmountUatom('1000000')).toBe('1000000uatom');
+    expect(cosmosAmountAtomLabel('1000000uatom')).toBe('1 ATOM');
   });
 
   it('keeps only this network’s Ethereum launchpad on the instance page', () => {
@@ -95,5 +147,15 @@ describe('staking playbook catalog', () => {
     expect(hoodi).not.toContain('https://launchpad.ethereum.org');
     const sepolia = stakingPlaybookLinksForInstance('eth', 'sepolia').map((l) => l.href);
     expect(sepolia.every((h) => !h.includes('launchpad.ethereum.org'))).toBe(true);
+    expect(ethValidatorClientCommand({ network: 'hoodi', beaconUrl: 'http://127.0.0.1:5052' })).toBe(
+      'lighthouse vc --network hoodi --beacon-nodes http://127.0.0.1:5052',
+    );
+    expect(
+      ethValidatorClientCommand({
+        network: 'hoodi',
+        beaconUrl: 'http://127.0.0.1:5052',
+        cl: 'prysm',
+      }),
+    ).toBeNull();
   });
 });

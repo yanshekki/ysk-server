@@ -13810,7 +13810,7 @@
       "disk": "Disk"
     },
     "cli": {
-      "usage": "Usage: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "Usage: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "Execution client",
@@ -13871,7 +13871,9 @@
       "producerTooLarge": "That key file is larger than 64 KiB",
       "producerBadType": "That file is not a KES key, VRF key, or operational certificate",
       "producerEmpty": "Provide at least one of kes, vrf, or opcert",
-      "switchNeedDetachProducer": "Detach producer keys before switching network"
+      "switchNeedDetachProducer": "Detach producer keys before switching network",
+      "nearAccountInvalid": "Pool name must be a short slug (or the full {pool}{factory} account).",
+      "nearKeyMissing": "validator_key.json is missing or has no public_key. Start the node and wait for neard init."
     },
     "notes": {
       "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
@@ -13909,7 +13911,9 @@
       "producerDetached": "Hot keys removed; compose rewritten as relay",
       "dryDelete": "Delete is dry-run. Pass --execute and YSK_EXECUTE=1.",
       "deleted": "Node deleted",
-      "leftoverRemoved": "Removed leftover {{path}}"
+      "leftoverRemoved": "Removed leftover {{path}}",
+      "dryNearAccount": "Would set account_id to {{account}} (pass --execute). Secret is never changed.",
+      "nearAccountWrote": "Set account_id to {{account}}. Secret was not changed. Restart the node if it is running."
     },
     "create": "Create node",
     "wizard": {
@@ -14077,13 +14081,13 @@
       "nearStakeKey": "Stake public key",
       "nearStakeKeyPending": "Appears after first start (neard init). RPC not ready does not mean the key is missing.",
       "nearAccountId": "Key file account_id",
-      "nearAccountIdPending": "Often empty until you set it to {pool}{{suffix}} yourself. This panel never writes validator_key.json.",
+      "nearAccountIdPending": "Often empty until you set it to {{pool}}{{suffix}} after the pool exists. The panel writes only this field — never secret_key.",
       "nearFactory": "Staking-pool factory",
       "nearPublicAddr": "Public P2P (peers)",
       "nearPublicAddrPending": "Appears after first start writes WAN:{{port}} into config.json.",
       "nearCreateCommand": "create_staking_pool command",
       "nearPointing": "The pool contract does not take this server’s IP. It stores this node’s stake public key. Peers use the Public P2P row above (host port {{port}}). RPC stays on localhost.",
-      "nearAccountIdHint": "After the pool exists, set account_id in validator_key.json to {pool}{{suffix}} yourself. This panel never writes that file.",
+      "nearAccountIdHint": "After the pool exists, set account_id here (do not edit the file by hand). The panel never writes secret_key.",
       "cosmosPubkey": "Consensus public key",
       "cosmosPubkeyPending": "Appears after gaiad init writes priv_validator_key.json. RPC not ready does not mean the key is missing.",
       "cosmosChainId": "chain-id",
@@ -14092,10 +14096,12 @@
       "ethBeacon": "Beacon API (localhost)",
       "ethBeaconPending": "Beacon HTTP on this host. Point a validator client you run yourself at this URL — this compose has no VC.",
       "cosmosCreateCommand": "create-validator command",
+      "cosmosCreateJson": "validator.json (gaiad v28)",
+      "copyFailed": "Copy failed",
       "solIdentity": "Identity pubkey",
       "solIdentityPending": "Appears after RPC answers getIdentity. This process is --no-voting until you add a vote account yourself.",
       "adaP2pPort": "Relay P2P port",
-      "adaP2pPending": "Put this host’s public IPv4 and this port in topology.json. This panel does not probe WAN.",
+      "adaP2pPending": "Advertise this host’s public IPv4 (or DNS) and this port in the pool registration certificate. topology.json localRoots is for your own block producer. This panel does not probe WAN.",
       "notPosTitle": "Not proof-of-stake",
       "notPosBody": "Bitcoin here is a full or pruned node. There is no staking wallet on this page.",
       "eth": {
@@ -14117,9 +14123,9 @@
         "steps": [
           "Wait until execution and beacon are synced.",
           "Open the official launchpad for this network (Hoodi or Mainnet on this page). Sepolia has no launchpad button here.",
-          "Offline, generate the keystore. Set the withdrawal address to your own ETH wallet.",
-          "Deposit 32 ETH (keep extra for gas).",
-          "Run a validator client yourself. This compose has no VC — putting a keystore in the beacon datadir does not attest."
+          "Offline, generate the keystore (staking-deposit-cli). Set the withdrawal address to your own ETH wallet.",
+          "Deposit 32 ETH on the launchpad (keep extra for gas).",
+          "Run a validator client yourself against the beacon URL on this card (example: lighthouse vc --beacon-nodes). This compose has no VC — putting a keystore in the beacon datadir does not attest."
         ],
         "never": [
           "Never give your seed phrase or withdrawal key to anyone, including this panel.",
@@ -14141,10 +14147,10 @@
           "Add the validator from Core using this node’s NodeID and BLS proof."
         ],
         "steps": [
-          "Wait until this node is synced.",
-          "Copy the NodeID, BLS public key, and BLS proof of possession shown on the instance page.",
-          "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain.",
-          "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve."
+          "Wait until this node is synced and the NodeID / BLS rows appear (RPC).",
+          "Copy NodeID, BLS public key, and BLS proof of possession.",
+          "In Core web (Staking → Validate), or with Ledger via Core, register on the P-Chain. The transaction does not take a server IP.",
+          "Mainnet needs at least 2,000 AVAX, a 14-day minimum period, and a fee reserve. Fuji is 1 AVAX."
         ],
         "never": [
           "Do not send AVAX to this panel.",
@@ -14163,43 +14169,44 @@
         ],
         "youDo": [
           "Generate pool keys offline.",
-          "Register the pool using official Cardano documentation.",
-          "Put this host’s public IPv4 and the relay P2P port into topology.json."
+          "Register the pool with the official Cardano CLI. Put this host’s public IPv4 or DNS and the relay P2P port into the pool registration certificate.",
+          "Attach KES, VRF, and opcert on this page. Do not upload cold keys."
         ],
         "steps": [
           "Read the official operate-a-stake-pool guide.",
           "Generate cold, KES, and VRF keys on an offline machine.",
-          "Register the pool on-chain from those keys.",
-          "On this instance page, attach KES, VRF, and the operational certificate. Do not upload cold keys.",
-          "Advertise the relay as public-ip:P2P-port (port shown on this card). This panel does not look up the WAN address."
+          "Register the pool on-chain. Advertise the relay in that certificate (--pool-relay-ipv4 or DNS + the P2P port on this card). Public discovery is the certificate, not topology.json.",
+          "On this instance page, attach KES, VRF, and the operational certificate. Cold keys are refused.",
+          "topology.json localRoots is for your own block producer (advertise: false). This panel does not look up the WAN address."
         ],
         "never": [
           "Do not treat this as a MetaMask one-click stake.",
-          "Do not store cold keys on the validator host."
+          "Do not store cold keys on the validator host.",
+          "Do not expect editing topology.json alone to register the relay on-chain."
         ]
       },
       "near": {
         "model": "Create a staking-pool contract at the official factory. The contract stores this node’s public key — not the server IP.",
         "min": "See official validator docs (30 NEAR to create the pool, plus stake)",
         "wallets": "Official NEAR wallet / lockup",
-        "panel": "Runs neard; shows the public key, factory, and create_staking_pool command after init",
+        "panel": "Runs neard; form fills create_staking_pool; after the pool exists, writes account_id only.",
         "yskDoes": [
           "Run neard with RPC on localhost and P2P on 24567.",
-          "After init, show the stake public key, public P2P address, factory, and a copyable create_staking_pool command.",
-          "Never write validator_key.json or broadcast the transaction."
+          "After init, show the stake public key, public P2P address, and factory.",
+          "Fill create_staking_pool from pool name + owner + public key. After the pool exists, write account_id only — never secret_key, never the transaction."
         ],
         "youDo": [
-          "Copy the public key and command from this instance page.",
-          "From your own NEAR account, call the official factory.",
-          "After the pool exists, set account_id in validator_key.json to {pool}.{factory} yourself.",
-          "Stake from your wallet into that pool."
+          "Start the node and wait for the public key on this page.",
+          "Enter pool name and owner, then copy the command.",
+          "Sign create_staking_pool from your own NEAR wallet or near-cli.",
+          "Return here and set account_id. Stake from your wallet into that pool."
         ],
         "steps": [
           "Start the node and wait for neard init so the public key appears (RPC not ready is not the same as missing keys).",
-          "Copy the stake public key and the create_staking_pool command.",
-          "From your wallet, call the factory (testnet pool.f863973.m0 / mainnet poolv1.near) with 30 NEAR for storage. The copied command uses --accountId; if your near CLI expects --account_id, follow that CLI’s --help.",
-          "Set account_id in validator_key.json to your new pool account. This panel does not write that file.",
-          "Wait until RPC answers and the node is synced before staking large amounts. Peers use Public P2P :24567 — the contract does not take an IP."
+          "Enter the pool short name and owner account. Copy the filled create_staking_pool command.",
+          "From your wallet, call the factory (testnet pool.f863973.m0 / mainnet poolv1.near) with 30 NEAR for storage. The command uses --accountId; if your near CLI expects --account_id, follow that CLI’s --help.",
+          "After the pool exists, use Set account_id on this page (confirm = instance id). Do not edit validator_key.json by hand.",
+          "Restart if the node is already running. Wait until RPC answers and the node is synced before staking large amounts. Peers use Public P2P — the contract does not take an IP."
         ],
         "never": [
           "Do not paste a seed phrase into this panel.",
@@ -14211,28 +14218,31 @@
         "model": "create-validator from your operator wallet using this node’s consensus public key — not the server IP.",
         "min": "See official Cosmos Hub docs (self-delegation in uatom)",
         "wallets": "Keplr or another Cosmos wallet you control",
-        "panel": "Runs gaiad; shows consensus pubkey and a copyable create-validator command after init",
-        "honesty": "The create-validator transaction stores this node’s consensus public key. Peers use Public P2P on 26656. RPC stays on localhost. This panel does not broadcast the transaction or read priv_key.",
+        "panel": "Runs gaiad v28; shows consensus pubkey; form fills validator.json + create-validator. Never writes priv_validator_key.json or broadcasts.",
+        "honesty": "This gaiad is v28 (JSON file). Hub docs still show flags — those fail here. The transaction stores this node’s consensus public key, not the server IP. Peers use Public P2P. RPC stays on localhost. This panel does not broadcast or read priv_key.",
         "yskDoes": [
-          "Run gaiad with RPC on localhost and P2P on 26656.",
-          "After init, show the consensus public key, chain-id, public P2P, and a copyable create-validator command.",
-          "Never write priv_validator_key.json or broadcast the transaction."
+          "Run gaiad with RPC on localhost and P2P on 26656. minimum-gas-prices is 0.005uatom.",
+          "After init, show the consensus public key, chain-id, and public P2P.",
+          "Fill validator.json and the gaiad v28 command from amount, moniker, and --from plus the consensus pubkey. Never write priv_validator_key.json or broadcast the transaction."
         ],
         "youDo": [
-          "Copy the consensus public key and command from this instance page.",
-          "From your operator wallet (Keplr or gaiad keys you control), submit create-validator.",
-          "Do not mix that wallet mnemonic with the consensus key on this host."
+          "Start the node and wait for the consensus public key on this page.",
+          "Enter amount, moniker, and --from. Copy validator.json, then the gaiad command.",
+          "Sign from Keplr or gaiad keys you control. Do not mix that mnemonic with the consensus key on this host."
         ],
         "steps": [
           "Start the node and wait for gaiad init so the consensus public key appears (RPC not ready is not the same as missing keys).",
-          "Copy the consensus public key and the create-validator command (chain-id is cosmoshub-4 on mainnet, provider on testnet).",
-          "From your operator wallet, broadcast create-validator. Amount and moniker are yours.",
-          "Wait until RPC answers and the node is synced before bonding large amounts. Peers use tcp://WAN:26656 — the transaction does not take an IP."
+          "Enter self-delegation (1atom = 1 ATOM, or uatom), moniker, and --from. Copy validator.json then the gaiad command. This node is gaiad v28: JSON file, not the Hub docs’ flag form. chain-id is cosmoshub-4 on mainnet, provider on testnet.",
+          "The copied --gas-prices is 0.005uatom to match this node. Do not paste the Hub docs’ 0.0025uatom example or the flag-based create-validator.",
+          "Save validator.json and broadcast from your operator wallet. The transaction does not take a server IP. Peers use tcp://WAN:{{port}}.",
+          "Wait until RPC answers and the node is synced before bonding large amounts."
         ],
         "never": [
           "Do not mix the operator wallet mnemonic with the consensus key.",
           "Do not enter wallet mnemonics here.",
-          "Do not put this server’s IP into create-validator."
+          "Do not put this server’s IP into create-validator.",
+          "Do not paste the Hub docs’ --amount/--pubkey flags — this gaiad is v28 (validator.json).",
+          "Do not use 0.0025uatom gas on this node — the compose minimum is 0.005uatom."
         ]
       },
       "sol": {
@@ -14254,12 +14264,13 @@
         "steps": [
           "Confirm this host has enough disk and IOPS (mainnet is typically 2 TiB+).",
           "Wait until RPC answers, then copy the identity pubkey shown here.",
-          "Follow official vote-account and stake guides (links below).",
-          "This compose keeps --no-voting. Do not expect this page to start voting after you create a vote account."
+          "Create vote and authorized-withdrawer keys with official Solana tools on a machine you control, then solana create-vote-account.",
+          "This compose keeps --no-voting. Creating a vote account does not make this process vote."
         ],
         "never": [
           "Do not expect a browser wallet button in this panel.",
-          "Do not paste identity or vote keypairs into this panel."
+          "Do not paste identity or vote keypairs into this panel.",
+          "Do not expect this page to start voting after you create a vote account."
         ]
       },
       "dot": {
@@ -14351,7 +14362,33 @@
         "never": [
           "Do not look for a staking wallet on this page."
         ]
-      }
+      },
+      "nearPoolSlug": "Pool name",
+      "nearPoolSlugHint": "Short name only. The factory adds {{suffix}}.",
+      "nearOwner": "Owner account",
+      "nearOwnerHint": "NEAR account that signs create_staking_pool in your wallet. Not the node key.",
+      "nearPreview": "Command preview",
+      "nearWriteAccount": "Set account_id",
+      "nearWriteTitle": "Set validator_key.json account_id for {{id}}?",
+      "nearWriteDesc": "Writes only account_id on the existing key file. Does not send create_staking_pool. Does not touch secret_key.",
+      "nearWriteC1": "account_id becomes {{pool}}{{suffix}}",
+      "nearWriteC2": "The panel never signs the factory transaction",
+      "nearRestart": "Restart the node after writing",
+      "nearNeedKey": "Wait until the stake public key appears (neard init), then fill this form.",
+      "nearNeedSlug": "Enter a pool name to set account_id.",
+      "nearNeedOwner": "Enter the owner account to fill the command. Set account_id only needs the pool name.",
+      "cosmosPointing": "This gaiad is v28: copy validator.json, then create-validator validator.json. Hub docs still show flags — those fail here. The transaction uses this node’s consensus public key, not the server IP. Peers use Public P2P (host port {{port}}). Gas is 0.005uatom — not the Hub docs’ 0.0025uatom example.",
+      "avaxPointing": "P-Chain registration uses this NodeID and BLS proof, not the server IP. RPC stays on localhost. Register in Core (Staking → Validate).",
+      "ethVcCommand": "Validator client example (not in this compose)",
+      "ethVcHint": "Run a validator client yourself against this beacon URL. Importing a keystore into the beacon data directory does not attest.",
+      "cosmosAmount": "Self-delegation",
+      "cosmosAmountHint": "uatom, or 1atom for 1 ATOM. A bare 1 is 1 uatom — not 1 ATOM.",
+      "cosmosAmountParsed": "{{amount}} = {{atom}}",
+      "cosmosMoniker": "Moniker",
+      "cosmosFromKey": "--from key name",
+      "cosmosFromHint": "Local gaiad key name, or sign with Keplr. Not the consensus key on this host.",
+      "cosmosNeedPubkey": "Wait until the consensus public key appears (gaiad init), then fill this form.",
+      "cosmosNeedFields": "Enter amount, moniker, and --from to fill the command."
     },
     "alerts": {
       "diskTitle": "Validator disk critical",

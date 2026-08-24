@@ -13810,7 +13810,7 @@
       "disk": "ディスク"
     },
     "cli": {
-      "usage": "使い方: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "使い方: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "実行クライアント",
@@ -13871,7 +13871,9 @@
       "producerTooLarge": "そのキー ファイルは 64 KiB より大きいです",
       "producerBadType": "そのファイルは KES キー、VRF キー、または運用証明書ではありません",
       "producerEmpty": "kes、vrf、または opcert の少なくとも 1 つを提供します",
-      "switchNeedDetachProducer": "ネットワークを切り替える前にプロデューサー キーを切り離す"
+      "switchNeedDetachProducer": "ネットワークを切り替える前にプロデューサー キーを切り離す",
+      "nearAccountInvalid": "プール名は短いスラッグ (または完全な {pool}{factory} アカウント) である必要があります。",
+      "nearKeyMissing": "validator_key.json が見つからないか、public_key がありません。ノードを起動し、neard の初期化を待ちます。"
     },
     "notes": {
       "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",
@@ -13909,7 +13911,9 @@
       "producerDetached": "ホットキーが削除されました。リレーとして書き換えられた構成",
       "dryDelete": "削除は予行演習です。 --execute と YSK_EXECUTE=1 を渡します。",
       "deleted": "ノードが削除されました",
-      "leftoverRemoved": "残り物を削除しました {{path}}"
+      "leftoverRemoved": "残り物を削除しました {{path}}",
+      "dryNearAccount": "account_id を {{account}} に設定します ( --execute を渡します)。秘密は決して変わりません。",
+      "nearAccountWrote": "account_idを{{account}}に設定します。シークレットは変更されませんでした。ノードが実行中の場合は再起動します。"
     },
     "create": "ノードを作成",
     "wizard": {
@@ -14077,13 +14081,13 @@
       "nearStakeKey": "公開鍵をステークする",
       "nearStakeKeyPending": "最初の起動後 (init 付近) に表示されます。 RPC の準備ができていなくても、キーが不足しているわけではありません。",
       "nearAccountId": "キーファイル account_id",
-      "nearAccountIdPending": "自分で {pool}{{suffix}} に設定するまでは空のことがよくあります。このパネルは validator_key.json を書き込むことはありません。",
+      "nearAccountIdPending": "多くの場合、プールが存在した後、{{pool}}{{suffix}} に設定するまでは空です。パネルはこのフィールドのみを書き込みます。secret_key は書き込みません。",
       "nearFactory": "ステーキングプール工場",
       "nearPublicAddr": "パブリック P2P (ピア)",
       "nearPublicAddrPending": "最初の起動時に WAN:{{port}} が config.json に書き込まれた後に表示されます。",
       "nearCreateCommand": "create_stakeing_pool コマンド",
       "nearPointing": "プール契約はこのサーバーの IP を使用しません。このノードのステーク公開鍵を保存します。ピアは上のパブリック P2P 行 (ホスト ポート {{port}}) を使用します。 RPC はローカルホスト上に留まります。",
-      "nearAccountIdHint": "プールが存在したら、validator_key.json の account_id を自分で {pool}{{suffix}} に設定します。このパネルはそのファイルを書き込むことはありません。",
+      "nearAccountIdHint": "プールが存在したら、ここで account_id を設定します (ファイルを手動で編集しないでください)。パネルには secret_key が書き込まれることはありません。",
       "cosmosPubkey": "コンセンサス公開鍵",
       "cosmosPubkeyPending": "gaiad init が priv_validator_key.json を書き込んだ後に表示されます。 RPC の準備ができていなくても、キーが不足しているわけではありません。",
       "cosmosChainId": "チェーンID",
@@ -14092,10 +14096,12 @@
       "ethBeacon": "ビーコンAPI（ローカルホスト）",
       "ethBeaconPending": "このホスト上のビーコン HTTP。自分で実行する検証クライアントにこの URL を指定します。この構成には VC がありません。",
       "cosmosCreateCommand": "create-validator コマンド",
+      "cosmosCreateJson": "validator.json (gaiad v28)",
+      "copyFailed": "コピーに失敗しました",
       "solIdentity": "ID 公開鍵",
       "solIdentityPending": "RPC が getIdentity に応答した後に表示されます。このプロセスは、投票アカウントを自分で追加するまでは --no-voting です。",
       "adaP2pPort": "リレー P2P ポート",
-      "adaP2pPending": "このホストのパブリック IPv4 とこのポートを topology.json に配置します。このパネルは WAN を調査しません。",
+      "adaP2pPending": "このホストのパブリック IPv4 (または DNS) とこのポートをプール登録証明書でアドバタイズします。 topology.json localRoots はあなた自身のブロックプロデューサー用です。このパネルは WAN をプローブしません。",
       "notPosTitle": "プルーフ・オブ・ステークではない",
       "notPosBody": "ここでのビットコインは完全なノードまたはプルーニングされたノードです。このページにはステーキングウォレットはありません。",
       "eth": {
@@ -14117,9 +14123,9 @@
         "steps": [
           "実行とビーコンが同期されるまで待ちます。",
           "このネットワークの公式ランチパッド (このページの Houdi または Mainnet) を開きます。 Sepolia にはここにはランチパッド ボタンがありません。",
-          "オフラインでキーストアを生成します。出金アドレスを自分のETHウォレットに設定します。",
-          "32 ETH をデポジットします (ガス用に余分に保管しておきます)。",
-          "バリデータ クライアントを自分で実行します。この構成には VC がありません。キーストアをビーコンの datadir に配置しても証明されません。"
+          "オフラインでは、keystore (staking-deposit-cli) を生成します。出金アドレスを自分のETHウォレットに設定します。",
+          "32 ETH を launchpad にデポジットします (ガス用に余分に保管しておきます)。",
+          "このカードのビーコン URL に対して自分で validator client を実行します (例: lighthouse vc --beacon-nodes)。この構成には VC がありません。ビーコンのデータディレクトリに keystore を入れても証明されません。"
         ],
         "never": [
           "このパネルを含む誰にも、シード フレーズや引き出しキーを決して渡さないでください。",
@@ -14141,10 +14147,10 @@
           "このノードの NodeID と BLS 証明を使用して、コアからバリデーターを追加します。"
         ],
         "steps": [
-          "このノードが同期されるまで待ちます。",
-          "インスタンス ページに表示されている NodeID、BLS 公開キー、および BLS 所有証明をコピーします。",
-          "Core Web (ステーキング → 検証) または Core 経由の Ledger で、P-Chain に登録します。",
-          "メインネットには少なくとも 2,000 AVAX、14 日間の最低期間、および手数料の準備金が必要です。"
+          "このノードが同期され、NodeID / BLS 行 (RPC) が表示されるまで待ちます。",
+          "NodeID、BLS 公開キー、および BLS の所有証明をコピーします。",
+          "Core ウェブ (ステーキング → 検証) で、または Core 経由で Ledger を使用して、P チェーンに登録します。トランザクションにはサーバー IP は必要ありません。",
+          "メインネットには少なくとも 2,000 AVAX、14 日間の最低期間、および手数料の準備金が必要です。 Fuji は 1 AVAX です。"
         ],
         "never": [
           "AVAX をこのパネルに送信しないでください。",
@@ -14163,76 +14169,80 @@
         ],
         "youDo": [
           "プールキーをオフラインで生成します。",
-          "Cardano の公式ドキュメントを使用してプールを登録します。",
-          "このホストのパブリック IPv4 とリレー P2P ポートを topology.json に入力します。"
+          "公式 Cardano CLI を使用してプールを登録します。このホストのパブリック IPv4 または DNS とリレー P2P ポートをプール登録証明書に追加します。",
+          "このページにKES、VRF、opcertを添付してください。コールドキーをアップロードしないでください。"
         ],
         "steps": [
           "公式のステークプール運営ガイドをお読みください。",
           "オフライン マシンでコールド、KES、および VRF キーを生成します。",
-          "これらのキーからオンチェーンにプールを登録します。",
-          "このインスタンス ページで、KES、VRF、および運用証明書を添付します。コールドキーをアップロードしないでください。",
-          "リレーを public-ip:P2P-port (このカードに表示されているポート) としてアドバタイズします。このパネルは WAN アドレスを検索しません。"
+          "プールをオンチェーンに登録します。その証明書でリレーをアドバタイズします (--pool-relay-ipv4 または DNS + このカードの P2P ポート)。パブリックディスカバリは証明書であり、topology.json ではありません。",
+          "このインスタンス ページで、KES、VRF、および運用証明書を添付します。コールドキーは拒否されます。",
+          "topology.json localRoots は独自のブロックプロデューサー用です (アドバタイズ: false)。このパネルは、WAN アドレスを検索しません。"
         ],
         "never": [
           "これを MetaMask のワンクリック賭けとして扱わないでください。",
-          "コールド キーをバリデータ ホストに保存しないでください。"
+          "コールド キーをバリデータ ホストに保存しないでください。",
+          "topology.json だけを編集してリレーをオンチェーンに登録することは期待できません。"
         ]
       },
       "near": {
         "model": "公式ファクトリーでステーキングプール契約を作成します。コントラクトには、サーバー IP ではなく、このノードの公開キーが保存されます。",
         "min": "公式バリデーターのドキュメントを参照してください (プールの作成には 30 NEAR とステークを加えます)",
         "wallets": "公式NEARウォレット/ロックアップ",
-        "panel": "近づいて走ります。 init 後の公開キー、ファクトリー、create_stake_pool コマンドを示します。",
+        "panel": "neard を実行します。フォームにcreate_staking_poolを入力します。プールが存在した後は、account_id のみを書き込みます。",
         "yskDoes": [
           "localhost では RPC、24567 では P2P を使用して、neard を実行します。",
-          "init の後、ステーク公開キー、公開 P2P アドレス、ファクトリー、およびコピー可能な create_saking_pool コマンドを表示します。",
-          "validator_key.json を書き込んだり、トランザクションをブロードキャストしたりしないでください。"
+          "init 後、ステーク公開鍵、公開 P2P アドレス、およびファクトリーを表示します。",
+          "create_staking_pool をプール名 + 所有者 + 公開鍵から入力します。プールが存在した後は、account_id のみを書き込みます。secret_key やトランザクションは決して書き込みません。"
         ],
         "youDo": [
-          "このインスタンス ページから公開キーとコマンドをコピーします。",
-          "自分のNEARアカウントから公式工場に電話します。",
-          "プールが存在したら、validator_key.json の account_id を自分で {pool}.{factory} に設定します。",
-          "あなたのウォレットからそのプールに賭けてください。"
+          "ノードを起動し、このページで公開キーを待ちます。",
+          "プール名と所有者を入力し、コマンドをコピーします。",
+          "自分の NEAR ウォレットまたはニアクリから create_staking_pool に署名します。",
+          "ここに戻ってaccount_idを設定します。あなたのウォレットからそのプールに賭けてください。"
         ],
         "steps": [
           "ノードを起動し、neard init まで待機すると、公開キーが表示されます (RPC の準備ができていないことは、キーが見つからないことと同じではありません)。",
-          "ステーク公開キーと create_saking_pool コマンドをコピーします。",
-          "ウォレットから、ストレージ用に 30 NEAR を指定してファクトリー (testnet pool.f863973.m0 / mainnet poolv1.near) を呼び出します。コピーされたコマンドは --accountId を使用します。近くの CLI で --account_id が必要な場合は、その CLI の --help に従ってください。",
-          "validator_key.json の account_id を新しいプール アカウントに設定します。このパネルはそのファイルを書き込みません。",
-          "大量のステーキングを行う前に、RPC が応答し、ノードが同期されるまで待ってください。ピアはパブリック P2P :24567 を使用します。コントラクトは IP を使用しません。"
+          "プールの短縮名と所有者アカウントを入力します。入力された create_staking_pool コマンドをコピーします。",
+          "ウォレットから、ストレージ用の 30 NEAR を使用してファクトリー (テストネット pool.f863973.m0 / メインネット poolv1.near) を呼び出します。このコマンドは --accountId を使用します。近くの CLI が --account_id を想定している場合は、その CLI の --help に従ってください。",
+          "プールが存在したら、このページで Set account_id を使用します (確認 = インスタンス ID)。 validator_key.json を手動で編集しないでください。",
+          "ノードがすでに実行されている場合は再起動します。 RPC が応答し、ノードが同期されるまで待ってから、多額のステーキングを行ってください。ピアはパブリック P2P を使用します。コントラクトは IP を使用しません。"
         ],
         "never": [
           "このパネルにシード フレーズを貼り付けないでください。",
           "このサーバーの IP を契約に含めないでください。",
-          "パネルが create_stake_pool トランザクションを送信することを期待しないでください。"
+          "パネルが create_staking_pool トランザクションを送信することを期待しないでください。"
         ]
       },
       "cosmos": {
         "model": "サーバーIPではなく、このノードのコンセンサス公開キーを使用して、オペレーターウォレットからcreate-validatorを実行します。",
         "min": "Cosmos Hub の公式ドキュメントを参照してください (uatom での自己委任)",
         "wallets": "Keplr またはあなたが管理する別の Cosmos ウォレット",
-        "panel": "ガイアドを実行します。 init 後のコンセンサス公開鍵とコピー可能な create-validator コマンドを示します",
-        "honesty": "create-validator トランザクションは、このノードのコンセンサス公開キーを保存します。ピアは 26656 でパブリック P2P を使用します。RPC はローカルホスト上に留まります。このパネルはトランザクションをブロードキャストしたり、priv_key を読み取ったりしません。",
+        "panel": "gaiad v28 を実行します。コンセンサス公開キーを示します。フォームに validator.json + create-validator を入力します。 priv_validator_key.json やブロードキャストを決して書き込まないでください。",
+        "honesty": "この gaiad は v28 (JSON ファイル) です。 Hub ドキュメントにはまだフラグが表示されていますが、ここではフラグが失敗しています。トランザクションでは、サーバー IP ではなく、このノードのコンセンサス公開キーが保存されます。ピアはパブリック P2P を使用します。 RPC はローカルホスト上に留まります。このパネルは、priv_key をブロードキャストしたり読み取ったりしません。",
         "yskDoes": [
-          "localhost では RPC、26656 では P2P を使用して gaiad を実行します。",
-          "init の後、コンセンサス公開キー、チェーン ID、パブリック P2P、およびコピー可能な create-validator コマンドを表示します。",
-          "priv_validator_key.json を書き込んだり、トランザクションをブロードキャストしたりしないでください。"
+          "localhost で RPC を使用して gaiad を実行し、26656 で P2P を実行します。最小ガス価格は 0.005uatom です。",
+          "init 後、コンセンサス公開鍵、チェーン ID、およびパブリック P2P を表示します。",
+          "validator.json と gaiad v28 コマンド from amount、moniker、および --from に加えてコンセンサス公開キーを入力します。 priv_validator_key.json を書き込んだり、トランザクションをブロードキャストしたりしないでください。"
         ],
         "youDo": [
-          "このインスタンス ページからコンセンサス公開キーとコマンドをコピーします。",
-          "オペレーターウォレット (管理する Keplr または gaiad キー) から、create-validator を送信します。",
-          "このホスト上のウォレット ニーモニックとコンセンサス キーを混合しないでください。"
+          "ノードを起動し、このページでコンセンサス公開キーが取得されるまで待ちます。",
+          "金額、モニカ、および --from を入力します。 validator.json をコピーしてから、gaiad コマンドをコピーします。",
+          "あなたが管理する Keplr または gaiad キーから署名します。このホスト上のニーモニックとコンセンサス キーを混合しないでください。"
         ],
         "steps": [
           "ノードを起動し、gaiad init を待つと、コンセンサス公開キーが表示されます (RPC の準備ができていないことは、キーが見つからないことと同じではありません)。",
-          "コンセンサス公開キーと create-validator コマンドをコピーします (チェーン ID はメインネットでは cosmoshub-4、テストネットではプロバイダーです)。",
-          "オペレーターウォレットから、create-validator をブロードキャストします。金額と名義はあなたのものです。",
-          "RPC が応答し、ノードが同期されるまで待ってから、大量にボンディングします。ピアは tcp://WAN:26656 を使用します。トランザクションは IP を使用しません。"
+          "自己委任 (1atom = 1 ATOM、または uatom)、モニカ、および --from を入力します。 validator.json をコピーしてから、gaiad コマンドをコピーします。このノードは gaiad v28: JSON ファイルであり、Hub ドキュメントのフラグ形式ではありません。 chain-id は、メインネットでは cosmoshub-4、テストネットではプロバイダーです。",
+          "コピーされた --gas-prices は、このノードに一致する 0.005uatom です。 Hub ドキュメントの 0.0025uatom サンプルやフラグベースの create-validator を貼り付けないでください。",
+          "validator.json を保存し、オペレーター ウォレットからブロードキャストします。トランザクションにはサーバー IP は必要ありません。ピアは tcp://WAN:{{port}} を使用します。",
+          "RPC が応答し、ノードが同期されるまで待ってから、大量にボンディングします。"
         ],
         "never": [
           "オペレーターウォレットのニーモニックとコンセンサスキーを混合しないでください。",
           "ここにはウォレットのニーモニックを入力しないでください。",
-          "このサーバーの IP を create-validator に入力しないでください。"
+          "このサーバーの IP を create-validator に入力しないでください。",
+          "Hub ドキュメントの --amount/--pubkey フラグを貼り付けないでください。この gaiad は v28 (validator.json) です。",
+          "このノードでは 0.0025uatom ガスを使用しないでください。構成の最小値は 0.005uatom です。"
         ]
       },
       "sol": {
@@ -14254,12 +14264,13 @@
         "steps": [
           "このホストに十分なディスクと IOPS があることを確認します (メインネットは通常 2 TiB+)。",
           "RPC が応答するまで待ってから、ここに表示されている ID 公開キーをコピーします。",
-          "公式投票アカウントとステークガイドに従ってください (以下のリンク)。",
-          "この構成では --no-voting が維持されます。投票アカウントを作成した後にこのページで投票が開始されることを期待しないでください。"
+          "あなたが管理するマシン上の公式 Solana ツールを使用して投票キーと承認済み引き出しキーを作成し、続いて solana create-vote-account を作成します。",
+          "この構成では --no-voting が維持されます。 vote account を作成しても、このプロセスは投票されません。"
         ],
         "never": [
           "このパネルにはブラウザのウォレット ボタンが表示されることを期待しないでください。",
-          "ID や投票キーペアをこのパネルに貼り付けないでください。"
+          "ID や投票キーペアをこのパネルに貼り付けないでください。",
+          "vote account を作成した後にこのページで投票が開始されることを期待しないでください。"
         ]
       },
       "dot": {
@@ -14351,7 +14362,33 @@
         "never": [
           "このページでステーキングウォレットを探さないでください。"
         ]
-      }
+      },
+      "nearPoolSlug": "プール名",
+      "nearPoolSlugHint": "短縮名のみ。工場では {{suffix}} が追加されます。",
+      "nearOwner": "オーナーアカウント",
+      "nearOwnerHint": "ウォレット内の create_staking_pool に署名する NEAR アカウント。ノードキーではありません。",
+      "nearPreview": "コマンドのプレビュー",
+      "nearWriteAccount": "account_id を設定",
+      "nearWriteTitle": "{{id}} に validator_key.json account_id を設定しますか?",
+      "nearWriteDesc": "既存のキー ファイルに account_id のみを書き込みます。 create_staking_pool を送信しません。 secret_keyには触れません。",
+      "nearWriteC1": "account_id は {{pool}}{{suffix}} になります",
+      "nearWriteC2": "パネルは factory 取引に署名しません",
+      "nearRestart": "書き込み後にノードを再起動します",
+      "nearNeedKey": "ステーク公開キーが表示される (neard init) まで待ってから、このフォームに記入します。",
+      "nearNeedSlug": "account_id を設定するプール名を入力します。",
+      "nearNeedOwner": "所有者アカウントを入力してコマンドを入力します。 account_id の設定にはプール名のみが必要です。",
+      "cosmosPointing": "この gaiad は v28 です。 validator.json をコピーしてから、create-validator validator.json を作成します。 Hub ドキュメントにはまだフラグが表示されていますが、ここではフラグが失敗しています。トランザクションでは、サーバー IP ではなく、このノードのコンセンサス公開キーが使用されます。ピアはパブリック P2P (ホスト ポート {{port}}) を使用します。ガスは 0.005uatom です。Hub ドキュメントの 0.0025uatom の例ではありません。",
+      "avaxPointing": "P-Chain の登録では、サーバー IP ではなく、この NodeID および BLS の証明が使用されます。 RPC はローカルホスト上に残ります。 Core (ステーキング → 検証) に登録します。",
+      "ethVcCommand": "Validator client の例（この compose にはない）",
+      "ethVcHint": "このビーコン URL に対して自分で validator client を実行します。 keystore をビーコン データ ディレクトリにインポートしても証明されません。",
+      "cosmosAmount": "自己委任",
+      "cosmosAmountHint": "uatom、または 1atom は 1 ATOM です。裸の 1 は 1 μatom であり、1 ATOM ではありません。",
+      "cosmosAmountParsed": "{{amount}} = {{atom}}",
+      "cosmosMoniker": "Moniker",
+      "cosmosFromKey": "--from のキー名",
+      "cosmosFromHint": "ローカル gaiad キー名、または Keplr で署名します。このホストのコンセンサスキーではありません。",
+      "cosmosNeedPubkey": "コンセンサス公開キーが表示される (gaiad init) まで待ってから、このフォームに記入します。",
+      "cosmosNeedFields": "金額、名前、--from を入力してコマンドを入力します。"
     },
     "alerts": {
       "diskTitle": "バリデーターディスクが危険",

@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 1.1.26 — 2026-08-22
+
+### Add
+- NEAR instance page: form for pool name + owner fills `create_staking_pool` (real public key). After the pool exists, **Set account_id** writes only that field on `validator_key.json` (confirm = instance id). Never signs the factory tx, never wallet connect, never touches `secret_key`. CLI: `ysk-server validators near-account --id --pool-slug S --confirm [--restart] [--execute]`.
+- Cosmos instance page: form fills **gaiad v28** `validator.json` + `create-validator validator.json` (amount, moniker, `--from` + consensus pubkey). Copy only — the panel does not write `priv_validator_key.json` and does not broadcast. Gas stays `0.005uatom`. Hub docs still show flags; those fail on this node.
+- ETH instance page: Lighthouse CL gets a copyable `lighthouse vc --beacon-nodes` example. Other CLs: copy the beacon URL only. Compose still has no VC.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.26**.
+
+### Fix
+- Cardano playbook: public advertise is the pool registration certificate, not `topology.json`. `topology.json` `localRoots` is for your own block producer.
+- Avalanche playbook: P-Chain registration uses NodeID + BLS, not the server IP.
+- Solana playbook: creating a vote account does not make this `--no-voting` process vote.
+- NEAR Set account_id confirm shows the real `{pool}{factory}` account, not a `{pool}` placeholder.
+- Cosmos amount accepts `1atom` (= 1 ATOM). A bare `1` is 1 uatom. Copy is disabled until the JSON/command is filled.
+
 ## 1.1.25 — 2026-08-22
 
 ### Add

@@ -13810,7 +13810,7 @@
       "disk": "디스크"
     },
     "cli": {
-      "usage": "사용법: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "사용법: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "실행 클라이언트",
@@ -13871,7 +13871,9 @@
       "producerTooLarge": "해당 키 파일이 64KiB보다 큽니다.",
       "producerBadType": "해당 파일은 KES 키, VRF 키 또는 운영 인증서가 아닙니다.",
       "producerEmpty": "kes, vrf 또는 opcert 중 하나 이상을 제공하세요.",
-      "switchNeedDetachProducer": "네트워크를 전환하기 전에 생산자 키를 분리하세요"
+      "switchNeedDetachProducer": "네트워크를 전환하기 전에 생산자 키를 분리하세요",
+      "nearAccountInvalid": "풀 이름은 짧은 슬러그(또는 전체 {pool}{factory} 계정)여야 합니다.",
+      "nearKeyMissing": "validator_key.json이 없거나 public_key가 없습니다. 노드를 시작하고 neard init를 기다립니다."
     },
     "notes": {
       "beta": "이 기능은 Beta입니다. 호스트 변경에는 root와 YSK_EXECUTE=1이 필요합니다.",
@@ -13909,7 +13911,9 @@
       "producerDetached": "단축키가 제거되었습니다. 릴레이로 다시 작성",
       "dryDelete": "삭제는 연습 실행입니다. --execute 및 YSK_EXECUTE=1을 전달합니다.",
       "deleted": "노드가 삭제되었습니다.",
-      "leftoverRemoved": "남은 음식 제거 {{path}}"
+      "leftoverRemoved": "남은 음식 제거 {{path}}",
+      "dryNearAccount": "account_id를 {{account}}로 설정합니다(pass --execute). 비밀은 절대 변경되지 않습니다.",
+      "nearAccountWrote": "account_id를 {{account}}로 설정하세요. 비밀번호가 변경되지 않았습니다. 노드가 실행 중인 경우 다시 시작합니다."
     },
     "create": "노드 만들기",
     "wizard": {
@@ -14077,13 +14081,13 @@
       "nearStakeKey": "공개 키 스테이크",
       "nearStakeKeyPending": "처음 시작한 후에 나타납니다(init 근처). RPC가 준비되지 않았다고 해서 키가 누락된 것은 아닙니다.",
       "nearAccountId": "키 파일 account_id",
-      "nearAccountIdPending": "{pool}{{suffix}}로 직접 설정할 때까지 비어 있는 경우가 많습니다. 이 패널은 validator_key.json을 작성하지 않습니다.",
+      "nearAccountIdPending": "풀이 존재한 후 {{pool}}{{suffix}}로 설정할 때까지 비어 있는 경우가 많습니다. 패널은 이 필드만 작성하며 secret_key는 작성하지 않습니다.",
       "nearFactory": "스테이킹 풀 공장",
       "nearPublicAddr": "공개 P2P(피어)",
       "nearPublicAddrPending": "처음 시작하면 WAN:{{port}}이 config.json에 기록된 후 나타납니다.",
-      "nearCreateCommand": "create_stake_pool 명령",
+      "nearCreateCommand": "create_staking_pool 명령",
       "nearPointing": "풀 계약은 이 서버의 IP를 사용하지 않습니다. 이 노드의 지분 공개 키를 저장합니다. 피어는 위의 공개 P2P 행(호스트 포트 {{port}})을 사용합니다. RPC는 로컬호스트에 유지됩니다.",
-      "nearAccountIdHint": "풀이 존재하면 validator_key.json의 account_id를 직접 {pool}{{suffix}}로 설정하세요. 이 패널은 해당 파일을 쓰지 않습니다.",
+      "nearAccountIdHint": "풀이 존재하면 여기에서 account_id를 설정합니다(파일을 직접 편집하지 마세요). 패널은 secret_key를 쓰지 않습니다.",
       "cosmosPubkey": "합의 공개 키",
       "cosmosPubkeyPending": "gaiad init가 priv_validator_key.json을 작성한 후에 나타납니다. RPC가 준비되지 않았다고 해서 키가 누락된 것은 아닙니다.",
       "cosmosChainId": "체인 ID",
@@ -14092,10 +14096,12 @@
       "ethBeacon": "비콘 API(로컬호스트)",
       "ethBeaconPending": "이 호스트의 비콘 HTTP입니다. 이 URL에서 직접 실행하는 유효성 검사기 클라이언트를 지정하세요. 이 작성에는 VC가 없습니다.",
       "cosmosCreateCommand": "생성 유효성 검사기 명령",
+      "cosmosCreateJson": "validator.json (gaiad v28)",
+      "copyFailed": "복사 실패",
       "solIdentity": "신원 공개키",
       "solIdentityPending": "RPC가 getIdentity에 응답한 후에 나타납니다. 이 프로세스는 귀하가 직접 투표 계정을 추가할 때까지 투표가 불가능합니다.",
       "adaP2pPort": "릴레이 P2P 포트",
-      "adaP2pPending": "이 호스트의 공용 IPv4와 이 포트를 topology.json에 넣습니다. 이 패널은 WAN을 조사하지 않습니다.",
+      "adaP2pPending": "풀 등록 인증서에서 이 호스트의 공개 IPv4(또는 DNS) 및 이 포트를 광고합니다. topology.json localRoots는 자신만의 블록 프로듀서를 위한 것입니다. 이 패널은 WAN를 조사하지 않습니다.",
       "notPosTitle": "지분 증명이 아님",
       "notPosBody": "여기서 비트코인은 전체 노드 또는 정리된 노드입니다. 이 페이지에는 스테이킹 지갑이 없습니다.",
       "eth": {
@@ -14117,9 +14123,9 @@
         "steps": [
           "실행과 비콘이 동기화될 때까지 기다립니다.",
           "이 네트워크(이 페이지의 Hoodi 또는 Mainnet)에 대한 공식 런치패드를 엽니다. 세폴리아에는 런치패드 버튼이 없습니다.",
-          "오프라인으로 키 저장소를 생성합니다. 출금 주소를 본인의 ETH 지갑으로 설정하세요.",
-          "32 ETH를 예치하세요(가스를 위해 추가로 보관하세요).",
-          "검증인 클라이언트를 직접 실행해보세요. 이 작성에는 VC가 없습니다. 비콘 datadir에 키 저장소를 넣는 것은 증명되지 않습니다."
+          "오프라인에서는 keystore(staking-deposit-cli)를 생성합니다. 출금 주소를 본인의 ETH 지갑으로 설정하세요.",
+          "launchpad에 32 ETH를 예치하세요(가스를 위해 추가로 보관하세요).",
+          "이 카드의 비콘 URL에 대해 직접 validator client를 실행하세요(예: lighthouse vc --beacon-nodes). 이 작성에는 VC가 없습니다. 비콘 datadir에 keystore를 넣는 것은 증명되지 않습니다."
         ],
         "never": [
           "이 패널을 포함하여 누구에게도 시드 문구나 출금 키를 알려주지 마십시오.",
@@ -14141,10 +14147,10 @@
           "이 노드의 NodeID 및 BLS 증명을 사용하여 Core에서 유효성 검사기를 추가합니다."
         ],
         "steps": [
-          "이 노드가 동기화될 때까지 기다리세요.",
-          "인스턴스 페이지에 표시된 NodeID, BLS 공개 키, BLS 소유 증명을 복사합니다.",
-          "Core 웹(Stake → Validate) 또는 Core를 통한 Ledger를 통해 P-Chain에 등록하세요.",
-          "메인넷에는 최소 2,000 AVAX, 최소 14일 기간 및 예비 수수료가 필요합니다."
+          "이 노드가 동기화되고 NodeID / BLS 행(RPC)이 나타날 때까지 기다립니다.",
+          "NodeID, BLS 공개 키, BLS 소유 증명을 복사합니다.",
+          "Core 웹(Stake → Validate) 또는 Ledger을 통해 Core를 통해 P-Chain에 등록하세요. 트랜잭션은 서버 IP를 사용하지 않습니다.",
+          "메인넷에는 최소 2,000 AVAX, 최소 기간 14일, 예비 수수료가 필요합니다. Fuji은 1 AVAX입니다."
         ],
         "never": [
           "AVAX를 이 패널로 보내지 마십시오.",
@@ -14163,76 +14169,80 @@
         ],
         "youDo": [
           "풀 키를 오프라인으로 생성하세요.",
-          "공식 Cardano 문서를 사용하여 풀을 등록하세요.",
-          "이 호스트의 공용 IPv4 및 릴레이 P2P 포트를 topology.json에 넣습니다."
+          "공식 Cardano CLI에 풀을 등록하세요. 이 호스트의 공개 IPv4 또는 DNS 및 릴레이 P2P 포트를 풀 등록 인증서에 넣습니다.",
+          "이 페이지에 KES, VRF, opcert를 첨부하세요. 콜드 키를 업로드하지 마십시오."
         ],
         "steps": [
           "공식 스테이크풀 운영 가이드를 읽어보세요.",
           "오프라인 시스템에서 콜드, KES 및 VRF 키를 생성합니다.",
-          "해당 키를 사용하여 온체인에 풀을 등록하세요.",
-          "이 인스턴스 페이지에서 KES, VRF 및 운영 인증서를 첨부합니다. 콜드 키를 업로드하지 마십시오.",
-          "릴레이를 public-ip:P2P-port(이 카드에 표시된 포트)로 광고합니다. 이 패널은 WAN 주소를 조회하지 않습니다."
+          "풀을 온체인에 등록하세요. 해당 인증서의 릴레이를 광고합니다(--pool-relay-ipv4 또는 DNS + 이 카드의 P2P 포트). 공개 검색은 topology.json가 아닌 인증서입니다.",
+          "이 인스턴스 페이지에서 KES, VRF 및 운영 인증서를 첨부하세요. 콜드 키는 거부됩니다.",
+          "topology.json localRoots는 자신의 블록 생산자를 위한 것입니다(광고: 거짓). 이 패널은 WAN 주소를 조회하지 않습니다."
         ],
         "never": [
           "이것을 MetaMask 원클릭 스테이크로 취급하지 마십시오.",
-          "검증인 호스트에 콜드 키를 저장하지 마십시오."
+          "검증인 호스트에 콜드 키를 저장하지 마십시오.",
+          "체인에 릴레이를 등록하기 위해 편집 topology.json만 기대하지 마십시오."
         ]
       },
       "near": {
         "model": "공식 공장에서 스테이킹 풀 계약을 생성하세요. 계약은 서버 IP가 아닌 이 노드의 공개 키를 저장합니다.",
         "min": "공식 검증인 문서를 참조하세요(풀과 지분을 생성하려면 30개 NEAR).",
         "wallets": "공식 NEAR 지갑 / 락업",
-        "panel": "근처에서 실행됩니다. 초기화 후 공개 키, 팩토리 및 create_stake_pool 명령을 보여줍니다.",
+        "panel": "neard를 실행합니다. 양식 채우기 create_staking_pool; 풀이 존재하면 account_id만 씁니다.",
         "yskDoes": [
           "localhost에서는 RPC를 사용하고 24567에서는 P2P를 사용하여 Neard를 실행합니다.",
-          "초기화 후 스테이크 공개 키, 공개 P2P 주소, 팩토리 및 복사 가능한 create_stake_pool 명령을 표시합니다.",
-          "절대로 validator_key.json을 작성하거나 거래를 브로드캐스트하지 마세요."
+          "초기화 후 스테이크 공개 키, 공개 P2P 주소 및 공장을 표시합니다.",
+          "풀 이름 + 소유자 + 공개 키로 create_staking_pool를 입력합니다. 풀이 존재하면 account_id만 작성하세요. 절대 secret_key가 아니고 트랜잭션도 작성하지 마세요."
         ],
         "youDo": [
-          "이 인스턴스 페이지에서 공개 키와 명령을 복사합니다.",
-          "자신의 NEAR 계정에서 공식 공장에 전화하세요.",
-          "풀이 존재하면 validator_key.json의 account_id를 직접 {pool}.{factory}로 설정하세요.",
-          "지갑에서 해당 풀에 지분을 투자하세요."
+          "노드를 시작하고 이 페이지에서 공개 키를 기다립니다.",
+          "풀 이름과 소유자를 입력한 후 명령을 복사합니다.",
+          "자신의 NEAR 지갑이나 Near-cli에서 create_staking_pool에 서명하세요.",
+          "여기로 돌아와 account_id를 설정하세요. 지갑에서 해당 풀에 지분을 투자하세요."
         ],
         "steps": [
           "노드를 시작하고 공개 키가 나타날 때까지 초기화가 완료될 때까지 기다립니다(RPC 준비 안 됨은 누락된 키와 동일하지 않음).",
-          "스테이크 공개 키와 create_stake_pool 명령을 복사하세요.",
-          "지갑에서 저장을 위해 30 NEAR가 있는 공장(testnet pool.f863973.m0 / mainnet poolv1.near)에 전화하세요. 복사된 명령은 --accountId를 사용합니다. 가까운 CLI에서 --account_id를 예상하는 경우 해당 CLI의 --help를 따르세요.",
-          "validator_key.json의 account_id를 새 풀 계정으로 설정합니다. 이 패널은 해당 파일을 쓰지 않습니다.",
-          "대량으로 스테이킹하기 전에 RPC가 응답하고 노드가 동기화될 때까지 기다리십시오. 피어는 Public P2P :24567을 사용합니다. 계약은 IP를 사용하지 않습니다."
+          "풀 짧은 이름과 소유자 계정을 입력합니다. 채워진 create_staking_pool 명령을 복사합니다.",
+          "지갑에서 30 NEAR로 공장(testnet pool.f863973.m0 / mainnet poolv1.near)에 전화하여 저장하세요. 이 명령은 --accountId를 사용합니다. 가까운 CLI에서 --account_id를 예상하는 경우 해당 CLI의 --help를 따르세요.",
+          "풀이 존재하면 이 페이지에서 Set account_id를 사용하세요(확인 = 인스턴스 ID). validator_key.json을 직접 편집하지 마세요.",
+          "노드가 이미 실행 중이면 다시 시작하세요. 대량으로 스테이킹하기 전에 RPC 응답이 있고 노드가 동기화될 때까지 기다리세요. 피어는 공개 P2P을 사용합니다. 계약은 IP를 사용하지 않습니다."
         ],
         "never": [
           "이 패널에 시드 문구를 붙여넣지 마십시오.",
           "이 서버의 IP를 계약에 넣지 마십시오.",
-          "패널이 create_stake_pool 트랜잭션을 보낼 것이라고 기대하지 마십시오."
+          "패널이 create_staking_pool 트랜잭션을 보낼 것이라고 기대하지 마십시오."
         ]
       },
       "cosmos": {
         "model": "서버 IP가 아닌 이 노드의 합의 공개 키를 사용하여 운영자 지갑에서 유효성 검사기를 생성합니다.",
         "min": "공식 Cosmos Hub 문서를 참조하세요(uatom의 자체 위임).",
         "wallets": "Keplr 또는 귀하가 관리하는 다른 Cosmos 지갑",
-        "panel": "Gaiad를 실행합니다. 초기화 후 합의 공개 키와 복사 가능한 create-validator 명령을 보여줍니다.",
-        "honesty": "검증자 생성 트랜잭션은 이 노드의 합의 공개 키를 저장합니다. 피어는 26656에서 공용 P2P를 사용합니다. RPC는 localhost에 유지됩니다. 이 패널은 트랜잭션을 브로드캐스트하거나 priv_key를 읽지 않습니다.",
+        "panel": "gaiad v28을 실행합니다. 합의 공개 키를 보여줍니다. 양식은 validator.json + create-validator를 채웁니다. priv_validator_key.json 또는 브로드캐스트를 작성하지 마세요.",
+        "honesty": "이 gaiad는 v28(JSON 파일)입니다. 허브 문서에는 여전히 플래그가 표시됩니다. 여기서는 실패합니다. 트랜잭션은 서버 IP가 아닌 이 노드의 합의 공개 키를 저장합니다. 피어는 공개 P2P를 사용합니다. RPC는 로컬호스트에 유지됩니다. 이 패널은 priv_key를 브로드캐스트하거나 읽지 않습니다.",
         "yskDoes": [
-          "localhost에서 RPC를 사용하고 26656에서 P2P를 사용하여 gaiad를 실행합니다.",
-          "초기화 후 합의 공개 키, 체인 ID, 공개 P2P 및 복사 가능한 create-validator 명령을 표시합니다.",
-          "절대로 priv_validator_key.json을 작성하거나 거래를 브로드캐스트하지 마세요."
+          "localhost에서는 RPC로 gaiad를 실행하고 26656에서는 P2P를 실행합니다. 최소 가스 가격은 0.005uatom입니다.",
+          "초기화 후 합의 공개 키, 체인 ID 및 공개 P2P를 표시합니다.",
+          "amount, moniker 및 --from과 합의 pubkey에서 validator.json 및 gaiad v28 명령을 입력합니다. 절대로 priv_validator_key.json을 작성하거나 거래를 브로드캐스트하지 마세요."
         ],
         "youDo": [
-          "이 인스턴스 페이지에서 합의 공개 키와 명령을 복사합니다.",
-          "운영자 지갑(귀하가 관리하는 Keplr 또는 Gaiad 키)에서 create-validator를 제출하세요.",
-          "해당 지갑 니모닉을 이 호스트의 합의 키와 혼합하지 마십시오."
+          "노드를 시작하고 이 페이지에서 합의 공개 키를 기다립니다.",
+          "금액, 이름 및 --from을 입력합니다. validator.json을 복사한 다음 gaiad 명령을 복사하세요.",
+          "귀하가 제어하는 ​​Keplr 또는 Gaiad 키에서 서명하세요. 해당 니모닉을 이 호스트의 합의 키와 혼합하지 마십시오."
         ],
         "steps": [
           "노드를 시작하고 합의 공개 키가 나타날 때까지 gaiad init를 기다립니다(RPC 준비 안 됨은 누락된 키와 동일하지 않음).",
-          "합의 공개 키와 create-validator 명령을 복사합니다(체인 ID는 메인넷에서는 cosmoshub-4, 테스트넷에서는 공급자임).",
-          "운영자 지갑에서 생성 유효성 검사기를 방송하세요. 금액과 이름은 귀하의 것입니다.",
-          "대량으로 본딩하기 전에 RPC가 응답하고 노드가 동기화될 때까지 기다리십시오. 피어는 tcp://WAN:26656을 사용합니다. 트랜잭션은 IP를 사용하지 않습니다."
+          "자체 위임(1atom = 1 ATOM 또는 uatom), 모니커 및 --from을 입력합니다. validator.json을 복사한 다음 gaiad 명령을 복사하세요. 이 노드는 Hub 문서의 플래그 형식이 아닌 gaiad v28: JSON 파일입니다. chain-id는 메인넷에서는 cosmoshub-4, 테스트넷에서는 공급자입니다.",
+          "복사된 --gas-prices는 이 노드와 일치하도록 0.005uatom입니다. Hub 문서의 0.0025uatom 예제나 플래그 기반 생성 유효성 검사기를 붙여넣지 마세요.",
+          "validator.json을 저장하고 운영자 지갑에서 방송하세요. 트랜잭션은 서버 IP를 사용하지 않습니다. 피어는 tcp://WAN:{{port}}를 사용합니다.",
+          "대량으로 본딩하기 전에 RPC 응답이 있고 노드가 동기화될 때까지 기다리세요."
         ],
         "never": [
           "운영자 지갑 니모닉을 합의 키와 혼합하지 마십시오.",
           "여기에 지갑 니모닉을 입력하지 마세요.",
-          "이 서버의 IP를 create-validator에 넣지 마십시오."
+          "이 서버의 IP를 create-validator에 넣지 마십시오.",
+          "Hub 문서의 --amount/--pubkey 플래그를 붙여넣지 마세요. 이 gaiad는 v28(validator.json)입니다.",
+          "이 노드에서는 0.0025uatom 가스를 사용하지 마세요. 작성 최소값은 0.005uatom입니다."
         ]
       },
       "sol": {
@@ -14254,12 +14264,13 @@
         "steps": [
           "이 호스트에 충분한 디스크와 IOPS가 있는지 확인합니다(메인넷은 일반적으로 2TiB+입니다).",
           "RPC가 응답할 때까지 기다린 후 여기에 표시된 ID 공개 키를 복사합니다.",
-          "공식 투표 계정 및 스테이크 가이드를 따르십시오(아래 링크).",
-          "이 작성은 --no-voting을 유지합니다. 투표 계정을 만든 후에 이 페이지가 투표를 시작할 것이라고 기대하지 마세요."
+          "귀하가 제어하는 ​​기계에서 공식 솔라나 도구를 사용하여 투표 키와 승인된 출금 키를 생성한 다음, 솔라나 투표 계정을 생성하세요.",
+          "이 작성은 --no-voting를 유지합니다. vote account을 생성해도 이 프로세스 투표가 이루어지지 않습니다."
         ],
         "never": [
           "이 패널에 브라우저 지갑 버튼이 있을 것이라고 기대하지 마십시오.",
-          "이 패널에 ID를 붙여넣거나 키 쌍을 투표하지 마십시오."
+          "이 패널에 ID를 붙여넣거나 키 쌍을 투표하지 마십시오.",
+          "vote account를 만든 후에 이 페이지에서 투표가 시작될 것이라고 기대하지 마세요."
         ]
       },
       "dot": {
@@ -14351,7 +14362,33 @@
         "never": [
           "이 페이지에서 스테이킹 지갑을 찾지 마세요."
         ]
-      }
+      },
+      "nearPoolSlug": "풀 이름",
+      "nearPoolSlugHint": "짧은 이름만 가능합니다. 공장에서는 {{suffix}}를 추가합니다.",
+      "nearOwner": "소유자 계정",
+      "nearOwnerHint": "NEAR 지갑에 create_staking_pool을 서명하는 계정입니다. 노드 키가 아닙니다.",
+      "nearPreview": "명령 미리보기",
+      "nearWriteAccount": "account_id 설정",
+      "nearWriteTitle": "validator_key.json account_id를 {{id}}로 설정하시겠습니까?",
+      "nearWriteDesc": "기존 키 파일에 account_id만 씁니다. create_staking_pool을 보내지 않습니다. secret_key를 건드리지 않습니다.",
+      "nearWriteC1": "account_id는 {{pool}}{{suffix}}가 됩니다.",
+      "nearWriteC2": "패널은 factory 트랜잭션에 서명하지 않습니다",
+      "nearRestart": "쓰기 후 노드를 다시 시작하십시오.",
+      "nearNeedKey": "스테이크 공개 키가 나타날 때까지(neard init) 기다린 후 이 양식을 작성하세요.",
+      "nearNeedSlug": "account_id를 설정하려면 풀 이름을 입력하세요.",
+      "nearNeedOwner": "명령을 입력하려면 소유자 계정을 입력하세요. account_id 설정에는 풀 이름만 필요합니다.",
+      "cosmosPointing": "이 gaiad는 v28입니다: validator.json을 복사한 다음, create-validator validator.json을 복사합니다. 허브 문서에는 여전히 플래그가 표시됩니다. 여기서는 실패합니다. 트랜잭션은 서버 IP가 아닌 이 노드의 합의 공개 키를 사용합니다. 피어는 공용 P2P(호스트 포트 {{port}})를 사용합니다. 가스는 0.005uatom입니다. 허브 문서의 0.0025uatom 예가 아닙니다.",
+      "avaxPointing": "P-Chain 등록은 서버 IP가 아닌 이 NodeID 및 BLS 증명을 사용합니다. RPC는 로컬 호스트에 유지됩니다. Core에 등록하세요(스테이킹 → 검증).",
+      "ethVcCommand": "Validator client 예시 (이 compose에 없음)",
+      "ethVcHint": "이 비콘 URL에 대해 직접 validator client를 실행하세요. keystore을 비콘 데이터 디렉터리로 가져오는 것은 증명되지 않습니다.",
+      "cosmosAmount": "자기 위임",
+      "cosmosAmountHint": "uatom, 또는 1ATOM의 경우 1atom입니다. 베어 1은 1 ATOM이 아니라 1 uato입니다.",
+      "cosmosAmountParsed": "{{amount}} = {{atom}}",
+      "cosmosMoniker": "Moniker",
+      "cosmosFromKey": "--from 키 이름",
+      "cosmosFromHint": "로컬 gaiad 키 이름 또는 Keplr로 서명합니다. 이 호스트의 합의 키가 아닙니다.",
+      "cosmosNeedPubkey": "합의 공개 키가 나타날 때까지 기다린 후(gaiad init) 이 양식을 작성하세요.",
+      "cosmosNeedFields": "금액, 이름, --from를 입력하여 명령을 입력하세요."
     },
     "alerts": {
       "diskTitle": "검증자 디스크가 위험합니다",

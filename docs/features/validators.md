@@ -43,6 +43,7 @@ Install and manage **L1 validator-ready nodes** (Ethereum, Avalanche, NEAR, Card
 | Official versions | `ysk-server validators versions --client ID [--refresh] --json` | read | GitHub list + pin. |
 | Pin a client tag | `ysk-server validators set-version --id ID --client ID --tag TAG --confirm ID --execute --json` | write-host | Recreates compose. |
 | Cardano producer keys | `ysk-server validators producer-keys --id ID --kes-file P --vrf-file P --opcert-file P --confirm ID --execute --json` | write-host | Hot keys only. `producer-detach` to remove. |
+| NEAR set pool account_id | `ysk-server validators near-account --id ID --pool-slug NAME --confirm ID --execute --json` | write-host | Writes `account_id` only. Dry-run without `--execute`. Optional `--restart`. |
 | Settings | `ysk-server validators settings [--auto-clear 0\|1] --json` | write-panel | auto-clear leftover ranking. |
 
 Risk: `read` · `write-panel` · `write-host` (see [docs-standard.md](../docs-standard.md)).
@@ -66,16 +67,16 @@ Full argv: [../cli/reference.md](../cli/reference.md).
 - Real apply still needs `YSK_EXECUTE=1` (and often root).  
 - **written** (data dir) ≠ **applied** (live host).  
 - Create without `--execute` is **written** (spec + compose). Start / stop / clear stay **blocked**.  
-- **NEAR:** the staking-pool contract stores this node’s `public_key`, not the server IP. Peers use `public_addr` on the **host P2P port** (`ports.p2p`, often 24567). RPC stays on localhost. The panel never writes `validator_key.json` or broadcasts `create_staking_pool`. RPC not ready is not the same as missing keys. Instances created before this compose change still advertise container port 24567 until you rewrite compose.  
+- **NEAR:** the staking-pool contract stores this node’s `public_key`, not the server IP. Peers use `public_addr` on the **host P2P port** (`ports.p2p`, often 24567). RPC stays on localhost. The instance form fills `create_staking_pool` and can write **only** `account_id` on existing `validator_key.json`. It never writes `secret_key`, never wallet-connects, and never broadcasts the factory transaction. RPC not ready is not the same as missing keys. Instances created before this compose change still advertise container port 24567 until you rewrite compose.  
 - **After the node is up:** the instance page lists numbered next steps and “do not” lines.  
-  - AVAX: NodeID + BLS after RPC answers.  
-  - NEAR: stake public key, factory, copyable `create_staking_pool` (disk; not RPC).  
-  - Cosmos: consensus public key, `chain-id`, copyable `create-validator` (gas prices match the node’s `0.005uatom`). Peers use host P2P (`tcp://WAN:{p2p}`).  
-  - ETH: execution + beacon only — no validator client. Copy the localhost beacon URL; Hoodi instances link the Hoodi launchpad only.  
-  - Solana: `--no-voting`; identity pubkey from `getIdentity`.  
+  - AVAX: NodeID + BLS after RPC answers. P-Chain registration in Core uses those values, not the server IP.  
+  - NEAR: stake public key, factory, form-filled `create_staking_pool` (disk; not RPC). After the pool exists, set `account_id` on this page.  
+  - Cosmos: consensus public key, `chain-id`, form-filled `validator.json` + `gaiad tx staking create-validator validator.json` (amount, moniker, `--from`). This node is **gaiad v28** (JSON file). Hub docs still show flags — those fail here. Gas is `0.005uatom` to match the node — not the Hub docs’ `0.0025uatom` example. The panel does not broadcast. Peers use host P2P (`tcp://WAN:{p2p}`).  
+  - ETH: execution + beacon only — no validator client. Copy the localhost beacon URL. If the CL is Lighthouse, also copy `lighthouse vc --beacon-nodes`. Other CLs: point your own VC at that URL. Hoodi instances link the Hoodi launchpad only. Putting a keystore in the beacon datadir does not attest.  
+  - Solana: `--no-voting`; identity pubkey from `getIdentity`. Creating a vote account does not make this process vote.  
   - Polkadot: full node, no `--validator`; the panel does not call `rotateKeys`.  
   - Sui / Aptos: fullnode / public fullnode, not a validator process.  
-  - Cardano: relay first; hot keys on this page; advertise public IP + P2P port in topology (panel does not probe WAN).  
+  - Cardano: relay first; hot keys on this page. Public advertise is the pool **registration certificate** (`--pool-relay-ipv4` or DNS + P2P port), not `topology.json`. `topology.json` `localRoots` is for your own block producer (`advertise: false`). The panel does not probe WAN.  
   - `validator-ready` is a disk profile, not “this process is already validating”.
 
 ## Panel-only ⚠️
@@ -85,6 +86,8 @@ Full argv: [../cli/reference.md](../cli/reference.md).
 | About tab | Operator help; CLI has `--help` / docs |
 | NetIO live poll | List page graph. `validators list` summaries already include last rx/tx when Docker answers |
 | Compose YAML editor | Interactive editor; save is `compose-write` |
+| Cosmos create-validator form | Fills copyable `validator.json` + gaiad v28 command (amount, moniker, `--from`). Nothing is written on the host; no CLI. |
+| ETH validator-client example | Lighthouse: copyable `lighthouse vc --beacon-nodes`. Other CLs: copy the beacon URL. Compose has no VC. |
 
 ## Related
 

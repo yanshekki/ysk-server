@@ -188,6 +188,14 @@ export const validatorsApi = {
       `/api/v1/validators/${encodeURIComponent(id)}/producer-keys/detach`,
       { method: 'POST', body: JSON.stringify({ confirm, execute }) },
     ),
+  nearAccount: (
+    id: string,
+    body: { poolSlug?: string; accountId?: string; confirm: string; restart?: boolean; execute?: boolean },
+  ) =>
+    api.requestRaw<ValidatorOpsResponse>(
+      `/api/v1/validators/${encodeURIComponent(id)}/near-account`,
+      { method: 'POST', body: JSON.stringify({ execute: true, ...body }) },
+    ),
   setVersion: (
     id: string,
     body: { clientId: string; tag: string; confirm: string; acceptMainnet?: boolean; execute?: boolean },

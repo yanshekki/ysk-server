@@ -13810,7 +13810,7 @@
       "disk": "磁盘"
     },
     "cli": {
-      "usage": "用法： ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "用法： ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "执行层客户端",
@@ -13867,11 +13867,13 @@
       "producerAdaOnly": "营运凭证只适用于 Cardano",
       "needProducerConfirm": "挂上营运凭证须 confirm=实例识别码 或 PRODUCER",
       "needMainnetProducerAck": "主网挂上营运凭证须 acceptMainnet",
-      "producerColdRejected": "拒绝 cold 或 pool 拥有者签名金钥。cold 金钥须保持离线。",
-      "producerTooLarge": "金钥档大于 64 KiB",
-      "producerBadType": "此档不是 KES 金钥、VRF 金钥或 operational certificate",
+      "producerColdRejected": "拒绝 cold 或 pool 拥有者签名密钥。cold 密钥须保持离线。",
+      "producerTooLarge": "密钥档大于 64 KiB",
+      "producerBadType": "此档不是 KES 密钥、VRF 密钥或 operational certificate",
       "producerEmpty": "请至少提供 kes、vrf 或 opcert 其中一份",
-      "switchNeedDetachProducer": "转网络前请先卸下营运凭证"
+      "switchNeedDetachProducer": "转网络前请先卸下营运凭证",
+      "nearAccountInvalid": "池名称必须是短名称（或完整的 {pool}{factory} 帐户）。",
+      "nearKeyMissing": "validator_key.json 丢失或没有 public_key。启动节点并等待neard init。"
     },
     "notes": {
       "beta": "此功能属 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
@@ -13904,12 +13906,14 @@
       "nativePrune": "已执行客户端原生清理命令",
       "dryProducer": "挂上营运凭证为试行。请加 --execute 及 YSK_EXECUTE=1。",
       "dryProducerDetach": "卸下营运凭证为试行。请加 --execute 及 YSK_EXECUTE=1。",
-      "producerPartial": "已写入热金钥。KES、VRF、opcert 齐了才会以 block producer 启动。",
-      "producerAttached": "已挂上热金钥，compose 改为 block producer",
-      "producerDetached": "已卸下热金钥，compose 改回 relay",
+      "producerPartial": "已写入热密钥。KES、VRF、opcert 齐了才会以 block producer 启动。",
+      "producerAttached": "已挂上热密钥，compose 改为 block producer",
+      "producerDetached": "已卸下热密钥，compose 改回 relay",
       "dryDelete": "删除属预演。真正套用须 --execute 与 YSK_EXECUTE=1。",
       "deleted": "已删除节点",
-      "leftoverRemoved": "已删除残留 {{path}}"
+      "leftoverRemoved": "已删除残留 {{path}}",
+      "dryNearAccount": "将 account_id 设置为 {{account}}（通过 --execute）。秘密永远不会改变。",
+      "nearAccountWrote": "将 account_id 设置为 {{account}}。秘密没有改变。如果节点正在运行，请重新启动该节点。"
     },
     "create": "建立节点",
     "wizard": {
@@ -14017,9 +14021,9 @@
       "none": "此链未设置快照来源。"
     },
     "producer": {
-      "title": "Block producer 热金钥",
-      "hint": "不是填 IP。请上传离线机产生的 KES、VRF 与 operational certificate。cold 金钥不要放在此主机。",
-      "warn": "此节点已公开 P2P，挂上后会出块。官方拓扑把 producer 放在内网。这三份档是热金钥。",
+      "title": "Block producer 热密钥",
+      "hint": "不是填 IP。请上传离线机产生的 KES、VRF 与 operational certificate。cold 密钥不要放在此主机。",
+      "warn": "此节点已公开 P2P，挂上后会出块。官方拓扑把 producer 放在内网。这三份档是热密钥。",
       "kes": "KES",
       "vrf": "VRF",
       "opcert": "操作证书",
@@ -14036,15 +14040,15 @@
       "choose": "选择档案",
       "apply": "套用并以 block producer 重启",
       "detach": "卸下并改回 relay",
-      "applyTitle": "将热金钥挂到 {{id}}？",
+      "applyTitle": "将热密钥挂到 {{id}}？",
       "applyDesc": "KES、VRF、opcert 会写入实例 keys 目录，并重写 compose。容器会以 block producer 重启。",
-      "applyC1": "cold 金钥须保持离线。不要上传 cold.skey。",
+      "applyC1": "cold 密钥须保持离线。不要上传 cold.skey。",
       "applyC2": "档案有效时，运行中的节点可以出块。",
       "applyC3": "主网：离线或设定错误会错过出块。",
       "detachTitle": "从 {{id}} 卸下营运凭证？",
-      "detachDesc": "会从此主机删除热金钥，compose 改回 relay。",
+      "detachDesc": "会从此主机删除热密钥，compose 改回 relay。",
       "detachC1": "节点将不再出块。",
-      "mainnet": "主网：我明白此主机会保存热金钥并出块。"
+      "mainnet": "主网：我明白此主机会保存热密钥并出块。"
     },
     "stake": {
       "title": "准备质押（私钥由你保管）",
@@ -14055,7 +14059,7 @@
     },
     "playbook": {
       "overviewTitle": "各链如何质押",
-      "overviewDesc": "本面板只负责运行节点。钱包与金钥由你保管。以下只连官方网站。请勿在此输入助记词。",
+      "overviewDesc": "本面板只负责运行节点。钱包与密钥由你保管。以下只连官方网站。请勿在此输入助记词。",
       "colChain": "链",
       "colModel": "如何登记",
       "colMin": "常见最低额",
@@ -14077,13 +14081,13 @@
       "nearStakeKey": "质押公钥",
       "nearStakeKeyPending": "首次启动完成 neard init 后出现。RPC 未就绪不代表尚未产生密钥。",
       "nearAccountId": "密钥文件 account_id",
-      "nearAccountIdPending": "建池后须自行改成 {pool}{{suffix}}。本面板不写入 validator_key.json。",
-      "nearFactory": "质押矿池工厂",
+      "nearAccountIdPending": "池建立后须改成 {{pool}}{{suffix}}。本面板只写此栏，永不写入 secret_key。",
+      "nearFactory": "质押池 factory",
       "nearPublicAddr": "Public P2P（对等节点）",
       "nearPublicAddrPending": "首次启动把 WAN:{{port}} 写入 config.json 后出现。",
       "nearCreateCommand": "create_staking_pool 命令",
       "nearPointing": "质押池合约不以本服务器 IP 指向节点，而是存放此节点的 stake public key。对等节点使用上方 Public P2P（主机端口 {{port}}）。RPC 仅本机。",
-      "nearAccountIdHint": "池创建后，请自行把 validator_key.json 的 account_id 设为 {pool}{{suffix}}。本面板不写入该文件。",
+      "nearAccountIdHint": "池建立后，在此写入 account_id（无须人手改档）。面板永不写入 secret_key。",
       "cosmosPubkey": "共识公钥",
       "cosmosPubkeyPending": "gaiad init 写入 priv_validator_key.json 后出现。RPC 未就绪不代表尚未产生密钥。",
       "cosmosChainId": "链号",
@@ -14095,7 +14099,7 @@
       "solIdentity": "身份公钥",
       "solIdentityPending": "RPC 响应 getIdentity 后出现。本进程为 --no-voting，除非你自行创建 vote account。",
       "adaP2pPort": "Relay P2P 端口",
-      "adaP2pPending": "请把本主机公网 IPv4 与此端口写入 topology.json。本面板不探测 WAN。",
+      "adaP2pPending": "请把本主机公开 IPv4（或 DNS）与此端口写入池注册证书。topology.json 的 localRoots 只连你自己的 block producer。本面板不探测 WAN。",
       "notPosTitle": "不是权益证明",
       "notPosBody": "此处的 Bitcoin 是完整或 Pruned 节点。本页没有质押钱包。",
       "eth": {
@@ -14103,11 +14107,11 @@
         "min": "32 ETH + 手续费",
         "wallets": "MetaMask、Ledger、Trezor — 只在官方 launchpad 使用",
         "panel": "运行 EL + beacon。RPC 与 beacon API 仅本机。compose 没有 validator client。",
-        "honesty": "此实例只是执行层 + beacon。compose 没有 validator client。把 keystore 放进 beacon 资料目录不会开始 attest。存款合约不以本服务器 IP 指向节点。",
+        "honesty": "此实例只是执行层 + beacon。compose 没有 validator client。把 keystore 放进 beacon 数据目录不会开始 attest。存款合约不以本服务器 IP 指向节点。",
         "yskDoes": [
           "安装并启动执行层与 beacon 客户端。",
           "显示磁盘、对等节点与升级状态。",
-          "不运行 validator client，亦不载入签署 keystore。"
+          "不运行 validator client，亦不加载签署 keystore。"
         ],
         "youDo": [
           "用官方 launchpad 或 staking-deposit-cli 自行产生 keystore，提取地址填入你的 ETH 钱包。",
@@ -14115,16 +14119,16 @@
           "自行运行 validator client（不是此 compose），对准此实例本机 beacon API。"
         ],
         "steps": [
-          "等执行层与 beacon 完成同步。",
-          "开启本网络的官方 launchpad（本页提供 Hoodi 或 Mainnet）。Sepolia 在此没有 launchpad 按钮。",
-          "离线产生 keystore。提取地址填入你自己的 ETH 钱包。",
-          "存入 32 ETH（另预留手续费）。",
-          "自行运行 validator client。此 compose 没有 VC — 把 keystore 放入 beacon 资料目录不会开始 attest。"
+          "等待执行层与 beacon 同步完成。",
+          "开启此网络的官方 launchpad（本页有 Hoodi 或 Mainnet）。Sepolia 不提供 launchpad 按钮。",
+          "离线用 staking-deposit-cli 产生 keystore。提款地址设为你自己的 ETH 钱包。",
+          "在 launchpad 存入 32 ETH（另留 gas）。",
+          "自行运行 validator client，指向本卡的 beacon URL（示例：lighthouse vc --beacon-nodes）。此 compose 没有 VC — 把 keystore 放入 beacon 数据目录不会开始 attest。"
         ],
         "never": [
-          "不要把助记词或提取私钥交给任何人，包括本面板。",
-          "不要把签署 keystore 上传到任何云端托管。",
-          "不要以为把 keystore 复制进 beacon 目录后本页就会 attest。"
+          "不要把助记词或提款密钥交给任何人，包括本面板。",
+          "不要把签署 keystore 上传到托管云。",
+          "不要指望把 keystore 复制进 beacon 数据目录后本页会开始 attest。"
         ]
       },
       "avax": {
@@ -14141,10 +14145,10 @@
           "在 Core 用此节点的 NodeID 与 BLS 证明新增验证者。"
         ],
         "steps": [
-          "等待此节点完成同步。",
-          "复制实例页显示的 NodeID、BLS 公钥与 BLS 持有证明。",
-          "在 Core web（Staking → Validate），或经 Core 使用 Ledger，于 P-Chain 登记。",
-          "主网至少需要 2,000 AVAX、最短 14 日，并预留手续费。"
+          "等待此节点同步，并出现 NodeID／BLS 列（须 RPC）。",
+          "复制 NodeID、BLS 公钥与 BLS proof of possession。",
+          "在 Core 网页（Staking → Validate），或经 Core 用 Ledger，在 P-Chain 登记。交易不收服务器 IP。",
+          "主网至少 2,000 AVAX、最短 14 日，并预留手续费。Fuji 为 1 AVAX。"
         ],
         "never": [
           "不要把 AVAX 转入本面板。",
@@ -14152,54 +14156,55 @@
         ]
       },
       "ada": {
-        "model": "以离线 cold／KES／VRF 金钥经营 stake pool，不是浏览器钱包一键操作。",
+        "model": "以离线 cold／KES／VRF 密钥经营 stake pool，不是浏览器钱包一键操作。",
         "min": "质押金额由你决定（见官方文件）",
-        "wallets": "官方 stake pool 工具（cold 金钥保持离线）",
+        "wallets": "官方 stake pool 工具（cold 密钥保持离线）",
         "panel": "先以 relay 运行 cardano-node；可在本页挂上热钥。",
-        "honesty": "此实例预设为 relay。链上登记 pool 用你离线保管的 cold 金钥。同侪与拓扑使用本主机公开 IPv4 与本卡显示的 P2P 埠 — 面板不探测 WAN。",
+        "honesty": "此实例预设为 relay。链上登记 pool 用你离线保管的 cold 密钥。同侪与拓扑使用本主机公开 IPv4 与本卡显示的 P2P 端口 — 面板不探测 WAN。",
         "yskDoes": [
           "运行 cardano-node，并在支援时提供 Mithril 快照还原。",
-          "你提供时挂上 KES、VRF 与 opcert。拒绝 cold 金钥。"
+          "你提供时挂上 KES、VRF 与 opcert。拒绝 cold 密钥。"
         ],
         "youDo": [
-          "离线产生 pool 金钥。",
-          "按官方 Cardano 文件登记 stake pool。",
-          "把本主机公开 IPv4 与 relay P2P 埠写入 topology.json。"
+          "离线产生池密钥。",
+          "用官方 Cardano CLI 注册池。把本机公网 IPv4 或 DNS 与 relay P2P 端口写入池注册证书。",
+          "在本页挂上 KES、VRF 与 opcert。不要上传冷钥。"
         ],
         "steps": [
           "阅读官方 operate-a-stake-pool 指南。",
-          "在离线机器产生 cold、KES、VRF 金钥。",
-          "用该等金钥在链上登记 stake pool。",
-          "在此实例页挂上 KES、VRF 与 operational certificate。不要上传 cold 金钥。",
-          "以 公开IP:P2P埠 公告 relay（埠见本卡）。本面板不查 WAN 地址。"
+          "在离线机器产生 cold、KES、VRF 密钥。",
+          "链上注册池。在该证书广告 relay（--pool-relay-ipv4 或 DNS + 本卡 P2P 端口）。公众发现靠证书，不是 topology.json。",
+          "在本实例页挂上 KES、VRF 与 operational certificate。冷钥会被拒绝。",
+          "topology.json 的 localRoots 只连你自己的 block producer（advertise: false）。本面板不查 WAN 位址。"
         ],
         "never": [
           "不要当成 MetaMask 一键质押。",
-          "不要把 cold 金钥放在验证者主机上。"
+          "不要把冷钥放在验证者主机。",
+          "不要以为只改 topology.json 就能在链上登记 relay。"
         ]
       },
       "near": {
         "model": "在官方 factory 建立 staking-pool 合约。合约存放此节点的 public key，不是服务器 IP。",
         "min": "见官方验证者文件（建立池须 30 NEAR，另加质押）",
         "wallets": "官方 NEAR 钱包／lockup",
-        "panel": "运行 neard；init 后显示 public key、factory 与 create_staking_pool 命令",
+        "panel": "运行 neard；表单填好 create_staking_pool；池建立后只写入 account_id。",
         "yskDoes": [
-          "运行 neard，RPC 仅本机，P2P 使用 24567。",
-          "init 后显示 stake public key、Public P2P、factory，以及可复制的 create_staking_pool 命令。",
-          "永不写入 validator_key.json，亦不代发交易。"
+          "运行 neard，RPC 只在本机，P2P 在 24567。",
+          "init 后显示质押公钥、公开 P2P 位址与 factory。",
+          "用池名称、拥有人与公钥填好 create_staking_pool。池建立后只写 account_id — 永不改 secret_key，永不送出交易。"
         ],
         "youDo": [
-          "在此实例页复制 public key 与命令。",
-          "用你自己的 NEAR 账户呼叫官方 factory。",
-          "池建立后，自行把 validator_key.json 的 account_id 设为 {pool}.{factory}。",
-          "用你的钱包将币质押到该池。"
+          "启动节点，等待本页出现公钥。",
+          "填池名称与拥有人，然后复制命令。",
+          "用你自己的 NEAR 钱包或 near-cli 签署 create_staking_pool。",
+          "返回本页写入 account_id。再从钱包向该池质押。"
         ],
         "steps": [
-          "启动节点，等 neard init 后出现 public key（RPC 未就绪不代表尚未产生金钥）。",
-          "复制 stake public key 与 create_staking_pool 命令。",
-          "用你的钱包呼叫 factory（测试网 pool.f863973.m0／主网 poolv1.near），并附带 30 NEAR 作为储存。复制的命令使用 --accountId；若你的 near CLI 要 --account_id，以该 CLI 的 --help 为准。",
-          "把 validator_key.json 的 account_id 设为新建的池账户。本面板不写入该档。",
-          "大量质押前应等 RPC 可答且同步完成。同侪使用 Public P2P :24567 — 合约不接收 IP。"
+          "启动节点，等待 neard init 后公钥出现（RPC 未就绪不代表尚未产生密钥）。",
+          "填入池短名与拥有人账号。复制已填好的 create_staking_pool 命令。",
+          "用你的钱包呼叫 factory（测试网 pool.f863973.m0／主网 poolv1.near），并付 30 NEAR 作储存。命令使用 --accountId；若你的 near CLI 要用 --account_id，请依该 CLI 的 --help。",
+          "池建立后，在本页按“写入 account_id”（确认字为实例识别码）。不要人手改 validator_key.json。",
+          "若节点已在运行请重启。等待 RPC 回应且同步完成后再质押大量金额。对等端使用 Public P2P — 合约不收 IP。"
         ],
         "never": [
           "不要在本面板贴上助记词。",
@@ -14211,28 +14216,31 @@
         "model": "用操作者钱包送出 create-validator。交易存放此节点的共识公钥，不是服务器 IP。",
         "min": "见官方 Cosmos Hub 文件（自行质押以 uatom 计）",
         "wallets": "Keplr 或其他由你控制的 Cosmos 钱包",
-        "panel": "运行 gaiad；init 后显示共识公钥与可复制的 create-validator 命令",
-        "honesty": "create-validator 存放此节点的共识公钥。同侪使用 26656 的 Public P2P。RPC 仅本机。本面板不代发交易，亦不读取 priv_key。",
+        "panel": "运行 gaiad v28；显示共识公钥；表单填好 validator.json 与 create-validator。永不写入 priv_validator_key.json，亦不代发交易。",
+        "honesty": "此 gaiad 为 v28（JSON 档）。Hub 文件仍用 flags — 在此节点会失败。交易存放此节点的共识公钥，不是服务器 IP。同侪使用 Public P2P。RPC 仅本机。本面板不代发交易，亦不读取 priv_key。",
         "yskDoes": [
-          "运行 gaiad，RPC 仅本机，P2P 使用 26656。",
-          "init 后显示共识公钥、chain-id、Public P2P，以及可复制的 create-validator 命令。",
-          "永不写入 priv_validator_key.json，亦不代发交易。"
+          "运行 gaiad，RPC 只在本机，P2P 在 26656。minimum-gas-prices 为 0.005uatom。",
+          "init 后显示共识公钥、chain-id 与公开 P2P。",
+          "用数量、moniker、--from 与共识公钥填好 validator.json 与 gaiad v28 命令。永不写入 priv_validator_key.json，永不代发交易。"
         ],
         "youDo": [
-          "在此实例页复制共识公钥与命令。",
-          "用你控制的操作者钱包（Keplr 或 gaiad keys）送出 create-validator。",
-          "不要把该钱包助记词与本机共识匙混在一起。"
+          "启动节点，等待本页出现共识公钥。",
+          "填数量、moniker 与 --from。先复制 validator.json，再复制 gaiad 命令。",
+          "用 Keplr 或你控制的 gaiad 金钥签署。不要把该助记词与本机共识金钥混用。"
         ],
         "steps": [
-          "启动节点，等 gaiad init 后出现共识公钥（RPC 未就绪不代表尚未产生金钥）。",
-          "复制共识公钥与 create-validator 命令（主网 chain-id 为 cosmoshub-4，测试网为 provider）。",
-          "用操作者钱包广播 create-validator。金额与 moniker 由你决定。",
-          "大量绑定前应等 RPC 可答且同步完成。同侪使用 tcp://WAN:26656 — 交易不接收 IP。"
+          "启动节点，等待 gaiad init 后共识公钥出现（RPC 未就绪不代表尚未产生金钥）。",
+          "填自我委托（1atom = 1 ATOM，或 uatom）、moniker 与 --from。复制 validator.json，再复制 gaiad 命令。此节点为 gaiad v28：用 JSON 档，不是 Hub 文件的 flags。主网 chain-id 为 cosmoshub-4，测试网为 provider。",
+          "复制命令的 --gas-prices 为 0.005uatom，对齐此节点。不要贴上 Hub 文件的 0.0025uatom 示例，亦不要贴 flags 版 create-validator。",
+          "储存 validator.json，用 operator 钱包广播。交易不收服务器 IP。同侪使用 tcp://WAN:{{port}}。",
+          "等待 RPC 回应且同步完成后再大量绑定。"
         ],
         "never": [
-          "不要把操作者钱包助记词与共识匙混在一起。",
+          "不要把 operator 钱包助记词与共识金钥混用。",
           "不要在此输入钱包助记词。",
-          "不要把本服务器 IP 写进 create-validator。"
+          "不要把此服务器 IP 写进 create-validator。",
+          "不要贴上 Hub 文件的 --amount／--pubkey flags — 此 gaiad 为 v28（validator.json）。",
+          "不要在此节点使用 0.0025uatom gas — compose 最低为 0.005uatom。"
         ]
       },
       "sol": {
@@ -14247,19 +14255,20 @@
           "不建立 vote account，亦不开始投票。"
         ],
         "youDo": [
-          "在你控制的机器上，用官方 Solana 工具建立 vote 与 authorized-withdrawer 金钥。",
+          "在你控制的机器上，用官方 Solana 工具建立 vote 与 authorized-withdrawer 密钥。",
           "用官方 CLI 建立 vote account，并使用此处的 identity pubkey。",
           "此 compose 维持 --no-voting。"
         ],
         "steps": [
           "确认本机磁盘与 IOPS 足够（主网通常 2 TiB 或以上）。",
-          "等 RPC 可答后，复制本页的 identity pubkey。",
-          "依官方 vote-account 与 stake 指南操作（见下方连结）。",
-          "此 compose 维持 --no-voting。不要以为建立 vote account 后本页就会开始投票。"
+          "等待 RPC 回应，然后复制本页的 identity pubkey。",
+          "用官方 Solana 工具在你控制的机器产生 vote 与 authorized-withdrawer 密钥，然后 solana create-vote-account。",
+          "此 compose 维持 --no-voting。建立 vote account 不会令此进程开始投票。"
         ],
         "never": [
-          "不要期望本面板提供浏览器钱包按钮。",
-          "不要把 identity 或 vote 金钥对贴进本面板。"
+          "不要指望本面板有浏览器钱包按钮。",
+          "不要把 identity 或 vote 密钥对贴进本面板。",
+          "不要指望建立 vote account 后本页会开始投票。"
         ]
       },
       "dot": {
@@ -14292,7 +14301,7 @@
         "min": "见官方 Sui 文件",
         "wallets": "官方 Sui 操作者钱包",
         "panel": "以 fullnode 运行 sui-node。RPC 仅本机。",
-        "honesty": "此进程不能以 Sui 验证者身份签署。验证者要用另一份设定与金钥。官方验证者文件有连结；本面板不会把节点切成验证者模式。",
+        "honesty": "此进程不能以 Sui 验证者身份签署。验证者要用另一份设定与密钥。官方验证者文件有连结；本面板不会把节点切成验证者模式。",
         "yskDoes": [
           "以 fullnode 运行产品附带的 sui-node 映像。"
         ],
@@ -14315,7 +14324,7 @@
         "min": "见官方 Aptos 文件",
         "wallets": "官方 Aptos 操作者钱包",
         "panel": "以公共全节点运行 aptos-node。RPC 仅本机。",
-        "honesty": "公共全节点不参与共识。验证者需要不同 role、金钥，通常还要 validator fullnode。本面板不会把节点切成验证者模式。",
+        "honesty": "公共全节点不参与共识。验证者需要不同 role、密钥，通常还要 validator fullnode。本面板不会把节点切成验证者模式。",
         "yskDoes": [
           "以公共全节点运行产品附带的 Aptos 映像。"
         ],
@@ -14329,7 +14338,7 @@
           "只有在你另行建立验证者 + VFN 时，才需要官方验证者文件。"
         ],
         "never": [
-          "不要在本面板输入操作者金钥。",
+          "不要在本面板输入操作者密钥。",
           "不要期望此全节点进程登记成验证者。"
         ]
       },
@@ -14351,7 +14360,35 @@
         "never": [
           "不要在本页寻找质押钱包。"
         ]
-      }
+      },
+      "nearPoolSlug": "池名称",
+      "nearPoolSlugHint": "只填短名。factory 会加上 {{suffix}}。",
+      "nearOwner": "拥有人账号",
+      "nearOwnerHint": "签署 create_staking_pool 的 NEAR 账号（你的钱包）。不是节点密钥。",
+      "nearPreview": "命令预览",
+      "nearWriteAccount": "写入 account_id",
+      "nearWriteTitle": "为 {{id}} 写入 validator_key.json 的 account_id？",
+      "nearWriteDesc": "只改现有密钥档的 account_id。不会送出 create_staking_pool。不会改 secret_key。",
+      "nearWriteC1": "account_id 会变成 {{pool}}{{suffix}}",
+      "nearWriteC2": "面板不会签署 factory 交易",
+      "nearRestart": "写入后重启节点",
+      "nearNeedKey": "请先等质押公钥出现（neard init），再填此表。",
+      "nearNeedSlug": "请填池名称以写入 account_id。",
+      "cosmosPointing": "此 gaiad 为 v28：先复制 validator.json，再复制 create-validator validator.json。Hub 文件仍用 flags — 在此节点会失败。交易用此节点的共识公钥，不是服务器 IP。同侪使用 Public P2P（主机端口 {{port}}）。gas 为 0.005uatom — 不要用 Hub 文件的 0.0025uatom。",
+      "avaxPointing": "P-Chain 登记用此 NodeID 与 BLS 证明，不是服务器 IP。RPC 仅本机。请在 Core（Staking → Validate）登记。",
+      "ethVcCommand": "Validator client 示例（不在此 compose）",
+      "ethVcHint": "请自行运行 validator client，指向此 beacon URL。把 keystore 放入 beacon 数据目录不会开始 attest。",
+      "cosmosAmount": "自我委托",
+      "cosmosAmountHint": "单位 uatom，或填 1atom 代表 1 ATOM。只填 1 是 1 uatom，不是 1 ATOM。",
+      "cosmosMoniker": "Moniker",
+      "cosmosFromKey": "--from 密钥名称",
+      "cosmosFromHint": "本机 gaiad 密钥名，或用 Keplr 签署。不是此主机上的共识密钥。",
+      "cosmosNeedPubkey": "请先等共识公钥出现（gaiad init），再填此表。",
+      "cosmosNeedFields": "请填数量、moniker 与 --from 以产生命令。",
+      "copyFailed": "复制失败",
+      "cosmosCreateJson": "validator.json（gaiad v28）",
+      "nearNeedOwner": "请填拥有人账号以产生命令。写入 account_id 只须池名称。",
+      "cosmosAmountParsed": "{{amount}} = {{atom}}"
     },
     "alerts": {
       "diskTitle": "验证者节点磁盘危急",

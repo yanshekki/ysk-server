@@ -43,7 +43,9 @@ describe('readCosmosStakingIdentity', () => {
     expect(ident.consensusPubkey).toContain(PUB_B64);
     expect(ident.consensusPubkey).toContain('/cosmos.crypto.ed25519.PubKey');
     expect(ident.createCommand).toContain('--chain-id=provider');
-    expect(ident.createCommand).toContain(PUB_B64);
+    expect(ident.createCommand).toContain('validator.json');
+    expect(ident.createCommand).not.toContain('--pubkey=');
+    expect(ident.createValidatorJson).toContain(PUB_B64);
     const dumped = JSON.stringify(ident);
     expect(dumped).not.toContain(PRIV_B64);
     expect(dumped).not.toMatch(/priv_key/i);
@@ -57,6 +59,6 @@ describe('readCosmosStakingIdentity', () => {
     expect(ident.chainId).toBe('cosmoshub-4');
     expect(ident.consensusPubkey).toBeNull();
     expect(ident.createCommand).toContain('--chain-id=cosmoshub-4');
-    expect(ident.createCommand).toContain('<CONSENSUS_PUBKEY_JSON>');
+    expect(ident.createValidatorJson).toContain('<CONSENSUS_PUBKEY_JSON>');
   });
 });

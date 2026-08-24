@@ -43,6 +43,7 @@
 | 官方版本 | `ysk-server validators versions --client ID [--refresh] --json` | read | GitHub 清單 + 釘選。 |
 | 指定客戶端標籤 | `ysk-server validators set-version --id ID --client ID --tag TAG --confirm ID --execute --json` | write-host | 會重生 compose。 |
 | Cardano 出塊熱鑰 | `ysk-server validators producer-keys --id ID --kes-file P --vrf-file P --opcert-file P --confirm ID --execute --json` | write-host | 只接受熱鑰。`producer-detach` 卸下。 |
+| NEAR 寫入池 account_id | `ysk-server validators near-account --id ID --pool-slug NAME --confirm ID --execute --json` | write-host | 只寫 `account_id`。沒有 `--execute` 為 dry-run。可加 `--restart`。 |
 | 設定 | `ysk-server validators settings [--auto-clear 0\|1] --json` | write-panel | 自動清理遺留目錄的排序。 |
 
 風險：`read` · `write-panel` · `write-host`（見 [docs-standard-ZH.md](../docs-standard-ZH.md)）。
@@ -66,16 +67,16 @@ YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile
 - 真正套用仍須 `YSK_EXECUTE=1`（多數情況亦須 root）。  
 - **written**（資料目錄）≠ **applied**（實際主機）。  
 - 沒有 `--execute` 的建立屬 **written**（規格 + compose）。啟動／停止／清空維持 **blocked**。  
-- **NEAR：** 質押池合約存放此節點的 `public_key`，不是伺服器 IP。同儕使用 **主機 P2P 埠**（`ports.p2p`，多數為 24567）的 `public_addr`。RPC 僅本機。面板永不寫入 `validator_key.json`，亦不代發 `create_staking_pool`。RPC 未就緒不代表尚未產生金鑰。此改動之前建立的實例仍宣告容器埠 24567，直至你重寫 compose。  
+- **NEAR：** 質押池合約存放此節點的 `public_key`，不是伺服器 IP。同儕使用 **主機 P2P 埠**（`ports.p2p`，多數為 24567）的 `public_addr`。RPC 僅本機。實例表單會填好 `create_staking_pool`，並可只寫入現有 `validator_key.json` 的 `account_id`。永不寫入 `secret_key`、不 wallet connect、不代發 factory 交易。RPC 未就緒不代表尚未產生金鑰。此改動之前建立的實例仍宣告容器埠 24567，直至你重寫 compose。  
 - **節點起好之後：** 實例頁列出編號步驟與「請不要」。  
-  - AVAX：RPC 可答後顯示 NodeID + BLS。  
-  - NEAR：stake public key、factory、可複製的 `create_staking_pool`（讀磁碟，不等 RPC）。  
-  - Cosmos：共識公鑰、`chain-id`、可複製的 `create-validator`（gas 與節點 `0.005uatom` 一致）。同儕用主機 P2P（`tcp://WAN:{p2p}`）。  
-  - ETH：只跑執行層 + beacon，沒有 validator client。複製本機 beacon URL；Hoodi 實例只連 Hoodi launchpad。  
-  - Solana：`--no-voting`；identity pubkey 來自 `getIdentity`。  
+  - AVAX：RPC 可答後顯示 NodeID + BLS。在 Core 的 P-Chain 登記用這些值，不是伺服器 IP。  
+  - NEAR：stake public key、factory、表單填好的 `create_staking_pool`（讀磁碟，不等 RPC）。池建立後在本頁寫入 `account_id`。  
+  - Cosmos：共識公鑰、`chain-id`、表單填好的 `validator.json` + `gaiad tx staking create-validator validator.json`（數量、moniker、`--from`）。此節點為 **gaiad v28**（JSON 檔）。Hub 文件仍用 flags — 在此會失敗。gas 為 `0.005uatom` 以對齊此節點，不是 Hub 文件示例的 `0.0025uatom`。面板不代發交易。同儕用主機 P2P（`tcp://WAN:{p2p}`）。  
+  - ETH：只跑執行層 + beacon，沒有 validator client。複製本機 beacon URL。若 CL 為 Lighthouse，另複製 `lighthouse vc --beacon-nodes`。其他 CL：把你的 VC 指向該 URL。Hoodi 實例只連 Hoodi launchpad。把 keystore 放入 beacon 資料目錄不會開始 attest。  
+  - Solana：`--no-voting`；identity pubkey 來自 `getIdentity`。建立 vote account 不會令此進程開始投票。  
   - Polkadot：全節點，沒有 `--validator`；面板不呼叫 `rotateKeys`。  
   - Sui／Aptos：fullnode／公共全節點，不是驗證者進程。  
-  - Cardano：先作 relay；本頁掛熱鑰；拓撲填公開 IP + P2P 埠（面板不探測 WAN）。  
+  - Cardano：先作 relay；本頁掛熱鑰。公眾發現靠池**註冊證書**（`--pool-relay-ipv4` 或 DNS + P2P 埠），不是 `topology.json`。`topology.json` 的 `localRoots` 只連你自己的 block producer（`advertise: false`）。面板不探測 WAN。  
   - `validator-ready` 只是磁碟檔案，不是「此進程已在出塊」。
 
 ## 僅面板 ⚠️
@@ -85,6 +86,8 @@ YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile
 | 說明分頁 | 操作說明；CLI 可用 `--help`／文件 |
 | NetIO 即時輪詢 | 列表頁圖表。`validators list` 摘要在 Docker 有回應時已含最近 rx／tx |
 | Compose YAML 編輯器 | 互動編輯；儲存用 `compose-write` |
+| Cosmos create-validator 表單 | 填好可複製的 `validator.json` 與 gaiad v28 命令（數量、moniker、`--from`）。主機上沒有寫入；沒有 CLI。 |
+| ETH validator client 示例 | Lighthouse：可複製 `lighthouse vc --beacon-nodes`。其他 CL：複製 beacon URL。compose 沒有 VC。 |
 
 ## 相關
 

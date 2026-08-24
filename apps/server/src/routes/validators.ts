@@ -41,6 +41,7 @@ import {
   findValidatorClient,
   attachAdaProducerKeys,
   detachAdaProducerKeys,
+  patchNearValidatorAccountId,
   enrichCardanoProducer,
 } from 'ysk-server-core';
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
@@ -297,6 +298,41 @@ export async function handleValidatorsRoutes(
         id,
       });
       sendJson(res, 200, { ok: true, ...status });
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'near-account' && method === 'POST') {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const execute = wantsExecute(ctx, body);
+      const result = patchNearValidatorAccountId({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        id,
+        poolSlug: body.poolSlug != null ? String(body.poolSlug) : undefined,
+        accountId: body.accountId != null ? String(body.accountId) : undefined,
+        confirm: body.confirm != null ? String(body.confirm) : undefined,
+        execute,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'validators.near-account',
+        detail: { id, execute, ok: result.ok },
+        ok: result.ok,
+      });
+      if (body.restart === true && result.apply_status === 'applied') {
+        const restarted = await restartValidatorInstance({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          execute,
+          id,
+        });
+        sendOpsResult(res, {
+          ...result,
+          notes: [...(result.notes ?? []), ...(restarted.notes ?? [])],
+        });
+        return true;
+      }
+      sendOpsResult(res, result);
       return true;
     }
 

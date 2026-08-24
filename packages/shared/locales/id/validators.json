@@ -130,7 +130,7 @@
     "disk": "Cakram"
   },
   "cli": {
-    "usage": "Pemakaian: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+    "usage": "Pemakaian: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "Klien eksekusi",
@@ -191,7 +191,9 @@
     "producerTooLarge": "File kunci tersebut lebih besar dari 64 KiB",
     "producerBadType": "File tersebut bukan kunci KES, kunci VRF, atau sertifikat operasional",
     "producerEmpty": "Sediakan setidaknya satu kes, vrf, atau opcert",
-    "switchNeedDetachProducer": "Lepaskan kunci produser sebelum berpindah jaringan"
+    "switchNeedDetachProducer": "Lepaskan kunci produser sebelum berpindah jaringan",
+    "nearAccountInvalid": "Nama kumpulan harus berupa slug pendek (atau akun lengkap {pool}{factory}).",
+    "nearKeyMissing": "validator_key.json hilang atau tidak memiliki kunci_publik. Mulai node dan tunggu neard init."
   },
   "notes": {
     "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
@@ -229,7 +231,9 @@
     "producerDetached": "Tombol pintas dihapus; menulis ditulis ulang sebagai relay",
     "dryDelete": "Penghapusan adalah proses kering. Lewati --execute dan YSK_EXECUTE=1.",
     "deleted": "Node dihapus",
-    "leftoverRemoved": "Menghapus sisa {{path}}"
+    "leftoverRemoved": "Menghapus sisa {{path}}",
+    "dryNearAccount": "Akan menyetel account_id ke {{account}} (lulus --eksekusi). Rahasia tidak pernah berubah.",
+    "nearAccountWrote": "Setel account_id ke {{account}}. Rahasia tidak diubah. Mulai ulang node jika sedang berjalan."
   },
   "create": "Buat node",
   "wizard": {
@@ -397,13 +401,13 @@
     "nearStakeKey": "Mempertaruhkan kunci publik",
     "nearStakeKeyPending": "Muncul setelah start pertama (mendekati init). RPC belum siap bukan berarti kuncinya hilang.",
     "nearAccountId": "File kunci account_id",
-    "nearAccountIdPending": "Seringkali kosong sampai Anda menyetelnya sendiri ke {pool}{{suffix}}. Panel ini tidak pernah menulis validator_key.json.",
+    "nearAccountIdPending": "Seringkali kosong sampai Anda menyetelnya ke {{pool}}{{suffix}} setelah kumpulan ada. Panel hanya menulis kolom ini — tidak pernah secret_key.",
     "nearFactory": "Pabrik kolam taruhan",
     "nearPublicAddr": "P2P Publik (rekan)",
     "nearPublicAddrPending": "Muncul setelah permulaan pertama, tulis WAN:{{port}} ke config.json.",
     "nearCreateCommand": "perintah create_staking_pool",
     "nearPointing": "Kontrak kumpulan tidak mengambil IP server ini. Ini menyimpan kunci publik saham node ini. Rekan menggunakan baris P2P Publik di atas (port host {{port}}). RPC tetap di localhost.",
-    "nearAccountIdHint": "Setelah kumpulan ada, atur account_id di validator_key.json menjadi {pool}{{suffix}} sendiri. Panel ini tidak pernah menulis file itu.",
+    "nearAccountIdHint": "Setelah kumpulan ada, setel account_id di sini (jangan edit file secara manual). Panel tidak pernah menulis secret_key.",
     "cosmosPubkey": "Kunci publik konsensus",
     "cosmosPubkeyPending": "Muncul setelah gaiad init menulis priv_validator_key.json. RPC belum siap bukan berarti kuncinya hilang.",
     "cosmosChainId": "rantai-id",
@@ -412,10 +416,12 @@
     "ethBeacon": "API Suar (host lokal)",
     "ethBeaconPending": "Beacon HTTP pada host ini. Arahkan klien validator yang Anda jalankan sendiri ke URL ini — penulisan ini tidak memiliki VC.",
     "cosmosCreateCommand": "perintah buat-validator",
+    "cosmosCreateJson": "validator.json (gaiad v28)",
+    "copyFailed": "Penyalinan gagal",
     "solIdentity": "Kunci publisitas identitas",
     "solIdentityPending": "Muncul setelah RPC menjawab getIdentity. Proses ini adalah --no-voting sampai Anda menambahkan akun suara sendiri.",
     "adaP2pPort": "Relai port P2P",
-    "adaP2pPending": "Masukkan IPv4 publik host ini dan port ini di topology.json. Panel ini tidak menyelidiki WAN.",
+    "adaP2pPending": "Iklankan IPv4 (atau DNS) publik host ini dan port ini di sertifikat pendaftaran kumpulan. topology.json localRoots ditujukan untuk produser blok Anda sendiri. Panel ini tidak menyelidiki WAN.",
     "notPosTitle": "Bukan bukti kepemilikan",
     "notPosBody": "Bitcoin di sini adalah node yang penuh atau dipangkas. Tidak ada dompet staking di halaman ini.",
     "eth": {
@@ -437,9 +443,9 @@
       "steps": [
         "Tunggu hingga eksekusi dan suar disinkronkan.",
         "Buka landasan peluncuran resmi untuk jaringan ini (Hoodi atau Mainnet di halaman ini). Sepolia tidak memiliki tombol landasan peluncuran di sini.",
-        "Offline, buat keystore. Tetapkan alamat penarikan ke dompet ETH Anda sendiri.",
-        "Setor 32 ETH (simpan ekstra untuk bahan bakar).",
-        "Jalankan sendiri klien validator. Penulisan ini tidak memiliki VC — menempatkan keystore di datadir suar tidak membuktikannya."
+        "Offline, hasilkan keystore (staking-deposit-cli). Tetapkan alamat penarikan ke dompet ETH Anda sendiri.",
+        "Setor 32 ETH pada launchpad (simpan ekstra untuk bahan bakar).",
+        "Jalankan validator client sendiri pada URL suar di kartu ini (contoh: lighthouse vc --beacon-nodes). Penulisan ini tidak memiliki VC — menempatkan keystore di datadir suar tidak membuktikannya."
       ],
       "never": [
         "Jangan pernah memberikan frase awal atau kunci penarikan Anda kepada siapa pun, termasuk panel ini.",
@@ -461,10 +467,10 @@
         "Tambahkan validator dari Core menggunakan bukti NodeID dan BLS node ini."
       ],
       "steps": [
-        "Tunggu hingga node ini disinkronkan.",
-        "Salin NodeID, kunci publik BLS, dan bukti kepemilikan BLS yang ditunjukkan pada halaman instans.",
-        "Di web Inti (Staking → Validasi), atau dengan Ledger melalui Core, daftar di P-Chain.",
-        "Mainnet membutuhkan setidaknya 2.000 AVAX, periode minimum 14 hari, dan cadangan biaya."
+        "Tunggu hingga node ini tersinkronisasi dan baris NodeID / BLS muncul (RPC).",
+        "Salin NodeID, BLS kunci publik, dan BLS bukti kepemilikan.",
+        "Di web Core (Staking → Validasi), atau dengan Ledger melalui Core, daftar di P-Chain. Transaksi tidak mengambil IP server.",
+        "Mainnet membutuhkan setidaknya 2.000 AVAX, periode minimum 14 hari, dan cadangan biaya. Fuji adalah 1 AVAX."
       ],
       "never": [
         "Jangan kirim AVAX ke panel ini.",
@@ -483,43 +489,44 @@
       ],
       "youDo": [
         "Hasilkan kunci kumpulan secara offline.",
-        "Daftarkan pool menggunakan dokumentasi resmi Cardano.",
-        "Masukkan IPv4 publik host ini dan port relai P2P ke topology.json."
+        "Daftarkan pool dengan Cardano CLI resmi. Masukkan port publik IPv4 atau DNS dan relai P2P host ini ke dalam sertifikat pendaftaran kumpulan.",
+        "Lampirkan KES, VRF, dan opcert di halaman ini. Jangan unggah kunci dingin."
       ],
       "steps": [
         "Baca panduan resmi mengoperasikan kumpulan pasak.",
         "Hasilkan kunci dingin, KES, dan VRF pada mesin offline.",
-        "Daftarkan kumpulan on-chain dari kunci tersebut.",
-        "Pada halaman instance ini, lampirkan KES, VRF, dan sertifikat operasional. Jangan unggah kunci dingin.",
-        "Iklankan relai sebagai public-ip:P2P-port (port yang ditunjukkan pada kartu ini). Panel ini tidak mencari alamat WAN."
+        "Daftarkan kumpulan secara on-chain. Iklankan relai di sertifikat tersebut (--pool-relay-ipv4 atau DNS + port P2P pada kartu ini). Penemuan publik adalah sertifikatnya, bukan topology.json.",
+        "Pada halaman instance ini, lampirkan KES, VRF, dan sertifikat operasional. Kunci dingin ditolak.",
+        "topology.json localRoots ditujukan untuk produser blok Anda sendiri (beriklan: salah). Panel ini tidak mencari alamat WAN."
       ],
       "never": [
         "Jangan perlakukan ini sebagai taruhan sekali klik MetaMask.",
-        "Jangan simpan kunci dingin di host validator."
+        "Jangan simpan kunci dingin di host validator.",
+        "Jangan berharap mengedit topology.json sendirian untuk mendaftarkan relai on-chain."
       ]
     },
     "near": {
       "model": "Buat kontrak staking-pool di pabrik resmi. Kontrak menyimpan kunci publik node ini — bukan IP server.",
       "min": "Lihat dokumen validator resmi (30 DEKAT untuk membuat kumpulan, ditambah taruhan)",
       "wallets": "Dompet / penguncian DEKAT resmi",
-      "panel": "Berjalan mendekat; menampilkan perintah kunci publik, pabrik, dan create_staking_pool setelah init",
+      "panel": "Menjalankan neard; pengisian formulir create_staking_pool; setelah pool ada, tulis account_id saja.",
       "yskDoes": [
         "Jalankan dekat dengan RPC di localhost dan P2P di 24567.",
-        "Setelah init, tampilkan kunci publik staking, alamat P2P publik, pabrik, dan perintah create_staking_pool yang dapat disalin.",
-        "Jangan pernah menulis validator_key.json atau menyiarkan transaksi."
+        "Setelah init, tampilkan kunci publik pasak, alamat publik P2P, dan pabrik.",
+        "Isi create_staking_pool dari nama kumpulan + pemilik + kunci publik. Setelah pool ada, tulis account_id saja — jangan pernah secret_key, jangan pernah transaksinya."
       ],
       "youDo": [
-        "Salin kunci publik dan perintah dari halaman contoh ini.",
-        "Dari akun DEKAT Anda sendiri, hubungi pabrik resmi.",
-        "Setelah kumpulan ada, atur account_id di validator_key.json menjadi {pool}.{factory} sendiri.",
-        "Taruhan dari dompet Anda ke dalam kumpulan itu."
+        "Mulai node dan tunggu kunci publik di halaman ini.",
+        "Masukkan nama kolam dan pemiliknya, lalu salin perintahnya.",
+        "Masuk create_staking_pool dari dompet NEAR Anda sendiri atau di dekat cli.",
+        "Kembali ke sini dan atur account_id. Taruhan dari dompet Anda ke dalam kumpulan itu."
       ],
       "steps": [
         "Mulai node dan tunggu mendekati init hingga kunci publik muncul (RPC belum siap tidak sama dengan kunci yang hilang).",
-        "Salin kunci publik pasak dan perintah create_staking_pool.",
-        "Dari dompet Anda, hubungi pabrik (testnet pool.f863973.m0 / mainnet poolv1.near) dengan 30 DEKAT untuk penyimpanan. Perintah yang disalin menggunakan --accountId; jika CLI terdekat Anda mengharapkan --account_id, ikuti --help CLI tersebut.",
-        "Tetapkan account_id di validator_key.json ke akun kumpulan baru Anda. Panel ini tidak menulis file itu.",
-        "Tunggu hingga RPC menjawab dan node disinkronkan sebelum melakukan staking dalam jumlah besar. Rekan menggunakan P2P Publik :24567 — kontrak tidak menggunakan IP."
+        "Masukkan nama pendek kumpulan dan akun pemilik. Salin perintah create_staking_pool yang telah diisi.",
+        "Dari dompet Anda, hubungi pabrik (testnet pool.f863973.m0 / mainnet poolv1.near) dengan 30 NEAR untuk penyimpanan. Perintahnya menggunakan --accountId; jika CLI terdekat Anda mengharapkan --account_id, ikuti --help CLI tersebut.",
+        "Setelah pool ada, gunakan Set account_id di halaman ini (konfirmasi = id instance). Jangan mengedit validator_key.json dengan tangan.",
+        "Mulai ulang jika node sudah berjalan. Tunggu hingga RPC menjawab dan node disinkronkan sebelum melakukan staking dalam jumlah besar. Rekan menggunakan Publik P2P — kontrak tidak menggunakan IP."
       ],
       "never": [
         "Jangan menempelkan frase awal ke panel ini.",
@@ -531,28 +538,31 @@
       "model": "buat-validator dari dompet operator Anda menggunakan kunci publik konsensus node ini — bukan IP server.",
       "min": "Lihat dokumen resmi Cosmos Hub (delegasi mandiri di uatom)",
       "wallets": "Keplr atau dompet Cosmos lain yang Anda kendalikan",
-      "panel": "Menjalankan gaiad; menunjukkan konsensus kunci pub dan perintah buat-validator yang dapat disalin setelah init",
-      "honesty": "Transaksi create-validator menyimpan kunci publik konsensus node ini. Rekan menggunakan P2P Publik di 26656. RPC tetap di localhost. Panel ini tidak menyiarkan transaksi atau membaca priv_key.",
+      "panel": "Menjalankan gaiad v28; menunjukkan pubkey konsensus; pengisian formulir validator.json + buat-validator. Jangan pernah menulis priv_validator_key.json atau menyiarkan.",
+      "honesty": "Gaiad ini adalah v28 (file JSON). Dokumen hub masih menunjukkan tanda - tanda tersebut gagal di sini. Transaksi menyimpan kunci publik konsensus node ini, bukan IP server. Rekan menggunakan P2P Publik. RPC tetap di localhost. Panel ini tidak menyiarkan atau membaca priv_key.",
       "yskDoes": [
-        "Jalankan gaiad dengan RPC di localhost dan P2P di 26656.",
-        "Setelah init, tampilkan kunci publik konsensus, id rantai, P2P publik, dan perintah buat-validator yang dapat disalin.",
-        "Jangan pernah menulis priv_validator_key.json atau menyiarkan transaksi."
+        "Jalankan gaiad dengan RPC di localhost dan P2P di 26656. harga bahan bakar minimum adalah 0.005uatom.",
+        "Setelah init, tampilkan kunci publik konsensus, id rantai, dan P2P publik.",
+        "Isikan validator.json dan perintah gaiad v28 dari amount, moniker, dan --from ditambah pubkey konsensus. Jangan pernah menulis priv_validator_key.json atau menyiarkan transaksi."
       ],
       "youDo": [
-        "Salin kunci publik konsensus dan perintah dari halaman contoh ini.",
-        "Dari dompet operator Anda (kunci Keplr atau gaiad yang Anda kendalikan), kirimkan create-validator.",
-        "Jangan gabungkan mnemonik dompet itu dengan kunci konsensus di host ini."
+        "Mulai node dan tunggu kunci publik konsensus di halaman ini.",
+        "Masukkan jumlah, moniker, dan --from. Copy validator.json, lalu perintah gaiad.",
+        "Masuk dari Keplr atau kunci gaiad yang Anda kendalikan. Jangan gabungkan mnemonik itu dengan kunci konsensus pada host ini."
       ],
       "steps": [
         "Mulai node dan tunggu gaiad init sehingga kunci publik konsensus muncul (RPC belum siap tidak sama dengan kunci yang hilang).",
-        "Salin kunci publik konsensus dan perintah create-validator (chain-id adalah cosmoshub-4 di mainnet, penyedia di testnet).",
-        "Dari dompet operator Anda, siarkan create-validator. Jumlah dan moniker adalah milik Anda.",
-        "Tunggu hingga RPC menjawab dan node disinkronkan sebelum melakukan bonding dalam jumlah besar. Rekan menggunakan tcp://WAN:26656 — transaksi tidak menggunakan IP."
+        "Masukkan delegasi mandiri (1atom = 1 ATOM, atau uatom), moniker, dan --from. Copy validator.json lalu perintah gaiad. Node ini adalah gaiad v28: file JSON, bukan formulir tanda dokumen Hub. chain-id adalah kosmoshub-4 di mainnet, penyedia di testnet.",
+        "--gas-prices yang disalin adalah 0,005uatom agar cocok dengan node ini. Jangan tempelkan contoh 0,0025uatom dokumen Hub atau validator pembuatan berbasis tanda.",
+        "Simpan validator.json dan siarkan dari dompet operator Anda. Transaksi tidak mengambil IP server. Rekan-rekan menggunakan tcp://WAN:{{port}}.",
+        "Tunggu hingga RPC menjawab dan node disinkronkan sebelum melakukan bonding dalam jumlah besar."
       ],
       "never": [
         "Jangan mencampurkan mnemonik dompet operator dengan kunci konsensus.",
         "Jangan masukkan mnemonik dompet di sini.",
-        "Jangan masukkan IP server ini ke dalam create-validator."
+        "Jangan masukkan IP server ini ke dalam create-validator.",
+        "Jangan tempel tanda --amount/--pubkey dokumen Hub — gaiad ini adalah v28 (validator.json).",
+        "Jangan gunakan gas 0.0025uatom pada node ini — minimum penulisannya adalah 0.005uatom."
       ]
     },
     "sol": {
@@ -574,12 +584,13 @@
       "steps": [
         "Konfirmasikan bahwa host ini memiliki disk dan IOPS yang cukup (mainnet biasanya 2 TiB+).",
         "Tunggu hingga RPC menjawab, lalu salin identitas pubkey yang ditunjukkan di sini.",
-        "Ikuti akun suara resmi dan panduan pasak (tautan di bawah).",
-        "Tulisan ini tetap --no-voting. Jangan berharap halaman ini mulai memberikan suara setelah Anda membuat akun suara."
+        "Buat kunci suara dan penarikan yang diotorisasi dengan alat resmi Solana di mesin yang Anda kendalikan, lalu solana buat akun suara.",
+        "Tulisan ini mempertahankan --no-voting. Membuat vote account tidak menjadikan proses ini sebagai pilihan."
       ],
       "never": [
         "Jangan mengharapkan tombol dompet browser di panel ini.",
-        "Jangan menempelkan identitas atau pasangan kunci suara ke dalam panel ini."
+        "Jangan menempelkan identitas atau pasangan kunci suara ke dalam panel ini.",
+        "Jangan berharap halaman ini mulai memberikan suara setelah Anda membuat vote account."
       ]
     },
     "dot": {
@@ -671,7 +682,33 @@
       "never": [
         "Jangan mencari dompet staking di halaman ini."
       ]
-    }
+    },
+    "nearPoolSlug": "Nama pool",
+    "nearPoolSlugHint": "Hanya nama pendek. Pabrik menambahkan {{suffix}}.",
+    "nearOwner": "Akun pemilik",
+    "nearOwnerHint": "NEAR akun yang menandatangani create_staking_pool di dompet Anda. Bukan kunci simpul.",
+    "nearPreview": "Pratinjau perintah",
+    "nearWriteAccount": "Setel account_id",
+    "nearWriteTitle": "Tetapkan validator_key.json account_id untuk {{id}}?",
+    "nearWriteDesc": "Hanya menulis account_id pada file kunci yang ada. Tidak mengirim create_staking_pool. Tidak menyentuh secret_key.",
+    "nearWriteC1": "account_id menjadi {{pool}}{{suffix}}",
+    "nearWriteC2": "Panel tidak pernah menandatangani transaksi factory",
+    "nearRestart": "Mulai ulang node setelah menulis",
+    "nearNeedKey": "Tunggu hingga muncul kunci publik pasak (neard init), lalu isi formulir ini.",
+    "nearNeedSlug": "Masukkan nama kumpulan untuk mengatur account_id.",
+    "nearNeedOwner": "Masukkan akun pemilik untuk mengisi perintah. Setel account_id hanya memerlukan nama kumpulan.",
+    "cosmosPointing": "Gaiad ini adalah v28: salin validator.json, lalu buat validator validator.json. Dokumen hub masih menunjukkan tanda - tanda tersebut gagal di sini. Transaksi menggunakan kunci publik konsensus node ini, bukan IP server. Rekan menggunakan P2P Publik (port host {{port}}). Gas adalah 0,005uatom — bukan contoh 0,0025uatom dari dokumen Hub.",
+    "avaxPointing": "Pendaftaran P-Chain menggunakan bukti NodeID dan BLS ini, bukan IP server. RPC tetap di localhost. Daftar di Core (Staking → Validasi).",
+    "ethVcCommand": "Contoh validator client (tidak ada di compose ini)",
+    "ethVcHint": "Jalankan validator client sendiri pada URL suar ini. Mengimpor keystore ke direktori data suar tidak membuktikannya.",
+    "cosmosAmount": "Delegasi sendiri",
+    "cosmosAmountHint": "uatom, atau 1atom untuk 1 ATOM. Angka 1 kosong adalah 1 uatom — bukan 1 ATOM.",
+    "cosmosAmountParsed": "{{amount}} = {{atom}}",
+    "cosmosMoniker": "Moniker",
+    "cosmosFromKey": "nama kunci --from",
+    "cosmosFromHint": "Nama kunci gaiad lokal, atau tanda tangan dengan Keplr. Bukan kunci konsensus pada tuan rumah ini.",
+    "cosmosNeedPubkey": "Tunggu hingga muncul kunci publik konsensus (gaiad init), lalu isi formulir ini.",
+    "cosmosNeedFields": "Masukkan jumlah, moniker, dan --from untuk mengisi perintah."
   },
   "alerts": {
     "diskTitle": "Disk validator kritis",

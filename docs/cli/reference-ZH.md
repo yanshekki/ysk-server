@@ -373,9 +373,10 @@ YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json
 ysk-server validators create --chain eth --network hoodi --el geth --cl prysm --json
 ysk-server validators compose-write --id near-testnet-1 --file ./compose.yml --json
+YSK_EXECUTE=1 ysk-server validators near-account --id near-testnet-1 --pool-slug demo --confirm near-testnet-1 --execute --json
 ```
 
-沒有 `--execute` 的 create 只寫入實例規格與 compose（`written`）。start／stop／clear 在 `YSK_EXECUTE=1` 加 `--execute` 之前維持 **blocked**。真正套用需要 Docker Compose。`checklist` 只讀公開身份（不含密鑰）。`rewrite-compose` 與 `compose-write` 沒有 `--execute` 時為 dry-run（`written`）。`leftover-remove` 與 `pull` 在 execute 之前維持 **blocked**。
+沒有 `--execute` 的 create 只寫入實例規格與 compose（`written`）。start／stop／clear 在 `YSK_EXECUTE=1` 加 `--execute` 之前維持 **blocked**。真正套用需要 Docker Compose。`checklist` 只讀公開身份（不含密鑰）。`rewrite-compose` 與 `compose-write` 沒有 `--execute` 時為 dry-run（`written`）。`leftover-remove` 與 `pull` 在 execute 之前維持 **blocked**。`near-account` 只寫 `account_id`（確認字為實例識別碼）。Cosmos 的 `create-validator` 填表只在面板複製 `validator.json` 與 gaiad v28 命令 — 沒有 CLI，主機上沒有寫入。Hub 文件仍用 flags；在此節點會失敗。
 
 見 [../features/validators-ZH.md](../features/validators-ZH.md)。
 

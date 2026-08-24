@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import type { CosmosStakingIdentityDto, ValidatorInstanceDto } from 'ysk-server-shared';
 import {
   buildCosmosCreateValidatorCommand,
+  buildCosmosCreateValidatorJson,
   cosmosConsensusPubkeyJson,
   cosmosStakingChainId,
   emptyCosmosStakingIdentity,
@@ -68,5 +69,6 @@ export function readCosmosStakingIdentity(
     chainId: cosmosStakingChainId(network),
     externalAddress,
     createCommand: buildCosmosCreateValidatorCommand({ network, consensusPubkey }),
+    createValidatorJson: buildCosmosCreateValidatorJson({ consensusPubkey }),
   };
 }

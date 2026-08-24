@@ -13810,7 +13810,7 @@
       "disk": "Disco"
     },
     "cli": {
-      "usage": "Uso: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+      "usage": "Uso: ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
     },
     "clients": {
       "el": "Cliente de ejecución",
@@ -13871,7 +13871,9 @@
       "producerTooLarge": "Ese archivo clave tiene más de 64 KiB.",
       "producerBadType": "Ese archivo no es una clave KES, una clave VRF ni un certificado operativo.",
       "producerEmpty": "Proporcione al menos uno de kes, vrf u opcert",
-      "switchNeedDetachProducer": "Separe las claves de productor antes de cambiar de red"
+      "switchNeedDetachProducer": "Separe las claves de productor antes de cambiar de red",
+      "nearAccountInvalid": "El nombre del grupo debe ser un slug corto (o la cuenta {pool}{factory} completa).",
+      "nearKeyMissing": "validator_key.json falta o no tiene clave_pública. Inicie el nodo y espere neard init."
     },
     "notes": {
       "beta": "Esta función es Beta. Los cambios de host necesitan root y YSK_EXECUTE=1.",
@@ -13909,7 +13911,9 @@
       "producerDetached": "Se eliminaron las teclas de acceso rápido; componer reescrito como relevo",
       "dryDelete": "Eliminar es un ensayo en seco. Pase --execute y YSK_EXECUTE=1.",
       "deleted": "Nodo eliminado",
-      "leftoverRemoved": "Se eliminaron los restos {{path}}"
+      "leftoverRemoved": "Se eliminaron los restos {{path}}",
+      "dryNearAccount": "Establecería account_id en {{account}} (pasar --ejecutar). El secreto nunca cambia.",
+      "nearAccountWrote": "Establezca account_id en {{account}}. El secreto no fue cambiado. Reinicie el nodo si se está ejecutando."
     },
     "create": "Crear nodo",
     "wizard": {
@@ -14077,13 +14081,13 @@
       "nearStakeKey": "Replantear clave pública",
       "nearStakeKeyPending": "Aparece después del primer inicio (cerca del inicio). RPC no listo no significa que falte la clave.",
       "nearAccountId": "Archivo clave account_id",
-      "nearAccountIdPending": "A menudo está vacío hasta que usted mismo lo configura en {pool}{{suffix}}. Este panel nunca escribe validator_key.json.",
+      "nearAccountIdPending": "A menudo está vacío hasta que lo configura en {{pool}}{{suffix}} después de que existe el grupo. El panel escribe sólo este campo, nunca secret_key.",
       "nearFactory": "Fábrica de pools de apuestas",
       "nearPublicAddr": "P2P público (pares)",
       "nearPublicAddrPending": "Aparece después del primer inicio y escribe WAN:{{port}} en config.json.",
-      "nearCreateCommand": "comando create_stake_pool",
+      "nearCreateCommand": "comando create_staking_pool",
       "nearPointing": "El contrato del grupo no toma la IP de este servidor. Almacena la clave pública de participación de este nodo. Los pares usan la fila P2P público de arriba (puerto de host {{port}}). RPC permanece en el host local.",
-      "nearAccountIdHint": "Una vez que exista el grupo, configure account_id en validator_key.json en {pool}{{suffix}} usted mismo. Este panel nunca escribe ese archivo.",
+      "nearAccountIdHint": "Una vez que exista el grupo, configure account_id aquí (no edite el archivo a mano). El panel nunca escribe secret_key.",
       "cosmosPubkey": "Clave pública de consenso",
       "cosmosPubkeyPending": "Aparece después de que gaiad init escribe priv_validator_key.json. RPC no listo no significa que falte la clave.",
       "cosmosChainId": "ID de cadena",
@@ -14092,10 +14096,12 @@
       "ethBeacon": "API de baliza (localhost)",
       "ethBeaconPending": "Baliza HTTP en este host. Apunte un cliente de validación que usted mismo ejecute a esta URL; esta redacción no tiene VC.",
       "cosmosCreateCommand": "comando crear-validador",
+      "cosmosCreateJson": "validator.json (gaiad v28)",
+      "copyFailed": "Copia fallida",
       "solIdentity": "Clave pública de identidad",
       "solIdentityPending": "Aparece después de que RPC responde getIdentity. Este proceso no requiere votación hasta que usted mismo agregue una cuenta de votación.",
       "adaP2pPort": "Puerto P2P de relé",
-      "adaP2pPending": "Coloque la IPv4 pública de este host y este puerto en topology.json. Este panel no sondea WAN.",
+      "adaP2pPending": "Anuncie el IPv4 (o DNS) público de este host y este puerto en el certificado de registro del grupo. topology.json localRoots es para su propio productor de bloques. Este panel no sondea WAN.",
       "notPosTitle": "No prueba de participación",
       "notPosBody": "Bitcoin aquí es un nodo completo o podado. No hay ninguna billetera de apuestas en esta página.",
       "eth": {
@@ -14117,9 +14123,9 @@
         "steps": [
           "Espere hasta que la ejecución y la baliza estén sincronizadas.",
           "Abra la plataforma de lanzamiento oficial de esta red (Hoodi o Mainnet en esta página). Sepolia no tiene ningún botón de plataforma de lanzamiento aquí.",
-          "Sin conexión, genere el almacén de claves. Configure la dirección de retiro en su propia billetera ETH.",
-          "Deposite 32 ETH (guarde el extra para gasolina).",
-          "Ejecute usted mismo un cliente validador. Esta redacción no tiene VC: colocar un almacén de claves en el directorio de datos de la baliza no da fe."
+          "Sin conexión, genere el keystore (staking-deposit-cli). Configure la dirección de retiro en su propia billetera ETH.",
+          "Deposite 32 ETH en el launchpad (guarde más para gasolina).",
+          "Ejecute un validator client usted mismo contra la URL de baliza en esta tarjeta (ejemplo: lighthouse vc --beacon-nodes). Esta redacción no tiene VC; poner un keystore en el directorio de datos de la baliza no da fe."
         ],
         "never": [
           "Nunca le dé su frase inicial o clave de retiro a nadie, incluido este panel.",
@@ -14141,10 +14147,10 @@
           "Agregue el validador de Core utilizando el NodeID y la prueba BLS de este nodo."
         ],
         "steps": [
-          "Espere hasta que este nodo esté sincronizado.",
-          "Copie el NodeID, la clave pública BLS y la prueba de posesión BLS que se muestran en la página de la instancia.",
-          "En Core web (Stake → Validate), o con Ledger a través de Core, regístrese en P-Chain.",
-          "Mainnet necesita al menos 2000 AVAX, un período mínimo de 14 días y una reserva de tarifas."
+          "Espere hasta que este nodo esté sincronizado y aparezcan las filas NodeID / BLS (RPC).",
+          "Copie la clave pública NodeID, BLS y la prueba de posesión BLS.",
+          "En Core web (Stake → Validar), o con Ledger vía Core, regístrese en P-Chain. La transacción no requiere una IP de servidor.",
+          "Mainnet necesita al menos 2000 AVAX, un período mínimo de 14 días y una reserva de tarifas. Fuji es 1 AVAX."
         ],
         "never": [
           "No envíe AVAX a este panel.",
@@ -14163,76 +14169,80 @@
         ],
         "youDo": [
           "Genere claves de grupo sin conexión.",
-          "Registre el grupo utilizando la documentación oficial de Cardano.",
-          "Coloque el IPv4 público de este host y el puerto P2P de retransmisión en topology.json."
+          "Registre el grupo con la CLI oficial de Cardano. Coloque el IPv4 o DNS público de este host y el puerto de retransmisión P2P en el certificado de registro del grupo.",
+          "Adjunte KES, VRF y opcert en esta página. No cargue claves frías."
         ],
         "steps": [
           "Lea la guía oficial para operar un pool de participación.",
           "Genere claves frías, KES y VRF en una máquina fuera de línea.",
-          "Registre el grupo en cadena a partir de esas claves.",
-          "En esta página de instancia, adjunte KES, VRF y el certificado operativo. No cargue claves frías.",
-          "Anuncie el relé como IP pública: puerto P2P (el puerto se muestra en esta tarjeta). Este panel no busca la dirección WAN."
+          "Registre el grupo en cadena. Anuncie el relé en ese certificado (--pool-relay-ipv4 o DNS + el puerto P2P en esta tarjeta). El descubrimiento público es el certificado, no topology.json.",
+          "En esta página de instancia, adjunte KES, VRF y el certificado operativo. Se rechazan las claves frías.",
+          "topology.json localRoots es para su propio productor de bloques (anuncio: falso). Este panel no busca la dirección WAN."
         ],
         "never": [
           "No trate esto como una apuesta de un solo clic de MetaMask.",
-          "No almacene claves frías en el host del validador."
+          "No almacene claves frías en el host del validador.",
+          "No espere que la edición topology.json por sí sola registre el relé en cadena."
         ]
       },
       "near": {
         "model": "Cree un contrato de participación en la fábrica oficial. El contrato almacena la clave pública de este nodo, no la IP del servidor.",
         "min": "Consulte los documentos oficiales del validador (30 NEAR para crear el grupo, más la apuesta)",
         "wallets": "Cartera/bloqueo oficial NEAR",
-        "panel": "Corre cerca; muestra la clave pública, la fábrica y el comando create_stake_pool después de iniciar",
+        "panel": "Ejecuta neard; el formulario se llena create_staking_pool; una vez que existe el grupo, escribe solo account_id.",
         "yskDoes": [
           "Ejecute neard con RPC en localhost y P2P en 24567.",
-          "Después del inicio, muestre la clave pública de la participación, la dirección P2P pública, la fábrica y un comando create_stake_pool copiable.",
-          "Nunca escriba validator_key.json ni transmita la transacción."
+          "Después de iniciar, muestre la clave pública de la participación, la dirección pública P2P y la fábrica.",
+          "Complete create_staking_pool desde el nombre del grupo + propietario + clave pública. Una vez que exista el grupo, escriba solo account_id, nunca secret_key, nunca la transacción."
         ],
         "youDo": [
-          "Copie la clave pública y el comando de esta página de instancia.",
-          "Desde tu propia cuenta NEAR llama a la fábrica oficial.",
-          "Una vez que exista el grupo, configure account_id en validator_key.json en {pool}.{factory} usted mismo.",
-          "Apueste de su billetera a ese grupo."
+          "Inicie el nodo y espere la clave pública en esta página.",
+          "Ingrese el nombre y el propietario del grupo, luego copie el comando.",
+          "Firme create_staking_pool desde su propia billetera NEAR o cerca de CLI.",
+          "Regrese aquí y configure account_id. Apueste de su billetera a ese grupo."
         ],
         "steps": [
           "Inicie el nodo y espere a que se acerque el inicio para que aparezca la clave pública (RPC no listo no es lo mismo que claves faltantes).",
-          "Copie la clave pública de la participación y el comando create_stake_pool.",
-          "Desde su billetera, llame a la fábrica (testnet pool.f863973.m0 / mainnet poolv1.near) con 30 NEAR para almacenamiento. El comando copiado usa --accountId; Si su CLI cercana espera --account_id, siga la ayuda de esa CLI.",
-          "Establezca account_id en validator_key.json en su nueva cuenta de grupo. Este panel no escribe ese archivo.",
-          "Espere hasta que RPC responda y el nodo esté sincronizado antes de apostar grandes cantidades. Los pares usan P2P público: 24567: el contrato no requiere una IP."
+          "Ingrese el nombre corto del grupo y la cuenta del propietario. Copie el comando create_staking_pool completo.",
+          "Desde su billetera, llame a la fábrica (testnet pool.f863973.m0 / mainnet poolv1.near) con 30 NEAR para almacenamiento. El comando usa --accountId; Si su CLI cercana espera --account_id, siga la ayuda de esa CLI.",
+          "Una vez que exista el grupo, use Establecer account_id en esta página (confirmar = ID de instancia). No edite validator_key.json a mano.",
+          "Reinicie si el nodo ya se está ejecutando. Espere hasta que RPC responda y el nodo esté sincronizado antes de apostar grandes cantidades. Los pares usan Público P2P: el contrato no requiere una IP."
         ],
         "never": [
           "No pegue una frase inicial en este panel.",
           "No incluya la IP de este servidor en el contrato.",
-          "No espere que el panel envíe la transacción create_stake_pool."
+          "No espere que el panel envíe la transacción create_staking_pool."
         ]
       },
       "cosmos": {
         "model": "cree-validador desde la billetera de su operador utilizando la clave pública de consenso de este nodo, no la IP del servidor.",
         "min": "Ver documentos oficiales de Cosmos Hub (autodelegación en uatom)",
         "wallets": "Keplr u otra billetera Cosmos que controles",
-        "panel": "Corre alegremente; muestra la clave pública de consenso y un comando de creación de validador copiable después de init",
-        "honesty": "La transacción create-validator almacena la clave pública de consenso de este nodo. Los pares usan P2P público en 26656. RPC permanece en el host local. Este panel no transmite la transacción ni lee priv_key.",
+        "panel": "Ejecuta gaiad v28; muestra clave pública de consenso; El formulario llena validator.json + create-validator. Nunca escribe priv_validator_key.json ni transmite.",
+        "honesty": "Esta gaiad es v28 (archivo JSON). Los documentos de Hub todavía muestran banderas; esas fallan aquí. La transacción almacena la clave pública de consenso de este nodo, no la IP del servidor. Los pares utilizan P2P público. RPC permanece en el host local. Este panel no transmite ni lee priv_key.",
         "yskDoes": [
-          "Ejecute gaiad con RPC en localhost y P2P en 26656.",
-          "Después de iniciar, muestre la clave pública de consenso, el identificador de cadena, el P2P público y un comando de creación de validación copiable.",
-          "Nunca escriba priv_validator_key.json ni transmita la transacción."
+          "Ejecute gaiad con RPC en localhost y P2P en 26656. Los precios mínimos del gas son 0.005uatom.",
+          "Después de iniciar, muestre la clave pública de consenso, el identificador de cadena y el P2P público.",
+          "Complete validator.json y el comando gaiad v28 desde cantidad, moniker y --from más la clave pública de consenso. Nunca escriba priv_validator_key.json ni transmita la transacción."
         ],
         "youDo": [
-          "Copie la clave pública de consenso y el comando de esta página de instancia.",
-          "Desde la billetera de su operador (las claves Keplr o gaiad que usted controla), envíe create-validator.",
-          "No mezcle ese mnemónico de billetera con la clave de consenso en este host."
+          "Inicie el nodo y espere la clave pública de consenso en esta página.",
+          "Ingrese el monto, el apodo y --desde. Copie validator.json, luego el comando gaiad.",
+          "Firma desde Keplr o las claves gaiad que controlas. No mezcle ese mnemónico con la clave de consenso en este host."
         ],
         "steps": [
           "Inicie el nodo y espere gaiad init para que aparezca la clave pública de consenso (RPC no listo no es lo mismo que claves faltantes).",
-          "Copie la clave pública de consenso y el comando create-validator (el ID de cadena es cosmoshub-4 en mainnet, proveedor en testnet).",
-          "Desde la billetera de su operador, transmita create-validator. La cantidad y el apodo son tuyos.",
-          "Espere hasta que RPC responda y el nodo se sincronice antes de vincular grandes cantidades. Los pares usan tcp://WAN:26656: la transacción no requiere una IP."
+          "Ingrese autodelegación (1 átomo = 1 ÁTOMO o uatom), apodo y --from. Copie validator.json y luego el comando gaiad. Este nodo es gaiad v28: archivo JSON, no el formulario de bandera de los documentos del Hub. chain-id es cosmoshub-4 en mainnet, proveedor en testnet.",
+          "El --gas-prices copiado es 0.005uatom para que coincida con este nodo. No pegue el ejemplo 0.0025uatom de los documentos de Hub ni el validador de creación basado en banderas.",
+          "Guarde validator.json y transmita desde la billetera de su operador. La transacción no requiere una IP de servidor. Los pares usan tcp://WAN:{{port}}.",
+          "Espere hasta que RPC responda y el nodo esté sincronizado antes de vincular grandes cantidades."
         ],
         "never": [
           "No mezcle el mnemotécnico de billetera del operador con la clave de consenso.",
           "No introduzca aquí mnemónicos de billetera.",
-          "No coloque la IP de este servidor en create-validator."
+          "No coloque la IP de este servidor en create-validator.",
+          "No pegue los indicadores --amount/--pubkey de los documentos de Hub; esta gaiad es v28 (validator.json).",
+          "No utilice gas 0.0025uatom en este nodo; el mínimo de composición es 0.005uatom."
         ]
       },
       "sol": {
@@ -14254,12 +14264,13 @@
         "steps": [
           "Confirme que este host tenga suficiente disco e IOPS (la red principal suele ser de 2 TiB+).",
           "Espere hasta que RPC responda, luego copie la clave pública de identidad que se muestra aquí.",
-          "Siga las guías oficiales de cuentas de votos y apuestas (enlaces a continuación).",
-          "Esta redacción mantiene --sin votación. No espere que esta página comience a votar después de que usted cree una cuenta de votación."
+          "Cree claves de voto y retiro autorizado con las herramientas oficiales de Solana en una máquina que usted controle, luego solana cree una cuenta de voto.",
+          "Esta redacción mantiene --no-voting. Crear un vote account no hace que este proceso vote."
         ],
         "never": [
           "No espere un botón de billetera del navegador en este panel.",
-          "No pegue pares de claves de identidad ni de voto en este panel."
+          "No pegue pares de claves de identidad ni de voto en este panel.",
+          "No espere que esta página comience a votar después de crear un vote account."
         ]
       },
       "dot": {
@@ -14351,7 +14362,33 @@
         "never": [
           "No busque una billetera de apuestas en esta página."
         ]
-      }
+      },
+      "nearPoolSlug": "Nombre del pool",
+      "nearPoolSlugHint": "Sólo nombre corto. La fábrica agrega {{suffix}}.",
+      "nearOwner": "Cuenta del propietario",
+      "nearOwnerHint": "Cuenta NEAR que firma create_staking_pool en tu billetera. No la clave del nodo.",
+      "nearPreview": "Vista previa del comando",
+      "nearWriteAccount": "Establecer account_id",
+      "nearWriteTitle": "¿Establecer validator_key.json account_id para {{id}}?",
+      "nearWriteDesc": "Escribe solo account_id en el archivo de clave existente. No envía create_staking_pool. No toca secret_key.",
+      "nearWriteC1": "account_id se convierte en {{pool}}{{suffix}}",
+      "nearWriteC2": "El panel nunca firma la transacción factory",
+      "nearRestart": "Reinicie el nodo después de escribir",
+      "nearNeedKey": "Espere hasta que aparezca la clave pública de participación (neard init), luego complete este formulario.",
+      "nearNeedSlug": "Ingrese un nombre de grupo para configurar account_id.",
+      "nearNeedOwner": "Ingrese la cuenta del propietario para completar el comando. Establecer account_id solo necesita el nombre del grupo.",
+      "cosmosPointing": "Esta gaiad es v28: copie validator.json, luego cree-validator validator.json. Los documentos de Hub todavía muestran banderas; esas fallan aquí. La transacción utiliza la clave pública de consenso de este nodo, no la IP del servidor. Los pares utilizan P2P público (puerto de host {{port}}). El gas es 0,005 uatom, no el ejemplo de 0,0025 uatom de los documentos de Hub.",
+      "avaxPointing": "El registro de P-Chain utiliza esta prueba NodeID y BLS, no la IP del servidor. RPC permanece en localhost. Regístrese en Core (Replanteo → Validar).",
+      "ethVcCommand": "Ejemplo de validator client (no está en este compose)",
+      "ethVcHint": "Ejecute un validator client usted mismo en esta URL de baliza. Importar un keystore al directorio de datos de la baliza no da fe.",
+      "cosmosAmount": "Autodelegación",
+      "cosmosAmountHint": "uatom, o 1 átomo por 1 ÁTOMO. Un simple 1 es 1 uatom, no 1 ÁTOMO.",
+      "cosmosAmountParsed": "{{amount}} = {{atom}}",
+      "cosmosMoniker": "Moniker",
+      "cosmosFromKey": "nombre de clave --from",
+      "cosmosFromHint": "Nombre de clave local gaiad o firmar con Keplr. No es la clave del consenso sobre este anfitrión.",
+      "cosmosNeedPubkey": "Espere hasta que aparezca la clave pública de consenso (gaiad init), luego complete este formulario.",
+      "cosmosNeedFields": "Ingrese la cantidad, el apodo y --from para completar el comando."
     },
     "alerts": {
       "diskTitle": "Disco de validador crítico",

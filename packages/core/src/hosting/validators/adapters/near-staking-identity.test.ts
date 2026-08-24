@@ -1,8 +1,9 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { readNearStakingIdentity } from './near.js';
+import { patchNearValidatorAccountId, readNearStakingIdentity } from './near.js';
+import { buildValidatorInstance, upsertValidatorInstance } from '../store.js';
 
 const PUB = 'ed25519:CE3QAXyVLeScmY9YeEyR3Tw9yXfjBPzFLzroTranYtVb';
 const SECRET = 'ed25519:3D4YudUQk3jWtvzkNY7337sFFnM67Jeo8ZZh8eEVzxQK';
@@ -83,5 +84,86 @@ describe('readNearStakingIdentity', () => {
     );
     const ident = readNearStakingIdentity({ network: 'testnet', dataPath });
     expect(ident.publicAddr).toBe('198.51.100.4:24567');
+  });
+});
+
+describe('patchNearValidatorAccountId', () => {
+  const host = { executeEnabled: () => true, isRoot: () => true } as never;
+
+  it('writes only account_id and never returns secret_key', () => {
+    const root = dataDir();
+    const inst = buildValidatorInstance({
+      dataDir: root,
+      chain: 'near',
+      network: 'testnet',
+      profile: 'pruned',
+    });
+    mkdirSync(inst.dataPath, { recursive: true });
+    const keyPath = join(inst.dataPath, 'validator_key.json');
+    writeFileSync(
+      keyPath,
+      JSON.stringify({ account_id: '', public_key: PUB, secret_key: SECRET }),
+    );
+    upsertValidatorInstance(root, inst);
+    const dry = patchNearValidatorAccountId({
+      dataDir: root,
+      host,
+      id: inst.id,
+      poolSlug: 'demo',
+      confirm: inst.id,
+      execute: false,
+    });
+    expect(dry.apply_status).toBe('written');
+    expect(JSON.parse(readFileSync(keyPath, 'utf8')).account_id).toBe('');
+
+    const applied = patchNearValidatorAccountId({
+      dataDir: root,
+      host,
+      id: inst.id,
+      poolSlug: 'demo',
+      confirm: inst.id,
+      execute: true,
+    });
+    expect(applied.apply_status).toBe('applied');
+    expect(JSON.stringify(applied)).not.toContain(SECRET);
+    const onDisk = JSON.parse(readFileSync(keyPath, 'utf8')) as {
+      account_id: string;
+      public_key: string;
+      secret_key: string;
+    };
+    expect(onDisk.account_id).toBe('demo.pool.f863973.m0');
+    expect(onDisk.public_key).toBe(PUB);
+    expect(onDisk.secret_key).toBe(SECRET);
+  });
+
+  it('rejects a bad slug and a missing key file', () => {
+    const root = dataDir();
+    const inst = buildValidatorInstance({
+      dataDir: root,
+      chain: 'near',
+      network: 'testnet',
+      profile: 'pruned',
+    });
+    mkdirSync(inst.dataPath, { recursive: true });
+    upsertValidatorInstance(root, inst);
+    const bad = patchNearValidatorAccountId({
+      dataDir: root,
+      host,
+      id: inst.id,
+      poolSlug: 'No.Dots',
+      confirm: inst.id,
+      execute: true,
+    });
+    expect(bad.apply_status).toBe('blocked');
+    writeFileSync(join(inst.dataPath, 'validator_key.json'), JSON.stringify({ account_id: '' }));
+    const missing = patchNearValidatorAccountId({
+      dataDir: root,
+      host,
+      id: inst.id,
+      poolSlug: 'demo',
+      confirm: inst.id,
+      execute: true,
+    });
+    expect(missing.apply_status).toBe('blocked');
   });
 });

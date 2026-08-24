@@ -37,6 +37,11 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.26
+
+- **Validators** — after the node is up: NEAR form fills `create_staking_pool` and can write `account_id` only; Cosmos form fills gaiad v28 `validator.json` (not Hub-docs flags); ETH shows a Lighthouse VC example or the beacon URL. Honest copy for ADA (pool registration certificate), AVAX (NodeID, not IP), Solana (`--no-voting`).
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26** together.
+
 ## What's new in 1.1.25
 
 - **Cron** — in-place edit for live host crontab lines (`source=host`). Managed jobs: `ysk-server cron update --id`.

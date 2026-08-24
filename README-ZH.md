@@ -37,6 +37,11 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.26 新內容
+
+- **驗證者** — 節點起來後：NEAR 表單填好 `create_staking_pool`，並可只寫入 `account_id`；Cosmos 表單填好 gaiad v28 的 `validator.json`（不是 Hub 文件的 flags）；ETH 顯示 Lighthouse VC 示例或 beacon URL。ADA／AVAX／Solana 說明已對齊官方流程。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.26**。
+
 ## 1.1.25 新內容
 
 - **Cron** — 就地修改主機 crontab 行（`source=host`）。管理式任務：`ysk-server cron update --id`。

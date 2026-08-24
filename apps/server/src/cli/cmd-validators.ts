@@ -39,6 +39,7 @@ import {
   writeValidatorCompose,
   validatorContainerStats,
   refreshOfficialReleases,
+  patchNearValidatorAccountId,
 } from 'ysk-server-core';
 import { isValidatorInstanceId, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
@@ -134,6 +135,38 @@ export async function runValidatorsCommand(
       snapshot: snapshotOffer(inst.chain, inst.network),
     });
     return 0;
+  }
+
+  if (sub === 'near-account') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = patchNearValidatorAccountId({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      id,
+      poolSlug: h.getOpt(args, '--pool-slug') ?? undefined,
+      accountId: h.getOpt(args, '--account-id') ?? undefined,
+      confirm: h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? id : undefined),
+      execute,
+    });
+    if (h.hasFlag(args, '--restart') && result.apply_status === 'applied') {
+      const restarted = await restartValidatorInstance({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        execute,
+        id,
+      });
+      h.printJson({
+        ...result,
+        notes: [...(result.notes ?? []), ...(restarted.notes ?? [])],
+      });
+      return h.exitFromResult(restarted.ok === false ? restarted : result);
+    }
+    h.printJson(result);
+    return h.exitFromResult(result);
   }
 
   if (sub === 'rewrite-compose') {

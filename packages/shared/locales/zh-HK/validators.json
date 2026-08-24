@@ -130,7 +130,7 @@
     "disk": "磁碟"
   },
   "cli": {
-    "usage": "用法： ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
+    "usage": "用法： ysk-server validators list|chains|disk|get|status|checklist|logs|create|start|stop|restart|clear|upgrade|set-version|versions|policy|mithril|prune|switch-network|snapshot|compose|compose-write|rewrite-compose|software|pull|leftover-remove|stats|settings|producer-keys|producer-detach|near-account [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--el-tag T] [--cl-tag T] [--node-tag T] [--client ID] [--tag T] [--data-path P] [--rpc-port N] [--id ID] [--path PATH] [--file PATH] [--image REF] [--upgrade POLICY] [--confirm TOKEN] [--kes-file P] [--vrf-file P] [--opcert-file P] [--accept-low-disk] [--accept-low-mem] [--accept-mainnet] [--refresh] [--execute] [--json]"
   },
   "clients": {
     "el": "執行層客戶端",
@@ -191,7 +191,9 @@
     "producerTooLarge": "金鑰檔大於 64 KiB",
     "producerBadType": "此檔不是 KES 金鑰、VRF 金鑰或 operational certificate",
     "producerEmpty": "請至少提供 kes、vrf 或 opcert 其中一份",
-    "switchNeedDetachProducer": "轉網絡前請先卸下營運憑證"
+    "switchNeedDetachProducer": "轉網絡前請先卸下營運憑證",
+    "nearAccountInvalid": "池名稱須為短名（或完整 {pool}{factory} 帳號）。",
+    "nearKeyMissing": "缺少 validator_key.json 或沒有 public_key。請先啟動節點，等待 neard init。"
   },
   "notes": {
     "beta": "此功能屬 Beta。變更主機須 root 及 YSK_EXECUTE=1。",
@@ -229,7 +231,9 @@
     "producerDetached": "已卸下熱金鑰，compose 改回 relay",
     "dryDelete": "刪除屬預演。要真正套用須 --execute 與 YSK_EXECUTE=1。",
     "deleted": "已刪除節點",
-    "leftoverRemoved": "已刪除殘留 {{path}}"
+    "leftoverRemoved": "已刪除殘留 {{path}}",
+    "dryNearAccount": "將會把 account_id 設為 {{account}}（須 --execute）。不會改 secret。",
+    "nearAccountWrote": "已把 account_id 設為 {{account}}。未改 secret。若節點在運行請重啟。"
   },
   "create": "建立節點",
   "wizard": {
@@ -397,13 +401,13 @@
     "nearStakeKey": "質押公鑰",
     "nearStakeKeyPending": "首次啟動完成 neard init 後出現。RPC 未就緒不代表尚未產生金鑰。",
     "nearAccountId": "金鑰檔 account_id",
-    "nearAccountIdPending": "建立池後須自行改成 {pool}{{suffix}}。本面板不寫入 validator_key.json。",
+    "nearAccountIdPending": "池建立後須改成 {{pool}}{{suffix}}。本面板只寫此欄，永不寫入 secret_key。",
     "nearFactory": "質押池 factory",
     "nearPublicAddr": "Public P2P（同儕）",
     "nearPublicAddrPending": "首次啟動把 WAN:{{port}} 寫入 config.json 後出現。",
     "nearCreateCommand": "create_staking_pool 命令",
     "nearPointing": "質押池合約不以本伺服器 IP 指向節點，而是存放此節點的 stake public key。同儕使用上方 Public P2P（主機埠 {{port}}）。RPC 僅本機。",
-    "nearAccountIdHint": "池建立後，請自行把 validator_key.json 的 account_id 設為 {pool}{{suffix}}。本面板不寫入該檔。",
+    "nearAccountIdHint": "池建立後，在此寫入 account_id（無須人手改檔）。面板永不寫入 secret_key。",
     "cosmosPubkey": "共識公鑰",
     "cosmosPubkeyPending": "gaiad init 寫入 priv_validator_key.json 後出現。RPC 未就緒不代表尚未產生金鑰。",
     "cosmosChainId": "chain-id",
@@ -412,10 +416,12 @@
     "ethBeacon": "Beacon API（本機）",
     "ethBeaconPending": "此主機的 beacon HTTP。請自行把 validator client 對準此 URL — 此 compose 沒有 VC。",
     "cosmosCreateCommand": "create-validator 命令",
+    "cosmosCreateJson": "validator.json（gaiad v28）",
+    "copyFailed": "複製失敗",
     "solIdentity": "Identity 公鑰",
     "solIdentityPending": "RPC 回應 getIdentity 後出現。本進程為 --no-voting，除非你自行建立 vote account。",
     "adaP2pPort": "Relay P2P 埠",
-    "adaP2pPending": "請把本主機公開 IPv4 與此埠寫入 topology.json。本面板不探測 WAN。",
+    "adaP2pPending": "請把本主機公開 IPv4（或 DNS）與此埠寫入池註冊證書。topology.json 的 localRoots 只連你自己的 block producer。本面板不探測 WAN。",
     "notPosTitle": "不是權益證明",
     "notPosBody": "此處的 Bitcoin 是完整或 Pruned 節點。本頁沒有質押錢包。",
     "eth": {
@@ -435,16 +441,16 @@
         "自行運行 validator client（不是此 compose），對準此實例本機 beacon API。"
       ],
       "steps": [
-        "等執行層與 beacon 完成同步。",
-        "開啟本網絡的官方 launchpad（本頁提供 Hoodi 或 Mainnet）。Sepolia 在此沒有 launchpad 按鈕。",
-        "離線產生 keystore。提取地址填入你自己的 ETH 錢包。",
-        "存入 32 ETH（另預留手續費）。",
-        "自行運行 validator client。此 compose 沒有 VC — 把 keystore 放入 beacon 資料目錄不會開始 attest。"
+        "等待執行層與 beacon 同步完成。",
+        "開啟此網絡的官方 launchpad（本頁有 Hoodi 或 Mainnet）。Sepolia 不提供 launchpad 按鈕。",
+        "離線用 staking-deposit-cli 產生 keystore。提款地址設為你自己的 ETH 錢包。",
+        "在 launchpad 存入 32 ETH（另留 gas）。",
+        "自行運行 validator client，指向本卡的 beacon URL（示例：lighthouse vc --beacon-nodes）。此 compose 沒有 VC — 把 keystore 放入 beacon 資料目錄不會開始 attest。"
       ],
       "never": [
-        "不要把助記詞或提取私鑰交給任何人，包括本面板。",
-        "不要把簽署 keystore 上傳到任何雲端託管。",
-        "不要以為把 keystore 複製進 beacon 目錄後本頁就會 attest。"
+        "不要把助記詞或提款金鑰交給任何人，包括本面板。",
+        "不要把簽署 keystore 上傳到託管雲。",
+        "不要指望把 keystore 複製進 beacon 資料目錄後本頁會開始 attest。"
       ]
     },
     "avax": {
@@ -461,10 +467,10 @@
         "在 Core 用此節點的 NodeID 與 BLS 證明新增驗證者。"
       ],
       "steps": [
-        "等待此節點完成同步。",
-        "複製實例頁顯示的 NodeID、BLS 公鑰與 BLS 持有證明。",
-        "在 Core web（Staking → Validate），或經 Core 使用 Ledger，於 P-Chain 登記。",
-        "主網至少需要 2,000 AVAX、最短 14 日，並預留手續費。"
+        "等待此節點同步，並出現 NodeID／BLS 列（須 RPC）。",
+        "複製 NodeID、BLS 公鑰與 BLS proof of possession。",
+        "在 Core 網頁（Staking → Validate），或經 Core 用 Ledger，在 P-Chain 登記。交易不收伺服器 IP。",
+        "主網至少 2,000 AVAX、最短 14 日，並預留手續費。Fuji 為 1 AVAX。"
       ],
       "never": [
         "不要把 AVAX 轉入本面板。",
@@ -482,44 +488,45 @@
         "你提供時掛上 KES、VRF 與 opcert。拒絕 cold 金鑰。"
       ],
       "youDo": [
-        "離線產生 pool 金鑰。",
-        "按官方 Cardano 文件登記 stake pool。",
-        "把本主機公開 IPv4 與 relay P2P 埠寫入 topology.json。"
+        "離線產生池金鑰。",
+        "用官方 Cardano CLI 註冊池。把本機公網 IPv4 或 DNS 與 relay P2P 埠寫入池註冊證書。",
+        "在本頁掛上 KES、VRF 與 opcert。不要上傳冷鑰。"
       ],
       "steps": [
         "閱讀官方 operate-a-stake-pool 指南。",
         "在離線機器產生 cold、KES、VRF 金鑰。",
-        "用該等金鑰在鏈上登記 stake pool。",
-        "在此實例頁掛上 KES、VRF 與 operational certificate。不要上傳 cold 金鑰。",
-        "以 公開IP:P2P埠 公告 relay（埠見本卡）。本面板不查 WAN 地址。"
+        "鏈上註冊池。在該證書廣告 relay（--pool-relay-ipv4 或 DNS + 本卡 P2P 埠）。公眾發現靠證書，不是 topology.json。",
+        "在本實例頁掛上 KES、VRF 與 operational certificate。冷鑰會被拒絕。",
+        "topology.json 的 localRoots 只連你自己的 block producer（advertise: false）。本面板不查 WAN 位址。"
       ],
       "never": [
         "不要當成 MetaMask 一鍵質押。",
-        "不要把 cold 金鑰放在驗證者主機上。"
+        "不要把冷鑰放在驗證者主機。",
+        "不要以為只改 topology.json 就能在鏈上登記 relay。"
       ]
     },
     "near": {
       "model": "在官方 factory 建立 staking-pool 合約。合約存放此節點的 public key，不是伺服器 IP。",
       "min": "見官方驗證者文件（建立池須 30 NEAR，另加質押）",
       "wallets": "官方 NEAR 錢包／lockup",
-      "panel": "運行 neard；init 後顯示 public key、factory 與 create_staking_pool 命令",
+      "panel": "運行 neard；表單填好 create_staking_pool；池建立後只寫入 account_id。",
       "yskDoes": [
-        "運行 neard，RPC 僅本機，P2P 使用 24567。",
-        "init 後顯示 stake public key、Public P2P、factory，以及可複製的 create_staking_pool 命令。",
-        "永不寫入 validator_key.json，亦不代發交易。"
+        "運行 neard，RPC 只在本機，P2P 在 24567。",
+        "init 後顯示質押公鑰、公開 P2P 位址與 factory。",
+        "用池名稱、擁有人與公鑰填好 create_staking_pool。池建立後只寫 account_id — 永不改 secret_key，永不送出交易。"
       ],
       "youDo": [
-        "在此實例頁複製 public key 與命令。",
-        "用你自己的 NEAR 帳戶呼叫官方 factory。",
-        "池建立後，自行把 validator_key.json 的 account_id 設為 {pool}.{factory}。",
-        "用你的錢包將幣質押到該池。"
+        "啟動節點，等待本頁出現公鑰。",
+        "填池名稱與擁有人，然後複製命令。",
+        "用你自己的 NEAR 錢包或 near-cli 簽署 create_staking_pool。",
+        "返回本頁寫入 account_id。再從錢包向該池質押。"
       ],
       "steps": [
-        "啟動節點，等 neard init 後出現 public key（RPC 未就緒不代表尚未產生金鑰）。",
-        "複製 stake public key 與 create_staking_pool 命令。",
-        "用你的錢包呼叫 factory（測試網 pool.f863973.m0／主網 poolv1.near），並附帶 30 NEAR 作為儲存。複製的命令使用 --accountId；若你的 near CLI 要 --account_id，以該 CLI 的 --help 為準。",
-        "把 validator_key.json 的 account_id 設為新建的池帳戶。本面板不寫入該檔。",
-        "大量質押前應等 RPC 可答且同步完成。同儕使用 Public P2P :24567 — 合約不接收 IP。"
+        "啟動節點，等待 neard init 後公鑰出現（RPC 未就緒不代表尚未產生金鑰）。",
+        "填入池短名與擁有人帳號。複製已填好的 create_staking_pool 命令。",
+        "用你的錢包呼叫 factory（測試網 pool.f863973.m0／主網 poolv1.near），並付 30 NEAR 作儲存。命令使用 --accountId；若你的 near CLI 要用 --account_id，請依該 CLI 的 --help。",
+        "池建立後，在本頁按「寫入 account_id」（確認字為實例識別碼）。不要人手改 validator_key.json。",
+        "若節點已在運行請重啟。等待 RPC 回應且同步完成後再質押大量金額。對等端使用 Public P2P — 合約不收 IP。"
       ],
       "never": [
         "不要在本面板貼上助記詞。",
@@ -531,28 +538,31 @@
       "model": "用操作者錢包送出 create-validator。交易存放此節點的共識公鑰，不是伺服器 IP。",
       "min": "見官方 Cosmos Hub 文件（自行質押以 uatom 計）",
       "wallets": "Keplr 或其他由你控制的 Cosmos 錢包",
-      "panel": "運行 gaiad；init 後顯示共識公鑰與可複製的 create-validator 命令",
-      "honesty": "create-validator 存放此節點的共識公鑰。同儕使用 26656 的 Public P2P。RPC 僅本機。本面板不代發交易，亦不讀取 priv_key。",
+      "panel": "運行 gaiad v28；顯示共識公鑰；表單填好 validator.json 與 create-validator。永不寫入 priv_validator_key.json，亦不代發交易。",
+      "honesty": "此 gaiad 為 v28（JSON 檔）。Hub 文件仍用 flags — 在此節點會失敗。交易存放此節點的共識公鑰，不是伺服器 IP。同儕使用 Public P2P。RPC 僅本機。本面板不代發交易，亦不讀取 priv_key。",
       "yskDoes": [
-        "運行 gaiad，RPC 僅本機，P2P 使用 26656。",
-        "init 後顯示共識公鑰、chain-id、Public P2P，以及可複製的 create-validator 命令。",
-        "永不寫入 priv_validator_key.json，亦不代發交易。"
+        "運行 gaiad，RPC 只在本機，P2P 在 26656。minimum-gas-prices 為 0.005uatom。",
+        "init 後顯示共識公鑰、chain-id 與公開 P2P。",
+        "用數量、moniker、--from 與共識公鑰填好 validator.json 與 gaiad v28 命令。永不寫入 priv_validator_key.json，永不代發交易。"
       ],
       "youDo": [
-        "在此實例頁複製共識公鑰與命令。",
-        "用你控制的操作者錢包（Keplr 或 gaiad keys）送出 create-validator。",
-        "不要把該錢包助記詞與本機共識匙混在一起。"
+        "啟動節點，等待本頁出現共識公鑰。",
+        "填數量、moniker 與 --from。先複製 validator.json，再複製 gaiad 命令。",
+        "用 Keplr 或你控制的 gaiad 金鑰簽署。不要把該助記詞與本機共識金鑰混用。"
       ],
       "steps": [
-        "啟動節點，等 gaiad init 後出現共識公鑰（RPC 未就緒不代表尚未產生金鑰）。",
-        "複製共識公鑰與 create-validator 命令（主網 chain-id 為 cosmoshub-4，測試網為 provider）。",
-        "用操作者錢包廣播 create-validator。金額與 moniker 由你決定。",
-        "大量綁定前應等 RPC 可答且同步完成。同儕使用 tcp://WAN:26656 — 交易不接收 IP。"
+        "啟動節點，等待 gaiad init 後共識公鑰出現（RPC 未就緒不代表尚未產生金鑰）。",
+        "填自我委託（1atom = 1 ATOM，或 uatom）、moniker 與 --from。複製 validator.json，再複製 gaiad 命令。此節點為 gaiad v28：用 JSON 檔，不是 Hub 文件的 flags。主網 chain-id 為 cosmoshub-4，測試網為 provider。",
+        "複製命令的 --gas-prices 為 0.005uatom，對齊此節點。不要貼上 Hub 文件的 0.0025uatom 示例，亦不要貼 flags 版 create-validator。",
+        "儲存 validator.json，用 operator 錢包廣播。交易不收伺服器 IP。同儕使用 tcp://WAN:{{port}}。",
+        "等待 RPC 回應且同步完成後再大量綁定。"
       ],
       "never": [
-        "不要把操作者錢包助記詞與共識匙混在一起。",
+        "不要把 operator 錢包助記詞與共識金鑰混用。",
         "不要在此輸入錢包助記詞。",
-        "不要把本伺服器 IP 寫進 create-validator。"
+        "不要把此伺服器 IP 寫進 create-validator。",
+        "不要貼上 Hub 文件的 --amount／--pubkey flags — 此 gaiad 為 v28（validator.json）。",
+        "不要在此節點使用 0.0025uatom gas — compose 最低為 0.005uatom。"
       ]
     },
     "sol": {
@@ -573,13 +583,14 @@
       ],
       "steps": [
         "確認本機磁碟與 IOPS 足夠（主網通常 2 TiB 或以上）。",
-        "等 RPC 可答後，複製本頁的 identity pubkey。",
-        "依官方 vote-account 與 stake 指南操作（見下方連結）。",
-        "此 compose 維持 --no-voting。不要以為建立 vote account 後本頁就會開始投票。"
+        "等待 RPC 回應，然後複製本頁的 identity pubkey。",
+        "用官方 Solana 工具在你控制的機器產生 vote 與 authorized-withdrawer 金鑰，然後 solana create-vote-account。",
+        "此 compose 維持 --no-voting。建立 vote account 不會令此進程開始投票。"
       ],
       "never": [
-        "不要期望本面板提供瀏覽器錢包按鈕。",
-        "不要把 identity 或 vote 金鑰對貼進本面板。"
+        "不要指望本面板有瀏覽器錢包按鈕。",
+        "不要把 identity 或 vote 密鑰對貼進本面板。",
+        "不要指望建立 vote account 後本頁會開始投票。"
       ]
     },
     "dot": {
@@ -671,7 +682,33 @@
       "never": [
         "不要在本頁尋找質押錢包。"
       ]
-    }
+    },
+    "nearPoolSlug": "池名稱",
+    "nearPoolSlugHint": "只填短名。factory 會加上 {{suffix}}。",
+    "nearOwner": "擁有人帳號",
+    "nearOwnerHint": "簽署 create_staking_pool 的 NEAR 帳號（你的錢包）。不是節點金鑰。",
+    "nearPreview": "命令預覽",
+    "nearWriteAccount": "寫入 account_id",
+    "nearWriteTitle": "為 {{id}} 寫入 validator_key.json 的 account_id？",
+    "nearWriteDesc": "只改現有金鑰檔的 account_id。不會送出 create_staking_pool。不會改 secret_key。",
+    "nearWriteC1": "account_id 會變成 {{pool}}{{suffix}}",
+    "nearWriteC2": "面板不會簽署 factory 交易",
+    "nearRestart": "寫入後重啟節點",
+    "nearNeedKey": "請先等質押公鑰出現（neard init），再填此表。",
+    "nearNeedSlug": "請填池名稱以寫入 account_id。",
+    "nearNeedOwner": "請填擁有人帳號以產生命令。寫入 account_id 只須池名稱。",
+    "cosmosPointing": "此 gaiad 為 v28：先複製 validator.json，再複製 create-validator validator.json。Hub 文件仍用 flags — 在此節點會失敗。交易用此節點的共識公鑰，不是伺服器 IP。同儕使用 Public P2P（主機埠 {{port}}）。gas 為 0.005uatom — 不要用 Hub 文件的 0.0025uatom。",
+    "avaxPointing": "P-Chain 登記用此 NodeID 與 BLS 證明，不是伺服器 IP。RPC 僅本機。請在 Core（Staking → Validate）登記。",
+    "ethVcCommand": "Validator client 示例（不在此 compose）",
+    "ethVcHint": "請自行運行 validator client，指向此 beacon URL。把 keystore 放入 beacon 資料目錄不會開始 attest。",
+    "cosmosAmount": "自我委託",
+    "cosmosAmountHint": "單位 uatom，或填 1atom 代表 1 ATOM。只填 1 是 1 uatom，不是 1 ATOM。",
+    "cosmosAmountParsed": "{{amount}} = {{atom}}",
+    "cosmosMoniker": "Moniker",
+    "cosmosFromKey": "--from 金鑰名稱",
+    "cosmosFromHint": "本機 gaiad 金鑰名，或用 Keplr 簽署。不是此主機上的共識金鑰。",
+    "cosmosNeedPubkey": "請先等共識公鑰出現（gaiad init），再填此表。",
+    "cosmosNeedFields": "請填數量、moniker 與 --from 以產生命令。"
   },
   "alerts": {
     "diskTitle": "驗證者節點磁碟危急",

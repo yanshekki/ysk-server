@@ -188,6 +188,25 @@ describe('cmd-validators', () => {
       const writeBody = printed.at(-1) as { apply_status?: string; dryRun?: boolean };
       expect(writeBody.apply_status).toBe('written');
       expect(writeBody.dryRun).toBe(true);
+
+      mkdirSync(inst.dataPath, { recursive: true });
+      writeFileSync(
+        join(inst.dataPath, 'validator_key.json'),
+        JSON.stringify({
+          account_id: '',
+          public_key: 'ed25519:CE3QAXyVLeScmY9YeEyR3Tw9yXfjBPzFLzroTranYtVb',
+          secret_key: 'ed25519:3D4YudUQk3jWtvzkNY7337sFFnM67Jeo8ZZh8eEVzxQK',
+        }),
+      );
+      const nearDry = await runValidatorsCommand(
+        ctx,
+        ['validators', 'near-account', '--id', inst.id, '--pool-slug', 'demo', '--confirm', inst.id],
+        true,
+        h,
+      );
+      expect(nearDry).toBe(0);
+      expect((printed.at(-1) as { apply_status?: string }).apply_status).toBe('written');
+      expect(JSON.stringify(printed.at(-1))).not.toMatch(/secret_key|3D4YudUQk3jWtvzkNY7337sFFnM67Jeo8ZZh8eEVzxQK/);
     } finally {
       closeAppContext(ctx);
     }

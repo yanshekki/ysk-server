@@ -1390,6 +1390,13 @@
       "exitCodes": { "4": "not_found" }
     },
     {
+      "name": "validators near-account",
+      "risk": "write-host",
+      "summary": "Set validator_key.json account_id only (NEAR pool). Never writes secret_key or broadcasts create_staking_pool.",
+      "args": ["--id", "--pool-slug", "--account-id", "--confirm", "--restart", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators near-account --id near-testnet-1 --pool-slug demo --confirm near-testnet-1 --execute --json"
+    },
+    {
       "name": "bt-tracker status",
       "aliases": [
         "bt-tracker info"

@@ -6,8 +6,18 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   STAKING_PLAYBOOKS,
+  buildCosmosCreateValidatorCommand,
+  buildCosmosCreateValidatorJson,
+  buildNearCreateStakingPoolCommand,
+  cosmosAmountAtomLabel,
+  cosmosCreateValidatorFilled,
   emptyCosmosStakingIdentity,
   emptyNearStakingIdentity,
+  ethValidatorClientCommand,
+  isNearOwnerAccountId,
+  isNearPoolSlug,
+  parseCosmosAmountUatom,
+  resolveNearPoolAccountId,
   stakingPlaybookAnchor,
   stakingPlaybookLinksForInstance,
   stakingPlaybookMeta,
@@ -24,6 +34,7 @@ import {
   Button,
   Card,
   CardSection,
+  CheckboxField,
   DataTable,
   Field,
   FormLayout,
@@ -43,6 +54,61 @@ async function writeClipboard(text: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function CopyBlock({
+  label,
+  text,
+  enabled,
+}: {
+  label: string;
+  text: string;
+  enabled: boolean;
+}) {
+  const { t } = useTranslation();
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+
+  async function onCopy() {
+    if (!enabled) return;
+    if (await writeClipboard(text)) {
+      setState('copied');
+      window.setTimeout(() => setState('idle'), 1500);
+    } else {
+      setState('failed');
+      window.setTimeout(() => setState('idle'), 2000);
+    }
+  }
+
+  const caption =
+    state === 'copied'
+      ? t('common.copied')
+      : state === 'failed'
+        ? t('validators.playbook.copyFailed')
+        : t('common.copy');
+
+  return (
+    <div className="cred-row">
+      <div className="cred-row__head">
+        <span className="cred-row__label">{label}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={!enabled}
+          onClick={() => void onCopy()}
+          aria-label={t('validators.playbook.copyNamed', { label })}
+        >
+          {caption}
+        </Button>
+      </div>
+      <pre className="cred-row__body cred-row__body--wrap">{text}</pre>
+    </div>
+  );
+}
+
+function applyPort(lines: string[], port: number): string[] {
+  const p = String(port);
+  return lines.map((s) => s.replaceAll('{{port}}', p).replaceAll('{p2p}', p));
 }
 
 function CredentialList({ items }: { items: CredItem[] }) {
@@ -188,11 +254,14 @@ export function ValidatorPlaybookCard({
   adaP2pPort,
   p2pPort,
   ethBeaconUrl,
+  ethCl,
   network,
   cardanoProducer,
   producerMainnet,
   onProducerApply,
   onProducerDetach,
+  instanceId,
+  onNearAccount,
 }: {
   chain: string;
   compact?: boolean;
@@ -206,7 +275,10 @@ export function ValidatorPlaybookCard({
   adaP2pPort?: number | null;
   p2pPort?: number | null;
   ethBeaconUrl?: string | null;
+  ethCl?: string | null;
   network?: string;
+  instanceId?: string;
+  onNearAccount?: (input: { poolSlug: string; restart: boolean }) => void;
   cardanoProducer?: CardanoProducerStatusDto | null;
   producerMainnet?: boolean;
   onProducerApply?: (files: { kes?: string; vrf?: string; opcert?: string }) => void;
@@ -219,7 +291,6 @@ export function ValidatorPlaybookCard({
   const mode = variant ?? (compact ? 'compact' : 'full');
   const yskDoes = playbookList(t, id, 'yskDoes');
   const youDo = playbookList(t, id, 'youDo');
-  const steps = playbookList(t, id, 'steps');
   const never = playbookList(t, id, 'never');
   const aboutHref = `/validators?tab=about#${stakingPlaybookAnchor(id)}`;
 
@@ -290,11 +361,15 @@ export function ValidatorPlaybookCard({
             value: nearIdent.publicAddr,
             pending: t('validators.playbook.nearPublicAddrPending', { port: nearPort }),
           },
-          {
-            label: t('validators.playbook.nearCreateCommand'),
-            value: nearIdent.createCommand,
-            pending: t('validators.playbook.nearCreateCommand'),
-          },
+          ...(mode === 'instance'
+            ? []
+            : [
+                {
+                  label: t('validators.playbook.nearCreateCommand'),
+                  value: nearIdent.createCommand,
+                  pending: t('validators.playbook.nearCreateCommand'),
+                },
+              ]),
         ]
       : [];
 
@@ -319,14 +394,31 @@ export function ValidatorPlaybookCard({
             value: cosmosIdent.externalAddress,
             pending: t('validators.playbook.cosmosP2pPending', { port: cosmosPort }),
           },
-          {
-            label: t('validators.playbook.cosmosCreateCommand'),
-            value: cosmosIdent.createCommand,
-            pending: t('validators.playbook.cosmosCreateCommand'),
-          },
+          ...(mode === 'instance'
+            ? []
+            : [
+                {
+                  label: t('validators.playbook.cosmosCreateJson'),
+                  value: cosmosIdent.createValidatorJson,
+                  pending: t('validators.playbook.cosmosCreateJson'),
+                },
+                {
+                  label: t('validators.playbook.cosmosCreateCommand'),
+                  value: cosmosIdent.createCommand,
+                  pending: t('validators.playbook.cosmosCreateCommand'),
+                },
+              ]),
         ]
       : [];
 
+  const ethVcCommand =
+    id === 'eth' && ethBeaconUrl
+      ? ethValidatorClientCommand({
+          network: network ?? 'hoodi',
+          beaconUrl: ethBeaconUrl,
+          cl: ethCl,
+        })
+      : null;
   const ethCredentials =
     id === 'eth'
       ? [
@@ -334,6 +426,11 @@ export function ValidatorPlaybookCard({
             label: t('validators.playbook.ethBeacon'),
             value: ethBeaconUrl,
             pending: t('validators.playbook.ethBeaconPending'),
+          },
+          {
+            label: t('validators.playbook.ethVcCommand'),
+            value: ethVcCommand,
+            pending: t('validators.playbook.ethVcHint'),
           },
         ]
       : [];
@@ -375,6 +472,15 @@ export function ValidatorPlaybookCard({
   const honestyKey = `validators.playbook.${id}.honesty`;
   const honesty = t(honestyKey);
   const honestyText = honesty === honestyKey ? '' : honesty;
+  const stepPort =
+    id === 'cosmos'
+      ? cosmosPort
+      : id === 'near'
+        ? nearPort
+        : id === 'ada'
+          ? (adaP2pPort ?? p2pPort ?? 3001)
+          : (p2pPort ?? 0);
+  const steps = applyPort(playbookList(t, id, 'steps'), stepPort);
 
   const officialLinks = (
     <ActionBar>
@@ -421,12 +527,27 @@ export function ValidatorPlaybookCard({
         {id === 'near' ? (
           <Alert variant="info">{t('validators.playbook.nearPointing', { port: nearPort })}</Alert>
         ) : null}
+        {id === 'cosmos' ? (
+          <Alert variant="info">{t('validators.playbook.cosmosPointing', { port: cosmosPort })}</Alert>
+        ) : null}
+        {id === 'avax' ? <Alert variant="info">{t('validators.playbook.avaxPointing')}</Alert> : null}
         {honestyText ? <Alert variant="info">{honestyText}</Alert> : null}
         <CredentialList items={credentials} />
         {id === 'near' && nearIdent ? (
-          <p className="muted u-text-sm">
-            {t('validators.playbook.nearAccountIdHint', { suffix: nearIdent.poolAccountSuffix })}
-          </p>
+          <>
+            <NearPoolForm
+              ident={nearIdent}
+              network={network ?? 'testnet'}
+              instanceId={instanceId}
+              onWrite={onNearAccount}
+            />
+            <p className="muted u-text-sm">
+              {t('validators.playbook.nearAccountIdHint', { suffix: nearIdent.poolAccountSuffix })}
+            </p>
+          </>
+        ) : null}
+        {id === 'cosmos' && cosmosIdent ? (
+          <CosmosValidatorForm ident={cosmosIdent} network={network ?? 'testnet'} />
         ) : null}
         {id === 'ada' && onProducerApply ? (
           <CardanoProducerAttach
@@ -528,6 +649,199 @@ export function ValidatorPlaybookCard({
         </CardSection>
       </div>
     </Card>
+  );
+}
+
+function NearPoolForm({
+  ident,
+  network,
+  instanceId,
+  onWrite,
+}: {
+  ident: NearStakingIdentityDto;
+  network: string;
+  instanceId?: string;
+  onWrite?: (input: { poolSlug: string; restart: boolean }) => void;
+}) {
+  const { t } = useTranslation();
+  const [poolSlug, setPoolSlug] = useState(() => {
+    const resolved = resolveNearPoolAccountId({ network, accountId: ident.accountId });
+    return resolved.ok ? resolved.poolSlug : '';
+  });
+  const [ownerId, setOwnerId] = useState('');
+  const [restart, setRestart] = useState(true);
+  const slugOk = isNearPoolSlug(poolSlug);
+  const ownerOk = isNearOwnerAccountId(ownerId);
+  const command = buildNearCreateStakingPoolCommand({
+    network,
+    stakePublicKey: ident.stakePublicKey,
+    poolId: poolSlug,
+    ownerId,
+  });
+  const canWrite = Boolean(instanceId && onWrite && ident.stakePublicKey && slugOk);
+  const commandReady = Boolean(ident.stakePublicKey && slugOk && ownerOk);
+
+  return (
+    <div className="stack" data-testid="near-pool-form">
+      {!ident.stakePublicKey ? (
+        <Alert variant="info">{t('validators.playbook.nearNeedKey')}</Alert>
+      ) : null}
+      <FormLayout columns={2}>
+        <Field
+          htmlFor="near-pool-slug"
+          label={t('validators.playbook.nearPoolSlug')}
+          hint={t('validators.playbook.nearPoolSlugHint', { suffix: ident.poolAccountSuffix })}
+          error={poolSlug && !slugOk ? t('validators.errors.nearAccountInvalid') : undefined}
+        >
+          <input
+            id="near-pool-slug"
+            className="input"
+            autoComplete="off"
+            value={poolSlug}
+            onChange={(e) => setPoolSlug(e.target.value.trim().toLowerCase())}
+          />
+        </Field>
+        <Field
+          htmlFor="near-owner"
+          label={t('validators.playbook.nearOwner')}
+          hint={t('validators.playbook.nearOwnerHint')}
+        >
+          <input
+            id="near-owner"
+            className="input"
+            autoComplete="off"
+            value={ownerId}
+            onChange={(e) => setOwnerId(e.target.value.trim().toLowerCase())}
+          />
+        </Field>
+      </FormLayout>
+      <CopyBlock
+        label={t('validators.playbook.nearPreview')}
+        text={command}
+        enabled={commandReady}
+      />
+      {instanceId && onWrite ? (
+        <>
+          <CheckboxField
+            id="near-restart"
+            label={t('validators.playbook.nearRestart')}
+            checked={restart}
+            onChange={setRestart}
+          />
+          <ActionBar>
+            <Button
+              type="button"
+              variant="primary"
+              disabled={!canWrite}
+              onClick={() => onWrite({ poolSlug, restart })}
+            >
+              {t('validators.playbook.nearWriteAccount')}
+            </Button>
+          </ActionBar>
+        </>
+      ) : null}
+      {!slugOk ? (
+        <p className="muted u-text-sm">{t('validators.playbook.nearNeedSlug')}</p>
+      ) : !ownerOk ? (
+        <p className="muted u-text-sm">{t('validators.playbook.nearNeedOwner')}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function CosmosValidatorForm({
+  ident,
+  network,
+}: {
+  ident: CosmosStakingIdentityDto;
+  network: string;
+}) {
+  const { t } = useTranslation();
+  const [amount, setAmount] = useState('');
+  const [moniker, setMoniker] = useState('');
+  const [fromKey, setFromKey] = useState('');
+  const parsedAmount = parseCosmosAmountUatom(amount);
+  const atomHint = parsedAmount ? cosmosAmountAtomLabel(parsedAmount) : null;
+  const json = buildCosmosCreateValidatorJson({
+    consensusPubkey: ident.consensusPubkey,
+    amountUatom: amount,
+    moniker,
+  });
+  const command = buildCosmosCreateValidatorCommand({
+    network,
+    consensusPubkey: ident.consensusPubkey,
+    amountUatom: amount,
+    moniker,
+    fromKey,
+  });
+  const fieldsFilled = cosmosCreateValidatorFilled({
+    consensusPubkey: ident.consensusPubkey,
+    amountUatom: amount,
+    moniker,
+    fromKey,
+  });
+
+  return (
+    <div className="stack" data-testid="cosmos-validator-form">
+      {!ident.consensusPubkey ? (
+        <Alert variant="info">{t('validators.playbook.cosmosNeedPubkey')}</Alert>
+      ) : null}
+      <FormLayout columns={2}>
+        <Field
+          htmlFor="cosmos-amount"
+          label={t('validators.playbook.cosmosAmount')}
+          hint={
+            atomHint
+              ? t('validators.playbook.cosmosAmountParsed', { amount: parsedAmount, atom: atomHint })
+              : t('validators.playbook.cosmosAmountHint')
+          }
+        >
+          <input
+            id="cosmos-amount"
+            className="input"
+            autoComplete="off"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="1atom"
+          />
+        </Field>
+        <Field htmlFor="cosmos-moniker" label={t('validators.playbook.cosmosMoniker')}>
+          <input
+            id="cosmos-moniker"
+            className="input"
+            autoComplete="off"
+            value={moniker}
+            onChange={(e) => setMoniker(e.target.value)}
+          />
+        </Field>
+        <Field
+          htmlFor="cosmos-from"
+          label={t('validators.playbook.cosmosFromKey')}
+          hint={t('validators.playbook.cosmosFromHint')}
+        >
+          <input
+            id="cosmos-from"
+            className="input"
+            autoComplete="off"
+            value={fromKey}
+            onChange={(e) => setFromKey(e.target.value.trim())}
+          />
+        </Field>
+      </FormLayout>
+      <CopyBlock
+        label={t('validators.playbook.cosmosCreateJson')}
+        text={json}
+        enabled={fieldsFilled}
+      />
+      <CopyBlock
+        label={t('validators.playbook.cosmosCreateCommand')}
+        text={command}
+        enabled={fieldsFilled}
+      />
+      {!fieldsFilled ? (
+        <p className="muted u-text-sm">{t('validators.playbook.cosmosNeedFields')}</p>
+      ) : null}
+    </div>
   );
 }
 

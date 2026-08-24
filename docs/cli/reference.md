@@ -373,9 +373,10 @@ YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json
 YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json
 ysk-server validators create --chain eth --network hoodi --el geth --cl prysm --json
 ysk-server validators compose-write --id near-testnet-1 --file ./compose.yml --json
+YSK_EXECUTE=1 ysk-server validators near-account --id near-testnet-1 --pool-slug demo --confirm near-testnet-1 --execute --json
 ```
 
-Create without `--execute` writes the instance spec and compose file (`written`). Start / stop / clear stay **blocked** until `YSK_EXECUTE=1` and `--execute`. Docker Compose is required to apply. `checklist` is read-only public identity (no secrets). `rewrite-compose` and `compose-write` without `--execute` are dry-run (`written`). `leftover-remove` and `pull` stay **blocked** until execute.
+Create without `--execute` writes the instance spec and compose file (`written`). Start / stop / clear stay **blocked** until `YSK_EXECUTE=1` and `--execute`. Docker Compose is required to apply. `checklist` is read-only public identity (no secrets). `rewrite-compose` and `compose-write` without `--execute` are dry-run (`written`). `leftover-remove` and `pull` stay **blocked** until execute. `near-account` writes only `account_id` (confirm = instance id). Cosmos `create-validator` fill is panel-only copy of `validator.json` plus the gaiad v28 command — no CLI, nothing is written on the host. Hub docs still show flags; those fail on this node.
 
 See [../features/validators.md](../features/validators.md).
 
