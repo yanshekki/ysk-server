@@ -12,6 +12,8 @@
 <p align="center">
   <a href="./README-ZH.md">中文</a>
   ·
+  <a href="https://ysk.hk/products/ysk-server">Product page</a>
+  ·
   <a href="https://ysk.hk/">ysk.hk</a>
   ·
   <a href="mailto:email@ysk.hk">email@ysk.hk</a>
@@ -185,6 +187,7 @@ Architecture and contribution notes live under **[docs/](docs/INDEX.md)**.
 
 <p align="center">
   <strong>YSK Server</strong> · control without a landlord ·
+  <a href="https://ysk.hk/products/ysk-server">Product page</a> ·
   <a href="https://ysk.hk/">ysk.hk</a> ·
   <a href="mailto:email@ysk.hk">email@ysk.hk</a>
 </p>

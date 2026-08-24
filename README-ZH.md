@@ -12,6 +12,8 @@
 <p align="center">
   <a href="./README.md">English</a>
   ·
+  <a href="https://ysk.hk/products/ysk-server">產品頁</a>
+  ·
   <a href="https://ysk.hk/">ysk.hk</a>
   ·
   <a href="mailto:email@ysk.hk">email@ysk.hk</a>
@@ -185,6 +187,7 @@ pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts serve --data-dir 
 
 <p align="center">
   <strong>YSK Server</strong> · 掌控自己的主機 ·
+  <a href="https://ysk.hk/products/ysk-server">產品頁</a> ·
   <a href="https://ysk.hk/">ysk.hk</a> ·
   <a href="mailto:email@ysk.hk">email@ysk.hk</a>
 </p>
