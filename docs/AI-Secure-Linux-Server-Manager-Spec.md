@@ -119,7 +119,7 @@ src/
   curl -fsSL https://raw.githubusercontent.com/.../install.sh | bash
   ```
 - `install.sh` must:
-  - Detect OS (perfect support for Ubuntu 22.04 / 24.04)
+  - Detect OS (perfect support for Ubuntu 22.04 / 24.04 / 26.04)
   - Install Node.js LTS reliably (NodeSource / fnm / nvm, …)
   - Install system deps (build-essential, curl, git, …)
   - Install this product globally

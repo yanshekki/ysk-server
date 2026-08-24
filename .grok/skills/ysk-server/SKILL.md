@@ -21,7 +21,7 @@ description: >
 ## Install (fresh machine)
 
 ```bash
-# Root, Ubuntu 22.04/24.04 recommended
+# Root, Ubuntu 22.04/24.04/26.04 recommended
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
 # Interactive:
 #   git clone … && sudo ./install.sh

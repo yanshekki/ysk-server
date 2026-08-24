@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Docs
+- Supported install targets: Ubuntu **22.04 / 24.04 / 26.04** (Debian still best-effort). 26.04 is listed after one recommended-plan install, not a full LTS matrix.
+
+### Fix
+- `install.sh` finish banner reports the installed `ysk-server` version (CLI `--version` / npm package), not a frozen `1.0.31`.
+
 ## 1.1.26 — 2026-08-22
 
 ### Add

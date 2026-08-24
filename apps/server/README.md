@@ -76,7 +76,7 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
 ## Install
 
-**Ubuntu 22.04 / 24.04** as **root**. Node.js **≥ 22**. Native deps need `python3`, `make`, and `g++`.
+**Ubuntu 22.04 / 24.04 / 26.04** as **root**. Node.js **≥ 22**. Native deps need `python3`, `make`, and `g++`.
 
 ### Fresh host (recommended)
 
