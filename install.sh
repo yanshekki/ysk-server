@@ -1019,6 +1019,43 @@ install_systemd_unit() {
   fi
 }
 
+# Installed product version for the finish banner (never a frozen release number).
+# Prefer CLI --version (same as upgrade_product_only / warn_stale_npm_global_cli),
+# then the npm package on disk.
+installed_product_version() {
+  local raw ver="" groot
+  if command -v "$CLI" >/dev/null 2>&1; then
+    raw="$("$CLI" --version 2>/dev/null | head -n1 || true)"
+    if [[ "$raw" == */* ]]; then
+      ver="${raw##*/}"
+      ver="${ver%%[[:space:]]*}"
+    fi
+    if [[ -z "$ver" ]]; then
+      ver="$(printf '%s' "$raw" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)"
+    fi
+    if [[ -n "$ver" ]]; then
+      printf '%s\n' "$ver"
+      return 0
+    fi
+  fi
+  groot="$(npm root -g 2>/dev/null || true)"
+  if [[ -n "$groot" && -f "$groot/${PKG}/package.json" ]]; then
+    ver="$(node -p "try { require('$groot/${PKG}/package.json').version } catch (e) { '' }" 2>/dev/null || true)"
+    if [[ -n "$ver" ]]; then
+      printf '%s\n' "$ver"
+      return 0
+    fi
+  fi
+  if [[ -f /usr/lib/ysk-server/apps/server/package.json ]]; then
+    ver="$(node -p "try { require('/usr/lib/ysk-server/apps/server/package.json').version } catch (e) { '' }" 2>/dev/null || true)"
+    if [[ -n "$ver" ]]; then
+      printf '%s\n' "$ver"
+      return 0
+    fi
+  fi
+  return 1
+}
+
 print_next() {
   local ip_hint="127.0.0.1"
   if command -v hostname >/dev/null 2>&1; then
@@ -1046,11 +1083,17 @@ print_next() {
   else
     login_pass="see ${CREDENTIALS_FILE:-$DATA_DIR/BOOTSTRAP-CREDENTIALS.txt}"
   fi
+  local installed_ver=""
+  installed_ver="$(installed_product_version || true)"
+  local banner_ver="$PRODUCT"
+  if [[ -n "$installed_ver" ]]; then
+    banner_ver="$PRODUCT v${installed_ver}"
+  fi
 
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.31 — installation finished
+ $banner_ver — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV

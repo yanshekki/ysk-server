@@ -9,9 +9,11 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 | Script | [`install.sh`](../../install.sh) |
 | Uninstall | [`uninstall.sh`](../../uninstall.sh) · [uninstall.md](./uninstall.md) |
 | Stack definitions | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json), [`components.json`](../../deploy/stack/components.json) |
-| Target OS | **Ubuntu 22.04 / 24.04** (Debian best-effort) |
+| Target OS | **Ubuntu 22.04 / 24.04 / 26.04** (Debian best-effort) |
 | Node.js | **22+** (installer upgrades to current LTS **24.x** if missing or too old) |
 | Default plan | **`recommended`** (not full stack) |
+
+Ubuntu 26.04 is on that list after one **recommended**-plan install (2026-08-24). That is not a full LTS test matrix.
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 

@@ -9,9 +9,11 @@
 | 腳本 | [`install.sh`](../../install.sh) |
 | 解除安裝 | [`uninstall.sh`](../../uninstall.sh) · [uninstall-ZH.md](./uninstall-ZH.md) |
 | 套餐定義 | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json)、[`components.json`](../../deploy/stack/components.json) |
-| 目標系統 | **Ubuntu 22.04 / 24.04**（Debian 盡力支援） |
+| 目標系統 | **Ubuntu 22.04 / 24.04 / 26.04**（Debian 盡力支援） |
 | Node.js | **22+**（若過舊或未裝，安裝程式會升到目前 LTS **24.x**） |
 | 預設方案 | **`recommended`**（不再默認全裝） |
+
+Ubuntu 26.04 列入支援，係因為 2026-08-24 用 **recommended** 方案裝過一次。呢個唔係完整 LTS 測試矩陣。
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 

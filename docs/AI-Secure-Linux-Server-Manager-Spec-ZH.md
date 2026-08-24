@@ -116,7 +116,7 @@ src/
   curl -fsSL https://raw.githubusercontent.com/.../install.sh | bash
   ```
 - `install.sh` 必須具備以下能力：
-  - 檢測作業系統（優先完美支援 Ubuntu 22.04 / 24.04）
+  - 檢測作業系統（優先完美支援 Ubuntu 22.04 / 24.04 / 26.04）
   - 自動安裝 Node.js（使用 NodeSource 或 fnm / nvm 等可靠方式，安裝 LTS 版本）
   - 自動安裝必要系統依賴（build-essential、curl、git 等）
   - 安裝本軟體（全域）

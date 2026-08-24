@@ -86,7 +86,7 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 
 ## Install
 
-**Ubuntu 22.04 / 24.04** as **root**. Other Linux: best-effort.
+**Ubuntu 22.04 / 24.04 / 26.04** as **root**. Other Linux: best-effort.
 
 ### Recommended
 
