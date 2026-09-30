@@ -23,7 +23,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/ysk-server"><img alt="npm ysk-server" src="https://img.shields.io/npm/v/ysk-server.svg?style=flat-square&color=2ea043" /></a>
-  <a href="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml/badge.svg?style=flat-square" /></a>
+  <a href="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/yanshekki/ysk-server/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <img alt="Node.js 22+" src="https://img.shields.io/badge/node-%3E%3D22-58a6ff?style=flat-square" />
   <img alt="13 locales" src="https://img.shields.io/badge/locales-13-58a6ff?style=flat-square" />
   <img alt="MIT" src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square" />
