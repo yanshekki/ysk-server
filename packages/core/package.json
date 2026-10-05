@@ -1,6 +1,6 @@
 {
   "name": "ysk-server-core",
-  "version": "1.1.26",
+  "version": "1.1.27",
   "description": "YSK Server core business logic — security, hosting, LLM, update, email",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,21 +32,21 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@simplewebauthn/server": "^13.3.2",
+    "@simplewebauthn/server": "^13.3.3",
     "ysk-server-shared": "workspace:*",
     "bencode": "^4.0.0",
     "bittorrent-tracker": "^11.2.3",
     "create-torrent": "^6.1.3",
-    "maxmind": "^5.0.6",
+    "maxmind": "^5.0.7",
     "parse-torrent": "^11.0.24",
-    "playwright-core": "^1.62.1",
-    "sql.js": "^1.14.1",
+    "playwright-core": "^1.63.0",
+    "sql.js": "^1.14.2",
     "webtorrent": "^3.0.21"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^2.1.8",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "@types/node": "^22.20.5",
+    "@vitest/coverage-v8": "^4.1.11",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }

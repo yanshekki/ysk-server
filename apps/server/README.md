@@ -30,35 +30,49 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.27
+
+### Security
+- Vitest 4.1.11 and Vite 6.4.3 clear the dev-server advisories. Overrides pin patched `brace-expansion`, `nanoid`, and `ip-address`. `install.sh` pins `pnpm@9.15.9` and `node-gyp-build@4.8.4`.
+
+### Fixes
+- Install finish banner reports the installed version, not a frozen `1.0.31`.
+- JsonStore keeps another process's rows when the filesystem timestamp does not move between writes.
+
+### Improvements
+- Ubuntu **22.04 / 24.04 / 26.04** are the documented install targets.
+
+### Dependency upgrades
+- Minor bumps: `ws`, `playwright-core`, `maxmind`, `sql.js`, `tsx`, `react-router-dom`, TypeScript 5.9.
+
+### Internal & CI
+- Tag push publishes with npm Trusted Publishing. This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27**.
+
 ## What's new in 1.1.26
 
-- Validators: NEAR form fills `create_staking_pool` and writes `account_id` only (`validators near-account`). Cosmos form fills gaiad v28 `validator.json`. ETH Lighthouse VC example or beacon URL. Honest ADA / AVAX / Solana copy.
+### New features
+- Validators: NEAR form fills `create_staking_pool` and writes `account_id` only. Cosmos form fills gaiad v28 `validator.json`. ETH shows a Lighthouse VC example or the beacon URL.
+
+### Fixes
+- Honest ADA / AVAX / Solana copy. NEAR confirm shows the real account. Cosmos amount accepts `1atom`.
+
+### Dependency upgrades
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26**.
 
 ## What's new in 1.1.25
 
-- Cron: in-place host crontab edit (`source=host`); `cron update` for managed jobs. Validators: staking next steps + CLI `checklist` / `rewrite-compose` / `compose-write` / `software` / `pull` / `leftover-remove` / `stats`. Host P2P in `public_addr`.
+### New features
+- Cron: in-place host crontab edit; `cron update` for managed jobs. Validators: staking next steps and CLI `checklist` / `rewrite-compose` / `compose-write` / `software` / `pull` / `leftover-remove` / `stats`.
+
+### Improvements
+- Operator strings and About-tab guides for 13 languages. zh-HK stays Hong Kong written Chinese.
+
+### Fixes
+- Host P2P in `public_addr`. Cosmos gas matches the node.
+
+### Dependency upgrades
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.25**.
-
-## What's new in 1.1.24
-
-- Host WAN DDNS: Cloudflare / RFC 2136 / local PowerDNS upsert when the host public address changes. Probe is detect-only. Publish needs execute.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.24**.
-
-## What's new in 1.1.23
-
-- NEAR compose: escape `$PUB` for Compose; keep `pids_limit` in lockstep with deploy pids. Cosmos `$TRUST_*` and RAM+CPU `cpus` overlay match the same rules.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.23**.
-
-## What's new in 1.1.22
-
-- Validator wizard: RAM below the chain cap still lets you Install after typing the node id.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.22**.
-
-## What's new in 1.1.21
-
-- Public `/legal` Terms, Privacy, Disclaimer (EN + Hong Kong written Chinese; English controls). After panel self-update, confirm to reload the UI. Cardano producer drag-drop. FTP overview actions stay aligned.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.21**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -127,8 +141,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.26) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.26) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.27) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.27) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

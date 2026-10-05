@@ -1,0 +1,63 @@
+# npm Trusted Publishing (OIDC). No NPM_TOKEN and no NODE_AUTH_TOKEN.
+# Before the first tag, configure a Trusted Publisher on npmjs.com for each of
+# ysk-server-shared, ysk-server-core, and ysk-server:
+#   GitHub Actions, owner yanshekki, repo ysk-server, workflow release.yml.
+# Manual publish (scripts/publish-ysk-server-npm.sh) is unchanged.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: npm trusted publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1. Pin a current 11.x (not npm 12).
+      - name: Install npm CLI for trusted publishing
+        run: npm install -g npm@11.21.0 && npm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify tag matches all three package versions
+        run: |
+          set -euo pipefail
+          SERVER="$(node -p "require('./apps/server/package.json').version")"
+          SHARED="$(node -p "require('./packages/shared/package.json').version")"
+          CORE="$(node -p "require('./packages/core/package.json').version")"
+          test "$SHARED" = "$SERVER"
+          test "$CORE" = "$SERVER"
+          test "${GITHUB_REF_NAME}" = "v${SERVER}"
+          echo "tag v${SERVER} matches shared, core, and ysk-server"
+
+      - name: Publish shared, core, then server
+        run: bash scripts/ci-trusted-publish.sh

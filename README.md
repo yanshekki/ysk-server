@@ -39,38 +39,51 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.27
+
+### Security
+- Supply-chain pass for direct and transitive dependencies. Vitest **4.1.11** and Vite **6.4.3** clear the dev-server advisories. `pnpm.overrides` pin patched `brace-expansion`, `nanoid`, and `ip-address`. Report: [docs/security/2026-10-05-supply-chain.md](docs/security/2026-10-05-supply-chain.md).
+- `install.sh` installs pinned `pnpm@9.15.9` and `node-gyp-build@4.8.4` (not `pnpm@latest`, and not `--force` for that helper). GitHub Actions are pinned to commit SHAs.
+
+### Fixes
+- `install.sh` finish banner reports the installed `ysk-server` version, not a frozen `1.0.31`.
+- JsonStore keeps another process's rows when the filesystem timestamp does not move between writes.
+
+### Improvements
+- Install targets are documented as Ubuntu **22.04 / 24.04 / 26.04** (Debian remains best-effort). 26.04 is listed after one recommended-plan install, not a full LTS matrix.
+
+### Dependency upgrades
+- Minor bumps include `ws`, `playwright-core`, `maxmind`, `sql.js`, `tsx`, `react-router-dom`, and TypeScript **5.9**. pnpm stays on **9.15.9**.
+
+### Internal & CI
+- Tag `v*.*.*` publishes with npm Trusted Publishing (`.github/workflows/release.yml`). This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27** together.
+
 ## What's new in 1.1.26
 
-- **Validators** — after the node is up: NEAR form fills `create_staking_pool` and can write `account_id` only; Cosmos form fills gaiad v28 `validator.json` (not Hub-docs flags); ETH shows a Lighthouse VC example or the beacon URL. Honest copy for ADA (pool registration certificate), AVAX (NodeID, not IP), Solana (`--no-voting`).
+### New features
+- **Validators** — after the node is up: NEAR form fills `create_staking_pool` and can write `account_id` only; Cosmos form fills gaiad v28 `validator.json` (not Hub-docs flags); ETH shows a Lighthouse VC example or the beacon URL.
+
+### Fixes
+- Honest copy for ADA (pool registration certificate), AVAX (NodeID, not IP), and Solana (`--no-voting`). NEAR confirm shows the real account. Cosmos amount accepts `1atom`.
+
+### Dependency upgrades
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26** together.
 
 ## What's new in 1.1.25
 
+### New features
 - **Cron** — in-place edit for live host crontab lines (`source=host`). Managed jobs: `ysk-server cron update --id`.
-- **Validators** — after the node is up, copyable public identity and next steps (NEAR `create_staking_pool`, Cosmos `create-validator`, host P2P in `public_addr`). CLI: `checklist`, `rewrite-compose`, `compose-write`, `software`, `pull`, `leftover-remove`, `stats`.
+- **Validators** — copyable public identity and next steps after the node is up. CLI: `checklist`, `rewrite-compose`, `compose-write`, `software`, `pull`, `leftover-remove`, `stats`.
+
+### Improvements
 - **Locales** — operator strings and About-tab guides for all 13 languages. zh-HK is Hong Kong written Chinese. Product names stay English.
+
+### Fixes
+- NEAR / Cosmos advertise the host P2P port. Cosmos gas matches the node. Staking command rows wrap.
+
+### Dependency upgrades
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.25** together.
-
-## What's new in 1.1.24
-
-- **DNS** — Host WAN DDNS upserts named A/AAAA when this host’s public address changes (Cloudflare, RFC 2136, local PowerDNS). Probe is detect-only. Orange-cloud VPN hostnames stay DNS-only unless you confirm. VPN Endpoint can fill the DDNS hostname without rewriting peers.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.24** together.
-
-## What's new in 1.1.23
-
-- **Validators** — NEAR compose no longer fails before any container exists (`$PUB` eaten by Compose; `pids_limit` vs deploy pids). Cosmos `$TRUST_*` escaped the same way. RAM+CPU overlay keeps `cpus` in lockstep with deploy limits.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.23** together.
-
-## What's new in 1.1.22
-
-- **Validators** — RAM below the chain cap still lets you Install after typing the node id. The short-RAM warning stays on screen.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.22** together.
-
-## What's new in 1.1.21
-
-- **Legal** — public `/legal` Terms of Use, Privacy Policy, and Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. MIT `LICENSE`.
-- **Panel** — after a successful self-update, confirm to reload the UI. Cardano producer attach is drag-and-drop. FTP overview actions stay on one row.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.21** together.
 
 [Full changelog](./CHANGELOG.md)
 

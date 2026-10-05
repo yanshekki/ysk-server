@@ -1,42 +1,41 @@
-# Changelog
+# 變更紀錄
 
-This file is the full release history. `README.md` keeps only the latest three versions.
+這是完整發布紀錄。`README-ZH.md` 只保留最近三個版本。
 
-Categories, in order: **New features**, **Improvements**, **Fixes**, **Security**, **Dependency upgrades**, **Internal & CI**. Empty categories are omitted. Chinese: [CHANGELOG.zh.md](./CHANGELOG.zh.md).
-
+分類順序：**新功能**、**改進**、**修正**、**安全**、**依賴升級**、**內部／CI**。空的分類會省略。英文：[CHANGELOG.md](./CHANGELOG.md)。
 ## 1.1.27 — 2026-10-05
 
-### Fixes
-- `install.sh` finish banner reports the installed `ysk-server` version (CLI `--version` / npm package), not a frozen `1.0.31`.
-- JsonStore merges another process's write by file contents. A coarse filesystem timestamp can stay the same across two writes; an mtime-only check then dropped the other process's rows on the next persist.
+### 修正
+- `install.sh` 完成橫額顯示實際安裝的 `ysk-server` 版本（CLI `--version`／npm 套件），不再寫死 `1.0.31`。
+- JsonStore 按檔案內容合併另一個行程的寫入。粗糙檔案系統的時間戳可以在兩次寫入之間保持不變；只看 mtime 會在下一次 persist 丟掉另一個行程的資料列。
 
-### Improvements
-- Supported install targets: Ubuntu **22.04 / 24.04 / 26.04** (Debian still best-effort). 26.04 is listed after one recommended-plan install, not a full LTS matrix.
+### 改進
+- 支援的安裝目標：Ubuntu **22.04／24.04／26.04**（Debian 仍是盡力支援）。26.04 是一次 recommended 方案安裝後列入，不是完整 LTS 矩陣。
 
-### Security
-- Supply-chain maintenance. Vitest **4.1.11** and Vite **6.4.3** clear the dev-server advisories (Vitest UI RCE, Vite `server.fs.deny` bypass, `@vitest/mocker` path read). `pnpm.overrides` move `brace-expansion`, `nanoid`, and `ip-address` to patched releases. `esbuild` <=0.24.2 leaves the tree with Vite 6.4.3.
-- `install.sh` no longer installs unpinned `pnpm@latest` or `npm install -g --force node-gyp-build`. pnpm is **9.15.9** (an existing 11.x is left alone; pnpm 12 is not installed). `node-gyp-build` is **4.8.4**. pm2, when missing, is **6.0.14**.
-- GitHub Actions `checkout`, `setup-node`, and `pnpm/action-setup` are pinned to commit SHAs (v4.4.0).
-- `ip@2.0.1` (via `bittorrent-tracker`) has no upstream patch. The tracker does not use `ip.isPublic` as an SSRF guard. Panel DDNS uses its own public-IP checks. See [docs/security/2026-10-05-supply-chain.md](docs/security/2026-10-05-supply-chain.md).
+### 安全
+- 供應鏈維護。Vitest **4.1.11** 與 Vite **6.4.3** 清掉開發伺服器公告（Vitest UI 遠端程式碼執行、Vite `server.fs.deny` 繞過、`@vitest/mocker` 讀檔）。`pnpm.overrides` 把 `brace-expansion`、`nanoid`、`ip-address` 拉到已修補版本。`esbuild` ≤0.24.2 隨 Vite 6.4.3 離開依賴樹。
+- `install.sh` 不再安裝未釘版本的 `pnpm@latest`，也不再 `npm install -g --force node-gyp-build`。pnpm 為 **9.15.9**（已有的 11.x 保留；不會裝 pnpm 12）。`node-gyp-build` 為 **4.8.4**。沒有 pm2 時安裝 **6.0.14**。
+- GitHub Actions 的 `checkout`、`setup-node`、`pnpm/action-setup` 釘在 commit SHA（v4.4.0）。
+- `ip@2.0.1`（經 `bittorrent-tracker`）上游沒有修補版。Tracker 沒有用 `ip.isPublic` 做 SSRF 閘門。面板 DDNS 用自己的公網位址檢查。見 [docs/security/2026-10-05-supply-chain-ZH.md](docs/security/2026-10-05-supply-chain-ZH.md)。
 
-### Dependency upgrades
-- Direct minor/patch bumps: `ws` 8.22.0, `playwright-core` 1.63.0, `maxmind` 5.0.7, `sql.js` 1.14.2, `tsx` 4.23.15, `react-router-dom` 7.18.4, TypeScript 5.9.3, `@simplewebauthn/server` 13.3.3, WebTorrent **2.8.5** in the panel (still 2.x), Vite 6.4.3, Vitest 4.1.11, pnpm 9.15.9.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.27**.
+### 依賴升級
+- 直接依賴的次版本／修補：`ws` 8.22.0、`playwright-core` 1.63.0、`maxmind` 5.0.7、`sql.js` 1.14.2、`tsx` 4.23.15、`react-router-dom` 7.18.4、TypeScript 5.9.3、`@simplewebauthn/server` 13.3.3、面板 WebTorrent **2.8.5**（仍是 2.x）、Vite 6.4.3、Vitest 4.1.11、pnpm 9.15.9。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.27**。
 
-### Internal & CI
-- `.github/workflows/release.yml` publishes on tag `v*.*.*` (and `workflow_dispatch` on that tag) with npm Trusted Publishing. No `NPM_TOKEN` / `NODE_AUTH_TOKEN`. Manual `scripts/publish-ysk-server-npm.sh` is unchanged.
-- README pages keep the latest three versions. Older notes live here.
+### 內部／CI
+- `.github/workflows/release.yml` 在標籤 `v*.*.*`（以及該標籤上的 `workflow_dispatch`）用 npm Trusted Publishing 發布。沒有 `NPM_TOKEN`／`NODE_AUTH_TOKEN`。手動的 `scripts/publish-ysk-server-npm.sh` 沒有改。
+- README 只保留最近三個版本。更早的紀錄在本檔。
 
 ## 1.1.26 — 2026-08-24
 
-### New features
+### 新功能
 
 - NEAR instance page: form for pool name + owner fills `create_staking_pool` (real public key). After the pool exists, **Set account_id** writes only that field on `validator_key.json` (confirm = instance id). Never signs the factory tx, never wallet connect, never touches `secret_key`. CLI: `ysk-server validators near-account --id --pool-slug S --confirm [--restart] [--execute]`.
 - Cosmos instance page: form fills **gaiad v28** `validator.json` + `create-validator validator.json` (amount, moniker, `--from` + consensus pubkey). Copy only — the panel does not write `priv_validator_key.json` and does not broadcast. Gas stays `0.005uatom`. Hub docs still show flags; those fail on this node.
 - ETH instance page: Lighthouse CL gets a copyable `lighthouse vc --beacon-nodes` example. Other CLs: copy the beacon URL only. Compose still has no VC.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.26**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.26**.
 
-### Fixes
+### 修正
 
 - Cardano playbook: public advertise is the pool registration certificate, not `topology.json`. `topology.json` `localRoots` is for your own block producer.
 - Avalanche playbook: P-Chain registration uses NodeID + BLS, not the server IP.
@@ -46,18 +45,18 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.25 — 2026-08-22
 
-### New features
+### 新功能
 
 - Cron: in-place edit / disable / enable / run / adopt for live host crontab lines (`source=host`). Not `installCrontab`. Confirm dialogs use `data-confirm`.
 - Validators: instance page lists next steps after the node is up. Copyable public identity for NEAR (stake public key + factory + `create_staking_pool`), Cosmos (consensus pubkey + `create-validator`), Avalanche (NodeID + BLS). ETH shows localhost beacon URL (no validator client in compose). Solana shows `getIdentity` pubkey (`--no-voting`). Honest copy: Sui/Aptos are fullnodes; Polkadot has no `--validator`; `validator-ready` is disk only. CLI: `ysk-server validators checklist --id` (read), `rewrite-compose --id [--execute]`, `compose-write --file`, `software`, `pull`, `leftover-remove`, `stats`.
 - Cron: `ysk-server cron update --id` patches managed job fields (same as panel PATCH). Host crontab CLI already had edit/disable/enable/delete/run/adopt.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.25**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.25**.
 
-### Improvements
+### 改進
 
 - Locales: operator strings and About-tab guides for all 13 languages. zh-HK stays Hong Kong written Chinese. Product names (Docker, Compose, RPC, WireGuard, chain names, …) stay English. Do not machine-translate zh-HK via zh-TW.
 
-### Fixes
+### 修正
 
 - NEAR / Cosmos advertise **host** P2P port in `public_addr` / `external_address` (not the container listen port). Rewrite compose on older instances.
 - Cosmos `create-validator` template gas matches the node (`0.005uatom`).
@@ -65,48 +64,48 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.24 — 2026-08-22
 
-### New features
+### 新功能
 
 - Host WAN DDNS: panel DNS tab, `ysk-server dns ddns`, `/api/v1/dns/ddns`. Cloudflare upsert, RFC 2136 nsupdate (remote needs a TSIG key file under the data directory; secret never on argv), local PowerDNS `managedBy=ddns`. Probe is detect-only. Update now can force republish. Scheduler is in-process (not crontab). Empty or private IPs are never published. Publish needs root + `YSK_EXECUTE=1`.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.24**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.24**.
 
 ## 1.1.23 — 2026-08-21
 
-### Fixes
+### 修正
 
 - NEAR (and Cosmos) compose: escape `$` so Docker Compose does not interpolate `$PUB` / `$TRUST_*` before the container shell runs. Match `pids_limit` with `deploy.resources.limits.pids`. RAM+CPU overlay also matches `deploy.resources.limits.cpus`.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.23**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.23**.
 
 ## 1.1.22 — 2026-08-20
 
-### Improvements
+### 改進
 
 - Validator wizard: RAM below the chain cap no longer disables Install. Confirm by typing the node id (`acceptLowMem` / `--accept-low-mem`). The warning stays visible.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.22**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.22**.
 
 ## 1.1.21 — 2026-08-20
 
-### New features
+### 新功能
 
 - Public `/legal` pack: Terms of Use, Privacy Policy, Disclaimer (official English + Hong Kong written Chinese; English controls). Login footer and Support links. Root MIT `LICENSE`.
 
-### Improvements
+### 改進
 
 - After a successful panel self-update, a confirm dialog reloads the SPA so the new UI loads.
 - Cardano producer attach uses drag-and-drop fields for KES, VRF, and opcert.
 - FTP service overview actions stay on one row (Stop / enable FTPS no longer wrap).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.21**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.21**.
 
 ## 1.1.20 — 2026-08-20
 
-### Improvements
+### 改進
 
 - Cardano: attach KES / VRF / opcert on the instance page and restart as a block producer via official `CARDANO_BLOCK_PRODUCER` merge mode. Cold keys refused. Keys on disk under `keys/`, not in `instances.json`. Clear data keeps keys; delete instance removes them. Switch-network refused while attached. Wizard stays relay.
 - Official GitHub version list is newest-first with a `latest` field; wizard copy does not say the pin was tested.
 - Container last-error strips ANSI and matches `unexpected argument`.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.20**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.20**.
 
-### Fixes
+### 修正
 
 - Lighthouse v8: drop `--disable-deposit-contract-sync` (clap fatal on v8.2.2).
 - Nimbus: `--web3-url` → `--el`; checkpoint `--external-beacon-api-url`.
@@ -117,15 +116,15 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.19 — 2026-08-20
 
-### Improvements
+### 改進
 
 - Validator list shows live ↓/↑ from docker stats NetIO deltas (same pattern as BT).
 - Official GitHub version picker on install and running instances; software tab shows image source and stale tags.
 - Ops-stream dock maximize; compose YAML editor; staking NodeID/BLS cards; Docker inspect/log modals use full width.
 - README What's new keeps at most three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.19**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.19**.
 
-### Fixes
+### 修正
 
 - Cosmos Hub testnet: `[statesync]`-scoped enable (not `[blocksync]`), refuse InitChain if state-sync is off.
 - Ethereum Hoodi: Lighthouse `v8.2.2` and EthStaker checkpoint `https://hoodi.beaconstate.ethstaker.cc/` (v7 InvalidSsz).
@@ -135,11 +134,11 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.18 — 2026-08-20
 
-### Improvements
+### 改進
 
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.18**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.18**.
 
-### Fixes
+### 修正
 
 - Cosmos Hub testnet: Gaia `v28.0.0-rc0` plus official provider state-sync (launch genesis cannot InitChain on v23).
 - Ethereum Hoodi: CL checkpoint `https://hoodi.checkpoint.sigp.io`. DNS failures show as last-error.
@@ -148,13 +147,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.17 — 2026-08-20
 
-### Improvements
+### 改進
 
 - Panel JSON (Docker inspect, PM2 raw, System snapshot, Agents, Redis, Security probe) uses a collapsible JsonViewer (Files token colours, no extra editor).
 - Unified LogViewer: line numbers, severity colour, filter, wrap, follow-scroll, copy/download, next error. Validators, Docker, Logs, project logs, PM2 stream, Agents stderr, and install/ops live stream share it.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.17**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.17**.
 
-### Fixes
+### 修正
 
 - Cosmos Hub testnet: download official ICS `provider` genesis instead of empty `gaiad init` (InitChain panic). Seeds written into config and `--p2p.seeds`.
 - Avalanche: `--state-sync-enabled` is not a v1.13.5 CLI flag. C-Chain `configs/chains/C/config.json` + `--chain-config-dir`.
@@ -164,12 +163,12 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.16 — 2026-08-19
 
-### Improvements
+### 改進
 
 - Panel self-update dest regression: `latestVersion` is not copied from current (1.1.14 → 1.1.15).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.16**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.16**.
 
-### Fixes
+### 修正
 
 - Validators: a running node with RPC not ready is `rpc_wait`, not Error (`Unexpected end of JSON input`). Bitcoin cookie Basic auth. Created / missing containers are not labelled Stopped. Restarting shows last-error and restart count.
 - Avalanche: image entrypoint `/avalanchego/build/avalanchego` with flags only (PATH has no `avalanchego`).
@@ -181,13 +180,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.15 — 2026-08-19
 
-### Improvements
+### 改進
 
 - FTP home preview snaps back to `…/homes/user` when the username is illegal, instead of keeping a truncated valid prefix (`qa` from `qa ftp!`).
 - Apt Apply confirm says “high-risk” only for high/critical/kernel packages. Medium + approval uses “Upgrade {{name}}?”.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.15**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.15**.
 
-### Fixes
+### 修正
 
 - Panel self-update ConfirmDialog dest uses `latestVersion` (same as the status card). 1.1.14 copied a stale current version (“1.1.13 → 1.1.13”) while overlay still pulled latest.
 - Validator wizard: after Install ConfirmDialog closes, the wizard stays clickable (stacked modal no longer leaves `pointer-events: none` + `#root` inert).
@@ -195,12 +194,12 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.14 — 2026-08-19
 
-### Improvements
+### 改進
 
 - Host browse “Clear cookies” opens ConfirmDialog (same density as close session).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.14**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.14**.
 
-### Fixes
+### 修正
 
 - FTP create: invalid username (`qa ftp!`) shows an inline Field error and disables Save. Home path no longer silently rewrites illegal characters.
 - Galera wizard: local/peer/third-node hosts validate live (IPv4/IPv6 or hostname). Generate plan stays disabled on garbage (`not an ip!!`). Cluster create/patch reject the same values.
@@ -208,13 +207,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.13 — 2026-08-19
 
-### Improvements
+### 改進
 
 - E2E-11110 pages: Files restore confirm, FTP home path, email mailbox/alias validation, backups one conclusion per run, protection ban census, DNS missing-`dig` is not NXDOMAIN, VPN QR + CIDR checks, updates self-apply confirm, PHP ini save locked until probe.
 - Sidebar includes `/cluster`. `/agents` stays out of the feature grid (deep-link only).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.13**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.13**.
 
-### Fixes
+### 修正
 
 - Validators: compose `command` matches image ENTRYPOINT (Bitcoin no longer doubles `bitcoind`; Avalanche includes `avalanchego`). Cardano image is `ghcr.io/intersectmbo/cardano-node:11.0.1`. Gaia bind-mounts are writable. Install success follows container health, not `compose up` exit 0. Mithril snapshot is off unless written into compose.
 - Docker: probe host ports before `run`; bind-fail leftover of the same name is removed; start/restart succeed only when Ports/Networks actually attach. Optional command/entrypoint. Destructive buttons expose `data-confirm`.
@@ -226,37 +225,37 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.12 — 2026-08-18
 
-### Improvements
+### 改進
 
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.12**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.12**.
 
-### Fixes
+### 修正
 
 - Export the staking playbook from the browser shared entry so the Vite panel build includes About-tab guides. 1.1.11 npm used a stale embedded UI after that build failed.
 - `publish-ysk-server-npm.sh` now exits if the web build fails, instead of packing the previous `apps/web/dist`.
 
 ## 1.1.11 — 2026-08-18
 
-### New features
+### 新功能
 
 - Validators About tab is the staking playbook SSOT: overview table plus per-chain steps. Official HTTPS docs only. The panel never connects a wallet or stores keys.
 - Avalanche instance page shows NodeID and BLS proof of possession after RPC answers (needed for Core / P-Chain registration).
 - Wizard summary (validator-ready or mainnet) and instance detail link to `/validators?tab=about#stake-{chain}`.
 - Bitcoin is documented as not proof-of-stake.
 
-### Improvements
+### 改進
 
 - Official links updated after docs moves (Avalanche Builder Hub, Cardano SPO, Anza Agave, Polkadot set-up-validator, Cosmos Hub validator-setup).
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.11**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.11**.
 
 ## 1.1.10 — 2026-08-18
 
-### Improvements
+### 改進
 
 - E2E-1119: mainnet ack copy names disk and slashing in plain language. About tab compares Minimal / Pruned / Validator-ready / RPC. Wizard step 3 links to that table.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.10**.
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.10**.
 
-### Fixes
+### 修正
 
 - DNS start/restart still runs `verifyAfter` when lifecycle returns HTTP 422. The result card headline is the bind/journal line (`0.0.0.0:53` / in use), not only “failed”.
 - Validator wizard Install stays enabled after the mainnet ack (Docker probe unknown no longer locks the button). Clicking Install opens a ConfirmDialog; mainnet requires typing the node id.
@@ -264,12 +263,12 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.9 — 2026-08-18
 
-### Improvements
+### 改進
 
 - E2E-1118: `data-confirm` on files trash, email domain delete, cron pending delete, migrate orphan delete, protection ban, services/nginx/docker lifecycle. Validator leftover table always shown (empty copy). Auto-clear checkbox shows threshold + candidate and uses `data-confirm=AUTO-CLEAR`. Orphan homes list `entryCount`. Confirm titles include stop detail / full path.
 - Product `ysk-server@1.1.9` bundles workspace shared/core. npm `ysk-server-shared` and `ysk-server-core` ship the **same version (1.1.9)**.
 
-### Fixes
+### 修正
 
 - Official `install.sh` overlay now copies dest `package.json` from the npm tarball (1.1.8 CLI overlay left dest at 1.0.30).
 - `/cluster` is a real cross-engine overview (planned/applied table + four engine links). It no longer 302s to Redis.
@@ -280,12 +279,12 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.8 — 2026-08-18
 
-### Improvements
+### 改進
 
 - E2E-1117: confirm titles, Nginx cache purge confirm, Docker engine stop as edge, files trash type-to-confirm name, PowerDNS fail card + heal, VNC idle hostname copy, cron tab pending count, CDN apply-failed KPI, `/cluster` engine switcher, project “Create system user”, migrate inventory links, validator wizard profile hints + default-Minimal disk copy, Modal focus trap + `#root` inert, timestamps default to host zone with `UTC±n`.
 - Product `ysk-server@1.1.8` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
 
-### Fixes
+### 修正
 
 - Overlay now copies dest `package.json` so the installed package version matches the CLI (`1.1.8`), not a leftover dest version.
 - Leftover-scan execute notes only mention vsftpd/Dovecot TLS when those findings exist. Active units are not told they “cannot start”.
@@ -294,18 +293,18 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.7 — 2026-08-18
 
-### New features
+### 新功能
 
 - Validators Software tab (`stack`, `?tab=software`): Docker Engine status plus pinned client images; pull is allowlisted and streamed.
 - FTP listen scope `localhost` | `public`. New installs bind loopback. Public cleartext start needs typed `PLAINTEXT`. One-click Enable FTPS picks the first issued cert.
 - Panel self-update apply can stream overlay steps (download / verify / write) in the ops dock. systemd restart still drops the stream — that is expected.
 
-### Improvements
+### 改進
 
 - E2E-1116: validator wizard disk copy, install titles, leftover cleanup, rewrite-compose, migrate inventory layout, cron pending-stale hint, 2FA/password disabled titles, services stop as danger, browse clear-session, agents activating>5m as failed + journal, project pending-OS row exits, BT leftover hashes clickable + unset announce-host warn.
 - Product `ysk-server@1.1.7` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
 
-### Fixes
+### 修正
 
 - Validator disk `usedBytes` is `du` of the validators root, not the whole filesystem Used column.
 - Fresh nodes: RPC not ready is **starting**, not error. List no longer shows remote GitHub tags as upgrades. Avalanche compose passes flags only (no duplicated ENTRYPOINT binary).
@@ -322,18 +321,18 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.6 — 2026-08-17
 
-### New features
+### 新功能
 
 - Backup delete moves the archive to a 7-day recycle bin (`dataDir/backups/.trash`) instead of unlinking. Restore, permanent delete, and empty-trash stay on `/backups`.
 - Redis install generates a `requirepass` (shown once). Already-installed empty-password Redis has an explicit generate-and-apply control — probes never invent a password.
 - VNC create probes hostname resolution. A ConfirmDialog can append `127.0.1.1 <short> [fqdn]` to `/etc/hosts` (EXECUTE + root). Start-after-create stays off until the name resolves.
 
-### Improvements
+### 改進
 
 - E2E-1115 (UX115-001–055): nginx/apache stop names site counts; email domain delete lists mailbox/DNS/alias counts; BT leftover hashes listed on the Tracker tab; project overview can provision the OS user; `/cluster` lands on an installed engine (not a missing MySQL tab); planned clusters show created time + “not applied” and can drop 7-day-stale plans; leftover `public-files-*` nginx on `/system` can be removed (000-default stays unused); footer links “new version x.y.z” to `/updates`.
 - Product `ysk-server@1.1.6` bundles the current workspace shared/core. Independent npm libraries stay **1.1.0** unless published separately.
 
-### Fixes
+### 修正
 
 - PowerDNS start re-probes health; a crash-loop is not toasted as success.
 - DNS health notes are localized. When `dig @server` is unavailable, lookup does not pretend the system resolver is that server.
@@ -344,11 +343,11 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.5 — 2026-08-17
 
-### Improvements
+### 改進
 
 - Tab aliases (`processes`, `ipacl`, `maintenance`); Files/Email KPIs; host-timezone clocks; backups destructive actions under More; process checkboxes skip the control plane; whitelist 5s undo; operator cap denominator is factory-grantable.
 
-### Fixes
+### 修正
 
 - Panel self-update no longer toasts raw `Failed to fetch` after a successful apply. systemd restart waits until the HTTP 200 has flushed; inventory reload ignores browser disconnects during the bounce.
 - E2E-1114 (UX114-001–050): GeoIP stale yes/no, ban confirm on top-IP and batch, public-files header uses live nginx server_name, updates/readiness/migrate header tones stay honest, network link-up i18n, service alias boot label, engine version trim, Redis DB option spacing.
@@ -357,7 +356,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.4 — 2026-08-16
 
-### New features
+### 新功能
 
 - Validators list can delete a node (type the instance id). CLI: `ysk-server validators delete --id … --confirm --execute`
 - Docker compose stacks have Delete; container / image / volume / network delete asks for the name first. Validator stacks also remove the validator instance
@@ -365,7 +364,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Docker Compose tab is just the project table — no “open validators / no YAML upload” card
 - Docker pull / create volume / create network open as modals, same as Run container
 
-### Improvements
+### 改進
 
 - E2E-1113 (UX113-001–150): confirms, last-edge drain/delete, timezone clock + browser-TZ warning, metrics TERM/KILL confirm, honest headers, localized EXECUTE/Root/draft/normal
 - Single-admin 2FA copy matches readiness; SSH tab badge is login keys; HA banner names the engine; PM2/SSE glossary
@@ -379,7 +378,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - VNC: XFCE disabled until installed; browse/connect disabled when stopped; extra actions in More
 - `/cluster` still toasts and now lands with a banner on the MySQL cluster tab
 
-### Fixes
+### 修正
 
 - Validator compose bind mounts are one quoted YAML scalar (`"/host:/data"`). Quoting only the host path broke `docker compose` (`did not find expected '-' indicator`)
 - Docker run “Never” restart policy is sent as `--restart no` (it no longer falls back to `unless-stopped`)
@@ -397,7 +396,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.3 — 2026-08-16
 
-### Improvements
+### 改進
 
 - Docker page redesigned: install-first overview, status cards, and selection-first pull / run / prune / settings (no more typing `PRUNE` in the panel)
 - Docker last tab matches System: 說明 / About via the shared page guide (not a prose 關於 dump)
@@ -406,21 +405,21 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Remaining UX111-087–200: one BT stop + listen/port labels; DB registered vs host; Redis SCAN hint; SSL buttons name the domain; certbot uninstall danger; network lo/default-route titles; cron install preview + edit; logs auto-query; protection auto-ban gates; browse Chrome/egress honesty; search short-query threshold; Java rebuild-from-host; Apache leftover filter; notification dedupe; SSH step cards; VPN open-but-stopped; PM2 notes localized
 - One 24-hour timestamp formatter (`YYYY-MM-DD HH:mm:ss`); disabled buttons always have a title; software-plan counts are labelled as OS packages, not service-matrix units
 
-### Fixes
+### 修正
 
 - Validator wizard / table show English chain and network names (Ethereum, NEAR, Sui, Hoodi…) from a catalog SSOT — they are never machine-translated
 - Docker / Compose stay English in every locale (no more “stevedore” / “撰寫” / “作曲する”)
 
 ## 1.1.2 — 2026-08-16
 
-### Improvements
+### 改進
 
 - Docker compose empty state explains there is no YAML upload; run modal exposes ports / env / volumes
 - Validator wizard step labels, disk estimate, copy-CLI, auto-clear risk
 - Protection suspect counts split listed vs actionable; CF Under Attack on/off share the same zone gate
 - Login remounts on language change; dashboard loading no longer stacks three 載入中
 
-### Fixes
+### 修正
 
 - Panel self-update no longer restarts systemd before the HTTP 200; a dropped connection is treated as restart, not `Failed to fetch`
 - Docker actions stay disabled until Docker Engine is installed; prune always needs `PRUNE`
@@ -430,13 +429,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.1.1 — 2026-08-16
 
-### Improvements
+### 改進
 
 - GitHub and npm product READMEs redesigned (hero, badges, screenshots, install path)
 
 ## 1.1.0 — 2026-08-16
 
-### New features
+### 新功能
 
 - Docker engine page `/docker` + `ysk-server docker` (install via apt `docker.io` + compose v2; containers, images, volumes, networks, Compose, prune, safe daemon.json)
 - Validators (Beta): panel `/validators` + `ysk-server validators` for L1 nodes — Phase 1 (ETH, AVAX, NEAR, ADA) and Phase 2 (BTC pruned, Cosmos Hub, Sui, Aptos, Polkadot, Solana heavy). Non-custodial. Mutations need `YSK_EXECUTE=1`
@@ -444,13 +443,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Cardano Mithril one-click snapshot restore (`validators mithril`)
 - Ethereum EL×CL matrix: Geth / Nethermind / Reth × Lighthouse / Prysm / Teku / Nimbus
 
-### Improvements
+### 改進
 
 - Panel honesty for UX39-001–254: confirms, titles, probing skeletons, tab aliases, geo/MMDB gates, PASV public IP, bound TLS cert on project HTTPS, sshd enable-on-boot, HA banner localisation
 - 13 locales filled for recent keys; zh-HK stays written Chinese; product names stay English
 - `ysk-server fleet` documented as the top-level alias of `agents fleet`
 
-### Fixes
+### 修正
 
 - SFTP batch stdin uses a real newline (`printf` + ANSI-C quote); backup remote password path uses the same helper
 - Panel TLS status reports the real listen host (`0.0.0.0` stays `0.0.0.0`); bootstrap self-signed cert is labelled; CLI probes `ss`
@@ -465,14 +464,14 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.39 — 2026-08-15
 
-### Improvements
+### 改進
 
 - Footer shows live panel version; global search is debounced; page tabs wrap and keep aliases
 - SSL renew on the cert table; dates use the UI locale; `/approvals` goes to Security
 - Support page copies a diagnostic summary; operator factory role shows a high-risk write warning (caps unchanged)
 - GeoIP freshness is n/a when no MMDB exists; metrics alerts text is translated
 
-### Fixes
+### 修正
 
 - Project Git: pick branch/tag from `git ls-remote` (no EXECUTE); `git -c safe.directory=<repo>` so root can read a project-owned tree; `GET …/git/diff` + CLI `projects git diff`
 - Nginx conf preview does not turn `set_real_ip_from` CIDRs into ban links; empty project domain reads `server_name` from the conf (including `localhost`)
@@ -493,7 +492,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.38 — 2026-08-15
 
-### Fixes
+### 修正
 
 - `update --help` / `update help` print usage and do not run a version check
 - `backup status` lastRun no longer treats every English note as a skip (`n1252` was empty, so `startsWith('')` matched all notes)
@@ -531,13 +530,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.37 — 2026-08-15
 
-### New features
+### 新功能
 
 - BT Tracker library: upload a `.torrent` (or magnet), pick a Files folder, download or seed with in-process **WebTorrent** (no extra client)
 - Extra Trackers tab: operator-managed announce list used when downloading and seeding (empty by default; never a canned public list)
 - Torrent tab redesigned as a progress library (not a hash admin table)
 
-### Fixes
+### 修正
 
 - Store merge no longer resurrects a project or cron row another process deleted
 - `backup status` lastRun uses `ok` / `results` (a successful `projects backup` is not “0/0 failed”)
@@ -566,7 +565,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.36 — 2026-08-15
 
-### Fixes
+### 修正
 
 - CLI parses `--data-dir` / `--locale` (space or `=`) before the command; `YSK_DATA_DIR` works; root uses `/var/lib/ysk-server` when that store exists
 - `--help` never runs list/export/schedule/setup/serve
@@ -614,7 +613,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.35 — 2026-08-15
 
-### Fixes
+### 修正
 
 - Role-policy editor asks before discarding unsaved capability edits; Save is disabled when clean
 - Package quota chips use GiB labels; negative values are rejected
@@ -629,7 +628,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.34 — 2026-08-15
 
-### Fixes
+### 修正
 
 - fail2ban stop uses the shared lifecycle bar with confirm; ignoreip rejects `999.999.999.999`
 - Let's Encrypt certificates show **issued**, not uploaded
@@ -643,7 +642,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.33 — 2026-08-14
 
-### Fixes
+### 修正
 
 - New-folder names cannot contain `/` or `\\` (UI + API `leafOnly`)
 - `/services` cannot restart/stop missing units; start is not offered while running
@@ -656,7 +655,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.32 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Create-project / wizard runtime chips are real buttons; dialogs portal to `document.body` so a click no longer dismisses the modal
 - Global search always matches panel pages locally (備份 / backup / mysql) even if the API is empty
@@ -674,7 +673,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.31 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Login no longer flashes the raw `product` key; language can be switched before sign-in
 - Empty trash / permanent purge ask for confirmation
@@ -692,20 +691,20 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.30 — 2026-08-14
 
-### Improvements
+### 改進
 
 - Product requires **Node.js 22+**. Official install upgrades Node 20 hosts to current LTS (**24.x**) instead of pinning older plugins
 - WebTorrent stays on **3.x**; global pnpm is **latest** (11) once Node meets the floor
 
 ## 1.0.29 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Node 20 hosts no longer get `EBADENGINE` for Node 22-only packages: pin WebTorrent to 2.8.5; drop unused `better-sqlite3` 13 (SQLite is sql.js)
 
 ## 1.0.28 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Optional apt uses `--no-remove` so Ubuntu `mysql-client` cannot purge MariaDB
 - SQL client follows the chosen engine (no MySQL client on a MariaDB host)
@@ -713,13 +712,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.27 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Official one-liner verify no longer fails on Ubuntu PostgreSQL: `postgres` lives at `/usr/lib/postgresql/*/bin/postgres`, not on `PATH`
 
 ## 1.0.26 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Official one-liner: do not use `--ignore-scripts` (that left `@simplewebauthn/server` empty; setup and `ysk-server --version` crashed)
 - Stub `npx only-allow` so `ip-set` cannot abort npm, then extract packages fully
@@ -729,29 +728,29 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.25 — 2026-08-14
 
-### Fixes
+### 修正
 
 - Official `install.sh` one-liner: `npm install -g ysk-server` no longer dies on `ip-set` `only-allow` (skip lifecycle scripts, then rebuild native addons)
 - Global pnpm pinned to 9.x so Node 20 hosts are not asked for Node 22
 
 ## 1.0.24 — 2026-08-14
 
-### Improvements
+### 改進
 
 - API / CLI / install / uninstall / VNC / users / security / files / user-manual: public VNC share, login body cap, share password header, last-admin lock, install password honesty (EN + 香港書面語)
 
-### Fixes
+### 修正
 
 - RequireCapability shows a no-access page (CI guard test aligned)
 
 ## 1.0.23 — 2026-08-14
 
-### Improvements
+### 改進
 
 - npm setup documents `--admin-password`; prefer `install.sh`
 - setup docs use `--admin-user` and `/var/lib/ysk-server`
 
-### Fixes
+### 修正
 
 - Public VNC share sessions no longer require panel login
 - Login JSON body is size-capped; bad JSON returns 400
@@ -768,7 +767,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Project Java / Kotlin / Bun filters, GET-by-id details, and tab aliases work
 - SMTP relay form loads saved settings instead of `smtp.example.com`
 
-### Security
+### 安全
 
 - Confirm stop/restart on DB console and the services matrix (typed confirm for sshd / panel)
 - Confirm before disabling UFW
@@ -776,7 +775,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.22 — 2026-08-14
 
-### New features
+### 新功能
 
 - Every host service page has stop: vsftpd, Nginx, Apache, Postfix, Dovecot, OpenDKIM, PowerDNS, PHP-FPM, VPN servers, sshd, YSK Server
 - Service matrix catalog includes Apache, PowerDNS, OpenDKIM, sshd, and VPN units
@@ -784,14 +783,14 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.21 — 2026-08-13
 
-### Improvements
+### 改進
 
 - One toast stack (top-right) for operation results; live jobs stream in the bottom-right dock (minimizable, multi-job)
 - Runtime / Updates / deploy logs no longer sit in the page body
 
 ## 1.0.20 — 2026-08-13
 
-### Improvements
+### 改進
 
 - Do not flash English on 繁體中文: boot loads `search` + `updates`; shell waits for the full catalog
 - Updates header buttons no longer all show 「處理中」during the first inventory fetch
@@ -799,7 +798,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.19 — 2026-08-13
 
-### Improvements
+### 改進
 
 - English catalog no longer contains leaked Chinese email strings
 - zh-HK leftover spoken Cantonese converted to Hong Kong written Chinese
@@ -808,33 +807,33 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - CLI / API / user-manual: Nginx `server_name` fail-closed
 - Chinese docs: spoken Cantonese → 香港書面語
 
-### Fixes
+### 修正
 
 - Managed Nginx apply returns `ok: false` on empty/invalid `serverName` (no uncaught throw; no `localhost` fallback). Restores CI `branch-floor80`.
 - `GET /system/software/upgrades` is a read probe: `apt-cache policy` is not blocked by EXECUTE just because the package list includes `ufw`.
 
 ## 1.0.18 — 2026-08-13
 
-### Improvements
+### 改進
 
 - Filled leftover English leaves in ja/ko/es/fr/pt/id/hi/bn/ar/ur; product names stay English
 - zh-HK glossary remains Hong Kong written Chinese
 
 - CLI / API / install-update / user-manual: panel overlay apply, `install.sh --upgrade`, no `npm i -g`
 
-### Fixes
+### 修正
 
 - Nginx proxy render fails closed on empty/invalid `serverName` (CI `nginx-ssl.depth` green)
 
 ## 1.0.17 — 2026-08-13
 
-### Improvements
+### 改進
 
 - Mobile drawer: language / account / logout sit at the bottom as a compact dock (nav stays on top)
 
 ## 1.0.16 — 2026-08-13
 
-### New features
+### 新功能
 
 - `install.sh --upgrade` overlays the panel only (no apt stack). Do not reinstall MariaDB over a live MySQL 8 `/var/lib/mysql`
 - Full install skips MariaDB if the host already has MySQL (and the reverse)
@@ -842,7 +841,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - `--upgrade` overlays first; `npm install -g --force` is best-effort (Hermes/n prefixes used to abort on EEXIST)
 - Installer arrays are `declare -g` so `curl|bash --upgrade` no longer dies on `HARD_FAILURES: unbound variable`
 
-### Fixes
+### 修正
 
 - Self-update no longer runs `npm install -g` (that dumped `npm notice` tarball listings into the toast and often failed after the dest was already copied)
 - Apply errors strip `npm notice` noise and keep the real failure
@@ -851,33 +850,33 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.15 — 2026-08-13
 
-### Improvements
+### 改進
 
 - DataTable is one layout everywhere: desktop keeps a real table; ≤720px is a list of cards (title wraps, facts wrap) plus a ⋯ menu for row actions
 - Files shares / browse / trash, Updates, CDN, Support, and Metrics process lists use the same primitive (no per-page table hacks)
 
 ## 1.0.14 — 2026-08-13
 
-### Fixes
+### 修正
 
 - SPA CSP allows `blob:` for `media-src` / `frame-src` so Files video/audio/PDF preview is not blocked
 
 ## 1.0.13 — 2026-08-13
 
-### Improvements
+### 改進
 
 - Mobile header is menu + search only (account/language/logout in the drawer)
 - Files on narrow screens: space/view pickers, compact one-line rows, ⋯ overflow menu (no stacked action cards)
 
 ## 1.0.12 — 2026-08-13
 
-### Fixes
+### 修正
 
 - Panel no longer stays on boot i18n namespaces: full `translation.json` loads after first paint so pages stop showing raw keys (`readiness.*`, `systemd.*`, …)
 
 ## 1.0.11 — 2026-08-13
 
-### New features
+### 新功能
 
 - 「套用面板更新」writes the official npm tarball onto the **running** install (`apps/server` or `ysk-server/`), then restarts `ysk-server.service`
 - No longer depends on `npm install -g` (that path never updates from-source ExecStart)
@@ -887,7 +886,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.10 — 2026-08-13
 
-### Security
+### 安全
 
 - A08-22–A08-29 after the 1.0.8 live audit deep-dive
 - LLM outbound: hostname-only loopback; `GET /settings/llm` masks `apiKey` and requires `settings.system`
@@ -899,7 +898,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.9 — 2026-08-13
 
-### Security
+### 安全
 
 - Live audit remediations (A08-1–A08-21): public health/readiness subset, TOTP enroll enforced, backup SSRF, fail-closed bash probes
 - Host Browse `chromePath` allowlist; VNC IMDS blocked; public VNC share rate-limited
@@ -910,7 +909,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.8 — 2026-08-13
 
-### New features
+### 新功能
 
 - Wave A: system fonts (no runtime CDN), boot i18n, mobile-friendly shell
 - `projects create --create-dns --create-mail` matches panel checkboxes and API `createDnsZone` / `createMailDomain`
@@ -925,7 +924,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.7 — 2026-08-13
 
-### New features
+### 新功能
 
 - CLI `files --if-exists` matches panel/API name-collision policy (default fail)
 - CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
@@ -933,13 +932,13 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 1.0.6 — 2026-08-13
 
-### New features
+### 新功能
 
 - Desktop-style name conflict on drop, copy, move, and rename (skip / keep both / replace / merge folders / apply to all)
 
 ## 1.0.0 — 2026-08-12
 
-### New features
+### 新功能
 
 - **First public free release** of YSK Server (panel + CLI)
 - Install path aims for **ready-to-use**: root installs enable/start `ysk-server.service`, print bootstrap credentials, HTTPS panel URL
@@ -949,7 +948,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Global search redesigned (pages + resources, grouped UI)
 - BT Tracker / public shares / WebTorrent self-host + tracker proxy (see prior commits)
 
-### Internal & CI
+### 內部／CI
 
 - Gates green: Support page uses DataTable; chrome skip for embed/redirect/public panels; css:reuse utilities; docs bilingual fence-aware headings
 - `probe:ssot` moved to soft CI job (known raw `command -v` debt outside software-probe) — hard `pnpm gates` no longer includes it
@@ -958,7 +957,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## 2026-08-09
 
-### Improvements
+### 改進
 
 - Removed AI Tasks / Agents panel navigation (CLI retained)
 - Unified professional About / 說明 tab layout with CLI hints
@@ -971,16 +970,16 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - Feature docs: WebDAV, public shares, global webmail
 - i18n + security docs updated for Tier-2 locales and Phase 7 review (EN+ZH)
 
-### Security
+### 安全
 
 - Phase 0: file sandbox boundary, WebDAV Basic user enforcement, constant-time token compares
 - Phase 7: public-share passwords use salted `scrypt$salt$hash` (legacy SHA-256 still verified)
 - Phase 7: rate-limit public share and WebDAV Basic auth failures (IP-scoped lockout)
 - Phase 7: harden `pathAllowed` empty-root / bare-`/` edge cases
 
-## Before 1.0.0
+## 1.0.0 之前
 
-### New features
+### 新功能
 
 - **Host Browse audio**: optional PCM bridge (`audioBridge` / `YSK_HOST_BROWSE_AUDIO`) — HTML media `captureStream` → live WS s16le → panel Web Audio unlock
 - **Host Browse tabs**: server-backed multi-tab REST + WS (`/tabs`, `tab_open|switch|close`); UI chips call real Playwright pages
@@ -1000,9 +999,9 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - **stack core + CLI + API + Web**: `ysk-server-core` `hosting/stack/*`; `ysk-server stack plans|status|scan|expand|install|uninstall`; REST `/api/v1/system/stack/*`; Services page **Stack** tab wizard
 - **software probe**: `binExists` expands PATH + absolute sbin/bin paths; mysql-client accepts `mysql`|`mariadb`, mariadb-server accepts `mariadbd`|`mysqld`
 
-## 0.1.0 (in progress — honest status)
+## 0.1.0（進行中 — 誠實狀態）
 
-### New features
+### 新功能
 
 Production-oriented control plane with **real** Node/PHP listen paths, durable JSON store,
 Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
@@ -1042,7 +1041,7 @@ Web UI served from `serve`, and fail-closed host mutations (`YSK_EXECUTE`).
 - Dashboard Spec readiness banner; more tool-executor / os-provision tests
 - GitHub CI; Spec §5 email bootstrap; outbound-agent + deployPhp tests
 
-### Improvements
+### 改進
 
 - **L0–L2**: Shared locales, shell/UI, feature pages
 - **L3**: Request locale (`tl` / Accept-Language / CLI); `errors.*` + `ops.*`; auth; EXECUTE blocked; `ApiError`
@@ -1059,7 +1058,7 @@ See [docs/i18n.md](./docs/i18n.md).
 - God pages (Protection, Logs, Cdn, …) feature-ui split
 - DescriptionList vs InfoCard documentation-only overlap
 
-### Internal & CI
+### 內部／CI
 
 Full-system coding review stack **R0–R7** (see [docs/architecture/code-review-wave2.md](./docs/architecture/code-review-wave2.md)).
 
