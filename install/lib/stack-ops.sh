@@ -116,8 +116,9 @@ install_component_node() {
     log "Installing Node.js current LTS via NodeSource"
   fi
   resolve_sudo
-  # Product uses current plugins (WebTorrent 3, pnpm 11). Do not pin old
-  # packages for Node 20 — upgrade the runtime. 24.x is LTS as of 2026-08.
+  # Product uses current plugins (WebTorrent 3). pnpm is pinned to 9.15.9
+  # (packageManager). Do not pin old packages for Node 20 — upgrade the
+  # runtime. 24.x is LTS as of 2026-08. pnpm 12 is deferred.
   curl -fsSL https://deb.nodesource.com/setup_24.x | $SUDO bash - || {
     record_hard_fail "NodeSource setup failed"
     return 1

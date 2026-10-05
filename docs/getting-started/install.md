@@ -19,7 +19,7 @@ Ubuntu 26.04 is on that list after one **recommended**-plan install (2026-08-24)
 
 `install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g`. Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists.
 
-Product requires **Node.js 22+**. Plugins stay on current majors (WebTorrent **3.x**, pnpm **11**). If the host is on Node 20, the installer **upgrades Node** to current LTS (24.x) — it does not pin older plugins. Global pnpm is latest when Node already meets the floor.
+Product requires **Node.js 22+**. Plugins stay on current majors (WebTorrent **3.x**). If the host is on Node 20, the installer **upgrades Node** to current LTS (24.x) — it does not pin older plugins. Global pnpm is the pinned **9.15.9** (same as `packageManager`), not `pnpm@latest`. An existing pnpm 11.x is left in place. pnpm 12 is not installed. `node-gyp-build` is pinned to **4.8.4** and is not installed with `--force`. Asset checksums in `install/checksums.sha256` are verified when that file is reachable; set `YSK_INSTALL_REQUIRE_CHECKSUMS=1` to refuse a base that does not publish it.
 
 Optional apt packages use `--no-remove` so they cannot evict MariaDB or MySQL. The SQL client follows the chosen engine (`mariadb-client` or `mysql-client`). Ubuntu `mysql-client` Conflicts with MariaDB and must not be installed as “optional” on a MariaDB host.
 

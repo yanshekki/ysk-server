@@ -339,8 +339,21 @@ ensure_node_gyp_build() {
   if command -v node-gyp-build >/dev/null 2>&1; then
     return 0
   fi
-  log "Installing node-gyp-build (ws optional native helper)"
-  npm install -g --force node-gyp-build >/dev/null 2>&1 || true
+  # Pinned. `--force` plus an unpinned spec can replace a good global tree
+  # with whatever the registry currently serves.
+  local pin="4.8.4"
+  log "Installing node-gyp-build@${pin} (ws optional native helper)"
+  local prefix
+  prefix="$(npm_global_prefix)"
+  if [[ -n "$prefix" ]]; then
+    mkdir -p "$prefix"
+    export PATH="${prefix}/bin:${PATH}"
+    npm install -g --prefix "$prefix" "node-gyp-build@${pin}" >/dev/null 2>&1 \
+      || warn "node-gyp-build@${pin} install failed"
+  else
+    npm install -g "node-gyp-build@${pin}" >/dev/null 2>&1 \
+      || warn "node-gyp-build@${pin} install failed"
+  fi
 }
 
 install_product_from_pack() {
@@ -449,7 +462,7 @@ ensure_webauthn_module() {
   fi
   log "Repairing @simplewebauthn/server (empty or missing)"
   with_npm_only_allow_stub
-  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress @simplewebauthn/server@13.3.2) \
+  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress @simplewebauthn/server@13.3.3) \
     || warn "Could not install @simplewebauthn/server — passkeys will fail until repaired"
 }
 
@@ -513,14 +526,24 @@ install_node_globals() {
     record_hard_fail "npm not found"
     return 1
   fi
+  # Match package.json "packageManager". Do not install pnpm@latest: that tag
+  # can resolve to pnpm 12, which this release defers (lockfile stays v9).
+  local pnpm_pin="9.15.9"
+  local pm2_pin="6.0.14"
   local need_pnpm=1 need_pm2=1
   if require_cmd pnpm; then
-    local pnpm_major
-    pnpm_major="$(pnpm -v 2>/dev/null | cut -d. -f1 || echo 0)"
-    if [[ "$pnpm_major" =~ ^[0-9]+$ ]] && [[ "$pnpm_major" -ge 11 ]]; then
+    local pnpm_ver pnpm_major
+    pnpm_ver="$(pnpm -v 2>/dev/null || echo 0)"
+    pnpm_major="$(printf '%s' "$pnpm_ver" | cut -d. -f1)"
+    if [[ "$pnpm_ver" == "$pnpm_pin" ]]; then
       need_pnpm=0
+    elif [[ "$pnpm_major" =~ ^[0-9]+$ ]] && [[ "$pnpm_major" -eq 11 ]]; then
+      need_pnpm=0
+      log "pnpm $pnpm_ver is 11.x — leaving it (lockfile is pnpm 9; not installing @latest)"
+    elif [[ "$pnpm_major" =~ ^[0-9]+$ ]] && [[ "$pnpm_major" -ge 12 ]]; then
+      log "pnpm $pnpm_ver is 12 or newer — installing pinned pnpm@$pnpm_pin"
     else
-      log "pnpm $(pnpm -v) is older than 11 — installing latest (Node ${MIN_NODE_MAJOR}+)"
+      log "pnpm $pnpm_ver is not pinned $pnpm_pin — installing pnpm@$pnpm_pin"
     fi
   fi
   require_cmd pm2 && need_pm2=0
@@ -528,12 +551,12 @@ install_node_globals() {
     log "pnpm and pm2 already on PATH — skip global reinstall"
     return 0
   fi
-  log "Installing global npm tools (pnpm@latest, pm2)..."
+  log "Installing global npm tools (pnpm@$pnpm_pin, pm2@$pm2_pin)..."
   if [[ "$need_pnpm" -eq 1 ]]; then
-    npm_install_global pnpm@latest 2>/dev/null || npm_install_global pnpm || warn "pnpm install failed"
+    npm_install_global "pnpm@$pnpm_pin" 2>/dev/null || warn "pnpm@$pnpm_pin install failed"
   fi
   if [[ "$need_pm2" -eq 1 ]]; then
-    npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
+    npm_install_global "pm2@$pm2_pin" 2>/dev/null || warn "pm2@$pm2_pin install failed"
   fi
   local prefix
   prefix="$(npm_global_prefix)"

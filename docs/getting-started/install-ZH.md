@@ -19,7 +19,7 @@ Ubuntu 26.04 列入支援，係因為 2026-08-24 用 **recommended** 方案裝�
 
 `install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。
 
-產品要求 **Node.js 22+**。插件用現行主版本（WebTorrent **3.x**、pnpm **11**）。若主機仲係 Node 20，安裝程式會**升級 Node** 到目前 LTS（24.x），唔會為遷就舊 Node 而釘死舊插件。Node 已達最低要求時，全域 pnpm 用最新版。
+產品要求 **Node.js 22+**。插件用現行主版本（WebTorrent **3.x**）。若主機仲係 Node 20，安裝程式會**升級 Node** 到目前 LTS（24.x），唔會為遷就舊 Node 而釘死舊插件。全域 pnpm 釘在 **9.15.9**（同 `packageManager`），唔會裝 `pnpm@latest`。主機已有 pnpm 11.x 就留住。唔會裝 pnpm 12。`node-gyp-build` 釘在 **4.8.4**，而且唔再用 `--force` 安裝。`install/checksums.sha256` 下載到就會核對；設 `YSK_INSTALL_REQUIRE_CHECKSUMS=1` 就會拒絕沒有這份檔的來源。
 
 可選 apt 套件用 `--no-remove`，唔會拆走已裝嘅 MariaDB 或 MySQL。SQL 客戶端跟你揀嘅引擎（`mariadb-client` 或 `mysql-client`）。Ubuntu 嘅 `mysql-client` 同 MariaDB 衝突，唔可以喺 MariaDB 主機當「可選」來裝。
 

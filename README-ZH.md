@@ -39,40 +39,53 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.27 新內容
+
+### 安全
+- 直接與傳遞依賴的供應鏈檢查。Vitest **4.1.11** 與 Vite **6.4.3** 清掉開發伺服器公告。`pnpm.overrides` 釘上已修補的 `brace-expansion`、`nanoid`、`ip-address`。報告：[docs/security/2026-10-05-supply-chain-ZH.md](docs/security/2026-10-05-supply-chain-ZH.md)。
+- `install.sh` 安裝釘死的 `pnpm@9.15.9` 與 `node-gyp-build@4.8.4`（不再用 `pnpm@latest`，該輔助套件亦不再 `--force`）。GitHub Actions 釘在 commit SHA。
+
+### 修正
+- `install.sh` 完成橫額顯示實際安裝的 `ysk-server` 版本，不再寫死 `1.0.31`。
+- 檔案系統時間戳沒有前進時，JsonStore 仍保留另一個行程寫入的資料列。
+
+### 改進
+- 安裝目標寫明 Ubuntu **22.04／24.04／26.04**（Debian 仍是盡力支援）。26.04 是一次 recommended 方案安裝後列入，不是完整 LTS 矩陣。
+
+### 依賴升級
+- 次版本升級包括 `ws`、`playwright-core`、`maxmind`、`sql.js`、`tsx`、`react-router-dom`，以及 TypeScript **5.9**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- 標籤 `v*.*.*` 用 npm Trusted Publishing 發布（`.github/workflows/release.yml`）。本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.27**。
+
 ## 1.1.26 新內容
 
-- **驗證者** — 節點起來後：NEAR 表單填好 `create_staking_pool`，並可只寫入 `account_id`；Cosmos 表單填好 gaiad v28 的 `validator.json`（不是 Hub 文件的 flags）；ETH 顯示 Lighthouse VC 示例或 beacon URL。ADA／AVAX／Solana 說明已對齊官方流程。
+### 新功能
+- **驗證者** — 節點起來後：NEAR 表單填好 `create_staking_pool`，並可只寫入 `account_id`；Cosmos 表單填好 gaiad v28 的 `validator.json`（不是 Hub 文件的 flags）；ETH 顯示 Lighthouse VC 示例或 beacon URL。
+
+### 修正
+- ADA（質押池註冊憑證）、AVAX（NodeID，不是 IP）、Solana（`--no-voting`）說明對齊官方流程。NEAR 確認顯示真實帳戶。Cosmos 金額接受 `1atom`。
+
+### 依賴升級
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.26**。
 
 ## 1.1.25 新內容
 
+### 新功能
 - **Cron** — 就地修改主機 crontab 行（`source=host`）。管理式任務：`ysk-server cron update --id`。
-- **驗證者** — 節點起來後提供可複製的公開身份與後續步驟（NEAR `create_staking_pool`、Cosmos `create-validator`、host P2P 寫入 `public_addr`）。CLI：`checklist`、`rewrite-compose`、`compose-write`、`software`、`pull`、`leftover-remove`、`stats`。
+- **驗證者** — 節點起來後提供可複製的公開身份與後續步驟。CLI：`checklist`、`rewrite-compose`、`compose-write`、`software`、`pull`、`leftover-remove`、`stats`。
+
+### 改進
 - **語言** — 13 種語言的操作字串與說明分頁。zh-HK 為香港書面語。產品名稱維持英文。
+
+### 修正
+- NEAR／Cosmos 公布主機 P2P 埠。Cosmos gas 跟節點一致。質押指令列會換行。
+
+### 依賴升級
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.25**。
 
-## 1.1.24 新內容
-
-- **DNS** — 主機 WAN DDNS：本機公網位址變更時 upsert 指定 A／AAAA（Cloudflare、RFC 2136、本機 PowerDNS）。探測只偵測。VPN 主機名稱預設 DNS only（orange cloud 須確認）。VPN Endpoint 可填入 DDNS 主機名稱，不會改寫現有 peers。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.24**。
-
-## 1.1.23 新內容
-
-- **驗證者** — NEAR compose 不再在建立容器前失敗（Compose 吃掉 `$PUB`；`pids_limit` 與 deploy pids 不一致）。Cosmos 的 `$TRUST_*` 同樣跳脫。RAM+CPU 限制與 deploy `cpus` 對齊。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.23**。
-
-## 1.1.22 新內容
-
-- **驗證者** — 記憶體低於鏈上限時仍可安裝，須輸入節點識別碼確認。警告會留在畫面上。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.22**。
-
-## 1.1.21 新內容
-
-- **法律文件** — 公開 `/legal` 使用條款、私隱政策、免責聲明（正式英文 + 香港書面中文；如有歧義以英文為準）。登入頁腳與 Support 有連結。MIT `LICENSE`。
-- **面板** — 自行更新成功後需確認才 reload UI。Cardano producer 改拖放上傳。FTP 總覽按鈕不再走位。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.21**。
-
-[完整變更紀錄](./CHANGELOG.md)
+[完整變更紀錄](./CHANGELOG.zh.md)
 
 ## 面板
 

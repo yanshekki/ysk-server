@@ -4,6 +4,7 @@
  * Provides real restart-safe persistence for users/sessions/projects/audit.
  */
 
+import { createHash } from 'node:crypto';
 import {
   closeSync,
   existsSync,
@@ -566,21 +567,27 @@ const EMPTY: StoreData = {
   api_keys: [],
 };
 
+function storeDigest(raw: string): string {
+  return createHash('sha256').update(raw).digest('hex');
+}
+
 export class JsonStore {
   private data: StoreData;
   private baseline: StoreData;
-  private loadedMtime: number;
+  /** Bytes last read or written. mtime alone misses same-tick writes on coarse filesystems. */
+  private loadedDigest: string;
   private readonly path: string;
 
   constructor(path: string) {
     this.path = path;
     mkdirSync(dirname(path), { recursive: true });
     if (existsSync(path)) {
-      this.data = hydrateStoreData(JSON.parse(readFileSync(path, 'utf8')));
-      this.loadedMtime = statSync(path).mtimeMs;
+      const raw = readFileSync(path, 'utf8');
+      this.data = hydrateStoreData(JSON.parse(raw));
+      this.loadedDigest = storeDigest(raw);
     } else {
       this.data = structuredClone(EMPTY);
-      this.loadedMtime = 0;
+      this.loadedDigest = '';
       this.baseline = structuredClone(this.data);
       this.persist();
       return;
@@ -595,27 +602,28 @@ export class JsonStore {
   /** Pull in rows another process wrote. Safe to call before mutating. */
   reloadIfStale(): void {
     if (!existsSync(this.path)) return;
-    if (statSync(this.path).mtimeMs <= this.loadedMtime) return;
     withStoreLock(this.path, () => this.mergeFromDiskUnlocked());
   }
 
   private mergeFromDiskUnlocked(): void {
     if (!existsSync(this.path)) return;
-    const mtime = statSync(this.path).mtimeMs;
-    if (mtime <= this.loadedMtime) return;
-    const disk = hydrateStoreData(JSON.parse(readFileSync(this.path, 'utf8')));
+    const raw = readFileSync(this.path, 'utf8');
+    const digest = storeDigest(raw);
+    if (digest === this.loadedDigest) return;
+    const disk = hydrateStoreData(JSON.parse(raw));
     this.data = mergeStoreData(this.baseline, this.data, disk);
-    this.loadedMtime = mtime;
+    this.loadedDigest = digest;
     this.baseline = structuredClone(disk);
   }
 
   persist(opts?: { replace?: boolean }): void {
     withStoreLock(this.path, () => {
       if (!opts?.replace) this.mergeFromDiskUnlocked();
+      const body = JSON.stringify(this.data, null, 2);
       const tmp = `${this.path}.${process.pid}.tmp`;
-      writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf8');
+      writeFileSync(tmp, body, 'utf8');
       renameSync(tmp, this.path);
-      this.loadedMtime = statSync(this.path).mtimeMs;
+      this.loadedDigest = storeDigest(body);
       this.baseline = structuredClone(this.data);
     });
   }
