@@ -12,10 +12,21 @@ cd "$ROOT"
 
 log() { printf '[trusted-publish] %s\n' "$*"; }
 
+# setup-node writes //registry.npmjs.org/:_authToken= when registry-url is set,
+# and a repo NODE_AUTH_TOKEN then rides into later steps. Provenance requires
+# GitHub OIDC, so discard both before npm publish.
 if [[ -n "${NPM_TOKEN:-}" || -n "${NODE_AUTH_TOKEN:-}" ]]; then
-  log "ERROR: NPM_TOKEN / NODE_AUTH_TOKEN must not be set for trusted publishing"
-  exit 1
+  log "discarding NPM_TOKEN / NODE_AUTH_TOKEN; publish uses GitHub OIDC"
 fi
+unset NPM_TOKEN NODE_AUTH_TOKEN || true
+strip_npm_auth() {
+  local f="$1"
+  [[ -f "$f" ]] || return 0
+  grep -v -E '_authToken|_auth[[:space:]]*=' "$f" > "${f}.ysk-oidc" || true
+  mv "${f}.ysk-oidc" "$f"
+}
+strip_npm_auth "${HOME}/.npmrc"
+strip_npm_auth "${ROOT}/.npmrc"
 
 SERVER_VER="$(node -p "require('./apps/server/package.json').version")"
 SHARED_VER="$(node -p "require('./packages/shared/package.json').version")"

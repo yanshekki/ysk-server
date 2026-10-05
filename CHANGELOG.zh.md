@@ -23,7 +23,7 @@
 - `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.27**。
 
 ### 內部／CI
-- `.github/workflows/release.yml` 在標籤 `v*.*.*`（以及該標籤上的 `workflow_dispatch`）用 npm Trusted Publishing 發布。沒有 `NPM_TOKEN`／`NODE_AUTH_TOKEN`。手動的 `scripts/publish-ysk-server-npm.sh` 沒有改。
+- `.github/workflows/release.yml` 在標籤 `v*.*.*`（以及該標籤上的 `workflow_dispatch`）用 npm Trusted Publishing 發布。沒有 `NPM_TOKEN`／`NODE_AUTH_TOKEN`。`setup-node` 不設 `registry-url`（該輸入會注入 repo token）。發布腳本丟掉注入的 token，發布維持 GitHub OIDC。手動的 `scripts/publish-ysk-server-npm.sh` 沒有改。
 - README 只保留最近三個版本。更早的紀錄在本檔。
 
 ## 1.1.26 — 2026-08-24

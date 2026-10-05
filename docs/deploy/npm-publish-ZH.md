@@ -35,7 +35,7 @@ bash scripts/publish-ysk-server-npm.sh --publish
 
 推送標籤 `v*.*.*` 會跑 [`.github/workflows/release.yml`](../../.github/workflows/release.yml)。在同一標籤上 `workflow_dispatch` 亦會跑。任務用 npm **Trusted Publishing**（GitHub OIDC）：`permissions: id-token: write` 同 `contents: read`，Node 24，npm 11.21.0，然後 `npm publish --provenance --access public`。
 
-順序一樣：**shared → core → ysk-server**。registry 已有該版本就跳過。工作流程**不會**讀 `NPM_TOKEN` 或 `NODE_AUTH_TOKEN`。
+順序一樣：**shared → core → ysk-server**。registry 已有該版本就跳過。工作流程**不會**讀 `NPM_TOKEN` 或 `NODE_AUTH_TOKEN`。`actions/setup-node` 不設 `registry-url`，因為該輸入會匯出 repo 的 `NODE_AUTH_TOKEN` 並寫入 `_authToken`。發布腳本會丟掉這類 token 與 `_authToken` 行，發布只用 OIDC provenance。
 
 第一次打標籤前，請在 npmjs.com 為三個套件各加 Trusted Publisher：GitHub Actions、owner `yanshekki`、repository `ysk-server`、workflow 檔名 `release.yml`。
 
