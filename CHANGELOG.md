@@ -24,7 +24,7 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.27**.
 
 ### Internal & CI
-- `.github/workflows/release.yml` publishes on tag `v*.*.*` (and `workflow_dispatch` on that tag) with npm Trusted Publishing. No `NPM_TOKEN` / `NODE_AUTH_TOKEN`. Manual `scripts/publish-ysk-server-npm.sh` is unchanged.
+- `.github/workflows/release.yml` publishes on tag `v*.*.*` (and `workflow_dispatch` on that tag) with npm Trusted Publishing. No `NPM_TOKEN` / `NODE_AUTH_TOKEN`. `setup-node` has no `registry-url` (that input injects a repo token). The publish script discards any injected token so the publish stays on GitHub OIDC. Manual `scripts/publish-ysk-server-npm.sh` is unchanged.
 - README pages keep the latest three versions. Older notes live here.
 
 ## 1.1.26 — 2026-08-24

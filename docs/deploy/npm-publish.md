@@ -35,7 +35,7 @@ Bump `version` in `packages/shared`, `packages/core`, and `apps/server` `package
 
 Pushing a tag `v*.*.*` runs [`.github/workflows/release.yml`](../../.github/workflows/release.yml). `workflow_dispatch` on that same tag also runs it. The job uses npm **Trusted Publishing** (GitHub OIDC): `permissions: id-token: write` and `contents: read`, Node 24, npm 11.21.0, then `npm publish --provenance --access public`.
 
-Order is the same: **shared → core → ysk-server**. A version already on npm is skipped. The workflow does **not** read `NPM_TOKEN` or `NODE_AUTH_TOKEN`.
+Order is the same: **shared → core → ysk-server**. A version already on npm is skipped. The workflow does **not** read `NPM_TOKEN` or `NODE_AUTH_TOKEN`. `actions/setup-node` is not given `registry-url`, because that input exports a repo `NODE_AUTH_TOKEN` and writes an `_authToken` line. The publish script discards any such token and any `_authToken` line so the publish is OIDC provenance only.
 
 Before the first tag, add a Trusted Publisher on npmjs.com for each of the three packages: GitHub Actions, owner `yanshekki`, repository `ysk-server`, workflow filename `release.yml`.
 

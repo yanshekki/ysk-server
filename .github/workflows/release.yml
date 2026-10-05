@@ -36,7 +36,8 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+          # No registry-url. That input makes setup-node export NODE_AUTH_TOKEN
+          # and write an _authToken line, which publishes with a token instead of OIDC.
 
       # Trusted publishing needs npm >= 11.5.1. Pin a current 11.x (not npm 12).
       - name: Install npm CLI for trusted publishing
@@ -60,4 +61,8 @@ jobs:
           echo "tag v${SERVER} matches shared, core, and ysk-server"
 
       - name: Publish shared, core, then server
+        env:
+          # Drop a repo secret if the runner injected one. Provenance uses OIDC.
+          NODE_AUTH_TOKEN: ""
+          NPM_TOKEN: ""
         run: bash scripts/ci-trusted-publish.sh
