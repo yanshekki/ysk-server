@@ -3,6 +3,19 @@
 這是完整發布紀錄。`README-ZH.md` 只保留最近三個版本。
 
 分類順序：**新功能**、**改進**、**修正**、**安全**、**依賴升級**、**內部／CI**。空的分類會省略。英文：[CHANGELOG.md](./CHANGELOG.md)。
+## 1.1.28 — 2026-10-11
+
+### 安全
+- 每週供應鏈檢查。新的高嚴重性 `source-map-js`（GHSA-68fv-2mgg-jv7q／CVE-2026-93749，索引 source map 偏移卡住事件迴圈）用 `pnpm.overrides` 拉到 **1.2.2**。只影響開發（Vitest 底下的 Vite／PostCSS／magicast）。
+- `ip@2.0.1`（經 `bittorrent-tracker`）上游仍沒有修補版。Tracker 沒有用 `ip.isPublic` 做 SSRF 閘門。面板 DDNS 用自己的公網位址檢查。見 [docs/security/2026-10-11-supply-chain-ZH.md](docs/security/2026-10-11-supply-chain-ZH.md)。
+
+### 依賴升級
+- 直接依賴的次版本／修補：Vite **6.4.4**、`playwright-core` **1.64.0**、`happy-dom` **20.14.6**。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.28**。
+
+### 內部／CI
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.27 — 2026-10-05
 
 ### 修正

@@ -4,6 +4,19 @@ This file is the full release history. `README.md` keeps only the latest three v
 
 Categories, in order: **New features**, **Improvements**, **Fixes**, **Security**, **Dependency upgrades**, **Internal & CI**. Empty categories are omitted. Chinese: [CHANGELOG.zh.md](./CHANGELOG.zh.md).
 
+## 1.1.28 — 2026-10-11
+
+### Security
+- Weekly supply-chain pass. New high `source-map-js` (GHSA-68fv-2mgg-jv7q / CVE-2026-93749, event-loop DoS via indexed source-map offsets) is forced to **1.2.2** with `pnpm.overrides`. Dev-only (Vite / PostCSS / magicast under Vitest).
+- `ip@2.0.1` (via `bittorrent-tracker`) still has no upstream patch. The tracker does not use `ip.isPublic` as an SSRF guard. Panel DDNS uses its own public-IP checks. See [docs/security/2026-10-11-supply-chain.md](docs/security/2026-10-11-supply-chain.md).
+
+### Dependency upgrades
+- Direct minor/patch bumps: Vite **6.4.4**, `playwright-core` **1.64.0**, `happy-dom` **20.14.6**.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.28**.
+
+### Internal & CI
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.27 — 2026-10-05
 
 ### Fixes
