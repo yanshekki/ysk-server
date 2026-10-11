@@ -39,6 +39,18 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.28
+
+### Security
+- Weekly supply-chain pass. New high `source-map-js` (GHSA-68fv-2mgg-jv7q) is pinned to **1.2.2**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-11-supply-chain.md](docs/security/2026-10-11-supply-chain.md).
+
+### Dependency upgrades
+- Vite **6.4.4**, `playwright-core` **1.64.0**, `happy-dom` **20.14.6**. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.28** together.
+
 ## What's new in 1.1.27
 
 ### Security
@@ -69,21 +81,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 
 ### Dependency upgrades
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26** together.
-
-## What's new in 1.1.25
-
-### New features
-- **Cron** — in-place edit for live host crontab lines (`source=host`). Managed jobs: `ysk-server cron update --id`.
-- **Validators** — copyable public identity and next steps after the node is up. CLI: `checklist`, `rewrite-compose`, `compose-write`, `software`, `pull`, `leftover-remove`, `stats`.
-
-### Improvements
-- **Locales** — operator strings and About-tab guides for all 13 languages. zh-HK is Hong Kong written Chinese. Product names stay English.
-
-### Fixes
-- NEAR / Cosmos advertise the host P2P port. Cosmos gas matches the node. Staking command rows wrap.
-
-### Dependency upgrades
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.25** together.
 
 [Full changelog](./CHANGELOG.md)
 

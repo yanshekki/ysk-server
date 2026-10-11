@@ -39,6 +39,18 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.28 新內容
+
+### 安全
+- 每週供應鏈檢查。新的高嚴重性 `source-map-js`（GHSA-68fv-2mgg-jv7q）釘到 **1.2.2**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-10-11-supply-chain-ZH.md](docs/security/2026-10-11-supply-chain-ZH.md)。
+
+### 依賴升級
+- Vite **6.4.4**、`playwright-core` **1.64.0**、`happy-dom` **20.14.6**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.28**。
+
 ## 1.1.27 新內容
 
 ### 安全
@@ -69,21 +81,6 @@
 
 ### 依賴升級
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.26**。
-
-## 1.1.25 新內容
-
-### 新功能
-- **Cron** — 就地修改主機 crontab 行（`source=host`）。管理式任務：`ysk-server cron update --id`。
-- **驗證者** — 節點起來後提供可複製的公開身份與後續步驟。CLI：`checklist`、`rewrite-compose`、`compose-write`、`software`、`pull`、`leftover-remove`、`stats`。
-
-### 改進
-- **語言** — 13 種語言的操作字串與說明分頁。zh-HK 為香港書面語。產品名稱維持英文。
-
-### 修正
-- NEAR／Cosmos 公布主機 P2P 埠。Cosmos gas 跟節點一致。質押指令列會換行。
-
-### 依賴升級
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.25**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 
