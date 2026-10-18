@@ -30,6 +30,18 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.29
+
+### Security
+- Weekly supply-chain pass. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged.
+
+### Dependency upgrades
+- Vitest **4.1.12**, `playwright-core` **1.64.1**, `sql.js` **1.15.0**, `@testing-library/user-event` **14.6.8**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29**.
+
 ## What's new in 1.1.28
 
 ### Security
@@ -60,17 +72,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - Tag push publishes with npm Trusted Publishing. This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27**.
-
-## What's new in 1.1.26
-
-### New features
-- Validators: NEAR form fills `create_staking_pool` and writes `account_id` only. Cosmos form fills gaiad v28 `validator.json`. ETH shows a Lighthouse VC example or the beacon URL.
-
-### Fixes
-- Honest ADA / AVAX / Solana copy. NEAR confirm shows the real account. Cosmos amount accepts `1atom`.
-
-### Dependency upgrades
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -139,8 +140,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.28) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.28) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.29) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.29) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

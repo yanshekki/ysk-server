@@ -4,6 +4,19 @@ This file is the full release history. `README.md` keeps only the latest three v
 
 Categories, in order: **New features**, **Improvements**, **Fixes**, **Security**, **Dependency upgrades**, **Internal & CI**. Empty categories are omitted. Chinese: [CHANGELOG.zh.md](./CHANGELOG.zh.md).
 
+## 1.1.29 — 2026-10-18
+
+### Security
+- Weekly supply-chain pass. No new advisory after 1.1.28. `ip@2.0.1` (via `bittorrent-tracker`) still has no upstream patch. The tracker does not use `ip.isPublic` as an SSRF guard. Panel DDNS uses its own public-IP checks. See [docs/security/2026-10-18-supply-chain.md](docs/security/2026-10-18-supply-chain.md).
+
+### Dependency upgrades
+- Direct minor/patch bumps: Vitest **4.1.12**, `playwright-core` **1.64.1**, `sql.js` **1.15.0**, `@testing-library/user-event` **14.6.8**.
+- Overrides: nanoid 3.x **3.3.20**, `ip-address` **10.7.4**. tsx's esbuild **0.28.2** (Vite stays on esbuild 0.25.12).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.29**.
+
+### Internal & CI
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.28 — 2026-10-11
 
 ### Security
