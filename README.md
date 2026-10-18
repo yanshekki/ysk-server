@@ -39,6 +39,18 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.29
+
+### Security
+- Weekly supply-chain pass. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-18-supply-chain.md](docs/security/2026-10-18-supply-chain.md).
+
+### Dependency upgrades
+- Vitest **4.1.12**, `playwright-core` **1.64.1**, `sql.js` **1.15.0**, `@testing-library/user-event` **14.6.8**. Overrides: nanoid 3.x **3.3.20**, `ip-address` **10.7.4**. tsx's esbuild **0.28.2**. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29** together.
+
 ## What's new in 1.1.28
 
 ### Security
@@ -70,17 +82,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ### Internal & CI
 - Tag `v*.*.*` publishes with npm Trusted Publishing (`.github/workflows/release.yml`). This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27** together.
-
-## What's new in 1.1.26
-
-### New features
-- **Validators** — after the node is up: NEAR form fills `create_staking_pool` and can write `account_id` only; Cosmos form fills gaiad v28 `validator.json` (not Hub-docs flags); ETH shows a Lighthouse VC example or the beacon URL.
-
-### Fixes
-- Honest copy for ADA (pool registration certificate), AVAX (NodeID, not IP), and Solana (`--no-voting`). NEAR confirm shows the real account. Cosmos amount accepts `1atom`.
-
-### Dependency upgrades
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.26** together.
 
 [Full changelog](./CHANGELOG.md)
 

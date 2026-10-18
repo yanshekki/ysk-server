@@ -39,6 +39,18 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.29 新內容
+
+### 安全
+- 每週供應鏈檢查。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-10-18-supply-chain-ZH.md](docs/security/2026-10-18-supply-chain-ZH.md)。
+
+### 依賴升級
+- Vitest **4.1.12**、`playwright-core` **1.64.1**、`sql.js` **1.15.0**、`@testing-library/user-event` **14.6.8**。覆寫：nanoid 3.x **3.3.20**、`ip-address` **10.7.4**。tsx 的 esbuild **0.28.2**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.29**。
+
 ## 1.1.28 新內容
 
 ### 安全
@@ -70,17 +82,6 @@
 ### 內部／CI
 - 標籤 `v*.*.*` 用 npm Trusted Publishing 發布（`.github/workflows/release.yml`）。本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.27**。
-
-## 1.1.26 新內容
-
-### 新功能
-- **驗證者** — 節點起來後：NEAR 表單填好 `create_staking_pool`，並可只寫入 `account_id`；Cosmos 表單填好 gaiad v28 的 `validator.json`（不是 Hub 文件的 flags）；ETH 顯示 Lighthouse VC 示例或 beacon URL。
-
-### 修正
-- ADA（質押池註冊憑證）、AVAX（NodeID，不是 IP）、Solana（`--no-voting`）說明對齊官方流程。NEAR 確認顯示真實帳戶。Cosmos 金額接受 `1atom`。
-
-### 依賴升級
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.26**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 
