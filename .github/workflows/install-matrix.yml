@@ -76,7 +76,7 @@ jobs:
         run: bash scripts/ci-install-smoke.sh
 
   install-minimal:
-    name: Minimal install (${{ matrix.os }})
+    name: Minimal install
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
