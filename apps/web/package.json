@@ -31,7 +31,7 @@
     "react-dom": "^19.3.1",
     "react-i18next": "^15.7.4",
     "react-router-dom": "^7.18.4",
-    "webtorrent": "^2.8.5"
+    "webtorrent": "^3.0.21"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
