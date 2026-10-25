@@ -4,6 +4,13 @@
 
 分類順序：**新功能**、**改進**、**修正**、**安全**、**依賴升級**、**內部／CI**。空的分類會省略。英文：[CHANGELOG.md](./CHANGELOG.md)。
 
+## Unreleased
+
+### 內部／CI
+- Dependabot 每週為 pnpm workspace 與 GitHub Actions 開分組的 minor／patch 更新（`.github/dependabot.yml`）。本次不升版本號。
+- GitHub Issue 模板（錯誤／功能／安裝）與簡短 [CONTRIBUTING-ZH.md](./CONTRIBUTING-ZH.md)。倉庫已開啟 Discussions。
+- Ubuntu **22.04／24.04／26.04** 安裝矩陣：PR 煙霧測試，加上每週／手動 `--plan minimal` 從源碼安裝。現有 Gates／Probe SSOT／Build & test 不變。
+
 ## 1.1.30 — 2026-10-25
 
 ### 安全

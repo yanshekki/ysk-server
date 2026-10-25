@@ -1,0 +1,72 @@
+name: Bug report / 錯誤回報
+description: Something is broken in the panel, CLI, or installer. 面板、CLI 或安裝程式出錯。
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or 中文（香港書面語）are both fine.
+
+        Do **not** paste passwords, OTP / recovery codes, API keys, or `BOOTSTRAP-CREDENTIALS.txt`.
+        Confirmed bugs belong here. Questions: [Discussions](https://github.com/yanshekki/ysk-server/discussions).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened / 發生了什麼
+      description: What you did, what you expected, what you got. 步驟、預期、實際結果。
+      placeholder: |
+        1. …
+        2. …
+        Expected / 預期：
+        Actual / 實際：
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS / 系統
+      options:
+        - Ubuntu 22.04
+        - Ubuntu 24.04
+        - Ubuntu 26.04
+        - Debian / other Linux
+        - Not install / not host related
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: ysk-server version / 版本
+      description: "`ysk-server --version` or the npm package version."
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface / 介面
+      options:
+        - Panel
+        - CLI
+        - HTTP API
+        - install.sh / uninstall.sh
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / 日誌
+      description: "Redact secrets. Installer logs are under `/var/log/ysk-server/` (root) or `~/.ysk/logs/`."
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: honesty
+    attributes:
+      label: Honesty / 誠實運維
+      options:
+        - label: "Host writes used root + YSK_EXECUTE=1 (or this is not a host-apply bug). 改主機時已用 root + YSK_EXECUTE=1（或這不是套用主機的問題）。"
+          required: false
+        - label: I did not paste secrets. 沒有貼上密碼、OTP 或金鑰。
+          required: true

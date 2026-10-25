@@ -173,7 +173,7 @@ YSK Server is **free**. If it helps:
 - [Linktree](https://linktr.ee/yanshekki) · GitHub Sponsors
 - Crypto: `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA)
 - Hands-on work: **YSK Limited** — write to us (no prices on this page)
-- Bugs and questions: [email@ysk.hk](mailto:email@ysk.hk)
+- Bugs and questions: [email@ysk.hk](mailto:email@ysk.hk) · [Issues](https://github.com/yanshekki/ysk-server/issues) · [Discussions](https://github.com/yanshekki/ysk-server/discussions)
 - Legal: [Terms](./docs/legal/terms.md) · [Privacy](./docs/legal/privacy.md) · [Disclaimer](./docs/legal/disclaimer.md) (panel `/legal`)
 
 ## Development
@@ -184,7 +184,7 @@ pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts setup --data-dir 
 pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 ```
 
-Architecture and contribution notes live under **[docs/](docs/INDEX.md)**.
+Architecture and contribution notes live under **[docs/](docs/INDEX.md)** and **[CONTRIBUTING.md](./CONTRIBUTING.md)**.
 
 ---
 

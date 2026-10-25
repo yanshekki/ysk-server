@@ -1,0 +1,46 @@
+name: Feature request / 功能建議
+description: A new capability or a change to an existing one. 新能力，或改現有行為。
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or 中文（香港書面語）are both fine.
+
+        YSK Server is **single-host**. Industry products (salon, trading, maps, …) do not belong in this repo.
+        Ideas that are still fuzzy can go to [Discussions](https://github.com/yanshekki/ysk-server/discussions) first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 要解決什麼
+      description: Who hits this on a machine they operate? 誰在自己的主機上遇到這件事？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal / 建議
+      description: "Panel path, CLI, or API — keep host apply honest (YSK_EXECUTE=1). 面板路徑、CLI 或 API；改主機仍須誠實套用。"
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface / 介面
+      options:
+        - Panel
+        - CLI
+        - HTTP API
+        - install.sh / uninstall.sh
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: extras
+    attributes:
+      label: Notes / 補充
+      description: Workarounds, related issues, or why this is not a docs-only change. 權宜做法、相關議題。
+    validations:
+      required: false

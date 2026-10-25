@@ -173,7 +173,7 @@ YSK Server **免費**。若對你有幫助：
 - [Linktree](https://linktr.ee/yanshekki) · GitHub Sponsors
 - 加密貨幣：`yanshekki.eth`（EVM）· `yanshekki.near` · `$yanshekki`（ADA）
 - 需要代為操作： **YSK Limited** — 請來信（本頁不標價）
-- 問題與回報：[email@ysk.hk](mailto:email@ysk.hk)
+- 問題與回報：[email@ysk.hk](mailto:email@ysk.hk) · [Issues](https://github.com/yanshekki/ysk-server/issues) · [Discussions](https://github.com/yanshekki/ysk-server/discussions)
 - 法律文件：[使用條款](./docs/legal/terms-ZH.md) · [私隱政策](./docs/legal/privacy-ZH.md) · [免責聲明](./docs/legal/disclaimer-ZH.md)（面板 `/legal`）
 
 ## 開發
@@ -184,7 +184,7 @@ pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts setup --data-dir 
 pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 ```
 
-架構與貢獻說明見 **[docs/](docs/INDEX-ZH.md)**。
+架構與貢獻說明見 **[docs/](docs/INDEX-ZH.md)** 與 **[CONTRIBUTING-ZH.md](./CONTRIBUTING-ZH.md)**。
 
 ---
 

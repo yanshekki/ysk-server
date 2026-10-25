@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions / 討論區
+    url: https://github.com/yanshekki/ysk-server/discussions
+    about: Questions, ideas, and install help that are not a confirmed bug.
+  - name: Email / 電郵
+    url: mailto:email@ysk.hk
+    about: Private contact. Do not paste passwords, OTP, or recovery codes.

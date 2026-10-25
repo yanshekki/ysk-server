@@ -93,6 +93,7 @@ function shouldSkip(rel) {
 
 const enFiles = [
   join(root, 'README.md'),
+  join(root, 'CONTRIBUTING.md'),
   ...walk(docsRoot),
 ].filter((p) => !shouldSkip(relative(root, p)));
 

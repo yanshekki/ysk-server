@@ -4,6 +4,13 @@ This file is the full release history. `README.md` keeps only the latest three v
 
 Categories, in order: **New features**, **Improvements**, **Fixes**, **Security**, **Dependency upgrades**, **Internal & CI**. Empty categories are omitted. Chinese: [CHANGELOG.zh.md](./CHANGELOG.zh.md).
 
+## Unreleased
+
+### Internal & CI
+- Dependabot weekly grouped minor/patch updates for the pnpm workspace and GitHub Actions (`.github/dependabot.yml`). No version bump in this change.
+- GitHub Issue templates (bug / feature / install) and a short [CONTRIBUTING.md](./CONTRIBUTING.md). Discussions is enabled on the repo.
+- Ubuntu **22.04 / 24.04 / 26.04** install matrix: PR smoke plus weekly/manual `--plan minimal` from-source install. Existing Gates / Probe SSOT / Build & test are unchanged.
+
 ## 1.1.30 — 2026-10-25
 
 ### Security
