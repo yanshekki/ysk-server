@@ -39,6 +39,18 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.30 新內容
+
+### 安全
+- 每週供應鏈檢查。新的高嚴重性 `happy-dom`（GHSA-834v-8h66-3h79）釘到 **21.0.4**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-10-25-supply-chain-ZH.md](docs/security/2026-10-25-supply-chain-ZH.md)。
+
+### 依賴升級
+- Vite **6.4.5**、`sql.js` **1.15.1**、happy-dom **21.0.4**。覆寫：`ip-address` **10.7.5**、happy-dom **21.0.4**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.30**。
+
 ## 1.1.29 新內容
 
 ### 安全
@@ -62,26 +74,6 @@
 ### 內部／CI
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.28**。
-
-## 1.1.27 新內容
-
-### 安全
-- 直接與傳遞依賴的供應鏈檢查。Vitest **4.1.11** 與 Vite **6.4.3** 清掉開發伺服器公告。`pnpm.overrides` 釘上已修補的 `brace-expansion`、`nanoid`、`ip-address`。報告：[docs/security/2026-10-05-supply-chain-ZH.md](docs/security/2026-10-05-supply-chain-ZH.md)。
-- `install.sh` 安裝釘死的 `pnpm@9.15.9` 與 `node-gyp-build@4.8.4`（不再用 `pnpm@latest`，該輔助套件亦不再 `--force`）。GitHub Actions 釘在 commit SHA。
-
-### 修正
-- `install.sh` 完成橫額顯示實際安裝的 `ysk-server` 版本，不再寫死 `1.0.31`。
-- 檔案系統時間戳沒有前進時，JsonStore 仍保留另一個行程寫入的資料列。
-
-### 改進
-- 安裝目標寫明 Ubuntu **22.04／24.04／26.04**（Debian 仍是盡力支援）。26.04 是一次 recommended 方案安裝後列入，不是完整 LTS 矩陣。
-
-### 依賴升級
-- 次版本升級包括 `ws`、`playwright-core`、`maxmind`、`sql.js`、`tsx`、`react-router-dom`，以及 TypeScript **5.9**。pnpm 維持 **9.15.9**。
-
-### 內部／CI
-- 標籤 `v*.*.*` 用 npm Trusted Publishing 發布（`.github/workflows/release.yml`）。本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.27**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

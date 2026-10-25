@@ -41,7 +41,7 @@ jobs:
 
       # Trusted publishing needs npm >= 11.5.1. Pin a current 11.x (not npm 12).
       - name: Install npm CLI for trusted publishing
-        run: npm install -g npm@11.21.0 && npm --version
+        run: npm install -g npm@11.21.1 && npm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

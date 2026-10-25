@@ -4,6 +4,21 @@ This file is the full release history. `README.md` keeps only the latest three v
 
 Categories, in order: **New features**, **Improvements**, **Fixes**, **Security**, **Dependency upgrades**, **Internal & CI**. Empty categories are omitted. Chinese: [CHANGELOG.zh.md](./CHANGELOG.zh.md).
 
+## 1.1.30 — 2026-10-25
+
+### Security
+- Weekly supply-chain pass. New high `happy-dom` (GHSA-834v-8h66-3h79 / incomplete CVE-2026-33943, unsanitized import alias in the ESM compiler) is forced to **21.0.4** with `pnpm.overrides`. Dev-only (Vitest environment). 20.x has no patch.
+- `ip@2.0.1` (via `bittorrent-tracker`) still has no upstream patch. The tracker does not use `ip.isPublic` as an SSRF guard. Panel DDNS uses its own public-IP checks. See [docs/security/2026-10-25-supply-chain.md](docs/security/2026-10-25-supply-chain.md).
+
+### Dependency upgrades
+- Direct minor/patch bumps: Vite **6.4.5**, `sql.js` **1.15.1**, happy-dom **21.0.4**.
+- Overrides: `ip-address` **10.7.5**, `happy-dom@>=17 <21.0.4` → **21.0.4**.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.30**.
+
+### Internal & CI
+- Release workflow npm CLI is **11.21.1** (still 11.x; Trusted Publishing). Actions remain SHA-pinned at v4.4.0.
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.29 — 2026-10-18
 
 ### Security
