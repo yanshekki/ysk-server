@@ -13,7 +13,7 @@
 | Node.js | **22+**（若過舊或未裝，安裝程式會升到目前 LTS **24.x**） |
 | 預設方案 | **`recommended`**（不再默認全裝） |
 
-Ubuntu 26.04 列入支援，係因為 2026-08-24 用 **recommended** 方案裝過一次。呢個唔係完整 LTS 測試矩陣。
+每個 PR 會在 Ubuntu **22.04／24.04／26.04** 容器跑 `install.sh` 語法、`--help` 與 checksum（`.github/workflows/install-matrix.yml`）。每週（亦可 **Run workflow**）再以 `--non-interactive --plan minimal --from-source --no-install-systemd` 做非互動安裝。`recommended`／`full` 仍應在 VPS 上試 — 會用 apt 安裝 ufw、nginx、SQL。2026-08-24 的 recommended 實機安裝仍算一次現場紀錄。
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 

@@ -1,0 +1,70 @@
+name: Install / support / 安裝與支援
+description: install.sh failed, or you need help getting the panel up. 安裝失敗，或面板起不來。
+title: "[Install]: "
+labels: ["help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or 中文（香港書面語）are both fine.
+
+        Official path: `curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive`
+
+        Questions with no failure yet: [Discussions](https://github.com/yanshekki/ysk-server/discussions).
+        Do **not** paste `BOOTSTRAP-CREDENTIALS.txt`, passwords, or OTP codes.
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS / 系統
+      options:
+        - Ubuntu 22.04
+        - Ubuntu 24.04
+        - Ubuntu 26.04
+        - Debian / other Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: plan
+    attributes:
+      label: Plan / 安裝方案
+      options:
+        - recommended (default)
+        - minimal
+        - full
+        - custom --bundles
+        - npm global / from source (no install.sh)
+        - upgrade / --upgrade
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command / 指令
+      description: The exact installer command (redact passwords). 實際執行的指令（請刪密碼）。
+      render: bash
+      placeholder: sudo ./install.sh --non-interactive --plan recommended
+    validations:
+      required: true
+  - type: textarea
+    id: what-failed
+    attributes:
+      label: What failed / 失敗點
+      description: Phase name, last log lines, missing binary. 階段名稱、日誌末段、缺少的指令。
+    validations:
+      required: true
+  - type: input
+    id: log-path
+    attributes:
+      label: Log path / 日誌路徑
+      description: "Usually /var/log/ysk-server/install-*.log (root) or ~/.ysk/logs/."
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety / 安全
+      options:
+        - label: I did not paste secrets. 沒有貼上密碼、OTP 或金鑰。
+          required: true
+        - label: This host is one I operate (not a shared multi-tenant panel). 這是我自己操作的單機。
+          required: true

@@ -13,7 +13,7 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 | Node.js | **22+** (installer upgrades to current LTS **24.x** if missing or too old) |
 | Default plan | **`recommended`** (not full stack) |
 
-Ubuntu 26.04 is on that list after one **recommended**-plan install (2026-08-24). That is not a full LTS test matrix.
+Every PR runs `install.sh` syntax, `--help`, and checksums on Ubuntu **22.04 / 24.04 / 26.04** containers (`.github/workflows/install-matrix.yml`). Weekly (and **Run workflow**) CI then runs `--non-interactive --plan minimal --from-source --no-install-systemd` on that matrix. `recommended` / `full` still belong on a VPS — they apt-install ufw, nginx, and SQL. The 2026-08-24 recommended-plan install remains one live data point.
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 

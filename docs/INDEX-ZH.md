@@ -10,6 +10,7 @@
 | 文件 | 用途 |
 |------|------|
 | [../README-ZH.md](../README-ZH.md) | 產品概覽與快速上手 |
+| [../CONTRIBUTING-ZH.md](../CONTRIBUTING-ZH.md) | 議題、討論區、Dependabot、安裝 CI |
 | [testing/README-ZH.md](./testing/README-ZH.md) | 單元測試、90% 覆蓋率、誠實教條 |
 | [getting-started/install-ZH.md](./getting-started/install-ZH.md) | **install.sh** 完整系統堆疊 + monorepo／npm |
 | [getting-started/setup-ZH.md](./getting-started/setup-ZH.md) | 首次初始化 |

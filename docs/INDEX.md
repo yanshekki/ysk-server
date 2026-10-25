@@ -10,6 +10,7 @@
 | Doc | Purpose |
 |-----|---------|
 | [../README.md](../README.md) | Product overview + quick start |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | Issues, Discussions, Dependabot, install CI |
 | [testing/README.md](./testing/README.md) | Unit tests, 90% coverage, honesty doctrine |
 | [getting-started/install.md](./getting-started/install.md) | **install.sh** full system stack + monorepo / npm |
 | [getting-started/setup.md](./getting-started/setup.md) | First-time setup |

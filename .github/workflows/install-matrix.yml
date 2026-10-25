@@ -1,0 +1,136 @@
+# Ubuntu 22.04 / 24.04 / 26.04 installer checks.
+#
+# Smoke (PR + push + dispatch): syntax, --help, checksums, stack JSON.
+#   Cheap. Does not apt-install the product. Existing Gates / Probe SSOT /
+#   Build & test in ci.yml are unchanged.
+#
+# Minimal install (schedule + workflow_dispatch only):
+#   ./install.sh --non-interactive --plan minimal --from-source --no-install-systemd
+#   in a stock Ubuntu container (fresh VPS-like: NodeSource path, no GH
+#   runner preinstalls). Not every PR — from-source build is heavy, and
+#   recommended/full would apt-install ufw/nginx/SQL on the runner.
+#
+# Containers (not runs-on: ubuntu-XX.04) so the guest OS is the matrix,
+# independent of ubuntu-latest migrating to 26.04.
+name: Install matrix
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Monday 05:17 UTC ≈ 13:17 HKT. Offset minutes to miss the top-of-hour rush.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: install-matrix-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+permissions:
+  contents: read
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  smoke:
+    name: Smoke (${{ matrix.os }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: "22.04"
+            image: ubuntu:22.04
+          - os: "24.04"
+            image: ubuntu:24.04
+          - os: "26.04"
+            image: ubuntu:26.04
+    container:
+      image: ${{ matrix.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Container packages
+        run: |
+          set -euo pipefail
+          apt-get update -qq
+          apt-get install -y --no-install-recommends ca-certificates curl git bash python3 coreutils
+
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: OS identity
+        run: |
+          set -euo pipefail
+          . /etc/os-release
+          echo "ID=${ID} VERSION_ID=${VERSION_ID}"
+          test "${ID}" = ubuntu
+          test "${VERSION_ID}" = "${{ matrix.os }}"
+
+      - name: install.sh smoke
+        run: bash scripts/ci-install-smoke.sh
+
+  install-minimal:
+    name: Minimal install
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: "22.04"
+            image: ubuntu:22.04
+          - os: "24.04"
+            image: ubuntu:24.04
+          - os: "26.04"
+            image: ubuntu:26.04
+    container:
+      image: ${{ matrix.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Container packages
+        run: |
+          set -euo pipefail
+          apt-get update -qq
+          apt-get install -y --no-install-recommends ca-certificates curl git bash python3 coreutils sudo
+
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: OS identity
+        run: |
+          set -euo pipefail
+          . /etc/os-release
+          echo "ID=${ID} VERSION_ID=${VERSION_ID}"
+          test "${ID}" = ubuntu
+          test "${VERSION_ID}" = "${{ matrix.os }}"
+
+      - name: Non-interactive minimal install (from source)
+        run: |
+          set -euo pipefail
+          # CI=true already forces --non-interactive and skips default systemd.
+          # Pass flags explicitly. Dummy admin password is not a secret.
+          ./install.sh \
+            --non-interactive \
+            --plan minimal \
+            --from-source \
+            --no-install-systemd \
+            --data-dir /var/lib/ysk-server \
+            --admin-user ciadmin \
+            --admin-password 'YskCiInstall1A'
+
+      - name: CLI and config exist
+        run: |
+          set -euo pipefail
+          command -v ysk-server
+          ysk-server --version
+          test -f /var/lib/ysk-server/config.json
+          test -f /var/lib/ysk-server/stack-manifest.json
