@@ -3,6 +3,22 @@
 這是完整發布紀錄。`README-ZH.md` 只保留最近三個版本。
 
 分類順序：**新功能**、**改進**、**修正**、**安全**、**依賴升級**、**內部／CI**。空的分類會省略。英文：[CHANGELOG.md](./CHANGELOG.md)。
+
+## 1.1.30 — 2026-10-25
+
+### 安全
+- 每週供應鏈檢查。新的高嚴重性 `happy-dom`（GHSA-834v-8h66-3h79／CVE-2026-33943 修補不完整，ESM 編譯器未淨化 import alias）用 `pnpm.overrides` 拉到 **21.0.4**。只影響開發（Vitest 環境）。20.x 沒有修補。
+- `ip@2.0.1`（經 `bittorrent-tracker`）上游仍沒有修補版。Tracker 沒有用 `ip.isPublic` 做 SSRF 閘門。面板 DDNS 用自己的公網位址檢查。見 [docs/security/2026-10-25-supply-chain-ZH.md](docs/security/2026-10-25-supply-chain-ZH.md)。
+
+### 依賴升級
+- 直接依賴的次版本／修補：Vite **6.4.5**、`sql.js` **1.15.1**、happy-dom **21.0.4**。
+- 覆寫：`ip-address` **10.7.5**、`happy-dom@>=17 <21.0.4` → **21.0.4**。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.30**。
+
+### 內部／CI
+- 發布工作流程的 npm CLI 為 **11.21.1**（仍是 11.x；Trusted Publishing）。Actions 維持 v4.4.0 SHA 釘死。
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.29 — 2026-10-18
 
 ### 安全

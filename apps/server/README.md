@@ -30,6 +30,18 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.30
+
+### Security
+- Weekly supply-chain pass. New high `happy-dom` (GHSA-834v-8h66-3h79) pinned to **21.0.4**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged.
+
+### Dependency upgrades
+- Vite **6.4.5**, `sql.js` **1.15.1**, happy-dom **21.0.4**. Override: `ip-address` **10.7.5**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.30**.
+
 ## What's new in 1.1.29
 
 ### Security
@@ -53,25 +65,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.28**.
-
-## What's new in 1.1.27
-
-### Security
-- Vitest 4.1.11 and Vite 6.4.3 clear the dev-server advisories. Overrides pin patched `brace-expansion`, `nanoid`, and `ip-address`. `install.sh` pins `pnpm@9.15.9` and `node-gyp-build@4.8.4`.
-
-### Fixes
-- Install finish banner reports the installed version, not a frozen `1.0.31`.
-- JsonStore keeps another process's rows when the filesystem timestamp does not move between writes.
-
-### Improvements
-- Ubuntu **22.04 / 24.04 / 26.04** are the documented install targets.
-
-### Dependency upgrades
-- Minor bumps: `ws`, `playwright-core`, `maxmind`, `sql.js`, `tsx`, `react-router-dom`, TypeScript 5.9.
-
-### Internal & CI
-- Tag push publishes with npm Trusted Publishing. This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -140,8 +133,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.29) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.29) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.30) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.30) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

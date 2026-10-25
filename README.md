@@ -39,6 +39,18 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.30
+
+### Security
+- Weekly supply-chain pass. New high `happy-dom` (GHSA-834v-8h66-3h79) is pinned to **21.0.4**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-25-supply-chain.md](docs/security/2026-10-25-supply-chain.md).
+
+### Dependency upgrades
+- Vite **6.4.5**, `sql.js` **1.15.1**, happy-dom **21.0.4**. Overrides: `ip-address` **10.7.5**, happy-dom **21.0.4**. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.30** together.
+
 ## What's new in 1.1.29
 
 ### Security
@@ -62,26 +74,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ### Internal & CI
 - This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.28** together.
-
-## What's new in 1.1.27
-
-### Security
-- Supply-chain pass for direct and transitive dependencies. Vitest **4.1.11** and Vite **6.4.3** clear the dev-server advisories. `pnpm.overrides` pin patched `brace-expansion`, `nanoid`, and `ip-address`. Report: [docs/security/2026-10-05-supply-chain.md](docs/security/2026-10-05-supply-chain.md).
-- `install.sh` installs pinned `pnpm@9.15.9` and `node-gyp-build@4.8.4` (not `pnpm@latest`, and not `--force` for that helper). GitHub Actions are pinned to commit SHAs.
-
-### Fixes
-- `install.sh` finish banner reports the installed `ysk-server` version, not a frozen `1.0.31`.
-- JsonStore keeps another process's rows when the filesystem timestamp does not move between writes.
-
-### Improvements
-- Install targets are documented as Ubuntu **22.04 / 24.04 / 26.04** (Debian remains best-effort). 26.04 is listed after one recommended-plan install, not a full LTS matrix.
-
-### Dependency upgrades
-- Minor bumps include `ws`, `playwright-core`, `maxmind`, `sql.js`, `tsx`, `react-router-dom`, and TypeScript **5.9**. pnpm stays on **9.15.9**.
-
-### Internal & CI
-- Tag `v*.*.*` publishes with npm Trusted Publishing (`.github/workflows/release.yml`). This page keeps the latest three versions.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.27** together.
 
 [Full changelog](./CHANGELOG.md)
 
