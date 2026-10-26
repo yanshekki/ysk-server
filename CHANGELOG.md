@@ -6,10 +6,18 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.31 — 2026-10-26
+
+### Fixes
+- From-source `install.sh` no longer overlays the published npm tarball onto the git checkout after `pnpm install && pnpm build`. Overlay (and `npm link --force`) replaced pnpm's `apps/server/node_modules/ysk-server-core` workspace link with the bundled copy from the tarball. That copy has no nested `maxmind`, `@simplewebauthn/server`, `sql.js`, `playwright-core`, or `webtorrent`, so `ysk-server setup` died with `ERR_MODULE_NOT_FOUND`. Fresh `--from-source` keeps the pnpm tree. `--upgrade` and panel self-update still overlay; they now copy every bundled `node_modules` entry and run `npm install --omit=dev` so flattened core transitives resolve next to the bundled packages (same contract as the published `ysk-server` package.json).
+
 ### Internal & CI
-- Dependabot weekly grouped minor/patch updates for the pnpm workspace and GitHub Actions (`.github/dependabot.yml`). No version bump in this change.
+- Dependabot weekly grouped minor/patch updates for the pnpm workspace and GitHub Actions (`.github/dependabot.yml`).
 - GitHub Issue templates (bug / feature / install) and a short [CONTRIBUTING.md](./CONTRIBUTING.md). Discussions is enabled on the repo.
 - Ubuntu **22.04 / 24.04 / 26.04** install matrix: PR smoke plus weekly/manual `--plan minimal` from-source install. Existing Gates / Probe SSOT / Build & test are unchanged.
+- Build & test runs `pnpm test:runtime-deps` (resolve every `ysk-server-core` runtime dep from the from-source layout; assert publish flatten keeps them).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.31**.
+- README pages keep the latest three versions. Older notes live here.
 
 ## 1.1.30 — 2026-10-25
 

@@ -25,7 +25,7 @@ npm install -g ysk-server
 bash scripts/publish-ysk-server-npm.sh --publish
 ```
 
-順序：**shared → core → ysk-server**（server 會 bundle shared+core）。
+順序：**shared → core → ysk-server**（server 會 bundle shared+core）。Staging（`scripts/lib/product-dependencies.mjs`）會把每項 `ysk-server-core` 執行時依賴 flatten 到產品 `package.json`，等 Node 可以從 `node_modules/ysk-server-core/dist/...` 解析 `maxmind` 同其他傳遞依賴。
 
 每個套件都帶 **README.md**，方便 npm 產品頁顯示。
 

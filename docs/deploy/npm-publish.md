@@ -25,7 +25,7 @@ npm install -g ysk-server
 bash scripts/publish-ysk-server-npm.sh --publish
 ```
 
-Order: **shared → core → ysk-server** (server bundles shared+core).
+Order: **shared → core → ysk-server** (server bundles shared+core). Staging (`scripts/lib/product-dependencies.mjs`) flattens every `ysk-server-core` runtime dep onto the product `package.json` so Node can resolve `maxmind` and siblings from `node_modules/ysk-server-core/dist/...`.
 
 Each package ships a **README.md** for the npm package page.
 

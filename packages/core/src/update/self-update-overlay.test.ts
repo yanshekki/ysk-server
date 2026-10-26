@@ -8,6 +8,7 @@ import {
   canScheduleYskServerRestart,
   classifyCliPath,
   isSafeOverlayDest,
+  missingProductRuntimeDeps,
   scheduleYskServerRestart,
 } from './self-update-overlay.js';
 import { runSelfUpdate } from './self-update-apply.js';
@@ -105,6 +106,64 @@ describe('self-update overlay', () => {
       expect(r.ok).toBe(true);
       expect(r.blockMessage).toBeUndefined();
       expect(readFileSync(join(dest, 'dist', 'version.js'), 'utf8')).toContain('0.2.0');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('lists flattened core runtime deps missing from dest', () => {
+    const { root, dest } = makePack('0.2.0');
+    try {
+      writeFileSync(
+        join(dest, 'package.json'),
+        JSON.stringify({
+          name: 'ysk-server',
+          version: '0.2.0',
+          dependencies: {
+            maxmind: '^5.0.7',
+            'ysk-server-core': '0.2.0',
+            'ysk-server-shared': '0.2.0',
+          },
+        }) + '\n',
+      );
+      expect(missingProductRuntimeDeps(dest)).toEqual(['maxmind']);
+      mkdirSync(join(dest, 'node_modules', 'maxmind'), { recursive: true });
+      writeFileSync(
+        join(dest, 'node_modules', 'maxmind', 'package.json'),
+        JSON.stringify({ name: 'maxmind', version: '5.0.7' }),
+      );
+      expect(missingProductRuntimeDeps(dest)).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('copies every bundled node_modules entry, not only core/shared', async () => {
+    const { root, dest, unpacked } = makePack('0.2.0');
+    try {
+      mkdirSync(join(unpacked, 'node_modules', 'ysk-server-core', 'dist'), { recursive: true });
+      mkdirSync(join(unpacked, 'node_modules', 'maxmind'), { recursive: true });
+      writeFileSync(
+        join(unpacked, 'node_modules', 'ysk-server-core', 'package.json'),
+        JSON.stringify({ name: 'ysk-server-core', version: '0.2.0' }),
+      );
+      writeFileSync(
+        join(unpacked, 'node_modules', 'maxmind', 'package.json'),
+        JSON.stringify({ name: 'maxmind', version: '5.0.7' }),
+      );
+      const r = await applyNpmOverlayToDest({
+        spec: 'ysk-server@0.2.0',
+        destDir: dest,
+        latest: '0.2.0',
+        unpackedDir: unpacked,
+      });
+      expect(r.applied).toBe(true);
+      expect(readFileSync(join(dest, 'node_modules', 'maxmind', 'package.json'), 'utf8')).toContain(
+        'maxmind',
+      );
+      expect(
+        readFileSync(join(dest, 'node_modules', 'ysk-server-core', 'package.json'), 'utf8'),
+      ).toContain('ysk-server-core');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

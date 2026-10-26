@@ -39,6 +39,16 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.31
+
+### Fixes
+- From-source `install.sh` no longer overlays the published npm tarball onto the git checkout. That replaced pnpm's `ysk-server-core` link with a bundled copy missing `maxmind` and other core runtime deps, so `ysk-server setup` crashed. Overlay (`--upgrade` / panel self-update) now copies every bundled `node_modules` entry and runs `npm install --omit=dev` so flattened transitives resolve.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.31** together.
+- Build & test resolves core runtime deps from the from-source layout (`pnpm test:runtime-deps`).
+
 ## What's new in 1.1.30
 
 ### Security
@@ -62,18 +72,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ### Internal & CI
 - This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29** together.
-
-## What's new in 1.1.28
-
-### Security
-- Weekly supply-chain pass. New high `source-map-js` (GHSA-68fv-2mgg-jv7q) is pinned to **1.2.2**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-11-supply-chain.md](docs/security/2026-10-11-supply-chain.md).
-
-### Dependency upgrades
-- Vite **6.4.4**, `playwright-core` **1.64.0**, `happy-dom` **20.14.6**. pnpm stays **9.15.9**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.28** together.
 
 [Full changelog](./CHANGELOG.md)
 

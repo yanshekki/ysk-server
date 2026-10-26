@@ -30,6 +30,15 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.31
+
+### Fixes
+- From-source `install.sh` no longer overlays the published npm tarball onto the git checkout. Overlay (`--upgrade` / panel self-update) copies every bundled `node_modules` entry and runs `npm install --omit=dev` so core transitives such as `maxmind` resolve.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.31**.
+
 ## What's new in 1.1.30
 
 ### Security
@@ -53,18 +62,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29**.
-
-## What's new in 1.1.28
-
-### Security
-- Weekly supply-chain pass. `source-map-js` GHSA-68fv-2mgg-jv7q pinned to **1.2.2**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged.
-
-### Dependency upgrades
-- Vite **6.4.4**, `playwright-core` **1.64.0**, `happy-dom` **20.14.6**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.28**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -133,8 +130,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.30) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.30) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.31) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.31) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

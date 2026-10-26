@@ -39,6 +39,16 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.31 新內容
+
+### 修正
+- 從源碼跑 `install.sh` 時不再把已發布的 npm tarball overlay 到 git 目錄。先前會用沒有 `maxmind` 等 core 執行時依賴的 bundled 副本取代 pnpm 的 `ysk-server-core` 連結，`ysk-server setup` 就崩潰。Overlay（`--upgrade`／面板自我更新）而家會複製 tarball 入面所有 `node_modules` 項目，再跑 `npm install --omit=dev`，等 flattened 傳遞依賴可以解析。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.31**。
+- Build & test 會用從源碼佈局解析 core 執行時依賴（`pnpm test:runtime-deps`）。
+
 ## 1.1.30 新內容
 
 ### 安全
@@ -62,18 +72,6 @@
 ### 內部／CI
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.29**。
-
-## 1.1.28 新內容
-
-### 安全
-- 每週供應鏈檢查。新的高嚴重性 `source-map-js`（GHSA-68fv-2mgg-jv7q）釘到 **1.2.2**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-10-11-supply-chain-ZH.md](docs/security/2026-10-11-supply-chain-ZH.md)。
-
-### 依賴升級
-- Vite **6.4.4**、`playwright-core` **1.64.0**、`happy-dom` **20.14.6**。pnpm 維持 **9.15.9**。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.28**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

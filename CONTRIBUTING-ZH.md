@@ -29,6 +29,6 @@ Dependabot 每週為 pnpm workspace（`ysk-server`、`ysk-server-core`、`ysk-se
 | 何時 | 做什麼 |
 |------|--------|
 | 每個 PR／推到 `main` | 在 Ubuntu **22.04／24.04／26.04** 容器跑 `scripts/ci-install-smoke.sh`（語法、`--help`、checksum）。 |
-| 每週排程 + **Run workflow** | 同一矩陣跑 `install.sh --non-interactive --plan minimal --from-source --no-install-systemd`。 |
+| 每週排程 + **Run workflow** | 同一矩陣跑 `install.sh --non-interactive --plan minimal --from-source --no-install-systemd`。全新從源碼安裝會保留 pnpm 樹（唔會 overlay npm tarball）。 |
 
 `.github/workflows/ci.yml` 的 Gates／Probe SSOT／Build & test 維持不變。`recommended`／`full` 仍應在 VPS 上試（ufw、nginx、SQL）。
