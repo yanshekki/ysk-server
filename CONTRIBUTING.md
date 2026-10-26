@@ -29,6 +29,6 @@ Dependabot opens weekly grouped **minor/patch** PRs for the pnpm workspace (`ysk
 | When | What |
 |------|------|
 | Every PR / push to `main` | `scripts/ci-install-smoke.sh` on Ubuntu **22.04 / 24.04 / 26.04** containers (syntax, `--help`, checksums). |
-| Weekly schedule + **Run workflow** | `install.sh --non-interactive --plan minimal --from-source --no-install-systemd` on that same matrix. |
+| Weekly schedule + **Run workflow** | `install.sh --non-interactive --plan minimal --from-source --no-install-systemd` on that same matrix. Fresh from-source keeps the pnpm tree (no npm tarball overlay). |
 
 Gates / Probe SSOT / Build & test in `.github/workflows/ci.yml` stay as they are. `recommended` / `full` still belong on a VPS (ufw, nginx, SQL).

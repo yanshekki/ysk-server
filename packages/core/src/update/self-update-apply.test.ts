@@ -84,6 +84,8 @@ describe('stripNpmNoticeNoise / host overlay', () => {
       latest: '1.0.16',
     });
     expect(script).not.toMatch(/npm install -g/);
+    expect(script).toMatch(/npm install --omit=dev/);
+    expect(script).toMatch(/package\/node_modules\/\*/);
     expect(r.applied).toBe(false);
     expect(r.notes.join(' ')).not.toMatch(/npm notice/);
     expect(r.notes.join(' ')).toMatch(/curl: fail|未能套用|overlay/i);

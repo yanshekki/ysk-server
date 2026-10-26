@@ -565,8 +565,66 @@ install_node_globals() {
   fi
 }
 
+# After overlay copies bundled ysk-server-core / ysk-server-shared, Node
+# resolves core transitives (maxmind, @simplewebauthn/server, sql.js, …) from
+# dest/node_modules — the same flatten the npm product package.json uses.
+overlay_install_product_deps() {
+  local dest="$1"
+  [[ -f "$dest/package.json" ]] || return 0
+  if ! require_cmd node || ! require_cmd npm; then
+    warn "node/npm missing — cannot install overlay runtime deps"
+    return 1
+  fi
+  local missing
+  missing="$(node -e '
+    const fs = require("fs");
+    const path = require("path");
+    const dest = process.argv[1];
+    const pkg = JSON.parse(fs.readFileSync(path.join(dest, "package.json"), "utf8"));
+    const skip = new Set(["ysk-server-core", "ysk-server-shared"]);
+    const miss = [];
+    for (const [k, v] of Object.entries(pkg.dependencies || {})) {
+      if (skip.has(k)) continue;
+      if (typeof v === "string" && v.startsWith("workspace:")) continue;
+      if (!fs.existsSync(path.join(dest, "node_modules", k, "package.json"))) miss.push(k);
+    }
+    process.stdout.write(miss.join("\n"));
+  ' "$dest" 2>/dev/null || true)"
+  if [[ -z "${missing//[$'\t\n\r ']/}" ]]; then
+    log "Overlay dest already has production runtime deps"
+    return 0
+  fi
+  log "Installing missing overlay runtime deps: $(printf '%s' "$missing" | tr '\n' ' ')"
+  with_npm_only_allow_stub
+  if ! (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress --no-package-lock); then
+    warn "npm install in overlay dest failed — CLI may miss packages such as maxmind"
+    return 1
+  fi
+  return 0
+}
+
+copy_overlay_node_modules() {
+  local src_nm="$1"
+  local dest="$2"
+  [[ -d "$src_nm" ]] || return 0
+  mkdir -p "$dest/node_modules"
+  local dep name
+  # Copy each top-level entry (ysk-server-core, ysk-server-shared, and any
+  # other bundled modules). A scoped dir like @simplewebauthn is one entry.
+  for dep in "$src_nm"/*; do
+    [[ -e "$dep" ]] || continue
+    name="$(basename "$dep")"
+    [[ "$name" == .* ]] && continue
+    rm -rf "$dest/node_modules/$name"
+    cp -a "$dep" "$dest/node_modules/$name"
+  done
+}
+
 # Overlay official npm tarball onto the running ExecStart tree (from-source
 # installs keep serving apps/server/dist/cli.js — npm i -g alone never updates it).
+# Fresh --from-source must NOT call this: overlay would replace the pnpm
+# workspace link apps/server/node_modules/ysk-server-core with the bundled
+# copy from the tarball, which has no nested maxmind (setup then crashes).
 overlay_npm_onto_running() {
   local spec="${PKG}@${YSK_NPM_VERSION:-latest}"
   local dest=""
@@ -650,17 +708,12 @@ overlay_npm_onto_running() {
     mkdir -p "$dest/public"
     cp -a "$tmp/package/public/." "$dest/public/"
   fi
-  if [[ -d "$tmp/package/node_modules" ]]; then
-    mkdir -p "$dest/node_modules"
-    local dep
-    for dep in ysk-server-core ysk-server-shared; do
-      if [[ -d "$tmp/package/node_modules/$dep" ]]; then
-        rm -rf "$dest/node_modules/$dep"
-        cp -a "$tmp/package/node_modules/$dep" "$dest/node_modules/$dep"
-      fi
-    done
-  fi
+  copy_overlay_node_modules "$tmp/package/node_modules" "$dest"
   rm -rf "$tmp"
+  if ! overlay_install_product_deps "$dest"; then
+    log "WARNING: overlay runtime deps incomplete under $dest"
+    return 1
+  fi
   if [[ -n "$latest" ]] && ! grep -qF "$latest" "$dest/dist/version.js" 2>/dev/null; then
     log "WARNING: overlay verify failed — $dest/dist/version.js does not contain $latest"
     return 1
@@ -710,7 +763,10 @@ install_product() {
       (cd "$src_root" && pnpm install && pnpm build)
     fi
     embed_web_ui "$src_root"
-    (cd "$src_root/apps/server" && npm link --force 2>/dev/null || true)
+    # Do not `npm link` the workspace package. That installs a global
+    # ysk-server whose dest is this checkout, so a later overlay replaces
+    # pnpm's ysk-server-core symlink with the bundled npm copy (no maxmind).
+    # The wrapper below is the from-source CLI.
     local cli_js="$src_root/apps/server/dist/cli.js"
     if [[ -f "$cli_js" ]]; then
       local wrapper="/usr/local/bin/ysk-server"
@@ -1249,7 +1305,11 @@ main() {
   install_selected_components
   install_node_globals
   install_product
-  overlay_npm_onto_running
+  if [[ "$INSTALL_FROM_SOURCE" -eq 1 ]]; then
+    log "from-source: skip npm tarball overlay (keep git checkout + pnpm tree)"
+  else
+    overlay_npm_onto_running
+  fi
   run_setup
   run_bootstrap_tls
   install_systemd_unit

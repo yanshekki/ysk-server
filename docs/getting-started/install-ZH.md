@@ -17,7 +17,7 @@
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 
-`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。
+`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。全新 `--from-source` 會保留 pnpm workspace 樹，**不會**把已發布的 tarball overlay 到 `apps/server`（否則會用沒有 nested `maxmind` 等 core 執行時依賴的 bundled 副本取代 `ysk-server-core`）。`--upgrade` 同面板自我更新仍會 overlay，然後 `npm install --omit=dev`，等呢啲 flattened 依賴落到 bundled 套件旁邊。
 
 產品要求 **Node.js 22+**。插件用現行主版本（WebTorrent **3.x**）。若主機仲係 Node 20，安裝程式會**升級 Node** 到目前 LTS（24.x），唔會為遷就舊 Node 而釘死舊插件。全域 pnpm 釘在 **9.15.9**（同 `packageManager`），唔會裝 `pnpm@latest`。主機已有 pnpm 11.x 就留住。唔會裝 pnpm 12。`node-gyp-build` 釘在 **4.8.4**，而且唔再用 `--force` 安裝。`install/checksums.sha256` 下載到就會核對；設 `YSK_INSTALL_REQUIRE_CHECKSUMS=1` 就會拒絕沒有這份檔的來源。
 
@@ -143,7 +143,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 | `--non-interactive` | 不詢問 |
 | `--with-mysql-server` | 用 MySQL 代替 MariaDB |
 | `--with-clamav` | email 時一併裝 ClamAV |
-| `--from-source` | 用目前 git 目錄建置 |
+| `--from-source` | 用目前 git 目錄建置（唔會 overlay npm tarball） |
 | `--install-systemd` | setup 後寫 unit（**root 預設已 ON**） |
 | `--no-install-systemd` | 跳過 systemd（之後手動 serve） |
 | `--admin-password PASS` | 初始 admin 密碼（預設隨機強密碼） |

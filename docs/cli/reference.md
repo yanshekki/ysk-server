@@ -33,7 +33,7 @@ ysk-server serve [--config PATH] [--data-dir PATH] [--host 127.0.0.1] [--port 92
 
 Check or apply **panel** self-update from the official npm package `ysk-server`.
 
-Apply overlays the tarball onto the **running** install (`systemd` ExecStart tree, usually `…/apps/server` or `…/ysk-server`). It does **not** depend on `npm install -g` (that path never updates a from-source ExecStart). Overlay of the product’s own files does **not** require `YSK_EXECUTE`. A unit restart is scheduled after a successful overlay.
+Apply overlays the tarball onto the **running** install (`systemd` ExecStart tree, usually `…/apps/server` or `…/ysk-server`). It does **not** depend on `npm install -g` (that path never updates a from-source ExecStart). Overlay copies bundled `ysk-server-core` / `ysk-server-shared` and then `npm install --omit=dev` so core transitives (`maxmind`, `@simplewebauthn/server`, …) resolve next to them. Overlay of the product’s own files does **not** require `YSK_EXECUTE`. A unit restart is scheduled after a successful overlay. Fresh `install.sh --from-source` does **not** overlay (it keeps the pnpm tree).
 
 If the running panel is too old to apply itself: `install.sh --upgrade` (product overlay only — does not reinstall MariaDB/MySQL).
 

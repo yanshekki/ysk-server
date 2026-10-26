@@ -38,4 +38,20 @@ fi
 python3 -m json.tool deploy/stack/bundles.json >/dev/null
 python3 -m json.tool deploy/stack/components.json >/dev/null
 
+# From-source must keep the pnpm workspace tree. Overlaying the published
+# tarball onto apps/server replaces ysk-server-core with a bundled copy that
+# cannot resolve maxmind and other core runtime deps (setup then crashes).
+if grep -E 'npm[[:space:]]+link[[:space:]]+--force' install.sh >/dev/null; then
+  echo "install.sh must not npm link --force (overlay dest becomes the git checkout)" >&2
+  exit 1
+fi
+if ! grep -q 'skip npm tarball overlay' install.sh; then
+  echo "install.sh must skip npm tarball overlay on --from-source" >&2
+  exit 1
+fi
+if ! grep -q 'overlay_install_product_deps' install.sh; then
+  echo "install.sh must install flattened product runtime deps after overlay" >&2
+  exit 1
+fi
+
 echo "install smoke OK"

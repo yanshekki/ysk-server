@@ -6,10 +6,18 @@
 
 ## Unreleased
 
+## 1.1.31 — 2026-10-26
+
+### 修正
+- 從源碼跑 `install.sh` 時，`pnpm install && pnpm build` 之後唔會再 overlay 已發布的 npm tarball。先前 overlay（同 `npm link --force`）會用 tarball 入面 bundled 嘅副本取代 pnpm 嘅 `apps/server/node_modules/ysk-server-core` workspace 連結。嗰個副本冇 nested `maxmind`、`@simplewebauthn/server`、`sql.js`、`playwright-core`、`webtorrent`，`ysk-server setup` 就 `ERR_MODULE_NOT_FOUND`。全新 `--from-source` 會保留 pnpm 樹。`--upgrade` 同面板自我更新仍會 overlay；而家會複製 tarball 所有 `node_modules` 項目，再跑 `npm install --omit=dev`，等 flattened 嘅 core 傳遞依賴可以喺 bundled 套件旁邊解析（同已發布 `ysk-server` package.json 嘅合約）。
+
 ### 內部／CI
-- Dependabot 每週為 pnpm workspace 與 GitHub Actions 開分組的 minor／patch 更新（`.github/dependabot.yml`）。本次不升版本號。
+- Dependabot 每週為 pnpm workspace 與 GitHub Actions 開分組的 minor／patch 更新（`.github/dependabot.yml`）。
 - GitHub Issue 模板（錯誤／功能／安裝）與簡短 [CONTRIBUTING-ZH.md](./CONTRIBUTING-ZH.md)。倉庫已開啟 Discussions。
 - Ubuntu **22.04／24.04／26.04** 安裝矩陣：PR 煙霧測試，加上每週／手動 `--plan minimal` 從源碼安裝。現有 Gates／Probe SSOT／Build & test 不變。
+- Build & test 會跑 `pnpm test:runtime-deps`（用從源碼佈局解析每項 `ysk-server-core` 執行時依賴，並確認 publish flatten 有保留）。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.31**。
+- README 只保留最近三個版本。更早的紀錄在本檔。
 
 ## 1.1.30 — 2026-10-25
 

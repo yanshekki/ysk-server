@@ -26,6 +26,7 @@
     "about-tab:check": "pnpm --filter ysk-server-web about-tab:check",
     "css:reuse": "pnpm --filter ysk-server-web css:reuse",
     "probe:ssot": "node ./scripts/check-software-probe-ssot.mjs",
+    "test:runtime-deps": "node ./scripts/check-core-runtime-resolve.mjs",
     "i18n:check-keys": "node ./scripts/i18n-check-keys.mjs",
     "i18n:check-ui": "node ./scripts/i18n-check-ui.mjs",
     "i18n:check-api": "node ./scripts/i18n-check-api.mjs",

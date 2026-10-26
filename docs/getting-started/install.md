@@ -17,7 +17,7 @@ Every PR runs `install.sh` syntax, `--help`, and checksums on Ubuntu **22.04 / 2
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 
-`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g`. Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists.
+`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g`. Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists. Fresh `--from-source` keeps the pnpm workspace tree and does **not** overlay the published tarball onto `apps/server` (that would replace `ysk-server-core` with a bundled copy that cannot resolve `maxmind` and other core runtime deps). `--upgrade` and panel self-update still overlay, then `npm install --omit=dev` so those flattened deps land next to the bundled packages.
 
 Product requires **Node.js 22+**. Plugins stay on current majors (WebTorrent **3.x**). If the host is on Node 20, the installer **upgrades Node** to current LTS (24.x) — it does not pin older plugins. Global pnpm is the pinned **9.15.9** (same as `packageManager`), not `pnpm@latest`. An existing pnpm 11.x is left in place. pnpm 12 is not installed. `node-gyp-build` is pinned to **4.8.4** and is not installed with `--force`. Asset checksums in `install/checksums.sha256` are verified when that file is reachable; set `YSK_INSTALL_REQUIRE_CHECKSUMS=1` to refuse a base that does not publish it.
 
@@ -144,7 +144,7 @@ If the host already has **MySQL 8** data in `/var/lib/mysql`, never run `--upgra
 | `--non-interactive` | No prompts |
 | `--with-mysql-server` | SQL = MySQL instead of MariaDB |
 | `--with-clamav` | Add ClamAV when email is selected |
-| `--from-source` | `pnpm install && pnpm build` in git checkout |
+| `--from-source` | `pnpm install && pnpm build` in git checkout (no npm tarball overlay) |
 | `--install-systemd` | Write unit after setup (**default ON as root**) |
 | `--no-install-systemd` | Skip unit (manual serve later) |
 | `--admin-password PASS` | Initial admin password (default: random strong) |

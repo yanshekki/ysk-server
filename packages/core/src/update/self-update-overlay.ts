@@ -11,6 +11,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   realpathSync,
   rmSync,
@@ -217,6 +218,63 @@ function extractTarball(tgz: string, destDir: string): void {
   }
 }
 
+const BUNDLED_WORKSPACE_PACKAGES = new Set(['ysk-server-core', 'ysk-server-shared']);
+
+/** Production deps listed on dest/package.json that are not yet on disk. */
+export function missingProductRuntimeDeps(dest: string): string[] {
+  const pkgPath = join(dest, 'package.json');
+  if (!existsSync(pkgPath)) return [];
+  let deps: Record<string, string> = {};
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+      dependencies?: Record<string, string>;
+    };
+    deps = pkg.dependencies || {};
+  } catch {
+    return [];
+  }
+  const miss: string[] = [];
+  for (const name of Object.keys(deps)) {
+    if (BUNDLED_WORKSPACE_PACKAGES.has(name)) continue;
+    const spec = deps[name];
+    if (typeof spec === 'string' && spec.startsWith('workspace:')) continue;
+    if (!existsSync(join(dest, 'node_modules', name, 'package.json'))) miss.push(name);
+  }
+  return miss;
+}
+
+function copyOverlayNodeModules(pkgRoot: string, dest: string): void {
+  const nm = join(pkgRoot, 'node_modules');
+  if (!existsSync(nm)) return;
+  mkdirSync(join(dest, 'node_modules'), { recursive: true });
+  for (const name of readdirSync(nm)) {
+    if (name.startsWith('.')) continue;
+    const src = join(nm, name);
+    const target = join(dest, 'node_modules', name);
+    rmSync(target, { recursive: true, force: true });
+    cpSync(src, target, { recursive: true, dereference: true });
+  }
+}
+
+function installOverlayProductionDeps(dest: string): void {
+  if (isTestEnv()) return;
+  const missing = missingProductRuntimeDeps(dest);
+  if (!missing.length) return;
+  const r = spawnSync(
+    'npm',
+    ['install', '--omit=dev', '--no-fund', '--no-audit', '--no-progress', '--no-package-lock'],
+    {
+      cwd: dest,
+      encoding: 'utf8',
+      timeout: 300_000,
+      env: { ...process.env, NPM_CONFIG_FUND: 'false', NPM_CONFIG_AUDIT: 'false' },
+    },
+  );
+  if (r.status !== 0) {
+    throw new Error((r.stderr || r.stdout || 'npm install failed').slice(0, 300));
+  }
+}
+
 function copyOverlayTrees(pkgRoot: string, dest: string): void {
   const dist = join(pkgRoot, 'dist');
   if (!existsSync(join(dist, 'cli.js'))) {
@@ -233,16 +291,8 @@ function copyOverlayTrees(pkgRoot: string, dest: string): void {
     mkdirSync(join(dest, 'public'), { recursive: true });
     cpSync(pub, join(dest, 'public'), { recursive: true, dereference: true });
   }
-  const nm = join(pkgRoot, 'node_modules');
-  if (existsSync(nm)) {
-    for (const dep of ['ysk-server-core', 'ysk-server-shared']) {
-      const src = join(nm, dep);
-      if (!existsSync(src)) continue;
-      const target = join(dest, 'node_modules', dep);
-      mkdirSync(dirname(target), { recursive: true });
-      cpSync(src, target, { recursive: true, dereference: true });
-    }
-  }
+  copyOverlayNodeModules(pkgRoot, dest);
+  installOverlayProductionDeps(dest);
 }
 
 export function versionFileContains(dest: string, latest: string): boolean {

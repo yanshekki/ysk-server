@@ -121,40 +121,21 @@ mv "$STAGE/node_modules/package" "$STAGE/node_modules/ysk-server-shared"
 tar -xzf "$CORE_TGZ" -C "$STAGE/node_modules"
 mv "$STAGE/node_modules/package" "$STAGE/node_modules/ysk-server-core"
 
-export STAGE SHARED_VER CORE_VER
-node <<'NODE'
-const fs = require('fs');
+export STAGE SHARED_VER CORE_VER ROOT
+node --input-type=module <<'NODE'
+import fs from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const { stagedYskServerPackage } = await import(
+  pathToFileURL(join(process.env.ROOT, 'scripts/lib/product-dependencies.mjs')).href
+);
 const stage = process.env.STAGE;
 const serverPkg = JSON.parse(fs.readFileSync('apps/server/package.json', 'utf8'));
 const corePkg = JSON.parse(fs.readFileSync('packages/core/package.json', 'utf8'));
-const deps = {};
-for (const src of [corePkg.dependencies || {}, serverPkg.dependencies || {}]) {
-  for (const [k, v] of Object.entries(src)) {
-    if (k === 'ysk-server-shared' || k === 'ysk-server-core') continue;
-    deps[k] = v;
-  }
-}
-deps['ysk-server-shared'] = process.env.SHARED_VER;
-deps['ysk-server-core'] = process.env.CORE_VER;
-const out = {
-  name: 'ysk-server',
-  version: serverPkg.version,
-  description: serverPkg.description,
-  type: 'module',
-  bin: serverPkg.bin,
-  main: serverPkg.main,
-  types: serverPkg.types,
-  files: ['dist', 'public', 'README.md'],
-  engines: serverPkg.engines,
-  repository: serverPkg.repository,
-  license: serverPkg.license || 'MIT',
-  keywords: serverPkg.keywords,
-  homepage: 'https://github.com/yanshekki/ysk-server#readme',
-  bugs: { url: 'https://github.com/yanshekki/ysk-server/issues' },
-  publishConfig: { access: 'public' },
-  dependencies: deps,
-  bundleDependencies: ['ysk-server-shared', 'ysk-server-core'],
-};
+const out = stagedYskServerPackage(serverPkg, corePkg, {
+  shared: process.env.SHARED_VER,
+  core: process.env.CORE_VER,
+});
 fs.writeFileSync(stage + '/package.json', JSON.stringify(out, null, 2) + '\n');
 if (!fs.existsSync(stage + '/README.md')) throw new Error('README missing in stage');
 NODE
