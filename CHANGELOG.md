@@ -6,14 +6,23 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.32 — 2026-10-26
+
+### Fixes
+- File manager sandbox root is canonicalized with `realpathSync`, so listing under macOS `/var` → `/private/var` no longer 403s as a false symlink escape.
+
 ### Dependency upgrades
-- Major bumps (Dependabot #10, #11, #12, #14, #15, #16, #18, #19) landed together:
+- Major bumps (Dependabot #10, #11, #12, #14, #15, #16, #18, #19) landed together in #21:
   - `@types/node` **26.6.5** (runtime engines stay **Node ≥22**; CI remains Node 24)
   - `@simplewebauthn/server` **14.0.3** and `@simplewebauthn/browser` **14.0.0** (`AuthenticatorTransportFuture` removed; transports are `string[]`; Node 22+ LTS)
   - Vitest **5.0.5** and `@vitest/coverage-v8` **5.0.5** (`forks.singleFork` dropped)
   - WebTorrent **3.0.21** in the panel (core already on 3.x; browser still ships `dist/webtorrent.min.js`)
   - `@vitejs/plugin-react` **6.1.2** with Vite **8.3.5** (plugin-react 6 needs Vite 8)
   - i18next **26.5.6** with `react-i18next` **17.1.9** (`initImmediate` → `initAsync`; `enableSelector: false` so `t('nav.x')` keys stay strings)
+
+### Internal & CI
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.32**.
+- README pages keep the latest three versions. Older notes live here.
 
 ## 1.1.31 — 2026-10-26
 
