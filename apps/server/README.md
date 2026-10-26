@@ -30,6 +30,18 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.32
+
+### Fixes
+- File manager canonicalizes the sandbox root with `realpathSync`, so macOS `/var` → `/private/var` no longer 403s as a false symlink escape.
+
+### Dependency upgrades
+- Major bumps: `@types/node` **26.6.5**, SimpleWebAuthn **14**, Vitest **5.0.5**, panel WebTorrent **3.0.21**, `@vitejs/plugin-react` **6.1.2** with Vite **8.3.5**, i18next **26.5.6** with `react-i18next` **17.1.9**. Runtime Node stays **≥22**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.32**.
+
 ## What's new in 1.1.31
 
 ### Fixes
@@ -50,18 +62,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.30**.
-
-## What's new in 1.1.29
-
-### Security
-- Weekly supply-chain pass. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged.
-
-### Dependency upgrades
-- Vitest **4.1.12**, `playwright-core` **1.64.1**, `sql.js` **1.15.0**, `@testing-library/user-event` **14.6.8**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -130,8 +130,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.31) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.31) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.32) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.32) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 

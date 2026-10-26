@@ -39,6 +39,18 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.32
+
+### Fixes
+- File manager canonicalizes the sandbox root with `realpathSync`, so macOS `/var` → `/private/var` no longer 403s as a false symlink escape.
+
+### Dependency upgrades
+- Major bumps: `@types/node` **26.6.5**, SimpleWebAuthn **14**, Vitest **5.0.5**, panel WebTorrent **3.0.21**, `@vitejs/plugin-react` **6.1.2** with Vite **8.3.5**, i18next **26.5.6** with `react-i18next` **17.1.9**. Runtime Node stays **≥22** (CI Node 24).
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.32** together.
+
 ## What's new in 1.1.31
 
 ### Fixes
@@ -60,18 +72,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ### Internal & CI
 - This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.30** together.
-
-## What's new in 1.1.29
-
-### Security
-- Weekly supply-chain pass. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-18-supply-chain.md](docs/security/2026-10-18-supply-chain.md).
-
-### Dependency upgrades
-- Vitest **4.1.12**, `playwright-core` **1.64.1**, `sql.js` **1.15.0**, `@testing-library/user-event` **14.6.8**. Overrides: nanoid 3.x **3.3.20**, `ip-address` **10.7.4**. tsx's esbuild **0.28.2**. pnpm stays **9.15.9**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.29** together.
 
 [Full changelog](./CHANGELOG.md)
 
