@@ -6,6 +6,15 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+### Dependency upgrades
+- Major bumps (Dependabot #10, #11, #12, #14, #15, #16, #18, #19) landed together:
+  - `@types/node` **26.6.5** (runtime engines stay **Node ≥22**; CI remains Node 24)
+  - `@simplewebauthn/server` **14.0.3** and `@simplewebauthn/browser` **14.0.0** (`AuthenticatorTransportFuture` removed; transports are `string[]`; Node 22+ LTS)
+  - Vitest **5.0.5** and `@vitest/coverage-v8` **5.0.5** (`forks.singleFork` dropped)
+  - WebTorrent **3.0.21** in the panel (core already on 3.x; browser still ships `dist/webtorrent.min.js`)
+  - `@vitejs/plugin-react` **6.1.2** with Vite **8.3.5** (plugin-react 6 needs Vite 8)
+  - i18next **26.5.6** with `react-i18next` **17.1.9** (`initImmediate` → `initAsync`; `enableSelector: false` so `t('nav.x')` keys stay strings)
+
 ## 1.1.31 — 2026-10-26
 
 ### Fixes

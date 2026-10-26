@@ -106,6 +106,11 @@ describe('ada producer keys', () => {
     expect(relay).not.toMatch(/CARDANO_BLOCK_PRODUCER|CARDANO_SHELLEY_/);
     expect(relay).not.toContain('/keys');
     const { execFileSync } = await import('node:child_process');
+    try {
+      execFileSync('python3', ['-c', 'import yaml'], { stdio: 'ignore' });
+    } catch {
+      return; // PyYAML not installed (macOS worker); compose assertions above still hold.
+    }
     execFileSync('python3', ['-c', 'import sys,yaml; yaml.safe_load(sys.stdin)'], { input: y });
   });
 });

@@ -7,7 +7,7 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, vi } from 'vitest';
 import i18n, { bootstrapI18n } from '../shared/lib/i18n';
 
-// happy-dom does not implement the blocking dialogs. Vitest 4 runs tests inside
+// happy-dom does not implement the blocking dialogs. Vitest 5 runs tests inside
 // that window, so spyOn(window, 'confirm' | 'prompt' | 'alert') needs a function.
 if (typeof window !== 'undefined') {
   if (typeof window.confirm !== 'function') window.confirm = () => false;

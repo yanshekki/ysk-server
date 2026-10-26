@@ -1,12 +1,11 @@
 import { tl } from 'ysk-server-shared';
 /**
- * WebAuthn / passkey (panel second factor) via @simplewebauthn/server v13.
+ * WebAuthn / passkey (panel second factor) via @simplewebauthn/server v14.
  * Load the library only when a passkey call runs so `ysk-server --version`
  * and setup survive a missing/empty install of the package (LIVE-005).
  */
 
 import type {
-  AuthenticatorTransportFuture,
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
@@ -18,7 +17,7 @@ export type WebAuthnCredentialRow = {
   credentialID: string;
   credentialPublicKey: string; // base64url
   counter: number;
-  transports?: AuthenticatorTransportFuture[];
+  transports?: string[];
   created_at: string;
   name?: string;
 };

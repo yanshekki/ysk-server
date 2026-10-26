@@ -83,7 +83,8 @@ describe('collectProjectsDiskUsage', () => {
     const a = mkdtempSync(join(tmpdir(), 'ysk-pu-a-'));
     const b = mkdtempSync(join(tmpdir(), 'ysk-pu-b-'));
     try {
-      writeFileSync(join(a, 'big.txt'), 'x'.repeat(4096));
+      // Bigger than a single 4KiB du block so BSD `du -sk` still ranks p-big first.
+      writeFileSync(join(a, 'big.txt'), 'x'.repeat(256 * 1024));
       writeFileSync(join(b, 'small.txt'), 'y');
       const host = {
         executeEnabled: () => false,

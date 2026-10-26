@@ -6,9 +6,12 @@ import {
   rmSync,
   existsSync,
   readFileSync,
+  openSync,
+  closeSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import type { ChildProcess } from 'node:child_process';
 import type { HostExecutor, RunResult } from '../host/executor.js';
 import { openDatabase, closeDatabase } from '../db/database.js';
 import {
@@ -507,39 +510,67 @@ describe('hosting residual thin — project-user-run', () => {
     );
     expect(runDeg.mode).toBe('degraded');
 
-    const { child, mode } = spawnAsProjectUser({
-      row: good,
-      host: mockHost({ execute: true, root: true }),
-      shellCmd: 'true',
-      cwd: tmpdir(),
-      env: process.env,
-      logOutFd: 1,
-      logErrFd: 2,
-      notes: [],
-    });
-    expect(mode).toBe('isolated');
-    child.on('error', () => undefined);
+    const spawnDir = mkdtempSync(join(tmpdir(), 'ysk-spawn-'));
+    const logFd = openSync(join(spawnDir, 'child.log'), 'w');
+    const reap = (child: ChildProcess) =>
+      new Promise<void>((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          resolve();
+        };
+        child.once('error', finish);
+        child.once('close', finish);
+        child.once('exit', finish);
+        child.unref();
+        const pid = child.pid;
+        if (pid == null) {
+          finish();
+          return;
+        }
+        setTimeout(() => {
+          if (done) return;
+          try {
+            process.kill(pid, 'SIGKILL');
+          } catch {
+            /* already exited / ESRCH */
+          }
+          finish();
+        }, 400);
+      });
     try {
-      child.kill();
-    } catch {
-      /* ignore */
-    }
+      const { child, mode } = spawnAsProjectUser({
+        row: good,
+        host: mockHost({ execute: true, root: true }),
+        shellCmd: 'true',
+        cwd: spawnDir,
+        env: { ...process.env },
+        logOutFd: logFd,
+        logErrFd: logFd,
+        notes: [],
+      });
+      expect(mode).toBe('isolated');
+      await reap(child);
 
-    const { child: c2, mode: m2 } = spawnAsProjectUser({
-      row: good,
-      host: mockHost({ execute: false }),
-      shellCmd: 'true',
-      cwd: tmpdir(),
-      env: process.env,
-      logOutFd: 1,
-      logErrFd: 2,
-    });
-    expect(m2).toBe('degraded');
-    c2.on('error', () => undefined);
-    try {
-      c2.kill();
-    } catch {
-      /* ignore */
+      const { child: c2, mode: m2 } = spawnAsProjectUser({
+        row: good,
+        host: mockHost({ execute: false }),
+        shellCmd: 'true',
+        cwd: spawnDir,
+        env: { ...process.env },
+        logOutFd: logFd,
+        logErrFd: logFd,
+      });
+      expect(m2).toBe('degraded');
+      await reap(c2);
+    } finally {
+      try {
+        closeSync(logFd);
+      } catch {
+        /* */
+      }
+      rmSync(spawnDir, { recursive: true, force: true });
     }
 
     expect(shellQuote("a'b")).toContain("'\\''");

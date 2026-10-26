@@ -231,8 +231,10 @@ describe('bindCall*', () => {
 describe('bindClipboard / bindOpenCreate', () => {
   it('clipboard and open create', () => {
     const writeText = vi.fn(async () => undefined);
-    // @ts-expect-error test shim
-    globalThis.navigator = { clipboard: { writeText } };
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
     bindClipboard('hello')();
     expect(writeText).toHaveBeenCalledWith('hello');
 
@@ -345,8 +347,10 @@ describe('email busy binders', () => {
     const withBusy = vi.fn(async (fn: () => Promise<unknown>) => fn());
     const setLog = vi.fn();
     const writeText = vi.fn(async () => undefined);
-    // @ts-expect-error shim
-    globalThis.navigator = { clipboard: { writeText } };
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
 
     bindBusyAutodiscover(
       withBusy,

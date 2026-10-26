@@ -8,7 +8,8 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     testTimeout: 20_000,
     pool: 'forks',
-    forks: { singleFork: true },
+    fileParallelism: false,
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],

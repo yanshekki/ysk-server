@@ -139,6 +139,11 @@ describe('validator extras', () => {
     );
     const body = readFileSync(path, 'utf8');
     expect(body).not.toMatch(/":\//);
+    try {
+      execFileSync('python3', ['-c', 'import yaml'], { stdio: 'ignore' });
+    } catch {
+      return; // PyYAML not installed (macOS worker); stamp assertions above still hold.
+    }
     execFileSync('python3', ['-c', 'import sys,yaml; yaml.safe_load(sys.stdin)'], {
       input: body,
     });

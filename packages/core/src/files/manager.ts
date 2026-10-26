@@ -82,7 +82,10 @@ export function assertInside(root: string, target: string): string {
       httpStatus: 403,
     });
   }
-  const rootAbs = resolve(root);
+  // Canonicalize the sandbox root. macOS tmpdir is /var/folders → /private/var/folders;
+  // comparing resolve() against realpathSync() otherwise looks like a symlink escape.
+  const rootResolved = resolve(root);
+  const rootAbs = existsSync(rootResolved) ? realpathSync(rootResolved) : rootResolved;
   const abs = resolve(rootAbs, normalizeSandboxRel(target));
   const rel = relative(rootAbs, abs);
   if (rel.startsWith('..') || rel === '..') {
@@ -174,8 +177,11 @@ function toEntry(root: string, abs: string): FileEntry {
 }
 
 export class FileManager {
-  constructor(private readonly root: string) {
-    mkdirSync(this.root, { recursive: true });
+  private readonly root: string;
+
+  constructor(root: string) {
+    mkdirSync(root, { recursive: true });
+    this.root = realpathSync(root);
   }
 
   getRoot(): string {
@@ -698,7 +704,7 @@ export class FileManager {
 export function publicFilesRoot(dataDir: string): string {
   const root = join(dataDir, 'files', 'public');
   mkdirSync(root, { recursive: true });
-  return root;
+  return realpathSync(root);
 }
 
 /** Public share link store helpers */

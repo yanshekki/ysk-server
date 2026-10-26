@@ -86,8 +86,8 @@ describe('EmailService real keygen + persistence', () => {
     const passwdPath = join(dir, 'email', 'mail.test', 'dovecot', 'passwd');
     expect(existsSync(passwdPath)).toBe(true);
     const passwdBody = readFileSync(passwdPath, 'utf8');
-    // SHA512-CRYPT passwd-file (not plaintext *: placeholder)
-    expect(passwdBody).toMatch(/info@mail\.test:\{SHA512-CRYPT\}/);
+    // openssl passwd -6 → {SHA512-CRYPT}; LibreSSL / missing -6 → YSK-SCRYPT (scrypt$).
+    expect(passwdBody).toMatch(/info@mail\.test:(\{SHA512-CRYPT\}|scrypt\$)/);
 
     const reenabled = await svc.updateMailbox(created.domain.id, mbId, {
       actor: 'admin',
@@ -233,7 +233,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('testSend refuses without YSK_EXECUTE', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-send-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'send.test', serverIp: '10.0.0.4', actor: 'a' });
     const r = await svc.testSend(
