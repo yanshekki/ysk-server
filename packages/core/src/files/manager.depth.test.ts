@@ -6,6 +6,7 @@ import {
   writeFileSync,
   mkdirSync,
   readFileSync,
+  realpathSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -27,7 +28,7 @@ describe('FileManager depth', () => {
     const dir = tmp();
     try {
       const fm = new FileManager(dir);
-      expect(fm.getRoot()).toBe(dir);
+      expect(fm.getRoot()).toBe(realpathSync(dir));
       expect(fm.trashRoot()).toContain('.trash');
       mkdirSync(join(dir, '.versions'), { recursive: true });
       writeFileSync(join(dir, '.ysk'), 'x');

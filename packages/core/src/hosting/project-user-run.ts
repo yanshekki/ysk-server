@@ -158,10 +158,16 @@ export function spawnAsProjectUser(input: {
       ['-u', input.row.linux_user, '--', 'bash', '-lc', input.shellCmd],
       opts,
     );
+    child.on('error', (err) => {
+      input.notes?.push(`spawn runuser: ${err.message}`);
+    });
     return { child, mode };
   }
   input.notes?.push(tl('notes.auto.n0377'));
   const child = spawn('bash', ['-lc', input.shellCmd], opts);
+  child.on('error', (err) => {
+    input.notes?.push(`spawn bash: ${err.message}`);
+  });
   return { child, mode };
 }
 

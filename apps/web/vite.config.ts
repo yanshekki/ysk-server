@@ -11,21 +11,15 @@ export default defineConfig({
     conditions: ['browser', 'import', 'module', 'default'],
   },
   // @novnc/novnc 1.7 uses top-level await — need modern target
+  // Vite 8 uses Oxc/Rolldown; `build.target` is enough (do not set `esbuild`).
   build: {
     target: 'es2022',
     // Self-hosted webtorrent.min.js lands under assets/ (no CDN)
     assetsInlineLimit: 0,
   },
-  esbuild: {
-    target: 'es2022',
-  },
   optimizeDeps: {
     // Re-bundle workspace shared when its dist changes
     exclude: [],
-    // Pre-bundle webtorrent only if imported as module; we use dist min via ?url
-    esbuildOptions: {
-      target: 'es2022',
-    },
   },
   server: {
     // 4-digit; avoid common Vite 5173 / other tools
@@ -40,9 +34,5 @@ export default defineConfig({
       // allow reading monorepo packages
       allow: ['..', '../..'],
     },
-  },
-  test: {
-    environment: 'node',
-    include: ['src/**/*.test.ts'],
   },
 });

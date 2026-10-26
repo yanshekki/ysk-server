@@ -265,7 +265,10 @@ export async function bootstrapI18n(): Promise<void> {
       partialBundledLanguages: true,
       interpolation: { escapeValue: false },
       returnNull: false,
-      initImmediate: false,
+      // i18next 26 dropped initImmediate; keep first paint sync (catalogs load after).
+      initAsync: false,
+      // Keep string keys (t('nav.x')). v26 defaults enableSelector to true.
+      enableSelector: false,
     });
   }
 

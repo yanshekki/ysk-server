@@ -24,6 +24,17 @@ describe('FileManager sandbox', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('lists sandbox root when tmpdir is a symlink prefix (macOS /var)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-fm-symroot-'));
+    try {
+      const fm = new FileManager(dir);
+      expect(fm.list('.')).toEqual(expect.any(Array));
+      expect(assertInside(dir, '.')).toBe(fm.getRoot());
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('blocks parent symlink escape', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-fm-sym-'));
     try {

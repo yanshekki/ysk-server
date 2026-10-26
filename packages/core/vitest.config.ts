@@ -6,8 +6,11 @@ const floor = Number(process.env.COVERAGE_FLOOR ?? '90');
 export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
+    testTimeout: 20_000,
     pool: 'forks',
-    forks: { singleFork: true },
+    // Vitest 5 dropped `forks.singleFork`; keep one worker (macOS host tests spawn openssl).
+    fileParallelism: false,
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov'],

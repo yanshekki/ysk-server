@@ -6,6 +6,15 @@
 
 ## Unreleased
 
+### 依賴升級
+- 一次過收齊 Dependabot 主版本（#10、#11、#12、#14、#15、#16、#18、#19）：
+  - `@types/node` **26.6.5**（執行時仍係 **Node ≥22**；CI 仍係 Node 24）
+  - `@simplewebauthn/server` **14.0.3** 同 `@simplewebauthn/browser` **14.0.0**（唔再有 `AuthenticatorTransportFuture`；transports 用 `string[]`；Node 22+ LTS）
+  - Vitest **5.0.5** 同 `@vitest/coverage-v8` **5.0.5**（唔再有 `forks.singleFork`）
+  - 面板 WebTorrent **3.0.21**（core 早已 3.x；瀏覽器仍用 `dist/webtorrent.min.js`）
+  - `@vitejs/plugin-react` **6.1.2** 配 Vite **8.3.5**（plugin-react 6 需要 Vite 8）
+  - i18next **26.5.6** 配 `react-i18next` **17.1.9**（`initImmediate` 改 `initAsync`；`enableSelector: false` 保持 `t('nav.x')` 字串 key）
+
 ## 1.1.31 — 2026-10-26
 
 ### 修正
