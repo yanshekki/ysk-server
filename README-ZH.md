@@ -39,6 +39,21 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.33 新內容
+
+### 修正
+- `install.sh` 喺 `@simplewebauthn/server` 缺失時修復到 **14.0.3**，同 1.1.32 之後的 core 一致。舊修復釘係 13.3.3。安裝程式 smoke 會核對呢個釘。
+
+### 安全
+- 每週供應鏈檢查。新裝 Roundcube 預設 **1.7.5**（上游 1.7 安全線）。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-01-supply-chain-ZH.md](docs/security/2026-11-01-supply-chain-ZH.md)。
+
+### 依賴升級
+- `ws` **8.22.1**、`sql.js` **1.15.2**、`react-router-dom` **7.18.5**、i18next **26.6.0**、`@types/node` **26.6.6**。pnpm 維持 **9.15.9**。TypeScript 維持 **5.9.3**。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.33**。
+
 ## 1.1.32 新內容
 
 ### 修正
@@ -60,18 +75,6 @@
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.31**。
 - Build & test 會用從源碼佈局解析 core 執行時依賴（`pnpm test:runtime-deps`）。
-
-## 1.1.30 新內容
-
-### 安全
-- 每週供應鏈檢查。新的高嚴重性 `happy-dom`（GHSA-834v-8h66-3h79）釘到 **21.0.4**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-10-25-supply-chain-ZH.md](docs/security/2026-10-25-supply-chain-ZH.md)。
-
-### 依賴升級
-- Vite **6.4.5**、`sql.js` **1.15.1**、happy-dom **21.0.4**。覆寫：`ip-address` **10.7.5**、happy-dom **21.0.4**。pnpm 維持 **9.15.9**。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.30**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

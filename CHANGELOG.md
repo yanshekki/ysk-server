@@ -6,6 +6,25 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.33 — 2026-11-01
+
+### Fixes
+- `install.sh` repairs a missing `@simplewebauthn/server` with **14.0.3**, the version `ysk-server-core` has depended on since 1.1.32. The repair was still pinned to **13.3.3**, so a missing scoped package would install the previous major. `scripts/ci-install-smoke.sh` now requires the pin to match `packages/core`.
+
+### Security
+- Weekly supply-chain pass. Default Roundcube download is **1.7.5** (upstream security release, 2026-10-19: IMAP command injection, SSRF filter bypass, remote-content / XSS, CSRF, session object injection). The generated `install-roundcube.sh` helper uses the same default. An existing on-disk tree is not rewritten until webmail is installed again.
+- `ip@2.0.1` (via `bittorrent-tracker@11.2.3`) still has no upstream patch. The tracker calls `ip.toString()` only, in UDP announce parsing. Panel DDNS uses its own public-IP checks. See [docs/security/2026-11-01-supply-chain.md](docs/security/2026-11-01-supply-chain.md).
+- SnappyMail stays **2.38.2**. GitHub tag `v2.38.2.1` is a Docker image PHP pin (CVE-2026-109618 / CVE-2026-109619) and publishes no source tarball. YSK installs the application tarball onto host PHP, not that image.
+
+### Dependency upgrades
+- Direct patch/minor bumps: `ws` **8.22.1**, `sql.js` **1.15.2**, `react-router-dom` **7.18.5**, i18next **26.6.0** (lockfile was 26.5.11), `@types/node` **26.6.6**.
+- Left on the current line: TypeScript **5.9.3** (7.0.2 is a major), pnpm **9.15.9** (latest 9.x; 12.17.0 deferred), release npm CLI **11.21.1**, installer `pm2@6.0.14` and `node-gyp-build@4.8.4`.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.33**.
+
+### Internal & CI
+- Actions remain SHA-pinned at checkout **v7.0.1**, setup-node **v7.1.0**, and pnpm/action-setup **v6.1.0**. No newer release of those three.
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.32 — 2026-10-26
 
 ### Fixes

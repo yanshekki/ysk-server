@@ -6,6 +6,7 @@
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import { ROUNDCUBE_VERSION } from './webmail-project.js';
 import type { HostExecutor } from '../host/executor.js';
 import { renderNginxProxy } from '../hosting/nginx-ssl.js';
 import { writeManagedNginxConf } from '../hosting/nginx-sync.js';
@@ -111,7 +112,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       `CFG=${JSON.stringify(configPath)}`,
       'TMP=$(mktemp -d)',
       'cd "$TMP"',
-      'VER=${ROUNDCUBE_VERSION:-1.7.2}',
+      `VER=\${ROUNDCUBE_VERSION:-${ROUNDCUBE_VERSION}}`,
       'curl -fsSL -o rc.tar.gz "https://github.com/roundcube/roundcubemail/releases/download/${VER}/roundcubemail-${VER}-complete.tar.gz"',
       'tar -xzf rc.tar.gz',
       'rm -rf "$ROOT"/*',
