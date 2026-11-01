@@ -84,7 +84,7 @@ async function ensureMailAuthForWebmailLogin(
 export type WebmailTool = 'roundcube' | 'snappymail';
 
 /** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL / YSK_ROUNDCUBE_VERSION. */
-export const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.2';
+export const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.5';
 const ROUNDCUBE_URL =
   process.env.YSK_ROUNDCUBE_URL ??
   `https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz`;

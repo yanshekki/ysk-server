@@ -1,6 +1,6 @@
 {
   "name": "ysk-server-shared",
-  "version": "1.1.32",
+  "version": "1.1.33",
   "description": "Shared types, DTOs, and interfaces for YSK Server",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,7 +37,7 @@
     "prepack": "pnpm run build"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.0.5",
     "typescript": "^5.9.3",
     "vitest": "^5.0.5"

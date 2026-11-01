@@ -6,6 +6,25 @@
 
 ## Unreleased
 
+## 1.1.33 — 2026-11-01
+
+### 修正
+- `install.sh` 喺 `@simplewebauthn/server` 缺失時修復到 **14.0.3**，即係 `ysk-server-core` 自 1.1.32 起依賴的版本。修復釘仍然係 **13.3.3**，scoped 套件缺失時會裝上一個主版本。`scripts/ci-install-smoke.sh` 而家要求釘同 `packages/core` 一致。
+
+### 安全
+- 每週供應鏈檢查。Roundcube 預設下載改為 **1.7.5**（上游 2026-10-19 安全發布：IMAP 指令注入、SSRF 過濾繞過、遠端內容／XSS、CSRF、session 物件注入）。產生的 `install-roundcube.sh` 用同一個預設。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。
+- `ip@2.0.1`（經 `bittorrent-tracker@11.2.3`）上游仍然沒有修補版。tracker 只在 UDP announce 解析呼叫 `ip.toString()`。面板 DDNS 用自己的公網 IP 檢查。見 [docs/security/2026-11-01-supply-chain-ZH.md](docs/security/2026-11-01-supply-chain-ZH.md)。
+- SnappyMail 維持 **2.38.2**。GitHub 標籤 `v2.38.2.1` 是 Docker 映像的 PHP 釘（CVE-2026-109618／CVE-2026-109619），沒有源碼 tarball。YSK 把應用程式 tarball 裝到主機 PHP，不是那個映像。
+
+### 依賴升級
+- 直接依賴的修補／次版本：`ws` **8.22.1**、`sql.js` **1.15.2**、`react-router-dom` **7.18.5**、i18next **26.6.0**（鎖檔原本 26.5.11）、`@types/node` **26.6.6**。
+- 留在現有線：TypeScript **5.9.3**（7.0.2 是主版本）、pnpm **9.15.9**（9.x 最新；12.17.0 延後）、發布用 npm CLI **11.21.1**、安裝程式 `pm2@6.0.14` 同 `node-gyp-build@4.8.4`。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.33**。
+
+### 內部／CI
+- Actions 仍然用 SHA 釘住 checkout **v7.0.1**、setup-node **v7.1.0**、pnpm/action-setup **v6.1.0**。這三個今個星期沒有更新的發布。
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.32 — 2026-10-26
 
 ### 修正

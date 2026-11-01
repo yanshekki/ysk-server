@@ -54,4 +54,13 @@ if ! grep -q 'overlay_install_product_deps' install.sh; then
   exit 1
 fi
 
+# Repair installs this only when the scoped package is missing. It must match
+# packages/core (1.1.32 left the repair on 13.3.3 after the move to 14).
+swa_floor="$(python3 -c 'import json; print(json.load(open("packages/core/package.json"))["dependencies"]["@simplewebauthn/server"].lstrip("^"))')"
+swa_pin="$(python3 -c 'import re; s=open("install.sh",encoding="utf-8").read(); m=re.search(r"@simplewebauthn/server@([0-9]+\.[0-9]+\.[0-9]+)", s); assert m, "install.sh missing @simplewebauthn/server pin"; print(m.group(1))')"
+if [[ "$swa_pin" != "$swa_floor" ]]; then
+  echo "install.sh repairs @simplewebauthn/server@${swa_pin} but core depends on ${swa_floor}" >&2
+  exit 1
+fi
+
 echo "install smoke OK"

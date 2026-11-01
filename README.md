@@ -39,6 +39,21 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.33
+
+### Fixes
+- `install.sh` repairs a missing `@simplewebauthn/server` at **14.0.3**, matching core since 1.1.32. The old repair pin was 13.3.3. Installer smoke checks the pin.
+
+### Security
+- Weekly supply-chain pass. New Roundcube installs default to **1.7.5** (upstream 1.7 security release). Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-11-01-supply-chain.md](docs/security/2026-11-01-supply-chain.md).
+
+### Dependency upgrades
+- `ws` **8.22.1**, `sql.js` **1.15.2**, `react-router-dom` **7.18.5**, i18next **26.6.0**, `@types/node` **26.6.6**. pnpm stays **9.15.9**. TypeScript stays **5.9.3**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.33** together.
+
 ## What's new in 1.1.32
 
 ### Fixes
@@ -60,18 +75,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.31** together.
 - Build & test resolves core runtime deps from the from-source layout (`pnpm test:runtime-deps`).
-
-## What's new in 1.1.30
-
-### Security
-- Weekly supply-chain pass. New high `happy-dom` (GHSA-834v-8h66-3h79) is pinned to **21.0.4**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-10-25-supply-chain.md](docs/security/2026-10-25-supply-chain.md).
-
-### Dependency upgrades
-- Vite **6.4.5**, `sql.js` **1.15.1**, happy-dom **21.0.4**. Overrides: `ip-address` **10.7.5**, happy-dom **21.0.4**. pnpm stays **9.15.9**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.30** together.
 
 [Full changelog](./CHANGELOG.md)
 
