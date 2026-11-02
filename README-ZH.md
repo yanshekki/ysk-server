@@ -39,6 +39,15 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.34 新內容
+
+### 依賴升級
+- TypeScript **7.0.2**（由 **5.9.3**，Dependabot #24）。workspace 的開發依賴。pnpm 維持 **9.15.9**。發布用 npm CLI 維持 **11.21.1**。
+
+### 內部／CI
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.34**。
+
 ## 1.1.33 新內容
 
 ### 修正
@@ -65,16 +74,6 @@
 ### 內部／CI
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.32**。
-
-## 1.1.31 新內容
-
-### 修正
-- 從源碼跑 `install.sh` 時不再把已發布的 npm tarball overlay 到 git 目錄。先前會用沒有 `maxmind` 等 core 執行時依賴的 bundled 副本取代 pnpm 的 `ysk-server-core` 連結，`ysk-server setup` 就崩潰。Overlay（`--upgrade`／面板自我更新）而家會複製 tarball 入面所有 `node_modules` 項目，再跑 `npm install --omit=dev`，等 flattened 傳遞依賴可以解析。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.31**。
-- Build & test 會用從源碼佈局解析 core 執行時依賴（`pnpm test:runtime-deps`）。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

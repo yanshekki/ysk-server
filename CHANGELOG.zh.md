@@ -6,6 +6,16 @@
 
 ## Unreleased
 
+## 1.1.34 — 2026-11-02
+
+### 依賴升級
+- TypeScript **7.0.2**（由 **5.9.3**，Dependabot #24），用喺 `apps/server`、`apps/web`、`packages/core`、`packages/shared`。開發依賴。pnpm 維持 **9.15.9**（12 延後）。發布用 npm CLI 維持 **11.21.1**。安裝程式 `pm2` 維持 **6.0.14**。
+- 經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.34**。
+
+### 內部／CI
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.33 — 2026-11-01
 
 ### 修正

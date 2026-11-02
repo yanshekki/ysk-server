@@ -6,6 +6,16 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.34 — 2026-11-02
+
+### Dependency upgrades
+- TypeScript **7.0.2** (from **5.9.3**, Dependabot #24) in `apps/server`, `apps/web`, `packages/core`, and `packages/shared`. Dev dependency. pnpm stays **9.15.9** (12 deferred). Release npm CLI stays **11.21.1**. Installer `pm2` stays **6.0.14**.
+- Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch).
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.34**.
+
+### Internal & CI
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.33 — 2026-11-01
 
 ### Fixes

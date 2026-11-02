@@ -30,6 +30,15 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.34
+
+### Dependency upgrades
+- TypeScript **7.0.2** (from **5.9.3**). Dev dependency. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.34**.
+
 ## What's new in 1.1.33
 
 ### Fixes
@@ -56,15 +65,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.32**.
-
-## What's new in 1.1.31
-
-### Fixes
-- From-source `install.sh` no longer overlays the published npm tarball onto the git checkout. Overlay (`--upgrade` / panel self-update) copies every bundled `node_modules` entry and runs `npm install --omit=dev` so core transitives such as `maxmind` resolve.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.31**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -133,8 +133,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.33) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.33) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.34) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.34) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 
