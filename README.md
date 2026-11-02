@@ -39,6 +39,15 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 |:----------------|:------------------|:-------------|:-----------------|
 | One Linux host you operate — VPS or bare metal | Panel, CLI, and API share one model | Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success | Sites, mail, databases, DNS/SSL, defense, Docker |
 
+## What's new in 1.1.34
+
+### Dependency upgrades
+- TypeScript **7.0.2** (from **5.9.3**, Dependabot #24). Dev dependency across the workspace. pnpm stays **9.15.9**. Release npm CLI stays **11.21.1**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.34** together.
+
 ## What's new in 1.1.33
 
 ### Fixes
@@ -65,16 +74,6 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 ### Internal & CI
 - This page keeps the latest three versions.
 - **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.32** together.
-
-## What's new in 1.1.31
-
-### Fixes
-- From-source `install.sh` no longer overlays the published npm tarball onto the git checkout. That replaced pnpm's `ysk-server-core` link with a bundled copy missing `maxmind` and other core runtime deps, so `ysk-server setup` crashed. Overlay (`--upgrade` / panel self-update) now copies every bundled `node_modules` entry and runs `npm install --omit=dev` so flattened transitives resolve.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- **Packages** — `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.31** together.
-- Build & test resolves core runtime deps from the from-source layout (`pnpm test:runtime-deps`).
 
 [Full changelog](./CHANGELOG.md)
 
