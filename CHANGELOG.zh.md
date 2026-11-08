@@ -6,6 +6,22 @@
 
 ## Unreleased
 
+## 1.1.35 — 2026-11-08
+
+### 安全
+- 每週供應鏈檢查。SnappyMail 預設下載改為 **3.0.0**（上游 2026-11-05 安全主版本：SVG HTML 注入、未認證 SSRF、Host 標頭 SSRF、預設關閉 TLS 驗證導致 MITM RCE、GnuPG 家目錄劫持、儲存型 XSS）。應用程式 tarball 存在。解壓目錄是平坦的 `index.php` + `_include.php` + `snappymail/`，安裝程式本來就處理呢種佈局。網域 JSON 仍用 `shortLogin`。PHP ≥ **8.2**（`integrity.php`；產品預設）。已經喺磁碟上的 2.38.2 目錄，要再裝一次 webmail 先會換。PHP 8.1 的操作者可以用 `YSK_SNAPPYMAIL_VERSION` 繼續 2.38.2。
+- 經 `bittorrent-tracker@11.2.3` 的 `ip@2.0.1` 仍然沒有上游修補。tracker 只喺 UDP announce 解析呼叫 `ip.toString()`。面板 DDNS 用自己的公網 IP 檢查。見 [docs/security/2026-11-08-supply-chain-ZH.md](docs/security/2026-11-08-supply-chain-ZH.md)。
+
+### 依賴升級
+- 直接修補／次版本：`maxmind` **5.0.8**、Vite **8.3.6**、`@simplewebauthn/server` **14.1.0**、`@vitejs/plugin-react` **6.2.1**、Vitest **5.1.0**／`@vitest/coverage-v8` **5.1.0**、`playwright-core` **1.65.0**、i18next **26.7.2**、`react-i18next` **17.1.13**。
+- 覆寫：`ip-address` **10.7.6**。發布用 npm CLI **11.21.2**（11.x 最新）。`install.sh` 修復 `@simplewebauthn/server@14.1.0`。
+- 留在現有線：pnpm **9.15.9**（12.18.0 延後）、安裝程式 `pm2@6.0.14` 同 `node-gyp-build@4.8.4`、i18next 27／react-i18next 18、npm CLI 12、Kotlin 編譯器 **2.1.0**。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.35**。
+
+### 內部／CI
+- `pnpm/action-setup` SHA 釘在 **v6.1.1**。checkout 維持 **v7.0.1**，setup-node 維持 **v7.1.0**。
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.34 — 2026-11-02
 
 ### 依賴升級

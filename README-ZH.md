@@ -39,6 +39,19 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.35 新內容
+
+### 安全
+- 每週供應鏈檢查。新裝 SnappyMail 預設 **3.0.0**（上游 2026-11-05 安全主版本）。PHP ≥ **8.2**（產品預設）。已經喺磁碟上的 2.38.2 目錄，要再裝一次 webmail 先會換。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-08-supply-chain-ZH.md](docs/security/2026-11-08-supply-chain-ZH.md)。
+
+### 依賴升級
+- `maxmind` **5.0.8**、Vite **8.3.6**、`@simplewebauthn/server` **14.1.0**（`install.sh` 修復釘一致）、`@vitejs/plugin-react` **6.2.1**、Vitest **5.1.0**、`playwright-core` **1.65.0**、i18next **26.7.2**、`react-i18next` **17.1.13**、`ip-address` 覆寫 **10.7.6**。發布用 npm CLI **11.21.2**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- GitHub Action `pnpm/action-setup` **v6.1.1**。
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.35**。
+
 ## 1.1.34 新內容
 
 ### 依賴升級
@@ -62,18 +75,6 @@
 ### 內部／CI
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.33**。
-
-## 1.1.32 新內容
-
-### 修正
-- 檔案管理員用 `realpathSync` 正規化沙箱根路徑，macOS `/var` → `/private/var` 唔會再被誤判成 symlink 逃逸而 403。
-
-### 依賴升級
-- 主版本：`@types/node` **26.6.5**、SimpleWebAuthn **14**、Vitest **5.0.5**、面板 WebTorrent **3.0.21**、`@vitejs/plugin-react` **6.1.2** 配 Vite **8.3.5**、i18next **26.5.6** 配 `react-i18next` **17.1.9**。執行時 Node 仍係 **≥22**（CI Node 24）。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.32**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 
