@@ -6,6 +6,22 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.35 — 2026-11-08
+
+### Security
+- Weekly supply-chain pass. Default SnappyMail download is **3.0.0** (upstream security major, 2026-11-05: HTML injection via SVG, unauthenticated SSRF, Host-header SSRF, TLS verification off by default leading to MITM RCE, GnuPG homedir hijack, stored XSS). The application tarball exists. Extract layout is flat `index.php` + `_include.php` + `snappymail/`, which the installer already handles. Domain JSON still uses `shortLogin`. PHP ≥ **8.2** (`integrity.php`; product default). An existing on-disk 2.38.2 tree is not rewritten until webmail is installed again. Operators on PHP 8.1 can keep 2.38.2 with `YSK_SNAPPYMAIL_VERSION`.
+- `ip@2.0.1` (via `bittorrent-tracker@11.2.3`) still has no upstream patch. The tracker calls `ip.toString()` only, in UDP announce parsing. Panel DDNS uses its own public-IP checks. See [docs/security/2026-11-08-supply-chain.md](docs/security/2026-11-08-supply-chain.md).
+
+### Dependency upgrades
+- Direct patch/minor bumps: `maxmind` **5.0.8**, Vite **8.3.6**, `@simplewebauthn/server` **14.1.0**, `@vitejs/plugin-react` **6.2.1**, Vitest **5.1.0** / `@vitest/coverage-v8` **5.1.0**, `playwright-core` **1.65.0**, i18next **26.7.2**, `react-i18next` **17.1.13**.
+- Override: `ip-address` **10.7.6**. Release npm CLI **11.21.2** (latest 11.x). `install.sh` repairs `@simplewebauthn/server@14.1.0`.
+- Left on the current line: pnpm **9.15.9** (12.18.0 deferred), installer `pm2@6.0.14` and `node-gyp-build@4.8.4`, i18next 27 / react-i18next 18, npm CLI 12, Kotlin compiler **2.1.0**.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.35**.
+
+### Internal & CI
+- `pnpm/action-setup` SHA-pinned at **v6.1.1**. checkout stays **v7.0.1**, setup-node stays **v7.1.0**.
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.34 — 2026-11-02
 
 ### Dependency upgrades

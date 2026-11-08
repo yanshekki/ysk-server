@@ -462,7 +462,7 @@ ensure_webauthn_module() {
   fi
   log "Repairing @simplewebauthn/server (empty or missing)"
   with_npm_only_allow_stub
-  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress @simplewebauthn/server@14.0.3) \
+  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress @simplewebauthn/server@14.1.0) \
     || warn "Could not install @simplewebauthn/server — passkeys will fail until repaired"
 }
 
