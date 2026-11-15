@@ -84,13 +84,13 @@ async function ensureMailAuthForWebmailLogin(
 export type WebmailTool = 'roundcube' | 'snappymail';
 
 /** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL / YSK_ROUNDCUBE_VERSION. */
-export const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.5';
+export const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.6';
 const ROUNDCUBE_URL =
   process.env.YSK_ROUNDCUBE_URL ??
   `https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz`;
 
-/** SnappyMail 3.0.0 security line (PHP ≥ 8.2). Override with YSK_SNAPPYMAIL_URL / YSK_SNAPPYMAIL_VERSION. */
-export const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '3.0.0';
+/** SnappyMail 3.0.1 security line (PHP ≥ 8.2). Override with YSK_SNAPPYMAIL_URL / YSK_SNAPPYMAIL_VERSION. */
+export const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '3.0.1';
 const SNAPPYMAIL_URL =
   process.env.YSK_SNAPPYMAIL_URL ??
   `https://github.com/the-djmaze/snappymail/releases/download/v${SNAPPYMAIL_VERSION}/snappymail-${SNAPPYMAIL_VERSION}.tar.gz`;

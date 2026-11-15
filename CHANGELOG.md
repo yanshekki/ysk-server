@@ -6,6 +6,23 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.36 — 2026-11-15
+
+### Security
+- Weekly supply-chain pass. Default Roundcube download is **1.7.6** (upstream security release, 2026-11-09: open redirect via IMAP error recovery, Sieve injection, CSRF bypasses, SSRF filter gaps including nip.io and 6to4, IMAP CRLF injection with `messages_cache`, header injection). The generated `install-roundcube.sh` helper uses the same default. An existing on-disk tree is not rewritten until webmail is installed again.
+- Default SnappyMail download is **3.0.1** (application tarball exists). Extract layout is still flat `index.php` + `_include.php` + `snappymail/`. Tags **3.0.1.1** and **3.0.1.2** publish no source tarball (HTTP 404) and are not used. PHP ≥ **8.2** (`integrity.php`; product default). An existing on-disk tree is not rewritten until webmail is installed again.
+- `ip@2.0.1` (via `bittorrent-tracker@11.2.3`) still has no upstream patch. The tracker calls `ip.toString()` only, in UDP announce parsing. Panel DDNS uses its own public-IP checks. See [docs/security/2026-11-15-supply-chain.md](docs/security/2026-11-15-supply-chain.md).
+
+### Dependency upgrades
+- Direct patch/minor bumps: `maxmind` **5.1.0**, Vite **8.3.8**, `@vitejs/plugin-react` **6.3.0**, `playwright-core` **1.65.1**, `ws` **8.23.0**, `sql.js` **1.16.0**, `@testing-library/user-event` **14.6.10**.
+- Overrides: brace-expansion **1.1.22** / **2.1.8** / **3.0.10** / **5.0.13**. Release npm CLI stays **11.21.2** (latest 11.x).
+- Left on the current line: pnpm **9.15.9** (12.21.0 deferred), installer `pm2@6.0.14` and `node-gyp-build@4.8.4`, i18next 27 / react-i18next 18, npm CLI 12, Kotlin compiler **2.1.0**.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.36**.
+
+### Internal & CI
+- Actions remain SHA-pinned at checkout **v7.0.1**, setup-node **v7.1.0**, and pnpm/action-setup **v6.1.1**. No newer release of those three.
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.35 — 2026-11-08
 
 ### Security

@@ -1,6 +1,6 @@
 {
   "name": "ysk-server-core",
-  "version": "1.1.35",
+  "version": "1.1.36",
   "description": "YSK Server core business logic — security, hosting, LLM, update, email",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,10 +37,10 @@
     "bencode": "^4.0.0",
     "bittorrent-tracker": "^11.2.3",
     "create-torrent": "^6.1.3",
-    "maxmind": "^5.0.8",
+    "maxmind": "^5.1.0",
     "parse-torrent": "^11.0.24",
-    "playwright-core": "^1.65.0",
-    "sql.js": "^1.15.2",
+    "playwright-core": "^1.65.1",
+    "sql.js": "^1.16.0",
     "webtorrent": "^3.0.21"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "ysk-server",
-  "version": "1.1.35",
+  "version": "1.1.36",
   "description": "YSK Server control plane HTTP API and CLI (ysk-server)",
   "type": "module",
   "bin": {
@@ -47,7 +47,7 @@
     "ysk-server-core": "workspace:*",
     "ysk-server-shared": "workspace:*",
     "node-pty": "^1.1.0",
-    "ws": "^8.22.1"
+    "ws": "^8.23.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

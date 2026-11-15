@@ -39,6 +39,19 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.36 新內容
+
+### 安全
+- 每週供應鏈檢查。新裝 Roundcube 預設 **1.7.6**（上游 1.7 安全發布，2026-11-09）。新裝 SnappyMail 預設 **3.0.1**（應用程式 tarball 存在；標籤 3.0.1.1／3.0.1.2 沒有源碼 tarball）。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-15-supply-chain-ZH.md](docs/security/2026-11-15-supply-chain-ZH.md)。
+
+### 依賴升級
+- `maxmind` **5.1.0**、Vite **8.3.8**、`@vitejs/plugin-react` **6.3.0**、`playwright-core` **1.65.1**、`ws` **8.23.0**、`sql.js` **1.16.0**、`@testing-library/user-event` **14.6.10**。brace-expansion 覆寫 **1.1.22**／**2.1.8**／**3.0.10**／**5.0.13**。發布用 npm CLI 維持 **11.21.2**。pnpm 維持 **9.15.9**。
+
+### 內部／CI
+- GitHub Actions SHA 釘沒有變（checkout **v7.0.1**、setup-node **v7.1.0**、`pnpm/action-setup` **v6.1.1**）。
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.36**。
+
 ## 1.1.35 新內容
 
 ### 安全
@@ -60,21 +73,6 @@
 ### 內部／CI
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.34**。
-
-## 1.1.33 新內容
-
-### 修正
-- `install.sh` 喺 `@simplewebauthn/server` 缺失時修復到 **14.0.3**，同 1.1.32 之後的 core 一致。舊修復釘係 13.3.3。安裝程式 smoke 會核對呢個釘。
-
-### 安全
-- 每週供應鏈檢查。新裝 Roundcube 預設 **1.7.5**（上游 1.7 安全線）。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-01-supply-chain-ZH.md](docs/security/2026-11-01-supply-chain-ZH.md)。
-
-### 依賴升級
-- `ws` **8.22.1**、`sql.js` **1.15.2**、`react-router-dom` **7.18.5**、i18next **26.6.0**、`@types/node` **26.6.6**。pnpm 維持 **9.15.9**。TypeScript 維持 **5.9.3**。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.33**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

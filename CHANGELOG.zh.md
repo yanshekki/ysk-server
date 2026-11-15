@@ -6,6 +6,23 @@
 
 ## Unreleased
 
+## 1.1.36 — 2026-11-15
+
+### 安全
+- 每週供應鏈檢查。Roundcube 預設下載改為 **1.7.6**（上游 2026-11-09 安全發布：IMAP 錯誤復原的開放重新導向、Sieve 注入、CSRF 繞過、SSRF 過濾缺口包括 nip.io 同 6to4、開咗 `messages_cache` 時的 IMAP CRLF 注入、標頭注入）。產生的 `install-roundcube.sh` 用同一個預設。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。
+- SnappyMail 預設下載改為 **3.0.1**（應用程式 tarball 存在）。解壓目錄仍是平坦的 `index.php` + `_include.php` + `snappymail/`。標籤 **3.0.1.1** 同 **3.0.1.2** 沒有源碼 tarball（HTTP 404），唔會用。PHP ≥ **8.2**（`integrity.php`；產品預設）。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。
+- 經 `bittorrent-tracker@11.2.3` 的 `ip@2.0.1` 仍然沒有上游修補。tracker 只喺 UDP announce 解析呼叫 `ip.toString()`。面板 DDNS 用自己的公網 IP 檢查。見 [docs/security/2026-11-15-supply-chain-ZH.md](docs/security/2026-11-15-supply-chain-ZH.md)。
+
+### 依賴升級
+- 直接修補／次版本：`maxmind` **5.1.0**、Vite **8.3.8**、`@vitejs/plugin-react` **6.3.0**、`playwright-core` **1.65.1**、`ws` **8.23.0**、`sql.js` **1.16.0**、`@testing-library/user-event` **14.6.10**。
+- 覆寫：brace-expansion **1.1.22**／**2.1.8**／**3.0.10**／**5.0.13**。發布用 npm CLI 維持 **11.21.2**（11.x 最新）。
+- 留在現有線：pnpm **9.15.9**（12.21.0 延後）、安裝程式 `pm2@6.0.14` 同 `node-gyp-build@4.8.4`、i18next 27／react-i18next 18、npm CLI 12、Kotlin 編譯器 **2.1.0**。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.36**。
+
+### 內部／CI
+- Actions 仍然 SHA 釘在 checkout **v7.0.1**、setup-node **v7.1.0**、pnpm/action-setup **v6.1.1**。呢三個沒有更新的發布。
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.35 — 2026-11-08
 
 ### 安全
