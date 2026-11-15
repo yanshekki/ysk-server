@@ -1,0 +1,83 @@
+# 供應鏈覆核 — 2026-11-15
+
+> 語言：中文 | [English](./2026-11-15-supply-chain.md)
+
+YSK Server **1.1.36** 的覆核。鎖檔更新後 `pnpm audit` 只剩 **一** 條公告（`ip`）。1.1.35 之後沒有新的 npm 公告。Dependabot 第 1 號警報就是這條 `ip`。
+
+## 範圍
+
+已發布套件 `ysk-server`、`ysk-server-shared`、`ysk-server-core`，私人面板 `apps/web`，pnpm 9.15.9 鎖檔（`lockfileVersion` 9.0），GitHub Actions，以及 `install.sh` 連同它下載的安裝程式庫（`install/lib/*.sh`：NodeSource、rustup、Bun，以及 Kotlin 編譯器 zip）。
+
+## 方法
+
+`pnpm audit`（421 個依賴：1 高、0 嚴重、0 中、0 低）、`pnpm outdated -r`、對直接依賴同安裝程式釘死版本做 `npm view`、鎖檔檢查、GitHub Actions 標籤對應的 commit、閱讀 `bittorrent-tracker@11.2.3` 的 `lib/server/parse-udp.js`、列出 SnappyMail **3.0.1** 應用程式 tarball，以及 HEAD `roundcubemail-1.7.6-complete.tar.gz`。這棵樹裡的原生附加元件：`node-pty@1.1.0`（預編譯；`install.sh` 會跑 `npm rebuild node-pty`）、`ws` 的可選 peer `bufferutil@4.1.0` 與 `utf-8-validate@6.0.6`（經 `node-gyp-build@4.8.4`），以及 WebTorrent 的 `node-datachannel@0.32.3`（帶已棄用的 `prebuild-install@7.1.3`）。`fetch-blob` 帶已棄用的 `node-domexception@1.0.0`。這兩個棄用都不是 audit 發現。`sql.js` 是 asm／WASM，不是 Node 原生附加元件。儲存層仍載入 `sql.js/dist/sql-asm.js`。依賴樹裡沒有冒充直接依賴名稱的已知仿冒套件。
+
+GitHub secret scanning 同 push protection 已啟用。Dependabot security updates 已啟用。Code scanning 沒有分析設定。Discussions 已啟用。
+
+## 結果
+
+### 已修復
+
+| 組件 | 嚴重性 | 公告 | 狀態 |
+|------|--------|------|------|
+| Roundcube 預設 | 高（上游） | Roundcube 1.7.6，2026-11-09 | **1.7.6**。新的 webmail 安裝，以及產生出嚟的 `install-roundcube.sh` 預設，由 **1.7.5** 改走這版。上游說明包括 IMAP 錯誤復原的開放重新導向、Sieve 注入、CSRF 繞過、SSRF 過濾缺口（nip.io／6to4）、開咗 `messages_cache` 時的 IMAP CRLF 注入、標頭注入等。`roundcubemail-1.7.6-complete.tar.gz` 存在（HTTP 200）。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。 |
+| SnappyMail 預設 | — | 3.0.1 應用程式修補，2026-11-09 | **3.0.1**。新安裝由 **3.0.0** 改走這版。`snappymail-3.0.1.tar.gz` 存在（HTTP 200）。目錄仍是平坦的 `index.php` + `_include.php` + `snappymail/`（安裝程式第 3 分支）。網域 JSON 仍有 `shortLogin`（預設 `false`）。`integrity.php` 要求 PHP ≥ 8.2（產品預設）。標籤 **3.0.1.1** 同 **3.0.1.2** 沒有應用程式 tarball（HTTP 404），唔會用。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。 |
+| maxmind | — | 維護 | **5.1.0**（含 5.0.9）。DDNS／國家提示用的 GeoIP 讀取器。`maxmind.open` 呼叫端沒用新的 AbortSignal watch API。 |
+| Vite／plugin-react | — | 維護 | Vite **8.3.8**、`@vitejs/plugin-react` **6.3.0**。額外 peer（`oxc-transform-react`、`@rolldown/plugin-babel`、React compiler）係可選。新傳遞依賴 `@rolldown/pluginutils@1.0.1`。 |
+| playwright-core／ws／sql.js／user-event | — | 維護 | `playwright-core` **1.65.1**、`ws` **8.23.0**、`sql.js` **1.16.0**（仍有 `sql-asm.js`）、`@testing-library/user-event` **14.6.10**。 |
+| brace-expansion 覆寫 | — | 維護 | **1.1.22**／**2.1.8**／**3.0.10**／**5.0.13**。防禦性釘死；而家樹上沒有成員停在舊範圍。 |
+| 先前修補 | — | 仍然有效 | SnappyMail 安全線 **3.x**、happy-dom **21.0.4**、`source-map-js` **1.2.2**、nanoid 同 `ip-address` 覆寫、Vite 8／Vitest 5／SimpleWebAuthn 14／TypeScript **7.0.2**。 |
+
+### 未修復
+
+| 組件 | 嚴重性 | 公告 | 狀態 |
+|------|--------|------|------|
+| ip 2.0.1 | 高 | GHSA-2p57-rm9w-gvfp | **上游未修。** 最新仍是 2.0.1（2024-02-19 發布）。沒有 `2.0.2`。Dependabot 警報 #1。經 `bittorrent-tracker@11.2.3`（最新；仍是 `ip@^2.0.1`）由 core 同面板 WebTorrent **3.0.21** 引入。 |
+| NodeSource 安裝腳本 | — | `curl \| bash` 執行 `setup_24.x` | **接受。** `install/lib/stack-ops.sh` 把 `https://deb.nodesource.com/setup_24.x` pipe 去 shell。腳本沒有釘死。換掉它會改變 Ubuntu 上安裝 Node 24 的方式。 |
+| rustup／Bun | — | `curl \| bash` | **接受。** 只在可選堆疊元件：`https://sh.rustup.rs` 同 `https://bun.sh/install`。不是預設安裝路徑。 |
+| 資源校驗 | — | 除非 `YSK_INSTALL_REQUIRE_CHECKSUMS=1`，否則可選 | **已減輕，但不是強制。** 下載到 `install/checksums.sha256` 就會核對。檔案不存在時仍警告並繼續。 |
+| pnpm 10／11／12 | — | 套件管理員主版本 | **延後。** 9.x 最新是 **9.15.9**。pnpm 12.21.0 會重寫鎖檔同 `packageManager` 釘。 |
+| i18next 27／react-i18next 18 | — | 主版本 | **延後。** 26.x 最新是 **26.7.2**。17.x 最新是 **17.1.13**。27.1.1／18.0.1 要另開一次（`fallbackLng` 預設、selector 型別）。 |
+| npm CLI 12 | — | 主版本 | **延後。** 發布工作流程維持 **npm@11.21.2**（11.x 最新）。不用 npm 12.2.2。發布仍走 Trusted Publisher OIDC。不用 npm token。 |
+| pm2 7 | — | 主版本 | **延後。** 安裝程式釘 **6.0.14**（6.x 最新）。整體最新是 7.1.2。 |
+
+`ip` 的實際暴露，今次對 `bittorrent-tracker@11.2.3` 再讀過：`lib/server/parse-udp.js` 只呼叫一次 `ip.toString()`，把 UDP announce 裡可選的 32 位元地址轉成點分字串。它沒有呼叫 `isPublic`、`isPrivate` 或 `isLoopback`。GHSA-2p57-rm9w-gvfp 講的是這些分類函數判錯。這裡的 peer 地址是 tracker swarm 資料，不是對外請求前的檢查。面板 DDNS 用 `packages/core` 自己的 `isPublicIpv4`／`isPublicIpv6`（不是 `ip` 套件）。沒有加 override：沒有修補版 `ip@2.0.2`，換上未經覆核的 fork 會變成新的供應鏈依賴。等 `bittorrent-tracker` 去掉 `ip` 再處理。
+
+## 延後的升級
+
+| 套件 | 所見最新版 | 為何留住 |
+|------|------------|----------|
+| i18next | 27.1.1 | 主版本。維持 **26.7.2**（26.x 最後一條）。26.7 會預告 v27 預設；面板已設 `enableSelector: false` 同 `initAsync: false`。 |
+| react-i18next | 18.0.1 | 主版本，同 i18next 27 一齊。維持 **17.1.13**。 |
+| pnpm | 12.21.0 | 破壞性主版本。9.x 最新是 **9.15.9**。 |
+| npm CLI | 12.2.2 | 主版本。發布工作流程維持 **11.21.2**。 |
+| pm2 | 7.1.2 | 安裝程式釘 **6.0.14**，新主機不會拿到未驗證的主版本。 |
+| nanoid | 6.0.2 | 主版本。樹裡解析到 **3.3.20**。覆寫仍把有漏洞的 3.x／4.x／5.x 範圍抬到 3.3.20／5.1.16。5.1.16 是 5.x 最新。 |
+| sql.js 載入器 | wasm-inline | 1.16.0 仍附帶 `sql-asm.js`，仍棄用 asm.js。原生 SQLite 數學函數已開；舊函數預設仍然啟用。儲存層繼續用 `sql-asm.js`。換載入器是執行時改動，不是今次修補。 |
+| Kotlin 編譯器 zip | 2.4.21 | 可選堆疊安裝釘 **2.1.0**，後備 **2.0.21**。不是預設 `install.sh` 下載。今次沒有經覆核的安全修補要求換編譯器線。 |
+
+已核對而且已經是最新的直接依賴：happy-dom **21.0.4**、WebTorrent **3.0.21**、`bittorrent-tracker` **11.2.3**、`node-pty` **1.1.0**、`node-gyp-build@4.8.4`、React **19.3.1**、tsx **4.23.15**、TypeScript **7.0.2**、`@types/node` **26.6.6**、`@simplewebauthn/server` **14.1.0**、`@simplewebauthn/browser` **14.0.0**、Vitest **5.1.0**。解析到的 esbuild 是 **0.28.2**。覆寫仍把 `esbuild@<=0.24.2` 抬到 **0.25.12**（0.25.x 最新）。有 `bufferutil@4.2.0`；樹裡維持可選 peer **4.1.0**（沒有公告）。
+
+## 安裝程式與 Actions
+
+`install.sh` 仍以 HTTPS 從 `raw.githubusercontent.com` 下載安裝程式庫（預設分支 `main`；`YSK_INSTALL_RAW` 可以釘一個 commit），`install/checksums.sha256` 存在時會核對。套件下載後備是 `https://registry.npmjs.org/ysk-server/-/ysk-server-<version>.tgz`。全域釘：`pnpm@9.15.9`、`node-gyp-build@4.8.4`、`pm2@6.0.14`，修復用 `@simplewebauthn/server@14.1.0`。
+
+下載落嚟的 `install/lib/stack-ops.sh` 仍會 pipe NodeSource `setup_24.x`、rustup 同 Bun，以及下載 Kotlin 編譯器 zip。這些 pipe 是安裝程式剩下的信任邊界。校驗蓋的是程式庫檔案本身，不是那些程式庫再 curl 的第三方腳本。
+
+Actions 仍然用 SHA 釘在當前發布 commit，不是會移動的標籤。呢三個沒有更新的發布。
+
+| Action | 釘 | 發布 |
+|--------|-----|------|
+| actions/checkout | `3d3c42e5aac5ba805825da76410c181273ba90b1` | v7.0.1（2026-07-17） |
+| actions/setup-node | `949feb2413d6458794dcd2491c4babbbce0c15c1` | v7.1.0（2026-10-08） |
+| pnpm/action-setup | `73e46992e05b19abd31f2f3c20e0e7370d762115` | v6.1.1（2026-11-03） |
+
+發布工作流程的 npm CLI 是 **11.21.2**。npm 11 警告 `bin[ysk-server] ... invalid and removed` 是誤報，忽略。
+
+## 重查
+
+```bash
+pnpm audit
+```
+
+預期：一條高嚴重性，`ip` ≤2.0.1，GHSA-2p57-rm9w-gvfp。沒有嚴重。沒有中等。

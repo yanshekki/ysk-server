@@ -30,6 +30,18 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.36
+
+### Security
+- Weekly supply-chain pass. New Roundcube installs default to **1.7.6**. New SnappyMail installs default to **3.0.1**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged. Report: [2026-11-15 supply chain](https://github.com/yanshekki/ysk-server/blob/main/docs/security/2026-11-15-supply-chain.md).
+
+### Dependency upgrades
+- `maxmind` **5.1.0**, Vite **8.3.8**, `@vitejs/plugin-react` **6.3.0**, `playwright-core` **1.65.1**, `ws` **8.23.0**, `sql.js` **1.16.0**, `@testing-library/user-event` **14.6.10**. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.36**.
+
 ## What's new in 1.1.35
 
 ### Security
@@ -50,21 +62,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.34**.
-
-## What's new in 1.1.33
-
-### Fixes
-- `install.sh` repairs a missing `@simplewebauthn/server` at **14.0.3**. The old repair pin was 13.3.3.
-
-### Security
-- New Roundcube installs default to **1.7.5**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged. Report: [2026-11-01 supply chain](https://github.com/yanshekki/ysk-server/blob/main/docs/security/2026-11-01-supply-chain.md).
-
-### Dependency upgrades
-- `ws` **8.22.1**, `sql.js` **1.15.2**, panel `react-router-dom` **7.18.5**, i18next **26.6.0**, `@types/node` **26.6.6**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.33**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -133,8 +130,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.35) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.35) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.36) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.36) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 
