@@ -6,6 +6,24 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+## 1.1.37 — 2026-11-22
+
+### Security
+- Weekly supply-chain pass. Default SnappyMail download is **3.1.4** (application tarball exists, 2026-11-20). Extract layout is still flat `index.php` + `_include.php` + `snappymail/`. PHP ≥ **8.2**. 3.1.0–3.1.2 had new-install bugs; 3.1.4 is the first 3.1.x used (also `json_validate` / `array_first` on PHP 8.2). An existing on-disk tree is not rewritten until webmail is installed again.
+- Roundcube stays **1.7.6** (latest 1.7.x; `roundcubemail-1.7.6-complete.tar.gz` still HTTP 200).
+- `source-map-js` override lifted to **1.2.4** (1.2.3 drops `new Function` / CSP `unsafe-eval`).
+- `ip@2.0.1` (via `bittorrent-tracker@11.2.3`) still has no upstream patch. The tracker calls `ip.toString()` only, in UDP announce parsing. Panel DDNS uses its own public-IP checks. No override or fork. See [docs/security/2026-11-22-supply-chain.md](docs/security/2026-11-22-supply-chain.md).
+
+### Dependency upgrades
+- Direct patch/minor bumps: Vitest **5.1.1** / `@vitest/coverage-v8` **5.1.1**, `react-router-dom` **7.18.6**, `sql.js` **1.17.0** (`sql-asm.js` still present; store does not bind `BigInt`), `@testing-library/user-event` **14.6.13**.
+- Override: `source-map-js` **1.2.4**. Release npm CLI **11.21.3** (latest 11.x).
+- Left on the current line: pnpm **9.15.9** (12.21.0 deferred), installer `pm2@6.0.14` and `node-gyp-build@4.8.4`, i18next 27 / react-i18next 18 (Dependabot #28/#29; no consent), npm CLI 12, `@testing-library/jest-dom` **7.0.1** (8.0.0 major deferred), Kotlin compiler **2.1.0**.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` all ship **1.1.37**.
+
+### Internal & CI
+- Actions remain SHA-pinned at checkout **v7.0.1**, setup-node **v7.1.0**, and pnpm/action-setup **v6.1.1**. No newer release of those three.
+- README pages keep the latest three versions. Older notes live here.
+
 ## 1.1.36 — 2026-11-15
 
 ### Security

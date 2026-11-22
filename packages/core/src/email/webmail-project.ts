@@ -89,8 +89,8 @@ const ROUNDCUBE_URL =
   process.env.YSK_ROUNDCUBE_URL ??
   `https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz`;
 
-/** SnappyMail 3.0.1 security line (PHP ≥ 8.2). Override with YSK_SNAPPYMAIL_URL / YSK_SNAPPYMAIL_VERSION. */
-export const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '3.0.1';
+/** SnappyMail 3.1.4 security line (PHP ≥ 8.2). Override with YSK_SNAPPYMAIL_URL / YSK_SNAPPYMAIL_VERSION. */
+export const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '3.1.4';
 const SNAPPYMAIL_URL =
   process.env.YSK_SNAPPYMAIL_URL ??
   `https://github.com/the-djmaze/snappymail/releases/download/v${SNAPPYMAIL_VERSION}/snappymail-${SNAPPYMAIL_VERSION}.tar.gz`;
