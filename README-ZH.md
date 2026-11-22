@@ -39,6 +39,19 @@
 |:-----------|:-------------|:---------|:---------|
 | 你操作的一台 Linux — VPS 或實體機 | 面板、CLI 與 API 同一模型 | 改主機需要 **root** + `YSK_EXECUTE=1`。預演不會報成功 | 網站、電郵、資料庫、DNS／SSL、防護、Docker |
 
+## 1.1.37 新內容
+
+### 安全
+- 每週供應鏈檢查。新裝 SnappyMail 預設 **3.1.4**（應用程式 tarball 存在；3.1.0–3.1.2 新安裝有嚴重錯誤）。Roundcube 維持 **1.7.6**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-22-supply-chain-ZH.md](docs/security/2026-11-22-supply-chain-ZH.md)。
+
+### 依賴升級
+- Vitest **5.1.1**、`react-router-dom` **7.18.6**、`sql.js` **1.17.0**、`@testing-library/user-event` **14.6.13**。`source-map-js` 覆寫 **1.2.4**。發布用 npm CLI **11.21.3**。pnpm 維持 **9.15.9**。i18next 27／react-i18next 18 繼續延後（Dependabot #28／#29；未同意）。
+
+### 內部／CI
+- GitHub Actions SHA 釘沒有變（checkout **v7.0.1**、setup-node **v7.1.0**、`pnpm/action-setup` **v6.1.1**）。
+- 本頁只保留最近三個版本。
+- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.37**。
+
 ## 1.1.36 新內容
 
 ### 安全
@@ -64,15 +77,6 @@
 - GitHub Action `pnpm/action-setup` **v6.1.1**。
 - 本頁只保留最近三個版本。
 - **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.35**。
-
-## 1.1.34 新內容
-
-### 依賴升級
-- TypeScript **7.0.2**（由 **5.9.3**，Dependabot #24）。workspace 的開發依賴。pnpm 維持 **9.15.9**。發布用 npm CLI 維持 **11.21.1**。
-
-### 內部／CI
-- 本頁只保留最近三個版本。
-- **套件** — `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.34**。
 
 [完整變更紀錄](./CHANGELOG.zh.md)
 

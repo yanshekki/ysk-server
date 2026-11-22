@@ -6,6 +6,24 @@
 
 ## Unreleased
 
+## 1.1.37 — 2026-11-22
+
+### 安全
+- 每週供應鏈檢查。SnappyMail 預設下載改為 **3.1.4**（應用程式 tarball 存在，2026-11-20）。解壓目錄仍是平坦的 `index.php` + `_include.php` + `snappymail/`。PHP ≥ **8.2**。3.1.0–3.1.2 新安裝有嚴重錯誤；今次用 3.1.4（亦修了 PHP 8.2 上的 `json_validate`／`array_first`）。已經喺磁碟上的目錄，要再裝一次 webmail 先會換。
+- Roundcube 維持 **1.7.6**（1.7.x 最新；`roundcubemail-1.7.6-complete.tar.gz` 仍 HTTP 200）。
+- `source-map-js` 覆寫抬到 **1.2.4**（1.2.3 去掉 `new Function`／CSP `unsafe-eval`）。
+- 經 `bittorrent-tracker@11.2.3` 的 `ip@2.0.1` 仍然沒有上游修補。tracker 只喺 UDP announce 解析呼叫 `ip.toString()`。面板 DDNS 用自己的公網 IP 檢查。沒有加 override 或 fork。見 [docs/security/2026-11-22-supply-chain-ZH.md](docs/security/2026-11-22-supply-chain-ZH.md)。
+
+### 依賴升級
+- 直接修補／次版本：Vitest **5.1.1**／`@vitest/coverage-v8` **5.1.1**、`react-router-dom` **7.18.6**、`sql.js` **1.17.0**（仍有 `sql-asm.js`；儲存層沒有綁 `BigInt`）、`@testing-library/user-event` **14.6.13**。
+- 覆寫：`source-map-js` **1.2.4**。發布用 npm CLI **11.21.3**（11.x 最新）。
+- 留在現有線：pnpm **9.15.9**（12.21.0 延後）、安裝程式 `pm2@6.0.14` 同 `node-gyp-build@4.8.4`、i18next 27／react-i18next 18（Dependabot #28／#29；未同意）、npm CLI 12、`@testing-library/jest-dom` **7.0.1**（8.0.0 主版本延後）、Kotlin 編譯器 **2.1.0**。
+- `ysk-server`、`ysk-server-shared`、`ysk-server-core` 一齊出 **1.1.37**。
+
+### 內部／CI
+- Actions 仍然 SHA 釘在 checkout **v7.0.1**、setup-node **v7.1.0**、pnpm/action-setup **v6.1.1**。呢三個沒有更新的發布。
+- README 只保留最近三個版本。更早的紀錄在本檔。
+
 ## 1.1.36 — 2026-11-15
 
 ### 安全

@@ -30,6 +30,18 @@ Free, open, **single-host**. Install on your VPS or bare metal. The same core dr
 
 Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 
+## What's new in 1.1.37
+
+### Security
+- Weekly supply-chain pass. New SnappyMail installs default to **3.1.4**. Roundcube stays **1.7.6**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged. Report: [2026-11-22 supply chain](https://github.com/yanshekki/ysk-server/blob/main/docs/security/2026-11-22-supply-chain.md).
+
+### Dependency upgrades
+- Vitest **5.1.1**, `react-router-dom` **7.18.6**, `sql.js` **1.17.0**, `@testing-library/user-event` **14.6.13**. `source-map-js` override **1.2.4**. pnpm stays **9.15.9**.
+
+### Internal & CI
+- This page keeps the latest three versions.
+- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.37**.
+
 ## What's new in 1.1.36
 
 ### Security
@@ -53,15 +65,6 @@ Host writes need **root** + `YSK_EXECUTE=1`. Dry-run never reports success.
 ### Internal & CI
 - This page keeps the latest three versions.
 - `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.35**.
-
-## What's new in 1.1.34
-
-### Dependency upgrades
-- TypeScript **7.0.2** (from **5.9.3**). Dev dependency. pnpm stays **9.15.9**.
-
-### Internal & CI
-- This page keeps the latest three versions.
-- `ysk-server`, `ysk-server-shared`, and `ysk-server-core` ship **1.1.34**.
 
 [Full changelog](https://github.com/yanshekki/ysk-server/blob/main/CHANGELOG.md)
 
@@ -130,8 +133,8 @@ ysk-server readiness --json
 | Package | Role |
 |:--------|:-----|
 | **[ysk-server](https://www.npmjs.com/package/ysk-server)** | **This package** — CLI + API + embedded panel |
-| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.36) |
-| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.36) |
+| [ysk-server-shared](https://www.npmjs.com/package/ysk-server-shared) | Types and locales (1.1.37) |
+| [ysk-server-core](https://www.npmjs.com/package/ysk-server-core) | Hosting and security core (1.1.37) |
 
 `ysk-server` **bundles** shared and core so `npm install -g` is reliable.
 
