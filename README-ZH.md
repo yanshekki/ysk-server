@@ -45,7 +45,7 @@
 - 每週供應鏈檢查。新裝 SnappyMail 預設 **3.1.4**（應用程式 tarball 存在；3.1.0–3.1.2 新安裝有嚴重錯誤）。Roundcube 維持 **1.7.6**。經 `bittorrent-tracker` 的殘餘 `ip@2.0.1` 沒有變（上游沒有修補版）。報告：[docs/security/2026-11-22-supply-chain-ZH.md](docs/security/2026-11-22-supply-chain-ZH.md)。
 
 ### 依賴升級
-- Vitest **5.1.1**、`react-router-dom` **7.18.6**、`sql.js` **1.17.0**、`@testing-library/user-event` **14.6.13**。`source-map-js` 覆寫 **1.2.4**。發布用 npm CLI **11.21.3**。pnpm 維持 **9.15.9**。i18next 27／react-i18next 18 繼續延後（Dependabot #28／#29；未同意）。
+- Vitest **5.1.1**、`react-router-dom` **7.18.6**、`sql.js` **1.17.0**、`@testing-library/user-event` **14.6.13**。`source-map-js` 覆寫 **1.2.4**。發布用 npm CLI **11.21.3**。pnpm 維持 **9.15.9**。i18next **27.2.2** 配 react-i18next **18.0.3**（一齊升；Dependabot #32／#33 唔會原樣合併）。
 
 ### 內部／CI
 - GitHub Actions SHA 釘沒有變（checkout **v7.0.1**、setup-node **v7.1.0**、`pnpm/action-setup` **v6.1.1**）。

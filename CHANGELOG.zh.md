@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+### 依賴升級
+- i18next **27.2.2** 同 react-i18next **18.0.3** 一齊升。Dependabot #32（react-i18next 18 仍然鎖 i18next ^26.7.2）同 #33（只升 i18next 27）互相衝突，唔會原樣合併。面板 init 維持 `fallbackLng`、`enableSelector: false`、`initAsync: false`，並設 `returnEmptyString: true`，空嘅提示字串保持空白。型別設 `strictInterpolationChecks: false`，`(key, opts?) => string` 嘅 helper 仍然接受 `TFunction`。套件版本維持 **1.1.37**。
+
 ## 1.1.37 — 2026-11-22
 
 ### 安全

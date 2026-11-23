@@ -6,6 +6,9 @@ Categories, in order: **New features**, **Improvements**, **Fixes**, **Security*
 
 ## Unreleased
 
+### Dependency upgrades
+- i18next **27.2.2** and react-i18next **18.0.3** together. Dependabot #32 (react-i18next 18 while locking i18next ^26.7.2) and #33 (i18next 27 alone) conflict and are not merged as-is. Panel init keeps `fallbackLng`, `enableSelector: false`, `initAsync: false`, and sets `returnEmptyString: true` so optional empty hints stay blank. Types set `strictInterpolationChecks: false` so helpers that take `(key, opts?) => string` still accept `TFunction`. Package versions stay **1.1.37**.
+
 ## 1.1.37 — 2026-11-22
 
 ### Security

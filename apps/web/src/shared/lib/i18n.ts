@@ -265,10 +265,15 @@ export async function bootstrapI18n(): Promise<void> {
       partialBundledLanguages: true,
       interpolation: { escapeValue: false },
       returnNull: false,
-      // i18next 26 dropped initImmediate; keep first paint sync (catalogs load after).
+      // Catalogs use '' for optional hints. v27 default would treat '' as missing
+      // and fall back to the key (btTracker.wsEnabledHint) instead of a blank.
+      returnEmptyString: true,
+      // Keep first paint sync (catalogs load after). i18next 26 renamed initImmediate → initAsync.
       initAsync: false,
-      // Keep string keys (t('nav.x')). v26 defaults enableSelector to true.
+      // Keep string keys (t('nav.x')). Selectors stay opt-in in i18next 27.
       enableSelector: false,
+      // Boot namespaces then full catalog; no i18n Suspense boundary around App.
+      react: { useSuspense: false },
     });
   }
 
