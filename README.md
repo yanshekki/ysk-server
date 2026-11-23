@@ -45,7 +45,7 @@ Free, open, **single-host**. Not a multi-tenant panel-as-a-service. You install 
 - Weekly supply-chain pass. New SnappyMail installs default to **3.1.4** (application tarball exists; 3.1.0–3.1.2 had new-install bugs). Roundcube stays **1.7.6**. Residual `ip@2.0.1` via `bittorrent-tracker` is unchanged (no upstream patch). Report: [docs/security/2026-11-22-supply-chain.md](docs/security/2026-11-22-supply-chain.md).
 
 ### Dependency upgrades
-- Vitest **5.1.1**, `react-router-dom` **7.18.6**, `sql.js` **1.17.0**, `@testing-library/user-event` **14.6.13**. `source-map-js` override **1.2.4**. Release npm CLI **11.21.3**. pnpm stays **9.15.9**. i18next 27 / react-i18next 18 stay deferred (Dependabot #28/#29; no consent).
+- Vitest **5.1.1**, `react-router-dom` **7.18.6**, `sql.js` **1.17.0**, `@testing-library/user-event` **14.6.13**. `source-map-js` override **1.2.4**. Release npm CLI **11.21.3**. pnpm stays **9.15.9**. i18next **27.2.2** with react-i18next **18.0.3** (combined; Dependabot #32/#33 not merged as-is).
 
 ### Internal & CI
 - GitHub Actions SHA pins unchanged (checkout **v7.0.1**, setup-node **v7.1.0**, `pnpm/action-setup` **v6.1.1**).

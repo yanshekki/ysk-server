@@ -32,4 +32,9 @@ describe('i18n full catalog after boot namespaces', () => {
       'systemd.installAndEnable',
     );
   });
+
+  it('keeps empty catalog strings empty instead of falling back to the key', async () => {
+    await ensureLocaleLoaded('en');
+    expect(i18n.t('btTracker.wsEnabledHint', { lng: 'en' })).toBe('');
+  });
 });
